@@ -1,13 +1,9 @@
 package org.jabref.logic.ai;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import org.jabref.logic.JabRefException;
-import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.io.FileUtil;
 import org.jabref.logic.xmp.XmpUtilReader;
 import org.jabref.model.database.BibDatabaseContext;
@@ -61,7 +57,7 @@ public class AiIngestor {
         if (path.isPresent()) {
             ingestFile(path.get());
         } else {
-            LOGGER.error("Could not find path for a linked file: " + linkedFile.getLink());
+            LOGGER.error("Could not find path for a linked file: {}", linkedFile.getLink());
         }
     }
 
@@ -69,7 +65,7 @@ public class AiIngestor {
         if (FileUtil.isPDFFile(path)) {
             ingestPDFFile(path);
         } else {
-            LOGGER.info("Usupported file type of file: " + path + ". For now, only PDF files are supported");
+            LOGGER.info("Unsupported file type of file: {}. For now, only PDF files are supported", path);
         }
     }
 
@@ -86,7 +82,7 @@ public class AiIngestor {
 
             ingestString(writer.toString());
         } catch (Exception e) {
-            LOGGER.error("An error occurred while reading a PDF file: " + path, e);
+            LOGGER.error("An error occurred while reading a PDF file: {}", path, e);
         }
     }
 
