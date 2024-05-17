@@ -50,8 +50,8 @@ public class AiIngestor {
 
     public void ingestLinkedFile(LinkedFile linkedFile, BibDatabaseContext bibDatabaseContext, FilePreferences filePreferences) {
         // TODO: Ingest not only the contents of documents, but also their metadata.
-        // This will help the AI to identify a document while performing a QA session over several bib entries.
-        // Useful link: https://docs.langchain4j.dev/tutorials/rag/#metadata.
+        //       This will help the AI to identify a document while performing a QA session over several bib entries.
+        //       Useful link: https://docs.langchain4j.dev/tutorials/rag/#metadata.
 
         Optional<Path> path = linkedFile.findIn(bibDatabaseContext, filePreferences);
         if (path.isPresent()) {
