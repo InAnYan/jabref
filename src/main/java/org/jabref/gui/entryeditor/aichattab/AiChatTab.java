@@ -16,12 +16,16 @@ import org.jabref.gui.util.TaskExecutor;
 import org.jabref.logic.ai.AiChat;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.AiIngestor;
+import org.jabref.logic.ai.BibDatabaseChats;
 import org.jabref.logic.ai.ChatMessage;
+import org.jabref.logic.ai.ChatMessageType;
 import org.jabref.logic.citationkeypattern.CitationKeyGenerator;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.io.FileUtil;
+import org.jabref.model.database.BibDatabase;
 import org.jabref.model.database.BibDatabaseContext;
+import org.jabref.model.database.BibDatabases;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
 import org.jabref.preferences.AiPreferences;
@@ -29,6 +33,7 @@ import org.jabref.preferences.FilePreferences;
 import org.jabref.preferences.PreferencesService;
 
 import dev.langchain4j.store.embedding.filter.MetadataFilterBuilder;
+import jakarta.annotation.Nullable;
 import org.slf4j.LoggerFactory;
 
 public class AiChatTab extends EntryEditorTab {
@@ -50,6 +55,8 @@ public class AiChatTab extends EntryEditorTab {
 
     private AiChat aiChat = null;
 
+    private final @Nullable BibDatabaseChats bibDatabaseChats;
+
     private BibEntry currentBibEntry = null;
 
     public AiChatTab(DialogService dialogService, PreferencesService preferencesService, AiService aiService,
@@ -66,8 +73,10 @@ public class AiChatTab extends EntryEditorTab {
 
         this.taskExecutor = taskExecutor;
 
+        this.bibDatabaseChats = aiService.openBibDatabaseChats(bibDatabaseContext);
+
         setText(Localization.lang(NAME));
-        setTooltip(new Tooltip(Localization.lang("AI chat with full-text article")));
+        setTooltip(new Tooltip(Localization.lang("AI chat with full-text articles")));
     }
 
     @Override
@@ -119,7 +128,12 @@ public class AiChatTab extends EntryEditorTab {
         currentBibEntry = entry;
 
         createAiChat();
-        aiChat.restoreMessages(entry.getAiChatMessages());
+
+        if (bibDatabaseChats != null) {
+            assert entry.getCitationKey().isPresent();
+            aiChat.restoreMessages(bibDatabaseChats.getAllMessagesForEntry(entry.getCitationKey().get()));
+        }
+
         ingestFiles(entry);
         buildChatUI(entry);
     }
@@ -129,7 +143,7 @@ public class AiChatTab extends EntryEditorTab {
     }
 
     private void ingestFiles(BibEntry entry) {
-        AiIngestor aiIngestor = new AiIngestor(aiService.getEmbeddingStore(), aiService.getEmbeddingModel());
+        AiIngestor aiIngestor = new AiIngestor(aiPreferences, aiService.getEmbeddingStore(), aiService.getEmbeddingModel());
         entry.getFiles().forEach(file -> {
             aiIngestor.ingestLinkedFile(file, bibDatabaseContext, filePreferences);
         });
@@ -138,8 +152,14 @@ public class AiChatTab extends EntryEditorTab {
     private void buildChatUI(BibEntry entry) {
         aiChatComponent = new AiChatComponent((userPrompt) -> {
             ChatMessage userMessage = ChatMessage.user(userPrompt);
+
             aiChatComponent.addMessage(userMessage);
-            entry.getAiChatMessages().add(userMessage);
+
+            if (bibDatabaseChats != null) {
+                assert entry.getCitationKey().isPresent();
+                bibDatabaseChats.addMessage(entry.getCitationKey().get(), userMessage);
+            }
+
             aiChatComponent.setLoading(true);
 
             BackgroundTask.wrap(() -> aiChat.execute(userPrompt))
@@ -147,8 +167,13 @@ public class AiChatTab extends EntryEditorTab {
                         aiChatComponent.setLoading(false);
 
                         ChatMessage aiMessage = ChatMessage.assistant(aiMessageText);
+
                         aiChatComponent.addMessage(aiMessage);
-                        entry.getAiChatMessages().add(aiMessage);
+
+                        if (bibDatabaseChats != null) {
+                            assert entry.getCitationKey().isPresent();
+                            bibDatabaseChats.addMessage(entry.getCitationKey().get(), aiMessage);
+                        }
 
                         aiChatComponent.requestUserPromptTextFieldFocus();
                     })
@@ -161,7 +186,10 @@ public class AiChatTab extends EntryEditorTab {
                     .executeWith(taskExecutor);
         });
 
-        entry.getAiChatMessages().forEach(aiChatComponent::addMessage);
+        if (bibDatabaseChats != null) {
+            assert entry.getCitationKey().isPresent();
+            bibDatabaseChats.getAllMessagesForEntry(entry.getCitationKey().get()).forEach(aiChatComponent::addMessage);
+        }
 
         setContent(aiChatComponent);
     }

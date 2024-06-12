@@ -8,6 +8,7 @@ import org.jabref.logic.util.io.FileUtil;
 import org.jabref.logic.xmp.XmpUtilReader;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.LinkedFile;
+import org.jabref.preferences.AiPreferences;
 import org.jabref.preferences.FilePreferences;
 
 import dev.langchain4j.data.document.Document;
@@ -32,15 +33,14 @@ import org.slf4j.LoggerFactory;
 public class AiIngestor {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiIngestor.class.getName());
 
-    public static final int DOCUMENT_SPLITTER_MAX_SEGMENT_SIZE_IN_CHARS = 300;
-    public static final int DOCUMENT_SPLITTER_MAX_OVERLAP_SIZE_IN_CHARS = 30;
-
     // Another "algorithm class" that ingests the contents of the file into the embedding store.
     private final EmbeddingStoreIngestor ingestor;
 
-    public AiIngestor(EmbeddingStore<TextSegment> embeddingStore, EmbeddingModel embeddingModel) {
+    public AiIngestor(AiPreferences aiPreferences, EmbeddingStore<TextSegment> embeddingStore, EmbeddingModel embeddingModel) {
+        // This class won't update if AI preferences update.
+
         DocumentSplitter documentSplitter = DocumentSplitters
-                .recursive(DOCUMENT_SPLITTER_MAX_SEGMENT_SIZE_IN_CHARS, DOCUMENT_SPLITTER_MAX_OVERLAP_SIZE_IN_CHARS);
+                .recursive(aiPreferences.getDocumentSplitterChunkSize(), aiPreferences.getDocumentSplitterOverlapSize());
 
         this.ingestor = EmbeddingStoreIngestor
                 .builder()
