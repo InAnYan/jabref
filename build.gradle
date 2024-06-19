@@ -29,6 +29,8 @@ plugins {
     id 'idea'
 
     id 'org.openrewrite.rewrite' version '6.15.1'
+
+    // id 'com.redock.classpathtofile' version '0.1.0'
 }
 
 // Enable following for debugging
@@ -321,7 +323,7 @@ dependencies {
     // GemxFX also (transitively) depends on kotlin
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24'
 
-    implementation "one.jpro.platform:jpro-mdfx:0.3.3-SNAPSHOT"
+    implementation 'com.vladsch.flexmark:flexmark-all:0.64.8'
 
     implementation ('com.squareup.okhttp3:okhttp:4.12.0') {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
