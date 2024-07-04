@@ -72,7 +72,6 @@ Copy following text into your clipboard:
 --add-reads org.jabref=langchain4j.embeddings.all.minilm.l6.v2
 --add-reads org.jabref=langchain4j.embeddings.all.minilm.l6.v2.q
 --add-reads org.jabref=langchain4j.open.ai
---patch-module langchain4j=langchain4j-core-0.31.0.jar;langchain4j-embeddings-0.31.0.jar;langchain4j-embeddings-all-minilm-l6-v2-0.31.0.jar;langchain4j-embeddings-all-minilm-l6-v2-q-0.31.0.jar;langchain4j-open-ai-0.31.0.jar
 ```
 
 Then double click inside the cell "Compilation options".
