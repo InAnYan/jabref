@@ -12,6 +12,8 @@ import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import org.h2.mvstore.MVStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Wrapper around langchain4j chat language model.
@@ -19,6 +21,7 @@ import org.h2.mvstore.MVStore;
  * This class listens to preferences changes.
  */
 public class AiChatLanguageModel {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatLanguageModel.class.getName());
     private final AiPreferences aiPreferences;
 
     private final ObjectProperty<Optional<ChatLanguageModel>> chatLanguageModelObjectProperty = new SimpleObjectProperty<>(Optional.empty());
@@ -59,6 +62,7 @@ public class AiChatLanguageModel {
             return;
         }
 
+        LOGGER.trace("Rebuilding chatLanguageModel");
         ChatLanguageModel chatLanguageModel =
                 OpenAiChatModel
                         .builder()
