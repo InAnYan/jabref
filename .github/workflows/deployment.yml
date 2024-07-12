@@ -2,9 +2,6 @@ name: Deployment
 
 on:
   push:
-    branches:
-      - main
-      - main-release
     paths-ignore:
       - 'docs/**'
       - 'src/test/**'
