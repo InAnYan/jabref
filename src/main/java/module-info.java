@@ -159,4 +159,5 @@ open module org.jabref {
     requires jakarta.validation;
     requires one.jpro.platform.mdfx;
     requires scala.library;
+    requires openai4j;
 }
