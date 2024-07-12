@@ -99,11 +99,11 @@ application {
 modularity.disableEffectiveArgumentsAdjustment()
 
 // Required as workaround for  https://github.com/langchain4j/langchain4j/issues/1066
-modularity.patchModule("langchain4j", "langchain4j-core-0.32.0.jar")
+modularity.patchModule("langchain4j", "langchain4j-core-0.33.0-SNAPSHOT.jar")
 modularity.patchModule("langchain4j", "langchain4j-embeddings-0.32.0.jar")
 modularity.patchModule("langchain4j", "langchain4j-embeddings-all-minilm-l6-v2-0.32.0.jar")
 modularity.patchModule("langchain4j", "langchain4j-embeddings-all-minilm-l6-v2-q-0.32.0.jar")
-modularity.patchModule("langchain4j", "langchain4j-open-ai-0.32.0.jar")
+modularity.patchModule("langchain4j", "langchain4j-open-ai-0.33.0-SNAPSHOT.jar")
 
 sourceSets {
     main {
@@ -126,6 +126,7 @@ sourceSets {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven { url 'https://oss.sonatype.org/content/groups/public' }
     maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
@@ -247,9 +248,8 @@ dependencies {
     }
     // Required by gemsfx
     implementation 'tech.units:indriya:2.2'
-    implementation ('com.squareup.retrofit2:retrofit:2.11.0') {
-        exclude group: 'com.squareup.okhttp3'
-    }
+    implementation ('com.squareup.retrofit2:retrofit:2.11.0')
+    implementation 'com.squareup.okio:okio:3.9.0'
 
     implementation 'org.controlsfx:controlsfx:11.2.1'
 
@@ -322,10 +322,10 @@ dependencies {
     implementation 'org.yaml:snakeyaml:2.2'
 
     // AI
-    implementation 'dev.langchain4j:langchain4j:0.32.0'
+    implementation 'dev.langchain4j:langchain4j:0.33.0-SNAPSHOT'
     implementation 'dev.langchain4j:langchain4j-embeddings-all-minilm-l6-v2:0.32.0'
     implementation 'dev.langchain4j:langchain4j-embeddings-all-minilm-l6-v2-q:0.32.0'
-    implementation('dev.langchain4j:langchain4j-open-ai:0.32.0') {
+    implementation('dev.langchain4j:langchain4j-open-ai:0.33.0-SNAPSHOT') {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
     }
     // openai depends on okhttp, which needs kotlin - see https://github.com/square/okhttp/issues/5299 for details

@@ -2,6 +2,7 @@ package org.jabref.gui.entryeditor.aichattab;
 
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.Set;
 
 import javafx.scene.Node;
 
@@ -46,6 +47,10 @@ public class AiChatTabWorking {
         }
 
         aiChatComponent = new AiChatComponent(userPrompt -> {
+            Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+            LOGGER.trace("Threads at beginning of sending: {}", threadSet);
+            threadSet.stream().filter(thread -> thread.getName().contains("pool-4-thread-1")).forEach(thread -> LOGGER.error("FOUND IT: {}", thread));
+
             ChatMessage userMessage = ChatMessage.user(userPrompt);
             // The aiChatComponent should be non-final to suppress an error in the next statement.
             aiChatComponent.addMessage(userMessage);
@@ -55,7 +60,19 @@ public class AiChatTabWorking {
 
             BackgroundTask.wrap(() -> {
                               LOGGER.debug("Sending a message to AI: {}", userPrompt);
-                              return aiChatLogic.execute(userPrompt);
+
+                              Set<Thread> threadSet2 = Thread.getAllStackTraces().keySet();
+                              LOGGER.trace("Threads before sending: {}", threadSet2);
+                              threadSet2.stream().filter(thread -> thread.getName().contains("pool-4-thread-1")).forEach(thread -> LOGGER.error("FOUND IT: {}", thread));
+
+                              // FIXME: This creates pool-4-thread-1, which causes trouble
+                              String result = aiChatLogic.execute(userPrompt);
+
+                              threadSet2 = Thread.getAllStackTraces().keySet();
+                              LOGGER.trace("Threads after sending: {}", threadSet2);
+                              threadSet2.stream().filter(thread -> thread.getName().contains("pool-4-thread-1")).forEach(thread -> LOGGER.error("FOUND IT: {}", thread));
+
+                              return result;
                           })
                           .onSuccess(aiMessageText -> {
                               LOGGER.debug("Success");

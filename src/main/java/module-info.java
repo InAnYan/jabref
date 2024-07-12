@@ -81,6 +81,8 @@ open module org.jabref {
     requires unirest.java.core;
     requires unirest.modules.gson;
     requires org.jsoup;
+    // requires okhttp3; // langchain4j
+    requires okio; // langchain4j
 
     // SQL databases
     requires ojdbc10;
@@ -159,4 +161,5 @@ open module org.jabref {
     requires jakarta.validation;
     requires one.jpro.platform.mdfx;
     requires scala.library;
+    requires jersey.server;
 }

@@ -1,6 +1,7 @@
 package org.jabref.logic.ai.chat;
 
 import java.util.Optional;
+import java.util.Set;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -20,8 +21,9 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This class listens to preferences changes.
  */
-public class AiChatLanguageModel {
+public class AiChatLanguageModel implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiChatLanguageModel.class.getName());
+
     private final AiPreferences aiPreferences;
 
     private final ObjectProperty<Optional<ChatLanguageModel>> chatLanguageModelObjectProperty = new SimpleObjectProperty<>(Optional.empty());
@@ -73,6 +75,9 @@ public class AiChatLanguageModel {
                         .logResponses(true)
                         .build();
 
+        Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+        LOGGER.trace("Threads: {}", threadSet);
+
         chatLanguageModelObjectProperty.set(Optional.of(chatLanguageModel));
     }
 
@@ -96,5 +101,15 @@ public class AiChatLanguageModel {
         aiPreferences.chatModelProperty().addListener(obs -> rebuild());
 
         aiPreferences.temperatureProperty().addListener(obs -> rebuild());
+    }
+
+    @Override
+    public void close() {
+        chatLanguageModelObjectProperty.get().ifPresent(
+                model -> {
+                    if (model instanceof OpenAiChatModel openAi) {
+                        openAi.shutdown();
+                    }
+                });
     }
 }
