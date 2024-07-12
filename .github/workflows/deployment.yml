@@ -55,6 +55,12 @@ jobs:
       branchname: ${{ steps.gitversion.outputs.branchName }}
     name: ${{ matrix.displayName }} installer and portable version
     steps:
+      - name: prepare langchain4j
+        run: |
+          cd /tmp
+          git clone --depth 1 https://github.com/koppor/langchain4j.git -b jabref-patch
+          cd langchain4j
+          mvn --batch-mode install -DskipITs -DskipTests -Djacoco.skip=true -DskipTests -DskipAnthropicITs -DskipLocalAiITs -DskipMilvusITs -DskipMongoDbAtlasITs -DskipOllamaITs -DskipVearchITs -DskipVertexAiGeminiITs -pl langchain4j-core,langchain4j-open-ai
       - name: Check secrets presence
         id: checksecrets
         shell: bash
