@@ -46,6 +46,7 @@ import org.jabref.gui.sidepane.SidePaneType;
 import org.jabref.gui.undo.CountingUndoManager;
 import org.jabref.gui.util.TaskExecutor;
 import org.jabref.logic.UiCommand;
+import org.jabref.logic.ai.AiService;
 import org.jabref.logic.journals.JournalAbbreviationRepository;
 import org.jabref.logic.util.OS;
 import org.jabref.model.database.BibDatabaseContext;
@@ -74,6 +75,7 @@ public class JabRefFrame extends BorderPane implements LibraryTabContainer, UiMe
 
     private final SplitPane splitPane = new SplitPane();
     private final PreferencesService prefs;
+    private final AiService aiService;
     private final GlobalSearchBar globalSearchBar;
 
     private final FileHistoryMenu fileHistory;
@@ -101,6 +103,7 @@ public class JabRefFrame extends BorderPane implements LibraryTabContainer, UiMe
                        DialogService dialogService,
                        FileUpdateMonitor fileUpdateMonitor,
                        PreferencesService preferencesService,
+                       AiService aiService,
                        StateManager stateManager,
                        CountingUndoManager undoManager,
                        BibEntryTypesManager entryTypesManager,
@@ -110,6 +113,7 @@ public class JabRefFrame extends BorderPane implements LibraryTabContainer, UiMe
         this.dialogService = dialogService;
         this.fileUpdateMonitor = fileUpdateMonitor;
         this.prefs = preferencesService;
+        this.aiService = aiService;
         this.stateManager = stateManager;
         this.undoManager = undoManager;
         this.entryTypesManager = entryTypesManager;
@@ -121,6 +125,7 @@ public class JabRefFrame extends BorderPane implements LibraryTabContainer, UiMe
         // Create components
         this.viewModel = new JabRefFrameViewModel(
                 preferencesService,
+                aiService,
                 stateManager,
                 dialogService,
                 this,
@@ -148,6 +153,7 @@ public class JabRefFrame extends BorderPane implements LibraryTabContainer, UiMe
         this.sidePane = new SidePane(
                 this,
                 prefs,
+                aiService,
                 Injector.instantiateModelOrService(JournalAbbreviationRepository.class),
                 taskExecutor,
                 dialogService,
@@ -189,6 +195,7 @@ public class JabRefFrame extends BorderPane implements LibraryTabContainer, UiMe
                 dialogService,
                 stateManager,
                 prefs,
+                aiService,
                 fileUpdateMonitor,
                 taskExecutor,
                 entryTypesManager,
@@ -430,6 +437,7 @@ public class JabRefFrame extends BorderPane implements LibraryTabContainer, UiMe
                 this,
                 dialogService,
                 prefs,
+                aiService,
                 stateManager,
                 fileUpdateMonitor,
                 entryTypesManager,
@@ -505,6 +513,7 @@ public class JabRefFrame extends BorderPane implements LibraryTabContainer, UiMe
         return new OpenDatabaseAction(
                 this,
                 prefs,
+                aiService,
                 dialogService,
                 stateManager,
                 fileUpdateMonitor,

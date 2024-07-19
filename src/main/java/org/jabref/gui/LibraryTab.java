@@ -60,6 +60,8 @@ import org.jabref.gui.undo.UndoableRemoveEntries;
 import org.jabref.gui.util.BackgroundTask;
 import org.jabref.gui.util.TaskExecutor;
 import org.jabref.gui.util.UiTaskExecutor;
+import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.embeddings.EmbeddingsGenerationTaskManager;
 import org.jabref.logic.citationstyle.CitationStyleCache;
 import org.jabref.logic.importer.ParserResult;
 import org.jabref.logic.importer.util.FileFieldParser;
@@ -116,6 +118,7 @@ public class LibraryTab extends Tab {
     private final CountingUndoManager undoManager;
     private final DialogService dialogService;
     private final PreferencesService preferencesService;
+    private final AiService aiService;
     private final FileUpdateMonitor fileUpdateMonitor;
     private final StateManager stateManager;
     private final BibEntryTypesManager entryTypesManager;
@@ -158,6 +161,8 @@ public class LibraryTab extends Tab {
 
     private final ClipBoardManager clipBoardManager;
     private final IndexingTaskManager indexingTaskManager;
+    private EmbeddingsGenerationTaskManager embeddingsGenerationTaskManager;
+
     private final TaskExecutor taskExecutor;
     private final DirectoryMonitorManager directoryMonitorManager;
 
@@ -165,6 +170,7 @@ public class LibraryTab extends Tab {
                       LibraryTabContainer tabContainer,
                       DialogService dialogService,
                       PreferencesService preferencesService,
+                      AiService aiService,
                       StateManager stateManager,
                       FileUpdateMonitor fileUpdateMonitor,
                       BibEntryTypesManager entryTypesManager,
@@ -176,11 +182,13 @@ public class LibraryTab extends Tab {
         this.undoManager = undoManager;
         this.dialogService = dialogService;
         this.preferencesService = Objects.requireNonNull(preferencesService);
+        this.aiService = Objects.requireNonNull(aiService);
         this.stateManager = Objects.requireNonNull(stateManager);
         this.fileUpdateMonitor = fileUpdateMonitor;
         this.entryTypesManager = entryTypesManager;
         this.clipBoardManager = clipBoardManager;
         this.indexingTaskManager = new IndexingTaskManager(taskExecutor);
+        this.embeddingsGenerationTaskManager = new EmbeddingsGenerationTaskManager(bibDatabaseContext, preferencesService.getFilePreferences(), aiService, taskExecutor);
         this.taskExecutor = taskExecutor;
         this.directoryMonitorManager = new DirectoryMonitorManager(Injector.instantiateModelOrService(DirectoryMonitor.class));
 
@@ -196,6 +204,7 @@ public class LibraryTab extends Tab {
         setupAutoCompletion();
 
         this.getDatabase().registerListener(new IndexUpdateListener());
+        this.getDatabase().registerListener(new EmbeddingsUpdateListener());
         this.getDatabase().registerListener(new EntriesRemovedListener());
 
         // ensure that at each addition of a new entry, the entry is added to the groups interface
@@ -281,6 +290,10 @@ public class LibraryTab extends Tab {
             }
         }
 
+        if (preferencesService.getAiPreferences().getEnableChatWithFiles()) {
+            embeddingsGenerationTaskManager.updateEmbeddings(bibDatabaseContext);
+        }
+
         LOGGER.trace("loading.set(false);");
         loading.set(false);
         dataLoadingTask = null;
@@ -321,11 +334,13 @@ public class LibraryTab extends Tab {
         this.tableModel = new MainTableDataModel(getBibDatabaseContext(), preferencesService, stateManager);
         citationStyleCache = new CitationStyleCache(bibDatabaseContext);
         annotationCache = new FileAnnotationCache(bibDatabaseContext, preferencesService.getFilePreferences());
+        this.embeddingsGenerationTaskManager = new EmbeddingsGenerationTaskManager(bibDatabaseContext, preferencesService.getFilePreferences(), aiService, taskExecutor);
 
         setupMainPanel();
         setupAutoCompletion();
 
         this.getDatabase().registerListener(new IndexUpdateListener());
+        this.getDatabase().registerListener(new EmbeddingsUpdateListener());
         this.getDatabase().registerListener(new EntriesRemovedListener());
 
         // ensure that at each addition of a new entry, the entry is added to the groups interface
@@ -996,6 +1011,7 @@ public class LibraryTab extends Tab {
                                               Path file,
                                               DialogService dialogService,
                                               PreferencesService preferencesService,
+                                              AiService aiService,
                                               StateManager stateManager,
                                               LibraryTabContainer tabContainer,
                                               FileUpdateMonitor fileUpdateMonitor,
@@ -1011,6 +1027,7 @@ public class LibraryTab extends Tab {
                 tabContainer,
                 dialogService,
                 preferencesService,
+                aiService,
                 stateManager,
                 fileUpdateMonitor,
                 entryTypesManager,
@@ -1031,6 +1048,7 @@ public class LibraryTab extends Tab {
                                               LibraryTabContainer tabContainer,
                                               DialogService dialogService,
                                               PreferencesService preferencesService,
+                                              AiService aiService,
                                               StateManager stateManager,
                                               FileUpdateMonitor fileUpdateMonitor,
                                               BibEntryTypesManager entryTypesManager,
@@ -1044,6 +1062,7 @@ public class LibraryTab extends Tab {
                 tabContainer,
                 dialogService,
                 preferencesService,
+                aiService,
                 stateManager,
                 fileUpdateMonitor,
                 entryTypesManager,
@@ -1131,6 +1150,44 @@ public class LibraryTab extends Tab {
 
     public IndexingTaskManager getIndexingTaskManager() {
         return indexingTaskManager;
+    }
+
+    private class EmbeddingsUpdateListener {
+        @Subscribe
+        public void listen(EntriesAddedEvent event) {
+            if (preferencesService.getAiPreferences().getEnableChatWithFiles()) {
+                embeddingsGenerationTaskManager.addToProcess(event.getBibEntries());
+            }
+        }
+
+        @Subscribe
+        public void listen(EntriesRemovedEvent event) {
+            if (preferencesService.getAiPreferences().getEnableChatWithFiles()) {
+                embeddingsGenerationTaskManager.removeFromProcess(event.getBibEntries());
+            }
+        }
+
+        @Subscribe
+        public void listen(FieldChangedEvent event) {
+            if (preferencesService.getAiPreferences().getEnableChatWithFiles()) {
+                if (event.getField().equals(StandardField.FILE)) {
+                    List<LinkedFile> oldFileList = FileFieldParser.parse(event.getOldValue());
+                    List<LinkedFile> newFileList = FileFieldParser.parse(event.getNewValue());
+
+                    List<LinkedFile> addedFiles = new ArrayList<>(newFileList);
+                    addedFiles.removeAll(oldFileList);
+                    List<LinkedFile> removedFiles = new ArrayList<>(oldFileList);
+                    removedFiles.removeAll(newFileList);
+
+                    embeddingsGenerationTaskManager.addToProcess(addedFiles);
+                    embeddingsGenerationTaskManager.removeFromProcess(removedFiles);
+                }
+            }
+        }
+    }
+
+    public EmbeddingsGenerationTaskManager getEmbeddingsGenerationTaskManager() {
+        return embeddingsGenerationTaskManager;
     }
 
     public static class DatabaseNotification extends NotificationPane {

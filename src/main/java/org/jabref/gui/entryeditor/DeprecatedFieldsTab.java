@@ -17,6 +17,7 @@ import org.jabref.gui.theme.ThemeManager;
 import org.jabref.gui.undo.RedoAction;
 import org.jabref.gui.undo.UndoAction;
 import org.jabref.gui.util.TaskExecutor;
+import org.jabref.logic.ai.embeddings.EmbeddingsGenerationTaskManager;
 import org.jabref.logic.journals.JournalAbbreviationRepository;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.pdf.search.IndexingTaskManager;
@@ -45,10 +46,11 @@ public class DeprecatedFieldsTab extends FieldsEditorTab {
                                StateManager stateManager,
                                ThemeManager themeManager,
                                IndexingTaskManager indexingTaskManager,
+                               EmbeddingsGenerationTaskManager embeddingsGenerationTaskManager,
                                BibEntryTypesManager entryTypesManager,
                                TaskExecutor taskExecutor,
                                JournalAbbreviationRepository journalAbbreviationRepository) {
-        super(false, databaseContext, suggestionProviders, undoManager, undoAction, redoAction, dialogService, preferences, stateManager, themeManager, taskExecutor, journalAbbreviationRepository, indexingTaskManager);
+        super(false, databaseContext, suggestionProviders, undoManager, undoAction, redoAction, dialogService, preferences, stateManager, themeManager, taskExecutor, journalAbbreviationRepository, indexingTaskManager, embeddingsGenerationTaskManager);
         this.entryTypesManager = entryTypesManager;
 
         setText(Localization.lang("Deprecated fields"));
