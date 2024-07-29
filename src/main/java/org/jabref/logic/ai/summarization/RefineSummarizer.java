@@ -7,6 +7,7 @@ import dev.langchain4j.model.input.PromptTemplate;
 import java.util.Map;
 import java.util.stream.Stream;
 
+// NOTE FOR RUSLAN: Algorithm is wrong.
 public class RefineSummarizer implements Summarizer {
     private final Summarizer documentSummarizer;
 
