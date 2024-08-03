@@ -1,13 +1,16 @@
-package org.jabref.gui.entryeditor;
+package org.jabref.gui.ai;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Node;
+import javafx.scene.control.Tab;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.Pane;
 
 import org.jabref.gui.DialogService;
 import org.jabref.gui.LibraryTabContainer;
@@ -15,6 +18,8 @@ import org.jabref.gui.ai.components.aichat.AiChatUnguardedComponent;
 import org.jabref.gui.ai.components.apikeymissing.ApiKeyMissingComponent;
 import org.jabref.gui.ai.components.errorstate.ErrorStateComponent;
 import org.jabref.gui.ai.components.privacynotice.PrivacyNoticeComponent;
+import org.jabref.gui.entryeditor.AiChatTab;
+import org.jabref.gui.entryeditor.EntryEditorPreferences;
 import org.jabref.gui.util.TaskExecutor;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.ai.AiChatLogic;
@@ -38,9 +43,10 @@ import com.google.common.eventbus.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AiChatTab extends EntryEditorTab {
+public class AiChat extends Tab {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiChatTab.class);
 
+    private final List<BibEntry> entries;
     private final LibraryTabContainer libraryTabContainer;
     private final DialogService dialogService;
     private final FilePreferences filePreferences;
@@ -50,14 +56,14 @@ public class AiChatTab extends EntryEditorTab {
     private final CitationKeyGenerator citationKeyGenerator;
     private final AiService aiService;
 
-    private final List<BibEntry> entriesUnderIngestion = new ArrayList<>();
-
-    public AiChatTab(LibraryTabContainer libraryTabContainer,
+    public AiChat(List<BibEntry> entries,
+                    LibraryTabContainer libraryTabContainer,
                      DialogService dialogService,
                      PreferencesService preferencesService,
                      AiService aiService,
                      BibDatabaseContext bibDatabaseContext,
                      TaskExecutor taskExecutor) {
+        this.entries = entries;
         this.libraryTabContainer = libraryTabContainer;
         this.dialogService = dialogService;
         this.filePreferences = preferencesService.getFilePreferences();
@@ -67,59 +73,94 @@ public class AiChatTab extends EntryEditorTab {
         this.taskExecutor = taskExecutor;
         this.citationKeyGenerator = new CitationKeyGenerator(bibDatabaseContext, preferencesService.getCitationKeyPatternPreferences());
 
-        setText(Localization.lang("AI chat"));
-        setTooltip(new Tooltip(Localization.lang("AI chat with full-text article")));
-
-        aiService.getEmbeddingsManager().registerListener(new FileIngestedListener());
-        aiService.getEmbeddingModel().registerListener(new EmbeddingModelBuiltListener());
+        aiService.getEmbeddingsManager().registerListener(new AiChat.FileIngestedListener());
+        aiService.getEmbeddingModel().registerListener(new AiChat.EmbeddingModelBuiltListener());
     }
 
-    @Override
-    public boolean shouldShow(BibEntry entry) {
-        return entryEditorPreferences.shouldShowAiChatTab();
-    }
-
-    @Override
-    protected void handleFocus() {
-        if (currentEntry != null) {
-            bindToEntry(currentEntry);
-        }
-    }
-
-    @Override
-    protected void bindToEntry(BibEntry entry) {
+    private void rebuildUI() {
         if (!aiService.getPreferences().getEnableAi()) {
-            showPrivacyNotice(entry);
+            showPrivacyNotice();
         } else if (aiService.getPreferences().getApiToken().isEmpty()) {
             showApiKeyMissing();
-        } else if (entry.getFiles().isEmpty()) {
-            showErrorNoFiles();
-        } else if (entry.getFiles().stream().map(LinkedFile::getLink).map(Path::of).noneMatch(FileUtil::isPDFFile)) {
-            showErrorNotPdfs();
-        } else if (!citationKeyIsValid(bibDatabaseContext, entry)) {
-            tryToGenerateCitationKeyThenBind(entry);
         } else if (!aiService.getEmbeddingModel().isPresent()) {
             if (aiService.getEmbeddingModel().hadErrorWhileBuildingModel()) {
                 showErrorWhileBuildingEmbeddingModel();
             } else {
                 showBuildingEmbeddingModel();
             }
-        } else if (!aiService.getEmbeddingsManager().hasIngestedLinkedFiles(entry.getFiles())) {
-            startIngesting(entry);
+        } else if (!allCitationKeysAreValid()) {
+            tryToGenerateCitationKeys();
+
+            if (!allCitationKeysAreValid()) {
+                showInvalidCitationKeys();
+            } else {
+                rebuildUI();
+            }
+        } else if (!allEntriesHaveFiles()) {
+            showWarningNoFiles();
+        } else if (!allEntriesArePdfs()) {
+            showNotPdfs();
+        } else if (!allFilesIngested) {
+            startIngestingUningested();
+            showUnderIngestion();
         } else {
-            entriesUnderIngestion.remove(entry);
-            bindToCorrectEntry(entry);
+            rebuildCorrectEntries();
         }
     }
 
-    private void showPrivacyNotice(BibEntry entry) {
-        setContent(new PrivacyNoticeComponent(dialogService, aiService.getPreferences(), filePreferences, () -> {
-            bindToEntry(entry);
-        }));
+    private void showPrivacyNotice() {
+        setContent(new PrivacyNoticeComponent(dialogService, aiService.getPreferences(), filePreferences, this::rebuildUI));
     }
 
     private void showApiKeyMissing() {
         setContent(new ApiKeyMissingComponent(libraryTabContainer, dialogService));
+    }
+
+    private void showErrorWhileBuildingEmbeddingModel() {
+        setContent(
+                ErrorStateComponent.withTextAreaAndButton(
+                        Localization.lang("Unable to chat"),
+                        Localization.lang("An error occurred while building the embedding model"),
+                        aiService.getEmbeddingModel().getErrorWhileBuildingModel(),
+                        Localization.lang("Try to rebuild again"),
+                        () -> aiService.getEmbeddingModel().startRebuildingTask()
+                )
+        );
+    }
+
+    public void showBuildingEmbeddingModel() {
+        setContent(
+                ErrorStateComponent.withSpinner(
+                        Localization.lang("Please wait"),
+                        Localization.lang("Embedding model is currently being downloaded. After the download is complete, you will be able to chat with your files")
+                )
+        );
+    }
+
+    private boolean allCitationKeysAreValid() {
+        return entries.stream().allMatch(this::citationKeyIsValid);
+    }
+
+    private void tryToGenerateCitationKeys() {
+        entries.forEach(citationKeyGenerator::generateAndSetKey);
+    }
+
+    private void showInvalidCitationKeys() {
+        setContent(
+                ErrorStateComponent.withBibEntries(
+                        Localization.lang("Unable to chat"),
+                        Localization.lang("Please provide a non-empty and unique citation key for this entry."),
+                        getEntriesWithInvalidCitationKeys()
+                )
+        );
+    }
+
+    private List<BibEntry> getEntriesWithInvalidCitationKeys() {
+        return entries.stream().filter(entry -> !citationKeyIsValid(entry)).toList();
+    }
+
+    private boolean allEntriesHaveFiles() {
+        return entries.stream().noneMatch(entry -> entry.getFiles().isEmpty());
     }
 
     private void showErrorNotIngested() {
@@ -149,49 +190,15 @@ public class AiChatTab extends EntryEditorTab {
         );
     }
 
-    private void tryToGenerateCitationKeyThenBind(BibEntry entry) {
-        if (citationKeyGenerator.generateAndSetKey(entry).isEmpty()) {
-            setContent(
-                    new ErrorStateComponent(
-                            Localization.lang("Unable to chat"),
-                            Localization.lang("Please provide a non-empty and unique citation key for this entry.")
-                    )
-            );
-        } else {
-            bindToEntry(entry);
-        }
+    private boolean citationKeyIsValid(BibEntry bibEntry) {
+        return !hasEmptyCitationKey(bibEntry) && bibEntry.getCitationKey().map(this::citationKeyIsUnique).orElse(false);
     }
 
-    private void showErrorWhileBuildingEmbeddingModel() {
-        setContent(
-                ErrorStateComponent.withTextAreaAndButton(
-                        Localization.lang("Unable to chat"),
-                        Localization.lang("An error occurred while building the embedding model"),
-                        aiService.getEmbeddingModel().getErrorWhileBuildingModel(),
-                        Localization.lang("Try to rebuild again"),
-                        () -> aiService.getEmbeddingModel().startRebuildingTask()
-                )
-        );
-    }
-
-    public void showBuildingEmbeddingModel() {
-        setContent(
-                ErrorStateComponent.withSpinner(
-                        Localization.lang("Please wait"),
-                        Localization.lang("Embedding model is currently being downloaded. After the download is complete, you will be able to chat with your files")
-                )
-        );
-    }
-
-    private static boolean citationKeyIsValid(BibDatabaseContext bibDatabaseContext, BibEntry bibEntry) {
-        return !hasEmptyCitationKey(bibEntry) && bibEntry.getCitationKey().map(key -> citationKeyIsUnique(bibDatabaseContext, key)).orElse(false);
-    }
-
-    private static boolean hasEmptyCitationKey(BibEntry bibEntry) {
+    private boolean hasEmptyCitationKey(BibEntry bibEntry) {
         return bibEntry.getCitationKey().map(String::isEmpty).orElse(true);
     }
 
-    private static boolean citationKeyIsUnique(BibDatabaseContext bibDatabaseContext, String citationKey) {
+    private boolean citationKeyIsUnique(String citationKey) {
         return bibDatabaseContext.getDatabase().getNumberOfCitationKeyOccurrences(citationKey) == 1;
     }
 
@@ -240,7 +247,7 @@ public class AiChatTab extends EntryEditorTab {
     private class FileIngestedListener {
         @Subscribe
         public void listen(FullyIngestedDocumentsTracker.DocumentIngestedEvent event) {
-             UiTaskExecutor.runInJavaFXThread(AiChatTab.this::handleFocus);
+            UiTaskExecutor.runInJavaFXThread(AiChatTab.this::handleFocus);
         }
     }
 

@@ -1,12 +1,18 @@
 package org.jabref.gui.ai.components.errorstate;
 
+import java.util.List;
+
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+
+import org.jabref.model.entry.BibEntry;
 
 import com.airhacks.afterburner.views.ViewLoader;
 
@@ -53,6 +59,15 @@ public class ErrorStateComponent extends BorderPane {
 
         return errorStateComponent;
     }
+
+    public static ErrorStateComponent withBibEntries(String title, String content, List<BibEntry> entries) {
+        ErrorStateComponent errorStateComponent = new ErrorStateComponent(title, content);
+
+        errorStateComponent.contentsVBox.getChildren().add(new ListView<>(FXCollections.observableList(entries)));
+
+        return errorStateComponent;
+    }
+
 
     public String getTitle() {
         return titleText.getText();

@@ -2,6 +2,8 @@ package org.jabref.logic.ai;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -12,6 +14,7 @@ import org.jabref.logic.ai.chathistory.BibDatabaseChatHistoryManager;
 import org.jabref.logic.ai.models.EmbeddingModel;
 import org.jabref.logic.ai.models.JabRefChatLanguageModel;
 import org.jabref.logic.ai.summarization.SummariesStorage;
+import org.jabref.model.entry.BibEntry;
 import org.jabref.preferences.AiPreferences;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -44,6 +47,8 @@ public class AiService implements AutoCloseable {
     private final FileEmbeddingsManager fileEmbeddingsManager;
 
     private final SummariesStorage summariesStorage;
+
+    private final List<BibEntry> entriesUnderIngestion = new ArrayList<>();
 
     public AiService(AiPreferences aiPreferences, DialogService dialogService, TaskExecutor taskExecutor) {
         this.aiPreferences = aiPreferences;
@@ -105,5 +110,9 @@ public class AiService implements AutoCloseable {
 
     public SummariesStorage getSummariesStorage() {
         return summariesStorage;
+    }
+
+    public List<BibEntry> getEntriesUnderIngestion() {
+        return entriesUnderIngestion;
     }
 }

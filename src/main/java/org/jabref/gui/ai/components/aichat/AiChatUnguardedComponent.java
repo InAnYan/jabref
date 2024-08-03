@@ -25,8 +25,8 @@ import dev.langchain4j.data.message.UserMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AiChatComponent extends VBox {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatComponent.class);
+public class AiChatUnguardedComponent extends VBox {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatUnguardedComponent.class);
 
     private final AiChatLogic aiChatLogic;
     private final DialogService dialogService;
@@ -38,7 +38,7 @@ public class AiChatComponent extends VBox {
     @FXML private Button submitButton;
     @FXML private StackPane stackPane;
 
-    public AiChatComponent(AiChatLogic aiChatLogic, DialogService dialogService, TaskExecutor taskExecutor) {
+    public AiChatUnguardedComponent(AiChatLogic aiChatLogic, DialogService dialogService, TaskExecutor taskExecutor) {
         this.aiChatLogic = aiChatLogic;
         this.dialogService = dialogService;
         this.taskExecutor = taskExecutor;
