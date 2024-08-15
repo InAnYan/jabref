@@ -8,9 +8,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.scene.web.WebView;
 
 import org.jabref.gui.DialogService;
 import org.jabref.gui.desktop.JabRefDesktop;
+import org.jabref.logic.l10n.Localization;
 import org.jabref.preferences.FilePreferences;
 import org.jabref.preferences.ai.AiPreferences;
 
@@ -21,16 +23,7 @@ import org.slf4j.LoggerFactory;
 public class PrivacyNoticeComponent extends ScrollPane {
     private final Logger LOGGER = LoggerFactory.getLogger(PrivacyNoticeComponent.class);
 
-    @FXML private TextFlow openAiPrivacyTextFlow;
-    @FXML private TextFlow mistralAiPrivacyTextFlow;
-    @FXML private TextFlow huggingFacePrivacyTextFlow;
-    @FXML private Label text1;
-    @FXML private Label text2;
-    @FXML private Label text3;
-    @FXML private Text embeddingModelText;
-
     private final DialogService dialogService;
-
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
 
@@ -43,13 +36,30 @@ public class PrivacyNoticeComponent extends ScrollPane {
 
         this.onIAgreeButtonClickCallback = onIAgreeButtonClickCallback;
 
-        ViewLoader.view(this)
-                  .root(this)
-                  .load();
+        initialize();
     }
 
-    @FXML
     private void initialize() {
+        WebView webView = new WebView();
+
+        webView.getEngine().loadContent("""
+                <html>
+                    <body>
+                        <h1>""" + Localization.lang("Privacy Notice") + """
+                        </h1>
+
+                        <p>""" + Localization.lang("JabRef uses AI providers to enable AI functionality (chatting with attached file(s) and summarization). AI provider is an external service. To enable processing of attached file(s), their contents need to be shared with the currently selected AI provider.") + """
+                        </p>
+
+                        <p>""" + Localization.lang("As soon as you ask a question, the text content of all PDFs attached to the entry are sent to external service") + """
+                        </p>
+
+                        <p>""" + Localization.lang("If you have chosen the OpenAI as AI provider, the privacy policy of OpenAI applies. You find it at %0.") + """
+                    </body>
+                </html>
+                """);
+
+        /*
         initPrivacyHyperlink(openAiPrivacyTextFlow, "https://openai.com/policies/privacy-policy/");
         initPrivacyHyperlink(mistralAiPrivacyTextFlow, "https://mistral.ai/terms/#privacy-policy");
         initPrivacyHyperlink(huggingFacePrivacyTextFlow, "https://huggingface.co/privacy");
@@ -61,6 +71,11 @@ public class PrivacyNoticeComponent extends ScrollPane {
         // fully wrapped.
 
         embeddingModelText.wrappingWidthProperty().bind(this.widthProperty());
+         */
+    }
+
+    private String makeProviderPrivacyPolicy() {
+
     }
 
     private void initPrivacyHyperlink(TextFlow textFlow, String link) {
