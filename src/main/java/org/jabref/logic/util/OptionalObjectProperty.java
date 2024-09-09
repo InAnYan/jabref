@@ -1,4 +1,4 @@
-package org.jabref.gui.util;
+package org.jabref.logic.util;
 
 import java.util.Optional;
 
@@ -13,7 +13,7 @@ import com.tobiasdiez.easybind.PreboundBinding;
  */
 public class OptionalObjectProperty<T> extends SimpleObjectProperty<Optional<T>> {
 
-    private OptionalObjectProperty(Optional<T> initialValue) {
+    public OptionalObjectProperty(Optional<T> initialValue) {
         super(initialValue);
     }
 

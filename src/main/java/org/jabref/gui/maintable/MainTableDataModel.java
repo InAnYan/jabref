@@ -20,7 +20,7 @@ import org.jabref.gui.search.SearchDisplayMode;
 import org.jabref.gui.util.BackgroundTask;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.FilteredListProxy;
-import org.jabref.gui.util.OptionalObjectProperty;
+import org.jabref.logic.util.OptionalObjectProperty;
 import org.jabref.gui.util.TaskExecutor;
 import org.jabref.logic.search.LuceneManager;
 import org.jabref.model.database.BibDatabaseContext;

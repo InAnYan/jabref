@@ -25,7 +25,7 @@ import org.jabref.gui.sidepane.SidePaneType;
 import org.jabref.gui.util.BackgroundTask;
 import org.jabref.gui.util.CustomLocalDragboard;
 import org.jabref.gui.util.DialogWindowState;
-import org.jabref.gui.util.OptionalObjectProperty;
+import org.jabref.logic.util.OptionalObjectProperty;
 import org.jabref.logic.search.LuceneManager;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;

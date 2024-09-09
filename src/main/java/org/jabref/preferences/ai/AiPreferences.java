@@ -2,127 +2,89 @@ package org.jabref.preferences.ai;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
 
+import org.jabref.logic.util.OptionalObjectProperty;
 import org.jabref.logic.ai.AiDefaultPreferences;
-import org.jabref.model.strings.StringUtil;
-
-import com.github.javakeyring.Keyring;
-import com.github.javakeyring.PasswordAccessException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AiPreferences {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AiPreferences.class);
-
-    private static final String KEYRING_AI_SERVICE = "org.jabref.ai";
-    private static final String KEYRING_AI_SERVICE_ACCOUNT = "apiKey";
-
     private final BooleanProperty enableAi;
 
-    private final ObjectProperty<AiProvider> aiProvider;
+    private final ListProperty<AiProfile> profiles;
+    private final OptionalObjectProperty<AiProfile> currentProfile;
 
-    private final StringProperty openAiChatModel;
-    private final StringProperty mistralAiChatModel;
-    private final StringProperty huggingFaceChatModel;
+    // If the current profile is empty, then all of those properties below are null.
 
-    private final BooleanProperty customizeExpertSettings;
+    private final ObjectProperty<AiProvider> currentAiProvider = new SimpleObjectProperty<>();
+    private final StringProperty currentChatModel = new SimpleStringProperty();
 
-    private final StringProperty openAiApiBaseUrl;
-    private final StringProperty mistralAiApiBaseUrl;
-    private final StringProperty huggingFaceApiBaseUrl;
+    private final BooleanProperty currentCustomizeExpertSettings = new SimpleBooleanProperty();
 
-    private final ObjectProperty<EmbeddingModel> embeddingModel;
-    private final StringProperty instruction;
-    private final DoubleProperty temperature;
-    private final IntegerProperty contextWindowSize;
-    private final IntegerProperty documentSplitterChunkSize;
-    private final IntegerProperty documentSplitterOverlapSize;
-    private final IntegerProperty ragMaxResultsCount;
-    private final DoubleProperty ragMinScore;
+    private final StringProperty currentApiBaseUrl = new SimpleStringProperty();
+    private final ObjectProperty<EmbeddingModel> currentEmbeddingModel = new SimpleObjectProperty<>();
+    private final StringProperty currentInstruction = new SimpleStringProperty();
+    private final DoubleProperty currentTemperature = new SimpleDoubleProperty();
+    private final IntegerProperty currentContextWindowSize = new SimpleIntegerProperty();
+    private final IntegerProperty currentDocumentSplitterChunkSize = new SimpleIntegerProperty();
+    private final IntegerProperty currentDocumentSplitterOverlapSize = new SimpleIntegerProperty();
+    private final IntegerProperty currentRagMaxResultsCount = new SimpleIntegerProperty();
+    private final DoubleProperty currentRagMinScore = new SimpleDoubleProperty();
 
-    private Runnable apiKeyChangeListener;
-
-    public AiPreferences(boolean enableAi,
-                         AiProvider aiProvider,
-                         String openAiChatModel,
-                         String mistralAiChatModel,
-                         String huggingFaceChatModel,
-                         boolean customizeExpertSettings,
-                         String openAiApiBaseUrl,
-                         String mistralAiApiBaseUrl,
-                         String huggingFaceApiBaseUrl,
-                         EmbeddingModel embeddingModel,
-                         String instruction,
-                         double temperature,
-                         int contextWindowSize,
-                         int documentSplitterChunkSize,
-                         int documentSplitterOverlapSize,
-                         int ragMaxResultsCount,
-                         double ragMinScore
-    ) {
+    public AiPreferences(boolean enableAi, List<AiProfile> aiProfiles, Optional<AiProfile> currentProfile) {
         this.enableAi = new SimpleBooleanProperty(enableAi);
 
-        this.aiProvider = new SimpleObjectProperty<>(aiProvider);
+        this.profiles = new SimpleListProperty<>(FXCollections.observableArrayList(aiProfiles));
+        this.currentProfile = new OptionalObjectProperty<>(currentProfile);
 
-        this.openAiChatModel = new SimpleStringProperty(openAiChatModel);
-        this.mistralAiChatModel = new SimpleStringProperty(mistralAiChatModel);
-        this.huggingFaceChatModel = new SimpleStringProperty(huggingFaceChatModel);
-
-        this.customizeExpertSettings = new SimpleBooleanProperty(customizeExpertSettings);
-
-        this.openAiApiBaseUrl = new SimpleStringProperty(openAiApiBaseUrl);
-        this.mistralAiApiBaseUrl = new SimpleStringProperty(mistralAiApiBaseUrl);
-        this.huggingFaceApiBaseUrl = new SimpleStringProperty(huggingFaceApiBaseUrl);
-
-        this.embeddingModel = new SimpleObjectProperty<>(embeddingModel);
-        this.instruction = new SimpleStringProperty(instruction);
-        this.temperature = new SimpleDoubleProperty(temperature);
-        this.contextWindowSize = new SimpleIntegerProperty(contextWindowSize);
-        this.documentSplitterChunkSize = new SimpleIntegerProperty(documentSplitterChunkSize);
-        this.documentSplitterOverlapSize = new SimpleIntegerProperty(documentSplitterOverlapSize);
-        this.ragMaxResultsCount = new SimpleIntegerProperty(ragMaxResultsCount);
-        this.ragMinScore = new SimpleDoubleProperty(ragMinScore);
-    }
-
-    public String getApiKeyForAiProvider(AiProvider aiProvider) {
-        try (final Keyring keyring = Keyring.create()) {
-            return keyring.getPassword(KEYRING_AI_SERVICE, KEYRING_AI_SERVICE_ACCOUNT + "-" + aiProvider.name());
-        } catch (
-                PasswordAccessException e) {
-            LOGGER.debug("No API key stored for provider {}. Returning an empty string", aiProvider.getLabel());
-            return "";
-        } catch (Exception e) {
-            LOGGER.warn("JabRef could not open keyring for retrieving {} API token", aiProvider.getLabel(), e);
-            return "";
+        if (currentProfile.isPresent()) {
+            setCurrentProperties();
         }
-    }
 
-    public void storeAiApiKeyInKeyring(AiProvider aiProvider, String newKey) {
-        try (final Keyring keyring = Keyring.create()) {
-            if (StringUtil.isNullOrEmpty(newKey)) {
-                try {
-                    keyring.deletePassword(KEYRING_AI_SERVICE, KEYRING_AI_SERVICE_ACCOUNT + "-" + aiProvider.name());
-                } catch (PasswordAccessException ex) {
-                    LOGGER.debug("API key for provider {} not stored in keyring. JabRef does not store an empty key.", aiProvider.getLabel());
-                }
-            } else {
-                keyring.setPassword(KEYRING_AI_SERVICE, KEYRING_AI_SERVICE_ACCOUNT + "-" + aiProvider.name(), newKey);
+        this.currentProfile.addListener((observable, oldValue, newValue) -> {
+            if (newValue.isPresent()) {
+                setCurrentProperties();
             }
-        } catch (Exception e) {
-            LOGGER.warn("JabRef could not open keyring for storing {} API token", aiProvider.getLabel(), e);
-        }
+        });
+    }
+
+    private void setCurrentProperties() {
+        currentProfile.get().ifPresent(currentProfile -> {
+            currentAiProvider.set(currentProfile.getAiProvider());
+            currentChatModel.set(currentProfile.getChatModel());
+
+            currentCustomizeExpertSettings.set(currentProfile.getCustomizeExpertSettings());
+
+            currentApiBaseUrl.set(currentProfile.getApiBaseUrl());
+            currentEmbeddingModel.set(currentProfile.getEmbeddingModel());
+            currentInstruction.set(currentProfile.getInstruction());
+            currentTemperature.set(currentProfile.getTemperature());
+            currentContextWindowSize.set(currentProfile.getContextWindowSize());
+            currentDocumentSplitterChunkSize.set(currentProfile.getDocumentSplitterChunkSize());
+            currentDocumentSplitterOverlapSize.set(currentProfile.getDocumentSplitterOverlapSize());
+            currentRagMaxResultsCount.set(currentProfile.getRagMaxResultsCount());
+        });
+    }
+
+    public String loadApiKey() {
+        return currentProfile.get().map(AiProfile::loadApiKey).orElse("");
+    }
+
+    public void storeApikey(String newKey) {
+        currentProfile.get().ifPresent(profile -> profile.storeApiKey(newKey));
     }
 
     public BooleanProperty enableAiProperty() {
@@ -137,232 +99,205 @@ public class AiPreferences {
         this.enableAi.set(enableAi);
     }
 
+    public ListProperty<AiProfile> profilesProperty() {
+        return profiles;
+    }
+
+    public List<AiProfile> getProfiles() {
+        return profiles.get();
+    }
+
+    public void setProfiles(List<AiProfile> profiles) {
+        this.profiles.set(FXCollections.observableArrayList(profiles));
+    }
+
+    public OptionalObjectProperty<AiProfile> currentProfileProperty() {
+        return currentProfile;
+    }
+
+    public Optional<AiProfile> getCurrentProfile() {
+        return currentProfile.get();
+    }
+
+    public void setCurrentProfile(Optional<AiProfile> currentProfile) {
+        this.currentProfile.set(currentProfile);
+        setCurrentProperties();
+    }
+
     public ObjectProperty<AiProvider> aiProviderProperty() {
-        return aiProvider;
+        return currentAiProvider;
     }
 
     public AiProvider getAiProvider() {
-        return aiProvider.get();
+        return currentAiProvider.get();
     }
 
     public void setAiProvider(AiProvider aiProvider) {
-        this.aiProvider.set(aiProvider);
+        this.currentAiProvider.set(aiProvider);
     }
 
-    public StringProperty openAiChatModelProperty() {
-        return openAiChatModel;
+    public StringProperty chatModelProperty() {
+        return currentChatModel;
     }
 
-    public String getOpenAiChatModel() {
-        return openAiChatModel.get();
+    public String getChatModel() {
+        return currentChatModel.get();
     }
 
-    public void setOpenAiChatModel(String openAiChatModel) {
-        this.openAiChatModel.set(openAiChatModel);
-    }
-
-    public StringProperty mistralAiChatModelProperty() {
-        return mistralAiChatModel;
-    }
-
-    public String getMistralAiChatModel() {
-        return mistralAiChatModel.get();
-    }
-
-    public void setMistralAiChatModel(String mistralAiChatModel) {
-        this.mistralAiChatModel.set(mistralAiChatModel);
-    }
-
-    public StringProperty huggingFaceChatModelProperty() {
-        return huggingFaceChatModel;
-    }
-
-    public String getHuggingFaceChatModel() {
-        return huggingFaceChatModel.get();
-    }
-
-    public void setHuggingFaceChatModel(String huggingFaceChatModel) {
-        this.huggingFaceChatModel.set(huggingFaceChatModel);
+    public void setChatModel(String chatModel) {
+        this.currentChatModel.set(chatModel);
     }
 
     public BooleanProperty customizeExpertSettingsProperty() {
-        return customizeExpertSettings;
+        return currentCustomizeExpertSettings;
     }
 
     public boolean getCustomizeExpertSettings() {
-        return customizeExpertSettings.get();
+        return currentCustomizeExpertSettings.get();
     }
 
     public void setCustomizeExpertSettings(boolean customizeExpertSettings) {
-        this.customizeExpertSettings.set(customizeExpertSettings);
+        this.currentCustomizeExpertSettings.set(customizeExpertSettings);
     }
 
     public ObjectProperty<EmbeddingModel> embeddingModelProperty() {
-        return embeddingModel;
+        return currentEmbeddingModel;
     }
 
     public EmbeddingModel getEmbeddingModel() {
         if (getCustomizeExpertSettings()) {
-            return embeddingModel.get();
+            return currentEmbeddingModel.get();
         } else {
             return AiDefaultPreferences.EMBEDDING_MODEL;
         }
     }
 
     public void setEmbeddingModel(EmbeddingModel embeddingModel) {
-        this.embeddingModel.set(embeddingModel);
+        this.currentEmbeddingModel.set(embeddingModel);
     }
 
-    public StringProperty openAiApiBaseUrlProperty() {
-        return openAiApiBaseUrl;
+    public StringProperty apiBaseUrlProperty() {
+        return currentApiBaseUrl;
     }
 
-    public String getOpenAiApiBaseUrl() {
-        return openAiApiBaseUrl.get();
+    public String getApiBaseUrl() {
+        return currentApiBaseUrl.get();
     }
 
-    public void setOpenAiApiBaseUrl(String openAiApiBaseUrl) {
-        this.openAiApiBaseUrl.set(openAiApiBaseUrl);
-    }
-
-    public StringProperty mistralAiApiBaseUrlProperty() {
-        return mistralAiApiBaseUrl;
-    }
-
-    public String getMistralAiApiBaseUrl() {
-        return mistralAiApiBaseUrl.get();
-    }
-
-    public void setMistralAiApiBaseUrl(String mistralAiApiBaseUrl) {
-        this.mistralAiApiBaseUrl.set(mistralAiApiBaseUrl);
-    }
-
-    public StringProperty huggingFaceApiBaseUrlProperty() {
-        return huggingFaceApiBaseUrl;
-    }
-
-    public String getHuggingFaceApiBaseUrl() {
-        return huggingFaceApiBaseUrl.get();
-    }
-
-    public void setHuggingFaceApiBaseUrl(String huggingFaceApiBaseUrl) {
-        this.huggingFaceApiBaseUrl.set(huggingFaceApiBaseUrl);
+    public void setApiBaseUrl(String apiBaseUrl) {
+        this.currentApiBaseUrl.set(apiBaseUrl);
     }
 
     public StringProperty instructionProperty() {
-        return instruction;
+        return currentInstruction;
     }
 
     public String getInstruction() {
         if (getCustomizeExpertSettings()) {
-            return instruction.get();
+            return currentInstruction.get();
         } else {
             return AiDefaultPreferences.SYSTEM_MESSAGE;
         }
     }
 
     public void setInstruction(String instruction) {
-        this.instruction.set(instruction);
+        this.currentInstruction.set(instruction);
     }
 
     public DoubleProperty temperatureProperty() {
-        return temperature;
+        return currentTemperature;
     }
 
     public double getTemperature() {
         if (getCustomizeExpertSettings()) {
-            return temperature.get();
+            return currentTemperature.get();
         } else {
             return AiDefaultPreferences.TEMPERATURE;
         }
     }
 
     public void setTemperature(double temperature) {
-        this.temperature.set(temperature);
+        this.currentTemperature.set(temperature);
     }
 
     public IntegerProperty contextWindowSizeProperty() {
-        return contextWindowSize;
+        return currentContextWindowSize;
     }
 
     public int getContextWindowSize() {
         if (getCustomizeExpertSettings()) {
-            return contextWindowSize.get();
+            return currentContextWindowSize.get();
         } else {
-            return switch (aiProvider.get()) {
-                case OPEN_AI -> AiDefaultPreferences.getContextWindowSize(AiProvider.OPEN_AI, openAiChatModel.get());
-                case MISTRAL_AI -> AiDefaultPreferences.getContextWindowSize(AiProvider.MISTRAL_AI, mistralAiChatModel.get());
-                case HUGGING_FACE -> AiDefaultPreferences.getContextWindowSize(AiProvider.HUGGING_FACE, huggingFaceChatModel.get());
-            };
+            return AiDefaultPreferences.getContextWindowSize(currentAiProvider.get(), currentChatModel.get());
         }
     }
 
     public void setContextWindowSize(int contextWindowSize) {
-        this.contextWindowSize.set(contextWindowSize);
+        this.currentContextWindowSize.set(contextWindowSize);
     }
 
     public IntegerProperty documentSplitterChunkSizeProperty() {
-        return documentSplitterChunkSize;
+        return currentDocumentSplitterChunkSize;
     }
 
     public int getDocumentSplitterChunkSize() {
         if (getCustomizeExpertSettings()) {
-            return documentSplitterChunkSize.get();
+            return currentDocumentSplitterChunkSize.get();
         } else {
             return AiDefaultPreferences.DOCUMENT_SPLITTER_CHUNK_SIZE;
         }
     }
 
     public void setDocumentSplitterChunkSize(int documentSplitterChunkSize) {
-        this.documentSplitterChunkSize.set(documentSplitterChunkSize);
+        this.currentDocumentSplitterChunkSize.set(documentSplitterChunkSize);
     }
 
     public IntegerProperty documentSplitterOverlapSizeProperty() {
-        return documentSplitterOverlapSize;
+        return currentDocumentSplitterOverlapSize;
     }
 
     public int getDocumentSplitterOverlapSize() {
         if (getCustomizeExpertSettings()) {
-            return documentSplitterOverlapSize.get();
+            return currentDocumentSplitterOverlapSize.get();
         } else {
             return AiDefaultPreferences.DOCUMENT_SPLITTER_OVERLAP;
         }
     }
 
     public void setDocumentSplitterOverlapSize(int documentSplitterOverlapSize) {
-        this.documentSplitterOverlapSize.set(documentSplitterOverlapSize);
+        this.currentDocumentSplitterOverlapSize.set(documentSplitterOverlapSize);
     }
 
     public IntegerProperty ragMaxResultsCountProperty() {
-        return ragMaxResultsCount;
+        return currentRagMaxResultsCount;
     }
 
     public int getRagMaxResultsCount() {
         if (getCustomizeExpertSettings()) {
-            return ragMaxResultsCount.get();
+            return currentRagMaxResultsCount.get();
         } else {
             return AiDefaultPreferences.RAG_MAX_RESULTS_COUNT;
         }
     }
 
     public void setRagMaxResultsCount(int ragMaxResultsCount) {
-        this.ragMaxResultsCount.set(ragMaxResultsCount);
+        this.currentRagMaxResultsCount.set(ragMaxResultsCount);
     }
 
     public DoubleProperty ragMinScoreProperty() {
-        return ragMinScore;
+        return currentRagMinScore;
     }
 
     public double getRagMinScore() {
         if (getCustomizeExpertSettings()) {
-            return ragMinScore.get();
+            return currentRagMinScore.get();
         } else {
             return AiDefaultPreferences.RAG_MIN_SCORE;
         }
     }
 
     public void setRagMinScore(double ragMinScore) {
-        this.ragMinScore.set(ragMinScore);
+        this.currentRagMinScore.set(ragMinScore);
     }
 
     /**
@@ -371,79 +306,22 @@ public class AiPreferences {
      * @param runnable The runnable that should be executed when the preferences change.
      */
     public void addListenerToEmbeddingsParametersChange(Runnable runnable) {
-        embeddingModel.addListener((observableValue, oldValue, newValue) -> {
+        currentEmbeddingModel.addListener((observableValue, oldValue, newValue) -> {
             if (newValue != oldValue) {
                 runnable.run();
             }
         });
 
-        documentSplitterChunkSize.addListener((observableValue, oldValue, newValue) -> {
+        currentDocumentSplitterChunkSize.addListener((observableValue, oldValue, newValue) -> {
             if (!Objects.equals(newValue, oldValue)) {
                 runnable.run();
             }
         });
 
-        documentSplitterOverlapSize.addListener((observableValue, oldValue, newValue) -> {
+        currentDocumentSplitterOverlapSize.addListener((observableValue, oldValue, newValue) -> {
             if (!Objects.equals(newValue, oldValue)) {
                 runnable.run();
             }
         });
-    }
-
-    public void addListenerToChatModels(Runnable runnable) {
-        List<Property<?>> observables = List.of(openAiChatModel, mistralAiChatModel, huggingFaceChatModel);
-
-        observables.forEach(obs -> obs.addListener((observableValue, oldValue, newValue) -> {
-            if (!newValue.equals(oldValue)) {
-                runnable.run();
-            }
-        }));
-    }
-
-    public void addListenerToApiBaseUrls(Runnable runnable) {
-        List<Property<?>> observables = List.of(openAiApiBaseUrl, mistralAiApiBaseUrl, huggingFaceApiBaseUrl);
-
-        observables.forEach(obs -> obs.addListener((observableValue, oldValue, newValue) -> {
-            if (!newValue.equals(oldValue)) {
-                runnable.run();
-            }
-        }));
-    }
-
-    public String getSelectedChatModel() {
-        return switch (aiProvider.get()) {
-            case OPEN_AI ->
-                    openAiChatModel.get();
-            case MISTRAL_AI ->
-                    mistralAiChatModel.get();
-            case HUGGING_FACE ->
-                    huggingFaceChatModel.get();
-        };
-    }
-
-    public String getSelectedApiBaseUrl() {
-        if (customizeExpertSettings.get()) {
-            return switch (aiProvider.get()) {
-                case OPEN_AI ->
-                        openAiApiBaseUrl.get();
-                case MISTRAL_AI ->
-                        mistralAiApiBaseUrl.get();
-                case HUGGING_FACE ->
-                        huggingFaceApiBaseUrl.get();
-            };
-        } else {
-            return AiDefaultPreferences.PROVIDERS_API_URLS.get(aiProvider.get());
-        }
-    }
-
-    public void setApiKeyChangeListener(Runnable apiKeyChangeListener) {
-        this.apiKeyChangeListener = apiKeyChangeListener;
-    }
-
-    /**
-     * Notify that the API key has been updated.
-     */
-    public void apiKeyUpdated() {
-        apiKeyChangeListener.run();
     }
 }

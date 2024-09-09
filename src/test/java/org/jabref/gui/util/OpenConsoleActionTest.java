@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.jabref.gui.StateManager;
 import org.jabref.gui.frame.OpenConsoleAction;
+import org.jabref.logic.util.OptionalObjectProperty;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.preferences.PreferencesService;
 
