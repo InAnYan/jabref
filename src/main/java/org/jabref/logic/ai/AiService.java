@@ -141,5 +141,6 @@ public class AiService implements AutoCloseable {
         mvStoreFullyIngestedDocumentsTracker.close();
         mvStoreEmbeddingStore.close();
         mvStoreSummariesStorage.close();
+        mvStoreChatHistoryStorage.close();
     }
 }

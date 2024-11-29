@@ -25,8 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SummaryComponent.class);
-
     private final BibDatabaseContext bibDatabaseContext;
     private final BibEntry entry;
     private final CitationKeyGenerator citationKeyGenerator;
@@ -49,8 +47,6 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
         this.aiService = aiService;
         this.aiPreferences = aiPreferences;
 
-        aiService.getSummariesService().summarize(entry, bibDatabaseContext).stateProperty().addListener(o -> rebuildUi());
-
         rebuildUi();
     }
 
@@ -65,7 +61,12 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
         } else if (!CitationKeyCheck.citationKeyIsPresentAndUnique(bibDatabaseContext, entry)) {
             return tryToGenerateCitationKeyThenBind(entry);
         } else {
-            return tryToShowSummary();
+            return new SummaryShowingComponent(
+                    aiPreferences,
+                    aiService,
+                    entry,
+                    bibDatabaseContext
+            );
         }
     }
 
@@ -101,6 +102,7 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
         }
     }
 
+    /*
     private Node tryToShowSummary() {
         ProcessingInfo<BibEntry, Summary> processingInfo = aiService.getSummariesService().summarize(entry, bibDatabaseContext);
 
@@ -154,4 +156,5 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
             // No need to rebuildUi(), because this class listens to the state of ProcessingInfo of the summary.
         });
     }
+     */
 }

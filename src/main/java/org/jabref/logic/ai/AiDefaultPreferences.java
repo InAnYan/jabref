@@ -58,6 +58,7 @@ public class AiDefaultPreferences {
     public static final boolean ENABLE_CHAT = false;
     public static final boolean AUTO_GENERATE_EMBEDDINGS = false;
     public static final boolean AUTO_GENERATE_SUMMARIES = false;
+    public static final double DEFAULT_SUMMARY_DETAIL = 0.5;
 
     public static final AiProvider PROVIDER = AiProvider.OPEN_AI;
 

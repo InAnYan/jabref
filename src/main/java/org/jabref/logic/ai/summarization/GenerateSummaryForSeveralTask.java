@@ -34,6 +34,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
 
     private final StringProperty groupName;
     private final List<ProcessingInfo<BibEntry, Summary>> entries;
+    private final double detail;
     private final BibDatabaseContext bibDatabaseContext;
     private final SummariesStorage summariesStorage;
     private final ChatLanguageModel chatLanguageModel;
@@ -50,6 +51,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
     public GenerateSummaryForSeveralTask(
             StringProperty groupName,
             List<ProcessingInfo<BibEntry, Summary>> entries,
+            double detail,
             BibDatabaseContext bibDatabaseContext,
             SummariesStorage summariesStorage,
             ChatLanguageModel chatLanguageModel,
@@ -61,6 +63,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
     ) {
         this.groupName = groupName;
         this.entries = entries;
+        this.detail = detail;
         this.bibDatabaseContext = bibDatabaseContext;
         this.summariesStorage = summariesStorage;
         this.chatLanguageModel = chatLanguageModel;
@@ -96,6 +99,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
                     return new Pair<>(
                             new GenerateSummaryTask(
                                     processingInfo.getObject(),
+                                    detail,
                                     bibDatabaseContext,
                                     summariesStorage,
                                     chatLanguageModel,
@@ -118,7 +122,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
             pair.getKey().get();
         }
 
-        LOGGER.debug("Finished embeddings generation task of several files for {}", groupName.get());
+        LOGGER.debug("Finished summary generation task of several files for {}", groupName.get());
         progressCounter.stop();
         return null;
     }

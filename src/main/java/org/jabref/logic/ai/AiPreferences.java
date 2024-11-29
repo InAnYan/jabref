@@ -1,5 +1,6 @@
 package org.jabref.logic.ai;
 
+import java.awt.geom.Arc2D;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,6 +36,7 @@ public class AiPreferences {
     private final BooleanProperty enableAi;
     private final BooleanProperty autoGenerateEmbeddings;
     private final BooleanProperty autoGenerateSummaries;
+    private final DoubleProperty defaultSummaryDetail;
 
     private final ObjectProperty<AiProvider> aiProvider;
 
@@ -68,6 +70,7 @@ public class AiPreferences {
     public AiPreferences(boolean enableAi,
                          boolean autoGenerateEmbeddings,
                          boolean autoGenerateSummaries,
+                         double defaultSummaryDetail,
                          AiProvider aiProvider,
                          String openAiChatModel,
                          String mistralAiChatModel,
@@ -93,6 +96,7 @@ public class AiPreferences {
         this.enableAi = new SimpleBooleanProperty(enableAi);
         this.autoGenerateEmbeddings = new SimpleBooleanProperty(autoGenerateEmbeddings);
         this.autoGenerateSummaries = new SimpleBooleanProperty(autoGenerateSummaries);
+        this.defaultSummaryDetail = new SimpleDoubleProperty(defaultSummaryDetail);
 
         this.aiProvider = new SimpleObjectProperty<>(aiProvider);
 
@@ -189,6 +193,18 @@ public class AiPreferences {
 
     public void setAutoGenerateSummaries(boolean autoGenerateSummaries) {
         this.autoGenerateSummaries.set(autoGenerateSummaries);
+    }
+
+    public DoubleProperty defaultSummaryDetail() {
+        return defaultSummaryDetail;
+    }
+
+    public double getDefaultSummaryDetail() {
+        return defaultSummaryDetail.get();
+    }
+
+    public void setDefaultSummaryDetail(double defaultSummaryDetail) {
+        this.defaultSummaryDetail.set(defaultSummaryDetail);
     }
 
     public ObjectProperty<AiProvider> aiProviderProperty() {

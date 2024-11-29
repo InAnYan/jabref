@@ -45,6 +45,7 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
     private static final int CHAR_TOKEN_FACTOR = 4; // Means, every token is roughly 4 characters.
 
     private final BibDatabaseContext bibDatabaseContext;
+    private final double detail;
     private final BibEntry entry;
     private final String citationKey;
     private final ChatLanguageModel chatLanguageModel;
@@ -57,6 +58,7 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
     private final ProgressCounter progressCounter = new ProgressCounter();
 
     public GenerateSummaryTask(BibEntry entry,
+                               double detail,
                                BibDatabaseContext bibDatabaseContext,
                                SummariesStorage summariesStorage,
                                ChatLanguageModel chatLanguageModel,
@@ -67,6 +69,7 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
     ) {
         this.bibDatabaseContext = bibDatabaseContext;
         this.entry = entry;
+        this.detail = detail;
         this.citationKey = entry.getCitationKey().orElse("<no citation key>");
         this.chatLanguageModel = chatLanguageModel;
         this.summariesStorage = summariesStorage;
@@ -157,15 +160,11 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
 
         String finalSummary;
 
-        addMoreWork(1); // For generating final summary.
-
         if (linkedFilesSummary.size() == 1) {
             finalSummary = linkedFilesSummary.getFirst();
         } else {
-            finalSummary = summarizeSeveralDocuments(linkedFilesSummary.stream());
+            finalSummary = String.join("\n", linkedFilesSummary);
         }
-
-        doneOneWork();
 
         return finalSummary;
     }
@@ -196,68 +195,40 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
     }
 
     public String summarizeOneDocument(String filePath, String document) throws InterruptedException {
-        addMoreWork(1); // For the combination of summary chunks.
+        // addMoreWork(1); // For the combination of summary chunks.
 
-        DocumentSplitter documentSplitter = DocumentSplitters.recursive(aiPreferences.getContextWindowSize() - MAX_OVERLAP_SIZE_IN_CHARS * 2 - estimateTokenCount(aiPreferences.getTemplate(AiTemplate.SUMMARIZATION_CHUNK)), MAX_OVERLAP_SIZE_IN_CHARS);
+        int maxChunkSize = aiPreferences.getContextWindowSize() - MAX_OVERLAP_SIZE_IN_CHARS * 2 - estimateTokenCount(aiPreferences.getTemplate(AiTemplate.SUMMARIZATION_CHUNK));
 
-        List<String> chunkSummaries = documentSplitter.split(new Document(document)).stream().map(TextSegment::text).toList();
+        DocumentSplitter documentSplitter = DocumentSplitters.recursive(
+                (int) Math.round(Math.min(Math.max(Math.abs(maxChunkSize * detail), MAX_OVERLAP_SIZE_IN_CHARS * 2), maxChunkSize)),
+                MAX_OVERLAP_SIZE_IN_CHARS);
 
-        LOGGER.debug("The file \"{}\" of entry {} was split into {} chunk(s)", filePath, citationKey, chunkSummaries.size());
+        List<String> chunks = documentSplitter.split(new Document(document)).stream().map(TextSegment::text).toList();
+        addMoreWork(chunks.size());
 
-        int passes = 0;
+        LOGGER.debug("The file \"{}\" of entry {} was split into {} chunk(s)", filePath, citationKey, chunks.size());
 
-        do {
-            passes++;
-            LOGGER.debug("Summarizing chunk(s) for file \"{}\" of entry {} ({} pass)", filePath, citationKey, passes);
+        StringBuilder stringBuilder = new StringBuilder();
 
-            addMoreWork(chunkSummaries.size());
+        for (int i = 0; i < chunks.size(); i++) {
+            String chunk = chunks.get(i);
 
-            List<String> list = new ArrayList<>();
-
-            for (String chunkSummary : chunkSummaries) {
-                if (shutdownSignal.get()) {
-                    throw new InterruptedException();
-                }
-
-                String prompt = templatesService.makeSummarizationChunk(chunkSummary);
-
-                LOGGER.debug("Sending request to AI provider to summarize a chunk from file \"{}\" of entry {}", filePath, citationKey);
-                String chunk = chatLanguageModel.generate(prompt);
-                LOGGER.debug("Chunk summary for file \"{}\" of entry {} was generated successfully", filePath, citationKey);
-
-                list.add(chunk);
-                doneOneWork();
+            if (shutdownSignal.get()) {
+                throw new InterruptedException();
             }
 
-            chunkSummaries = list;
-        } while (estimateTokenCount(chunkSummaries) > aiPreferences.getContextWindowSize() - estimateTokenCount(aiPreferences.getTemplate(AiTemplate.SUMMARIZATION_COMBINE)));
+            String prompt = templatesService.makeSummarizationChunk(chunk);
 
-        if (chunkSummaries.size() == 1) {
-            doneOneWork(); // No need to call LLM for combination of summary chunks.
-            LOGGER.debug("Summary of the file \"{}\" of entry {} was generated successfully", filePath, citationKey);
-            return chunkSummaries.getFirst();
+            LOGGER.debug("Sending request to AI provider to generate key-points of a chunk {} from file \"{}\" of entry {}", i, filePath, citationKey);
+            String keypoints = chatLanguageModel.generate(prompt);
+            LOGGER.debug("Key-points chunk {} for file \"{}\" of entry {} was generated successfully", i, filePath, citationKey);
+
+            stringBuilder.append(String.join("\n", keypoints.lines().map(String::strip).filter(s -> !s.isEmpty()).toList()));
+            stringBuilder.append("\n");
+            doneOneWork();
         }
 
-        String prompt = templatesService.makeSummarizationCombine(chunkSummaries);
-
-        if (shutdownSignal.get()) {
-            throw new InterruptedException();
-        }
-
-        LOGGER.debug("Sending request to AI provider to combine summary chunk(s) for file \"{}\" of entry {}", filePath, citationKey);
-        String result = chatLanguageModel.generate(prompt);
-        LOGGER.debug("Summary of the file \"{}\" of entry {} was generated successfully", filePath, citationKey);
-
-        doneOneWork();
-        return result;
-    }
-
-    public String summarizeSeveralDocuments(Stream<String> documents) throws InterruptedException {
-        return summarizeOneDocument(citationKey, documents.collect(Collectors.joining("\n\n")));
-    }
-
-    private static int estimateTokenCount(List<String> chunkSummaries) {
-        return chunkSummaries.stream().mapToInt(GenerateSummaryTask::estimateTokenCount).sum();
+        return stringBuilder.toString();
     }
 
     private static int estimateTokenCount(String string) {
