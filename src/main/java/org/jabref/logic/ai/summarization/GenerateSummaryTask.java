@@ -15,7 +15,6 @@ import org.jabref.logic.ai.AiPreferences;
 import org.jabref.logic.ai.ingestion.FileToDocument;
 import org.jabref.logic.ai.templates.AiTemplate;
 import org.jabref.logic.ai.templates.TemplatesService;
-import org.jabref.logic.ai.util.CitationKeyCheck;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ProgressCounter;
@@ -32,11 +31,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This task generates a new summary for an entry.
- * It will check if summary was already generated.
- * And it also will store the summary.
+ * Generate summary of a {@link org.jabref.model.entry.BibEntry}.
  * <p>
- * This task is created in the {@link SummariesService}, and stored then in a {@link SummariesStorage}.
+ * Notice that this class does not check if summary was already generated, and
+ * it does not store the summary.
  */
 public class GenerateSummaryTask extends BackgroundTask<Summary> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSummaryTask.class);
@@ -44,32 +42,31 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
     private static final int MAX_OVERLAP_SIZE_IN_CHARS = 100;
     private static final int CHAR_TOKEN_FACTOR = 4; // Means, every token is roughly 4 characters.
 
-    private final BibDatabaseContext bibDatabaseContext;
     private final BibEntry entry;
-    private final String citationKey;
+    private final BibDatabaseContext bibDatabaseContext;
     private final ChatLanguageModel chatLanguageModel;
-    private final SummariesStorage summariesStorage;
     private final TemplatesService templatesService;
     private final ReadOnlyBooleanProperty shutdownSignal;
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
 
+    private final String citationKey;
+
     private final ProgressCounter progressCounter = new ProgressCounter();
 
-    public GenerateSummaryTask(BibEntry entry,
-                               BibDatabaseContext bibDatabaseContext,
-                               SummariesStorage summariesStorage,
-                               ChatLanguageModel chatLanguageModel,
-                               TemplatesService templatesService,
-                               ReadOnlyBooleanProperty shutdownSignal,
-                               AiPreferences aiPreferences,
-                               FilePreferences filePreferences
+    public GenerateSummaryTask(
+            BibEntry entry,
+            BibDatabaseContext bibDatabaseContext,
+            ChatLanguageModel chatLanguageModel,
+            TemplatesService templatesService,
+            ReadOnlyBooleanProperty shutdownSignal,
+            AiPreferences aiPreferences,
+            FilePreferences filePreferences
     ) {
-        this.bibDatabaseContext = bibDatabaseContext;
         this.entry = entry;
-        this.citationKey = entry.getCitationKey().orElse("<no citation key>");
+        this.bibDatabaseContext = bibDatabaseContext;
+        this.citationKey = entry.getCitationKey().orElse("<no-citation-key>");
         this.chatLanguageModel = chatLanguageModel;
-        this.summariesStorage = summariesStorage;
         this.templatesService = templatesService;
         this.shutdownSignal = shutdownSignal;
         this.aiPreferences = aiPreferences;
@@ -81,7 +78,6 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
     private void configure() {
         showToUser(true);
         titleProperty().set(Localization.lang("Waiting summary for %0...", citationKey));
-
         progressCounter.listenToAllProperties(this::updateProgress);
     }
 
@@ -89,43 +85,14 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
     public Summary call() throws Exception {
         LOGGER.debug("Starting summarization task for entry {}", citationKey);
 
-        Optional<Summary> savedSummary = Optional.empty();
+        String result = summarizeAll();
 
-        if (bibDatabaseContext.getDatabasePath().isEmpty()) {
-            LOGGER.info("No database path is present. Summary will not be stored in the next sessions");
-        } else if (entry.getCitationKey().isEmpty()) {
-            LOGGER.info("No citation key is present. Summary will not be stored in the next sessions");
-        } else {
-            savedSummary = summariesStorage.get(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get());
-        }
-
-        Summary summary;
-
-        if (savedSummary.isPresent()) {
-            summary = savedSummary.get();
-        } else {
-            try {
-                String result = summarizeAll();
-
-                summary = new Summary(
-                        LocalDateTime.now(),
-                        aiPreferences.getAiProvider(),
-                        aiPreferences.getSelectedChatModel(),
-                        result
-                );
-            } catch (InterruptedException e) {
-                LOGGER.debug("There was a summarization task for {}. It will be canceled, because user quits JabRef.", citationKey);
-                return null;
-            }
-        }
-
-        if (bibDatabaseContext.getDatabasePath().isEmpty()) {
-            LOGGER.info("No database path is present. Summary will not be stored in the next sessions");
-        } else if (CitationKeyCheck.citationKeyIsPresentAndUnique(bibDatabaseContext, entry)) {
-            LOGGER.info("No valid citation key is present. Summary will not be stored in the next sessions");
-        } else {
-            summariesStorage.set(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get(), summary);
-        }
+        Summary summary = new Summary(
+                LocalDateTime.now(),
+                aiPreferences.getAiProvider(),
+                aiPreferences.getSelectedChatModel(),
+                result
+        );
 
         LOGGER.debug("Finished summarization task for entry {}", citationKey);
         progressCounter.stop();
@@ -267,7 +234,6 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
     private static int estimateTokenCount(int numOfChars) {
         return numOfChars / CHAR_TOKEN_FACTOR;
     }
-
     private void updateProgress() {
         updateProgress(progressCounter.getWorkDone(), progressCounter.getWorkMax());
         updateMessage(progressCounter.getMessage());

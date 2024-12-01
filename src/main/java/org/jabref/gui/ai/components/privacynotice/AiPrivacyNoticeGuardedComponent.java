@@ -1,5 +1,8 @@
 package org.jabref.gui.ai.components.privacynotice;
 
+import java.util.concurrent.Callable;
+import java.util.function.Function;
+
 import javafx.scene.Node;
 
 import org.jabref.gui.DialogService;
@@ -26,10 +29,16 @@ public abstract class AiPrivacyNoticeGuardedComponent extends DynamicallyChangea
     }
 
     public final void rebuildUi() {
+        setContent((_) -> showPrivacyPolicyGuardedContent());
+    }
+
+    protected abstract Node showPrivacyPolicyGuardedContent();
+
+    protected void setContent(Function<Void, Node> content) {
         if (aiPreferences.getEnableAi()) {
-            setContent(showPrivacyPolicyGuardedContent());
+            super.setContent(content.apply(null));
         } else {
-            setContent(
+            super.setContent(
                     new PrivacyNoticeComponent(
                             aiPreferences,
                             this::rebuildUi,
@@ -39,6 +48,4 @@ public abstract class AiPrivacyNoticeGuardedComponent extends DynamicallyChangea
             );
         }
     }
-
-    protected abstract Node showPrivacyPolicyGuardedContent();
 }

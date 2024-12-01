@@ -321,7 +321,7 @@ public class EntryEditor extends BorderPane {
         tabs.add(sourceTab);
         tabs.add(new LatexCitationsTab(databaseContext, preferences, dialogService, directoryMonitorManager));
         tabs.add(new FulltextSearchResultsTab(stateManager, preferences, dialogService, databaseContext, taskExecutor, libraryTab.searchQueryProperty()));
-        tabs.add(new AiSummaryTab(libraryTab.getBibDatabaseContext(), aiService, dialogService, preferences));
+        tabs.add(new AiSummaryTab(libraryTab.getBibDatabaseContext(), aiService, dialogService, preferences, taskExecutor));
         tabs.add(new AiChatTab(libraryTab.getBibDatabaseContext(), aiService, dialogService, preferences, taskExecutor));
 
         return tabs;

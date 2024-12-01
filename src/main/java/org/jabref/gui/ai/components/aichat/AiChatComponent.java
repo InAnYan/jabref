@@ -22,9 +22,11 @@ import org.jabref.gui.ai.components.util.notifications.Notification;
 import org.jabref.gui.ai.components.util.notifications.NotificationsComponent;
 import org.jabref.gui.icon.IconTheme;
 import org.jabref.gui.util.UiTaskExecutor;
+import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiPreferences;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.AiChatLogic;
+import org.jabref.logic.ai.ingestion.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.util.CitationKeyCheck;
 import org.jabref.logic.ai.util.ErrorMessage;
 import org.jabref.logic.l10n.Localization;
@@ -69,6 +71,7 @@ public class AiChatComponent extends VBox {
                            ObservableList<BibEntry> entries,
                            BibDatabaseContext bibDatabaseContext,
                            AiPreferences aiPreferences,
+                           FilePreferences filePreferences,
                            DialogService dialogService,
                            TaskExecutor taskExecutor
     ) {
@@ -81,7 +84,17 @@ public class AiChatComponent extends VBox {
 
         this.aiChatLogic = aiService.getAiChatService().makeChat(name, chatHistory, entries, bibDatabaseContext);
 
-        aiService.getIngestionService().ingest(name, ListUtil.getLinkedFiles(entries).toList(), bibDatabaseContext);
+        // aiService.getIngestionService().ingest(name, ListUtil.getLinkedFiles(entries).toList(), bibDatabaseContext);
+
+        ListUtil.getLinkedFiles(entries).forEach(linkedFile -> {
+            new GenerateEmbeddingsTask(
+                    linkedFile,
+                    aiService.getFileEmbeddingsManager(),
+                    bibDatabaseContext,
+                    filePreferences,
+                    aiService.shutdownSignal()
+            );
+        });
 
         ViewLoader.view(this)
                 .root(this)

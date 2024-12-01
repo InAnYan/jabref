@@ -169,7 +169,6 @@ public class JabRefGUI extends Application {
 
         JabRefGUI.aiService = new AiService(
                 preferences.getAiPreferences(),
-                preferences.getFilePreferences(),
                 preferences.getCitationKeyPatternPreferences(),
                 dialogService,
                 taskExecutor);

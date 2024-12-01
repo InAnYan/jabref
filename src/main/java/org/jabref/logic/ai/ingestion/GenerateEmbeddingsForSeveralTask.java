@@ -30,7 +30,7 @@ public class GenerateEmbeddingsForSeveralTask extends BackgroundTask<Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateEmbeddingsForSeveralTask.class);
 
     private final StringProperty groupName;
-    private final List<ProcessingInfo<LinkedFile, Void>> linkedFiles;
+    private final List<LinkedFile> linkedFiles;
     private final FileEmbeddingsManager fileEmbeddingsManager;
     private final BibDatabaseContext bibDatabaseContext;
     private final FilePreferences filePreferences;
@@ -43,7 +43,7 @@ public class GenerateEmbeddingsForSeveralTask extends BackgroundTask<Void> {
 
     public GenerateEmbeddingsForSeveralTask(
             StringProperty groupName,
-            List<ProcessingInfo<LinkedFile, Void>> linkedFiles,
+            List<LinkedFile> linkedFiles,
             FileEmbeddingsManager fileEmbeddingsManager,
             BibDatabaseContext bibDatabaseContext,
             FilePreferences filePreferences,
@@ -79,22 +79,19 @@ public class GenerateEmbeddingsForSeveralTask extends BackgroundTask<Void> {
 
         linkedFiles
                 .stream()
-                .map(processingInfo -> {
-                    processingInfo.setState(ProcessingState.PROCESSING);
+                .map(linkedFile -> {
                     return new Pair<>(
                             new GenerateEmbeddingsTask(
-                                    processingInfo.getObject(),
+                                    linkedFile,
                                     fileEmbeddingsManager,
                                     bibDatabaseContext,
                                     filePreferences,
                                     shutdownSignal
                             )
                                     .showToUser(false)
-                                    .onSuccess(v -> processingInfo.setState(ProcessingState.SUCCESS))
-                                    .onFailure(processingInfo::setException)
                                     .onFinished(() -> progressCounter.increaseWorkDone(1))
                                     .executeWith(taskExecutor),
-                            processingInfo.getObject().getLink());
+                            linkedFile.getLink());
                 })
                 .forEach(futures::add);
 

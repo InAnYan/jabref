@@ -7,6 +7,7 @@ import javafx.scene.Node;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.ai.components.util.EmbeddingModelGuardedComponent;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
+import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiPreferences;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.util.TaskExecutor;
@@ -32,6 +33,7 @@ public class AiChatGuardedComponent extends EmbeddingModelGuardedComponent {
     private final AiService aiService;
     private final DialogService dialogService;
     private final AiPreferences aiPreferences;
+    private final FilePreferences filePreferences;
     private final TaskExecutor taskExecutor;
 
     public AiChatGuardedComponent(StringProperty name,
@@ -41,6 +43,7 @@ public class AiChatGuardedComponent extends EmbeddingModelGuardedComponent {
                                   AiService aiService,
                                   DialogService dialogService,
                                   AiPreferences aiPreferences,
+                                  FilePreferences filePreferences,
                                   ExternalApplicationsPreferences externalApplicationsPreferences,
                                   TaskExecutor taskExecutor
     ) {
@@ -53,6 +56,7 @@ public class AiChatGuardedComponent extends EmbeddingModelGuardedComponent {
         this.aiService = aiService;
         this.dialogService = dialogService;
         this.aiPreferences = aiPreferences;
+        this.filePreferences = filePreferences;
         this.taskExecutor = taskExecutor;
 
         rebuildUi();
@@ -67,6 +71,7 @@ public class AiChatGuardedComponent extends EmbeddingModelGuardedComponent {
                 entries,
                 bibDatabaseContext,
                 aiPreferences,
+                filePreferences,
                 dialogService,
                 taskExecutor
         );

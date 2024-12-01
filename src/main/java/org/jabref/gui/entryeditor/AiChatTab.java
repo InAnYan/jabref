@@ -16,6 +16,7 @@ import org.jabref.gui.ai.components.privacynotice.PrivacyNoticeComponent;
 import org.jabref.gui.ai.components.util.errorstate.ErrorStateComponent;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.preferences.GuiPreferences;
+import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiPreferences;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.util.CitationKeyCheck;
@@ -34,6 +35,7 @@ public class AiChatTab extends EntryEditorTab {
     private final AiPreferences aiPreferences;
     private final ExternalApplicationsPreferences externalApplicationsPreferences;
     private final EntryEditorPreferences entryEditorPreferences;
+    private final FilePreferences filePreferences;
     private final CitationKeyGenerator citationKeyGenerator;
     private final TaskExecutor taskExecutor;
 
@@ -53,6 +55,7 @@ public class AiChatTab extends EntryEditorTab {
         this.aiPreferences = preferences.getAiPreferences();
         this.externalApplicationsPreferences = preferences.getExternalApplicationsPreferences();
         this.entryEditorPreferences = preferences.getEntryEditorPreferences();
+        this.filePreferences = preferences.getFilePreferences();
 
         this.citationKeyGenerator = new CitationKeyGenerator(bibDatabaseContext, preferences.getCitationKeyPatternPreferences());
 
@@ -137,6 +140,7 @@ public class AiChatTab extends EntryEditorTab {
                 aiService,
                 dialogService,
                 aiPreferences,
+                filePreferences,
                 externalApplicationsPreferences,
                 taskExecutor
         ));

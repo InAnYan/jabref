@@ -416,6 +416,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
                     aiService,
                     dialogService,
                     preferences.getAiPreferences(),
+                    preferences.getFilePreferences(),
                     preferences.getExternalApplicationsPreferences(),
                     taskExecutor
             );

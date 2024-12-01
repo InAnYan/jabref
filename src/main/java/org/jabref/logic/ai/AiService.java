@@ -11,11 +11,12 @@ import org.jabref.logic.ai.chatting.AiChatService;
 import org.jabref.logic.ai.chatting.ChatHistoryService;
 import org.jabref.logic.ai.chatting.chathistory.storages.MVStoreChatHistoryStorage;
 import org.jabref.logic.ai.chatting.model.JabRefChatLanguageModel;
-import org.jabref.logic.ai.ingestion.IngestionService;
+import org.jabref.logic.ai.ingestion.FileEmbeddingsManager;
+import org.jabref.logic.ai.ingestion.FullyIngestedDocumentsTracker;
 import org.jabref.logic.ai.ingestion.MVStoreEmbeddingStore;
 import org.jabref.logic.ai.ingestion.model.JabRefEmbeddingModel;
 import org.jabref.logic.ai.ingestion.storages.MVStoreFullyIngestedDocumentsTracker;
-import org.jabref.logic.ai.summarization.SummariesService;
+import org.jabref.logic.ai.summarization.SummariesStorage;
 import org.jabref.logic.ai.summarization.storages.MVStoreSummariesStorage;
 import org.jabref.logic.ai.templates.TemplatesService;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
@@ -25,6 +26,8 @@ import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.database.BibDatabaseContext;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.store.embedding.EmbeddingStore;
 
 /**
  *  The main class for the AI functionality.
@@ -56,15 +59,15 @@ public class AiService implements AutoCloseable {
     private final ChatHistoryService chatHistoryService;
     private final JabRefChatLanguageModel jabRefChatLanguageModel;
     private final JabRefEmbeddingModel jabRefEmbeddingModel;
+    private final TemplatesService templatesService;
     private final AiChatService aiChatService;
-    private final IngestionService ingestionService;
-    private final SummariesService summariesService;
+    private final FileEmbeddingsManager fileEmbeddingsManager;
 
-    public AiService(AiPreferences aiPreferences,
-                     FilePreferences filePreferences,
-                     CitationKeyPatternPreferences citationKeyPatternPreferences,
-                     NotificationService notificationService,
-                     TaskExecutor taskExecutor
+    public AiService(
+            AiPreferences aiPreferences,
+            CitationKeyPatternPreferences citationKeyPatternPreferences,
+            NotificationService notificationService,
+            TaskExecutor taskExecutor
     ) {
 
         this.mvStoreChatHistoryStorage = new MVStoreChatHistoryStorage(Directories.getAiFilesDirectory().resolve(CHAT_HISTORY_FILE_NAME), notificationService);
@@ -72,31 +75,19 @@ public class AiService implements AutoCloseable {
         this.mvStoreFullyIngestedDocumentsTracker = new MVStoreFullyIngestedDocumentsTracker(Directories.getAiFilesDirectory().resolve(FULLY_INGESTED_FILE_NAME), notificationService);
         this.mvStoreSummariesStorage = new MVStoreSummariesStorage(Directories.getAiFilesDirectory().resolve(SUMMARIES_FILE_NAME), notificationService);
 
-        TemplatesService templatesService = new TemplatesService(aiPreferences);
+        this.templatesService = new TemplatesService(aiPreferences);
         this.chatHistoryService = new ChatHistoryService(citationKeyPatternPreferences, mvStoreChatHistoryStorage);
         this.jabRefChatLanguageModel = new JabRefChatLanguageModel(aiPreferences);
         this.jabRefEmbeddingModel = new JabRefEmbeddingModel(aiPreferences, notificationService, taskExecutor);
 
         this.aiChatService = new AiChatService(aiPreferences, jabRefChatLanguageModel, jabRefEmbeddingModel, mvStoreEmbeddingStore, templatesService);
 
-        this.ingestionService = new IngestionService(
+        this.fileEmbeddingsManager = new FileEmbeddingsManager(
                 aiPreferences,
                 shutdownSignal,
                 jabRefEmbeddingModel,
                 mvStoreEmbeddingStore,
-                mvStoreFullyIngestedDocumentsTracker,
-                filePreferences,
-                taskExecutor
-        );
-
-        this.summariesService = new SummariesService(
-                aiPreferences,
-                mvStoreSummariesStorage,
-                jabRefChatLanguageModel,
-                templatesService,
-                shutdownSignal,
-                filePreferences,
-                taskExecutor
+                mvStoreFullyIngestedDocumentsTracker
         );
     }
 
@@ -116,18 +107,32 @@ public class AiService implements AutoCloseable {
         return aiChatService;
     }
 
-    public IngestionService getIngestionService() {
-        return ingestionService;
+    public SummariesStorage getSummariesStorage() {
+        return mvStoreSummariesStorage;
     }
 
-    public SummariesService getSummariesService() {
-        return summariesService;
+    public EmbeddingStore<TextSegment> getEmbeddingStore() {
+        return mvStoreEmbeddingStore;
+    }
+
+    public FullyIngestedDocumentsTracker getFullyIngestedDocumentsTracker() {
+        return mvStoreFullyIngestedDocumentsTracker;
+    }
+
+    public FileEmbeddingsManager getFileEmbeddingsManager() {
+        return fileEmbeddingsManager;
+    }
+
+    public TemplatesService getTemplatesService() {
+        return templatesService;
     }
 
     public void setupDatabase(BibDatabaseContext context) {
         chatHistoryService.setupDatabase(context);
-        ingestionService.setupDatabase(context);
-        summariesService.setupDatabase(context);
+    }
+
+    public BooleanProperty shutdownSignal() {
+        return shutdownSignal;
     }
 
     @Override
