@@ -446,10 +446,10 @@ public class GroupTreeViewModel extends AbstractViewModel {
                 .flatMap(entry -> entry.getFiles().stream())
                 .toList();
 
-        aiService.getIngestionService().ingest(
-                group.nameProperty(),
-                linkedFiles,
-                currentDatabase.get()
+        linkedFiles.forEach(linkedFile ->
+                taskExecutor.execute(
+                        aiService.generateEmbeddingsTask(linkedFile, currentDatabase.get(), preferences.getFilePreferences())
+                )
         );
 
         dialogService.notify(Localization.lang("Ingestion started for group \"%0\".", group.getName()));
@@ -468,10 +468,15 @@ public class GroupTreeViewModel extends AbstractViewModel {
                 .filter(group::isMatch)
                 .toList();
 
-        aiService.getSummariesService().summarize(
-                group.nameProperty(),
-                entries,
-                currentDatabase.get()
+        entries.forEach(entry ->
+                taskExecutor.execute(
+                        aiService.generateSummaryWithStorageTask(
+                                entry,
+                                currentDatabase.get(),
+                                preferences.getAiPreferences(),
+                                preferences.getFilePreferences()
+                        )
+                )
         );
 
         dialogService.notify(Localization.lang("Summarization started for group \"%0\".", group.getName()));

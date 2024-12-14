@@ -31,12 +31,12 @@
 
             <HBox spacing="10">
                 <Button alignment="CENTER"
-                        fx:id="notificationsButton"
+                        fx:id="statusesButton"
                         styleClass="icon-button,narrow"
                         textAlignment="CENTER">
                     <tooltip>
                         <Tooltip
-                                text="%Notifications"/>
+                                text="%Statuses"/>
                     </tooltip>
                 </Button>
                 <ChatPromptComponent fx:id="chatPrompt" HBox.hgrow="ALWAYS" />

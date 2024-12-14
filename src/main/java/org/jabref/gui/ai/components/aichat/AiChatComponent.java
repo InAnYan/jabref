@@ -7,7 +7,9 @@ import java.util.stream.Stream;
 
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -26,7 +28,6 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiPreferences;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.AiChatLogic;
-import org.jabref.logic.ai.ingestion.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.util.CitationKeyCheck;
 import org.jabref.logic.ai.util.ErrorMessage;
 import org.jabref.logic.l10n.Localization;
@@ -35,6 +36,7 @@ import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.io.FileUtil;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.LinkedFile;
 import org.jabref.model.util.ListUtil;
 
 import com.airhacks.afterburner.views.ViewLoader;
@@ -57,11 +59,11 @@ public class AiChatComponent extends VBox {
 
     private final AiChatLogic aiChatLogic;
 
-    private final ObservableList<Notification> notifications = FXCollections.observableArrayList();
+    private final ObservableMap<LinkedFile, String> linkedFileStatuses = FXCollections.observableHashMap();
 
     @FXML private Loadable uiLoadableChatHistory;
     @FXML private ChatHistoryComponent uiChatHistory;
-    @FXML private Button notificationsButton;
+    @FXML private Button statusesButton;
     @FXML private ChatPromptComponent chatPrompt;
     @FXML private Label noticeText;
 
@@ -86,15 +88,16 @@ public class AiChatComponent extends VBox {
 
         // aiService.getIngestionService().ingest(name, ListUtil.getLinkedFiles(entries).toList(), bibDatabaseContext);
 
-        ListUtil.getLinkedFiles(entries).forEach(linkedFile -> {
-            new GenerateEmbeddingsTask(
+        ListUtil.getLinkedFiles(entries).forEach(linkedFile ->
+            aiService.generateEmbeddingsTask(
                     linkedFile,
-                    aiService.getFileEmbeddingsManager(),
                     bibDatabaseContext,
-                    filePreferences,
-                    aiService.shutdownSignal()
-            );
-        });
+                    filePreferences
+            )
+                    .onRunning(() -> linkedFileStatuses.put(linkedFile, Localization.lang("Processing...")))
+                    .onFailure(ex -> linkedFileStatuses.put(linkedFile, ex.getMessage()))
+                    .onSuccess((_) -> linkedFileStatuses.put(linkedFile, Localization.lang("Done")))
+        );
 
         ViewLoader.view(this)
                 .root(this)
@@ -106,14 +109,11 @@ public class AiChatComponent extends VBox {
         uiChatHistory.setItems(aiChatLogic.getChatHistory());
         initializeChatPrompt();
         initializeNotice();
-        initializeNotifications();
+        initializeStatuses();
     }
 
-    private void initializeNotifications() {
-        ListUtil.getLinkedFiles(entries).forEach(file ->
-                aiService.getIngestionService().ingest(file, bibDatabaseContext).stateProperty().addListener(obs -> updateNotifications()));
-
-        updateNotifications();
+    private void initializeStatuses() {
+        linkedFileStatuses.addListener((MapChangeListener<? super LinkedFile, ? super String>) change -> updateStatuses());
     }
 
     private void initializeNotice() {
@@ -146,7 +146,7 @@ public class AiChatComponent extends VBox {
         updatePromptHistory();
     }
 
-    private void updateNotifications() {
+    private void updateStatuses() {
         notifications.clear();
         notifications.addAll(entries.stream().map(this::updateNotificationsForEntry).flatMap(List::stream).toList());
 

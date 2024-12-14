@@ -13,9 +13,12 @@ import org.jabref.logic.ai.chatting.chathistory.storages.MVStoreChatHistoryStora
 import org.jabref.logic.ai.chatting.model.JabRefChatLanguageModel;
 import org.jabref.logic.ai.ingestion.FileEmbeddingsManager;
 import org.jabref.logic.ai.ingestion.FullyIngestedDocumentsTracker;
+import org.jabref.logic.ai.ingestion.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.ingestion.MVStoreEmbeddingStore;
 import org.jabref.logic.ai.ingestion.model.JabRefEmbeddingModel;
 import org.jabref.logic.ai.ingestion.storages.MVStoreFullyIngestedDocumentsTracker;
+import org.jabref.logic.ai.summarization.GenerateSummaryTask;
+import org.jabref.logic.ai.summarization.GenerateSummaryWithStorageTask;
 import org.jabref.logic.ai.summarization.SummariesStorage;
 import org.jabref.logic.ai.summarization.storages.MVStoreSummariesStorage;
 import org.jabref.logic.ai.templates.TemplatesService;
@@ -24,6 +27,8 @@ import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.database.BibDatabaseContext;
+import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.LinkedFile;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import dev.langchain4j.data.segment.TextSegment;
@@ -133,6 +138,55 @@ public class AiService implements AutoCloseable {
 
     public BooleanProperty shutdownSignal() {
         return shutdownSignal;
+    }
+
+    public GenerateSummaryWithStorageTask generateSummaryWithStorageTask(
+            BibEntry entry,
+            BibDatabaseContext bibDatabaseContext,
+            AiPreferences aiPreferences,
+            FilePreferences filePreferences
+    ) {
+        return new GenerateSummaryWithStorageTask(
+                entry,
+                bibDatabaseContext,
+                getSummariesStorage(),
+                getChatLanguageModel(),
+                getTemplatesService(),
+                shutdownSignal,
+                aiPreferences,
+                filePreferences
+        );
+    }
+
+    public GenerateSummaryTask generateSummaryTask(
+            BibEntry entry,
+            BibDatabaseContext bibDatabaseContext,
+            AiPreferences aiPreferences,
+            FilePreferences filePreferences
+    ) {
+        return new GenerateSummaryTask(
+                entry,
+                bibDatabaseContext,
+                getChatLanguageModel(),
+                getTemplatesService(),
+                shutdownSignal,
+                aiPreferences,
+                filePreferences
+        );
+    }
+
+    public GenerateEmbeddingsTask generateEmbeddingsTask(
+            LinkedFile linkedFile,
+            BibDatabaseContext bibDatabaseContext,
+            FilePreferences filePreferences
+    ) {
+        return new GenerateEmbeddingsTask(
+                linkedFile,
+                getFileEmbeddingsManager(),
+                bibDatabaseContext,
+                filePreferences,
+                shutdownSignal
+        );
     }
 
     @Override

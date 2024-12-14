@@ -56,13 +56,9 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
         this.aiPreferences = aiPreferences;
         this.taskExecutor = taskExecutor;
 
-        this.generateSummaryWithStorageTask = new GenerateSummaryWithStorageTask(
+        this.generateSummaryWithStorageTask = aiService.generateSummaryWithStorageTask(
                 entry,
                 bibDatabaseContext,
-                aiService.getSummariesStorage(),
-                aiService.getChatLanguageModel(),
-                aiService.getTemplatesService(),
-                aiService.shutdownSignal(),
                 aiPreferences,
                 filePreferences
         );
@@ -135,7 +131,7 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
     }
 
     private Node showErrorWhileSummarizing(Exception ex) {
-        LOGGER.error("Got an error while generating a summary for entry {}", entry.getCitationKey().orElse("<no citation key>"), processingInfo.getException().get());
+        LOGGER.error("Got an error while generating a summary for entry {}", entry.getCitationKey().orElse("<no citation key>"), ex);
 
         return ErrorStateComponent.withTextAreaAndButton(
                 Localization.lang("Unable to chat"),
