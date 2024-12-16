@@ -32,7 +32,7 @@ import org.jabref.gui.preferences.nameformatter.NameFormatterTab;
 import org.jabref.gui.preferences.network.NetworkTab;
 import org.jabref.gui.preferences.preview.PreviewTab;
 import org.jabref.gui.preferences.protectedterms.ProtectedTermsTab;
-import org.jabref.gui.preferences.table.TableTab;
+import org.jabref.gui.preferences.entrytable.EntryTableTab;
 import org.jabref.gui.preferences.websearch.WebSearchTab;
 import org.jabref.gui.preferences.xmp.XmpPrivacyTab;
 import org.jabref.gui.util.FileDialogConfiguration;
@@ -69,7 +69,7 @@ public class PreferencesDialogViewModel extends AbstractViewModel {
                 new WebSearchTab(aiTab.aiEnabledProperty()),
                 aiTab,
                 new EntryTab(),
-                new TableTab(),
+                new EntryTableTab(),
                 new PreviewTab(),
                 new EntryEditorTab(),
                 new CustomEntryTypesTab(),

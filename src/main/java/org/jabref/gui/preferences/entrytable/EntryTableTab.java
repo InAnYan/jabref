@@ -1,4 +1,4 @@
-package org.jabref.gui.preferences.table;
+package org.jabref.gui.preferences.entrytable;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -27,7 +27,7 @@ import org.jabref.logic.l10n.Localization;
 import com.airhacks.afterburner.views.ViewLoader;
 import de.saxsys.mvvmfx.utils.validation.visualization.ControlsFxVisualizer;
 
-public class TableTab extends AbstractPreferenceTabView<TableTabViewModel> implements PreferencesTab {
+public class EntryTableTab extends AbstractPreferenceTabView<EntryTableTabViewModel> implements PreferencesTab {
 
     @FXML private TableView<MainTableColumnModel> columnsList;
     @FXML private TableColumn<MainTableColumnModel, String> nameColumn;
@@ -48,7 +48,7 @@ public class TableTab extends AbstractPreferenceTabView<TableTabViewModel> imple
 
     private final ControlsFxVisualizer validationVisualizer = new ControlsFxVisualizer();
 
-    public TableTab() {
+    public EntryTableTab() {
         ViewLoader.view(this)
                   .root(this)
                   .load();
@@ -60,7 +60,7 @@ public class TableTab extends AbstractPreferenceTabView<TableTabViewModel> imple
     }
 
     public void initialize() {
-        this.viewModel = new TableTabViewModel(dialogService, preferences);
+        this.viewModel = new EntryTableTabViewModel(dialogService, preferences);
 
         setupTable();
         setupBindings();
@@ -102,7 +102,7 @@ public class TableTab extends AbstractPreferenceTabView<TableTabViewModel> imple
                 .install(addColumnName);
         addColumnName.itemsProperty().bind(viewModel.availableColumnsProperty());
         addColumnName.valueProperty().bindBidirectional(viewModel.addColumnProperty());
-        addColumnName.setConverter(TableTabViewModel.columnNameStringConverter);
+        addColumnName.setConverter(EntryTableTabViewModel.columnNameStringConverter);
         addColumnName.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (event.getCode() == KeyCode.ENTER) {
                 viewModel.insertColumnInList();

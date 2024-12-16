@@ -1,4 +1,4 @@
-package org.jabref.gui.preferences.table;
+package org.jabref.gui.preferences.entrytable;
 
 import java.util.EnumSet;
 
@@ -35,7 +35,7 @@ import de.saxsys.mvvmfx.utils.validation.ValidationMessage;
 import de.saxsys.mvvmfx.utils.validation.ValidationStatus;
 import de.saxsys.mvvmfx.utils.validation.Validator;
 
-public class TableTabViewModel implements PreferenceTabViewModel {
+public class EntryTableTabViewModel implements PreferenceTabViewModel {
 
     static StringConverter<MainTableColumnModel> columnNameStringConverter = new StringConverter<>() {
         @Override
@@ -79,7 +79,7 @@ public class TableTabViewModel implements PreferenceTabViewModel {
     private final NameDisplayPreferences nameDisplayPreferences;
     private final MainTablePreferences mainTablePreferences;
 
-    public TableTabViewModel(DialogService dialogService, GuiPreferences preferences) {
+    public EntryTableTabViewModel(DialogService dialogService, GuiPreferences preferences) {
         this.dialogService = dialogService;
         this.preferences = preferences;
         this.specialFieldsPreferences = preferences.getSpecialFieldsPreferences();
@@ -132,7 +132,8 @@ public class TableTabViewModel implements PreferenceTabViewModel {
                 new MainTableColumnModel(MainTableColumnModel.Type.NORMALFIELD, StandardField.OWNER.getName()),
                 new MainTableColumnModel(MainTableColumnModel.Type.NORMALFIELD, StandardField.GROUPS.getName()),
                 new MainTableColumnModel(MainTableColumnModel.Type.NORMALFIELD, InternalField.KEY_FIELD.getName()),
-                new MainTableColumnModel(MainTableColumnModel.Type.NORMALFIELD, InternalField.TYPE_HEADER.getName())
+                new MainTableColumnModel(MainTableColumnModel.Type.NORMALFIELD, InternalField.TYPE_HEADER.getName()),
+                new MainTableColumnModel(MainTableColumnModel.Type.NORMALFIELD, "title/subtitle")
         );
 
         EnumSet.allOf(StandardField.class).stream()
