@@ -3,6 +3,7 @@ package org.jabref.gui.ai.components.aichat;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javafx.beans.property.StringProperty;
@@ -20,8 +21,9 @@ import org.jabref.gui.DialogService;
 import org.jabref.gui.ai.components.aichat.chathistory.ChatHistoryComponent;
 import org.jabref.gui.ai.components.aichat.chatprompt.ChatPromptComponent;
 import org.jabref.gui.ai.components.util.Loadable;
-import org.jabref.gui.ai.components.util.notifications.Notification;
-import org.jabref.gui.ai.components.util.notifications.NotificationsComponent;
+import org.jabref.gui.ai.components.util.ProcessingState;
+import org.jabref.gui.ai.components.util.ProcessingStatus;
+import org.jabref.gui.ai.components.util.StatusesTableComponent;
 import org.jabref.gui.icon.IconTheme;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.FilePreferences;
@@ -59,7 +61,8 @@ public class AiChatComponent extends VBox {
 
     private final AiChatLogic aiChatLogic;
 
-    private final ObservableMap<LinkedFile, String> linkedFileStatuses = FXCollections.observableHashMap();
+    private final ObservableList<ProcessingStatus> statusList = FXCollections.observableArrayList();
+    private final StatusesTableComponent statusesTableComponent = new StatusesTableComponent(statusList);
 
     @FXML private Loadable uiLoadableChatHistory;
     @FXML private ChatHistoryComponent uiChatHistory;
@@ -86,17 +89,16 @@ public class AiChatComponent extends VBox {
 
         this.aiChatLogic = aiService.getAiChatService().makeChat(name, chatHistory, entries, bibDatabaseContext);
 
-        // aiService.getIngestionService().ingest(name, ListUtil.getLinkedFiles(entries).toList(), bibDatabaseContext);
-
         ListUtil.getLinkedFiles(entries).forEach(linkedFile ->
-            aiService.generateEmbeddingsTask(
-                    linkedFile,
-                    bibDatabaseContext,
-                    filePreferences
-            )
-                    .onRunning(() -> linkedFileStatuses.put(linkedFile, Localization.lang("Processing...")))
-                    .onFailure(ex -> linkedFileStatuses.put(linkedFile, ex.getMessage()))
-                    .onSuccess((_) -> linkedFileStatuses.put(linkedFile, Localization.lang("Done")))
+                aiService.generateEmbeddingsTask(
+                        linkedFile,
+                        bibDatabaseContext,
+                        filePreferences,
+                        taskExecutor
+                )
+                        .onRunning(() -> updateStatus(linkedFile, ProcessingState.PROCESSING, ""))
+                        .onFailure(ex -> updateStatus(linkedFile, ProcessingState.ERROR, ex.getMessage()))
+                        .onSuccess((_) -> updateStatus(linkedFile, ProcessingState.SUCCESS, ""))
         );
 
         ViewLoader.view(this)
@@ -104,16 +106,22 @@ public class AiChatComponent extends VBox {
                 .load();
     }
 
+    private void updateStatus(LinkedFile linkedFile, ProcessingState state, String message) {
+        Optional<ProcessingStatus> status = statusList.stream().filter(s -> s.getLinkedFile() == linkedFile).findFirst();
+
+        if (status.isPresent()) {
+            status.get().setProcessingState(state);
+            status.get().setMessage(message);
+        } else {
+            statusList.add(new ProcessingStatus(linkedFile, state, message));
+        }
+    }
+
     @FXML
     public void initialize() {
         uiChatHistory.setItems(aiChatLogic.getChatHistory());
         initializeChatPrompt();
         initializeNotice();
-        initializeStatuses();
-    }
-
-    private void initializeStatuses() {
-        linkedFileStatuses.addListener((MapChangeListener<? super LinkedFile, ? super String>) change -> updateStatuses());
     }
 
     private void initializeNotice() {
@@ -125,10 +133,10 @@ public class AiChatComponent extends VBox {
     }
 
     private void initializeChatPrompt() {
-        notificationsButton.setOnAction(event ->
-                new PopOver(new NotificationsComponent(notifications))
-                        .show(notificationsButton)
-        );
+        statusesButton.setOnAction(event -> {
+            PopOver popOver = new PopOver(statusesTableComponent.getTable());
+            popOver.show(statusesButton);
+        });
 
         chatPrompt.setSendCallback(this::onSendMessage);
 
@@ -144,67 +152,6 @@ public class AiChatComponent extends VBox {
         chatPrompt.requestPromptFocus();
 
         updatePromptHistory();
-    }
-
-    private void updateStatuses() {
-        notifications.clear();
-        notifications.addAll(entries.stream().map(this::updateNotificationsForEntry).flatMap(List::stream).toList());
-
-        notificationsButton.setVisible(!notifications.isEmpty());
-        notificationsButton.setManaged(!notifications.isEmpty());
-
-        if (!notifications.isEmpty()) {
-            UiTaskExecutor.runInJavaFXThread(() -> notificationsButton.setGraphic(IconTheme.JabRefIcons.WARNING.withColor(Color.YELLOW).getGraphicNode()));
-        }
-    }
-
-    private List<Notification> updateNotificationsForEntry(BibEntry entry) {
-        List<Notification> notifications = new ArrayList<>();
-
-        if (entries.size() == 1) {
-            if (entry.getCitationKey().isEmpty()) {
-                notifications.add(new Notification(
-                        Localization.lang("No citation key for %0", entry.getAuthorTitleYear()),
-                        Localization.lang("The chat history will not be stored in next sessions")
-                ));
-            } else if (!CitationKeyCheck.citationKeyIsPresentAndUnique(bibDatabaseContext, entry)) {
-                notifications.add(new Notification(
-                        Localization.lang("Invalid citation key for %0 (%1)", entry.getCitationKey().get(), entry.getAuthorTitleYear()),
-                        Localization.lang("The chat history will not be stored in next sessions")
-                ));
-            }
-        }
-
-        entry.getFiles().forEach(file -> {
-            if (!FileUtil.isPDFFile(Path.of(file.getLink()))) {
-                notifications.add(new Notification(
-                        Localization.lang("File %0 is not a PDF file", file.getLink()),
-                        Localization.lang("Only PDF files can be used for chatting")
-                ));
-            }
-        });
-
-        entry.getFiles().stream().map(file -> aiService.getIngestionService().ingest(file, bibDatabaseContext)).forEach(ingestionStatus -> {
-            switch (ingestionStatus.getState()) {
-                case PROCESSING -> notifications.add(new Notification(
-                    Localization.lang("File %0 is currently being processed", ingestionStatus.getObject().getLink()),
-                    Localization.lang("After the file will be ingested, you will be able to chat with it.")
-                ));
-
-                case ERROR -> {
-                    assert ingestionStatus.getException().isPresent(); // When the state is ERROR, the exception must be present.
-
-                    notifications.add(new Notification(
-                            Localization.lang("File %0 could not be ingested", ingestionStatus.getObject().getLink()),
-                            ingestionStatus.getException().get().getLocalizedMessage()
-                    ));
-                }
-
-                case SUCCESS -> { }
-            }
-        });
-
-        return notifications;
     }
 
     private void onSendMessage(String userPrompt) {

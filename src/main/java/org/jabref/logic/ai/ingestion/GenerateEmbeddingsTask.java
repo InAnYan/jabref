@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -13,9 +15,11 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ProgressCounter;
+import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.LinkedFile;
 
+import com.ibm.icu.impl.number.MacroProps;
 import dev.langchain4j.data.document.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +32,9 @@ import org.slf4j.LoggerFactory;
 public class GenerateEmbeddingsTask extends BackgroundTask<Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateEmbeddingsTask.class);
 
+    // TODO: Develop a technique to clean this map.
+    private static final Map<LinkedFile, GenerateEmbeddingsTask> cachedTasks = new HashMap<>();
+
     private final LinkedFile linkedFile;
     private final FileEmbeddingsManager fileEmbeddingsManager;
     private final BibDatabaseContext bibDatabaseContext;
@@ -36,11 +43,35 @@ public class GenerateEmbeddingsTask extends BackgroundTask<Void> {
 
     private final ProgressCounter progressCounter = new ProgressCounter();
 
-    public GenerateEmbeddingsTask(LinkedFile linkedFile,
-                                  FileEmbeddingsManager fileEmbeddingsManager,
-                                  BibDatabaseContext bibDatabaseContext,
-                                  FilePreferences filePreferences,
-                                  ReadOnlyBooleanProperty shutdownSignal
+    public synchronized static GenerateEmbeddingsTask getCachedTask(
+            LinkedFile linkedFile,
+            FileEmbeddingsManager fileEmbeddingsManager,
+            BibDatabaseContext bibDatabaseContext,
+            FilePreferences filePreferences,
+            ReadOnlyBooleanProperty shutdownSignal,
+            TaskExecutor taskExecutor
+    ) {
+        return cachedTasks.computeIfAbsent(linkedFile, _ -> {
+            GenerateEmbeddingsTask task = new GenerateEmbeddingsTask(
+                    linkedFile,
+                    fileEmbeddingsManager,
+                    bibDatabaseContext,
+                    filePreferences,
+                    shutdownSignal
+            );
+
+            taskExecutor.execute(task);
+
+            return task;
+        });
+    }
+
+    private GenerateEmbeddingsTask(
+            LinkedFile linkedFile,
+            FileEmbeddingsManager fileEmbeddingsManager,
+            BibDatabaseContext bibDatabaseContext,
+            FilePreferences filePreferences,
+            ReadOnlyBooleanProperty shutdownSignal
     ) {
         this.linkedFile = linkedFile;
         this.fileEmbeddingsManager = fileEmbeddingsManager;

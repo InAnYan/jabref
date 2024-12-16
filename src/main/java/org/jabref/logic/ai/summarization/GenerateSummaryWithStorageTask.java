@@ -72,7 +72,7 @@ public class GenerateSummaryWithStorageTask extends GenerateSummaryTask {
 
         if (bibDatabaseContext.getDatabasePath().isEmpty()) {
             LOGGER.info("No database path is present. Summary will not be stored in the next sessions");
-        } else if (CitationKeyCheck.citationKeyIsPresentAndUnique(bibDatabaseContext, entry)) {
+        } else if (!CitationKeyCheck.citationKeyIsPresentAndUnique(bibDatabaseContext, entry)) {
             LOGGER.info("No valid citation key is present. Summary will not be stored in the next sessions");
         } else {
             assert entry.getCitationKey().isPresent(); // Must be already checked by `CitationKeyCheck`.

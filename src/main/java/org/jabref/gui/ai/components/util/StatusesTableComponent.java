@@ -16,20 +16,26 @@ public class StatusesTableComponent {
         pathColumn.setCellValueFactory(
                 new PropertyValueFactory<>("path")
         );
+        pathColumn.setMaxWidth(300);
 
-        TableColumn<ProcessingStatus, String> statusColumn = new TableColumn<>(Localization.lang("Status"));
-        statusColumn.setCellValueFactory(
-                new PropertyValueFactory<>("status")
+        TableColumn<ProcessingStatus, String> stateColumn = new TableColumn<>(Localization.lang("State"));
+        stateColumn.setCellValueFactory(
+                new PropertyValueFactory<>("processingState")
         );
+        stateColumn.setMaxWidth(100);
 
         TableColumn<ProcessingStatus, String> messageColumn = new TableColumn<>(Localization.lang("Message"));
         messageColumn.setCellValueFactory(
                 new PropertyValueFactory<>("message")
         );
+        messageColumn.setMaxWidth(300);
 
         tableView.setEditable(false);
         tableView.setItems(statuses);
-        tableView.getColumns().addAll(pathColumn, statusColumn, messageColumn);
+        tableView.getColumns().addAll(pathColumn, stateColumn, messageColumn);
+        tableView.setMaxWidth(700);
+        tableView.setMinWidth(700);
+        tableView.setMaxHeight(200);
     }
 
     public Node getTable() {

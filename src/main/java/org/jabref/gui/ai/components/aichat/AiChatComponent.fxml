@@ -30,14 +30,18 @@
         </Loadable>
 
             <HBox spacing="10">
-                <Button alignment="CENTER"
+                <Button
                         fx:id="statusesButton"
                         styleClass="icon-button,narrow"
-                        textAlignment="CENTER">
+                        textAlignment="CENTER"
+                        prefWidth="30"
+                        prefHeight="30">
                     <tooltip>
-                        <Tooltip
-                                text="%Statuses"/>
+                        <Tooltip text="%Statuses"/>
                     </tooltip>
+                    <graphic>
+                        <JabRefIconView glyph="INTEGRITY_INFO"/>
+                    </graphic>
                 </Button>
                 <ChatPromptComponent fx:id="chatPrompt" HBox.hgrow="ALWAYS" />
             </HBox>
@@ -48,17 +52,15 @@
                        text="%Current AI model: %0. The AI may generate inaccurate or inappropriate responses. Please verify any information provided."
                        BorderPane.alignment="CENTER"/>
 
-                <Button alignment="CENTER"
+                <Button
                         onAction="#onClearChatHistory"
                         styleClass="icon-button,narrow"
                         textAlignment="CENTER">
                     <graphic>
-                        <JabRefIconView
-                                glyph="DELETE_ENTRY"/>
+                        <JabRefIconView glyph="DELETE_ENTRY"/>
                     </graphic>
                     <tooltip>
-                        <Tooltip
-                                text="%Clear chat history"/>
+                        <Tooltip text="%Clear chat history"/>
                     </tooltip>
                 </Button>
             </HBox>

@@ -447,9 +447,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
                 .toList();
 
         linkedFiles.forEach(linkedFile ->
-                taskExecutor.execute(
-                        aiService.generateEmbeddingsTask(linkedFile, currentDatabase.get(), preferences.getFilePreferences())
-                )
+                aiService.generateEmbeddingsTask(linkedFile, currentDatabase.get(), preferences.getFilePreferences(), taskExecutor)
         );
 
         dialogService.notify(Localization.lang("Ingestion started for group \"%0\".", group.getName()));

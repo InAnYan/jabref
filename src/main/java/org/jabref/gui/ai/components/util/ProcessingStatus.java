@@ -22,11 +22,11 @@ public class ProcessingStatus {
         return linkedFile;
     }
 
-    public ObjectProperty<ProcessingState> processingState() {
+    public ObjectProperty<ProcessingState> processingStateProperty() {
         return processingState;
     }
 
-    public ProcessingState getProcessingStateProperty() {
+    public ProcessingState getProcessingState() {
         return processingState.get();
     }
 

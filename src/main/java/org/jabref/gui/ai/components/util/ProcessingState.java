@@ -14,4 +14,8 @@ public enum ProcessingState {
             case ERROR -> Localization.lang("Error");
         };
     }
+
+    public String toString() {
+        return toLocalizedString();
+    }
 }

@@ -1,5 +1,7 @@
 package org.jabref.logic.ai;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -178,14 +180,16 @@ public class AiService implements AutoCloseable {
     public GenerateEmbeddingsTask generateEmbeddingsTask(
             LinkedFile linkedFile,
             BibDatabaseContext bibDatabaseContext,
-            FilePreferences filePreferences
+            FilePreferences filePreferences,
+            TaskExecutor taskExecutor
     ) {
-        return new GenerateEmbeddingsTask(
+        return GenerateEmbeddingsTask.getCachedTask(
                 linkedFile,
                 getFileEmbeddingsManager(),
                 bibDatabaseContext,
                 filePreferences,
-                shutdownSignal
+                shutdownSignal,
+                taskExecutor
         );
     }
 
