@@ -11,17 +11,12 @@ class MedlineImporterFilesTest {
 
     private static final String FILE_ENDING = ".xml";
 
-    private static final String MALFORMED_KEY_WORD = "Malformed";
-
     private static Stream<String> fileNames() throws IOException {
-        Predicate<String> fileName = name -> name.startsWith("MedlineImporterTest") && name.endsWith(FILE_ENDING)
-                && !name.contains(MALFORMED_KEY_WORD);
-        return ImporterTestEngine.getTestFiles(fileName).stream();
+        return ImporterTestEngine.getTestFilesForDir("medline", FILE_ENDING);
     }
 
     private static Stream<String> invalidFileNames() throws IOException {
-        Predicate<String> fileName = name -> !name.startsWith("MedlineImporterTest");
-        return ImporterTestEngine.getTestFiles(fileName).stream();
+        return ImporterTestEngine.getTestFilesOutsideOfDIr("medline", FILE_ENDING);
     }
 
     @ParameterizedTest
@@ -43,9 +38,7 @@ class MedlineImporterFilesTest {
     }
 
     private static Stream<String> malformedFileNames() throws IOException {
-        Predicate<String> fileName = name -> name.startsWith("MedlineImporterTest" + MALFORMED_KEY_WORD)
-                && name.endsWith(FILE_ENDING);
-        return ImporterTestEngine.getTestFiles(fileName).stream();
+        return Stream.of(ImporterTestEngine.getTestFile("medline/MedlineImporterTestMalformedEntry.xml"));
     }
 
     @ParameterizedTest

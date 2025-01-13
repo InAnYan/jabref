@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.jabref.logic.layout.format.FileLink;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -12,14 +14,11 @@ class MsBibImporterFilesTest {
     private static final String FILE_ENDING = ".xml";
 
     private static Stream<String> fileNames() throws IOException {
-        Predicate<String> fileName = name -> name.startsWith("MsBib")
-                && name.endsWith(FILE_ENDING);
-        return ImporterTestEngine.getTestFiles(fileName).stream();
+        return ImporterTestEngine.getTestFilesForDir("msBib", FILE_ENDING);
     }
 
     private static Stream<String> invalidFileNames() throws IOException {
-        Predicate<String> fileName = name -> !name.contains("MsBib");
-        return ImporterTestEngine.getTestFiles(fileName).stream();
+        return ImporterTestEngine.getTestFilesOutsideOfDIr("msBib", FILE_ENDING);
     }
 
     @ParameterizedTest

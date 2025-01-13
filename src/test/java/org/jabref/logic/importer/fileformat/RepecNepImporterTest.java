@@ -29,14 +29,11 @@ class RepecNepImporterTest {
     }
 
     private static Stream<String> fileNames() throws IOException {
-        Predicate<String> fileName = name -> name.startsWith("RepecNepImporter")
-                && name.endsWith(FILE_ENDING);
-        return ImporterTestEngine.getTestFiles(fileName).stream();
+        return ImporterTestEngine.getTestFilesForDir("repecNep", FILE_ENDING);
     }
 
     private static Stream<String> invalidFileNames() throws IOException {
-        Predicate<String> fileName = name -> !name.contains("RepecNepImporter");
-        return ImporterTestEngine.getTestFiles(fileName).stream();
+        return ImporterTestEngine.getTestFilesOutsideOfDIr("repecNep", FILE_ENDING);
     }
 
     @ParameterizedTest

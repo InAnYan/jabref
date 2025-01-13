@@ -18,7 +18,8 @@ class CopacImporterFilesTest {
     }
 
     private static Stream<String> nonCopacfileNames() throws IOException {
-        Predicate<String> fileName = name -> !name.startsWith("CopacImporterTest");
+        // There is a `pdf` directory in {@link org.jabref.logic.importer.fileformat} package.
+        Predicate<String> fileName = name -> !(name.startsWith("CopacImporterTest") || name.startsWith("pdf"));
         return ImporterTestEngine.getTestFiles(fileName).stream();
     }
 

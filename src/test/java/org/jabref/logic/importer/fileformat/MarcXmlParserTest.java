@@ -20,8 +20,7 @@ class MarcXmlParserTest {
     private static final String FILE_ENDING = ".xml";
 
     private static Stream<String> fileNames() throws IOException {
-        Predicate<String> fileName = name -> name.startsWith("MarcXMLParserTest") && name.endsWith(FILE_ENDING);
-        return ImporterTestEngine.getTestFiles(fileName).stream();
+        return ImporterTestEngine.getTestFilesForDir("marcXml", FILE_ENDING);
     }
 
     private void doTest(String xmlName, String bibName) throws Exception {

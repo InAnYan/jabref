@@ -13,13 +13,11 @@ class CitaviXmlImporterFilesTest {
     private final CitaviXmlImporter citaviXmlImporter = new CitaviXmlImporter();
 
     private static Stream<String> fileNames() throws IOException {
-        Predicate<String> fileName = name -> name.startsWith("CitaviXmlImporterTest") && name.endsWith(FILE_ENDING);
-        return ImporterTestEngine.getTestFiles(fileName).stream();
+        return ImporterTestEngine.getTestFilesForDir("citaviXml", FILE_ENDING);
     }
 
     private static Stream<String> invalidFileNames() throws IOException {
-        Predicate<String> fileName = name -> !name.startsWith("CitaviXmlImporterTest");
-        return ImporterTestEngine.getTestFiles(fileName).stream();
+        return ImporterTestEngine.getTestFilesOutsideOfDIr("citaviXml", FILE_ENDING);
     }
 
     @ParameterizedTest

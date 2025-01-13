@@ -20,8 +20,7 @@ class ModsImporterFilesTest {
     private ImportFormatPreferences importFormatPreferences;
 
     private static Stream<String> fileNames() throws IOException {
-        Predicate<String> fileName = name -> name.startsWith("MODS") && name.endsWith(FILE_ENDING);
-        return ImporterTestEngine.getTestFiles(fileName).stream();
+        return ImporterTestEngine.getTestFilesForDir("mods", FILE_ENDING);
     }
 
     @BeforeEach

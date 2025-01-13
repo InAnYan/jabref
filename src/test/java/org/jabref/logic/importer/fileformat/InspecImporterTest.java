@@ -28,15 +28,11 @@ class InspecImporterTest {
     private InspecImporter importer;
 
     private static Stream<String> fileNames() throws IOException {
-        Predicate<String> fileName = name -> name.startsWith("InspecImportTest")
-                && !name.contains("False")
-                && name.endsWith(FILE_ENDING);
-        return ImporterTestEngine.getTestFiles(fileName).stream();
+        return ImporterTestEngine.getTestFilesForDir("inspec", FILE_ENDING);
     }
 
     private static Stream<String> nonInspecfileNames() throws IOException {
-        Predicate<String> fileName = name -> !name.startsWith("InspecImportTest");
-        return ImporterTestEngine.getTestFiles(fileName).stream();
+        return ImporterTestEngine.getTestFilesOutsideOfDIr("inspec", FILE_ENDING);
     }
 
     @BeforeEach
