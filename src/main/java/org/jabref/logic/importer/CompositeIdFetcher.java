@@ -10,6 +10,7 @@ import org.jabref.logic.importer.fetcher.isbntobibtex.IsbnFetcher;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.identifier.ArXivIdentifier;
 import org.jabref.model.entry.identifier.DOI;
+import org.jabref.model.entry.identifier.DspaceIdentifier;
 import org.jabref.model.entry.identifier.ISBN;
 import org.jabref.model.entry.identifier.RFC;
 import org.jabref.model.entry.identifier.SSRN;
@@ -54,6 +55,11 @@ public class CompositeIdFetcher {
         Optional<RFC> rfcId = RFC.parse(identifier);
         if (rfcId.isPresent()) {
             return new RfcFetcher(importFormatPreferences).performSearchById(rfcId.get().asString());
+        }
+
+        Optional<DspaceIdentifier> dspaceIdentifier = DspaceIdentifier.parse(identifier);
+        if (dspaceIdentifier.isPresent()) {
+            return new
         }
 
         return Optional.empty();
