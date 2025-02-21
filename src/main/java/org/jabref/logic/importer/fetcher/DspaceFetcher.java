@@ -2,6 +2,10 @@ package org.jabref.logic.importer.fetcher;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,12 +19,18 @@ import org.jabref.model.entry.field.StandardField;
 import org.jabref.model.entry.identifier.DspaceIdentifier;
 import org.jabref.model.util.OptionalUtil;
 
+import org.apache.xmpbox.XMPMetadata;
+import org.apache.xmpbox.schema.DublinCoreSchema;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DspaceFetcher implements IdBasedFetcher, FulltextFetcher, EntryBasedFetcher {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DspaceFetcher.class);
+
     public static final String NAME = "Dspace";
 
     @Override
@@ -74,7 +84,37 @@ public class DspaceFetcher implements IdBasedFetcher, FulltextFetcher, EntryBase
     }
 
     public Optional<BibEntry> performSearchById(DspaceIdentifier identifier) throws FetcherException {
+        DublinCoreSchema schema = new DublinCoreSchema(XMPMetadata.createXMPMetadata());
 
+        try {
+            Document doc = Jsoup.connect(identifier.getUrl().toString()).get();
+
+            Elements metaTags = doc.select("meta[name^=DC]");
+
+            for (Element meta : metaTags) {
+                String name = meta.attr("name");
+                String content = meta.attr("content");
+
+                // DSpace, by default, does not provide anything.
+
+                if (name.startsWith("dc.contributor")) {
+                    schema.addContributor(content);
+                } else if (name.startsWith("dc.subject")) {
+                    schema.addSubject(content);
+                } else if (name.startsWith("dc.title")) {
+                    schema.setTitle(content);
+                } else if (name.startsWith("dc.description")) {
+                    schema.setDescription(content);
+                } else if (name.startsWith("dc.date")) {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(Date.from(Instant.parse(content)));
+                    schema.addDate(calendar);
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.error("Error while trying to download metadata page: {}", identifier.getUrl(), e);
+            return Optional.empty();
+        }
     }
 
     @Override
