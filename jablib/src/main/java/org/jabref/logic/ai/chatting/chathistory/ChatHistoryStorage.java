@@ -3,7 +3,7 @@ package org.jabref.logic.ai.chatting.chathistory;
 import java.nio.file.Path;
 import java.util.List;
 
-import dev.langchain4j.data.message.ChatMessage;
+import org.jabref.logic.ai.framework.messages.ChatMessage;
 
 public interface ChatHistoryStorage {
     List<ChatMessage> loadMessagesForEntry(Path bibDatabasePath, String citationKey);

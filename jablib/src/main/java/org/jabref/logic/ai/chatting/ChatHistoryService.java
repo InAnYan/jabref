@@ -20,7 +20,7 @@ import org.jabref.model.entry.field.InternalField;
 import org.jabref.model.groups.GroupTreeNode;
 
 import com.google.common.eventbus.Subscribe;
-import dev.langchain4j.data.message.ChatMessage;
+import org.jabref.logic.ai.framework.messages.ChatMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
