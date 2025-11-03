@@ -75,7 +75,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     private final ObjectProperty<EmbeddingModel> selectedEmbeddingModel = new SimpleObjectProperty<>();
 
     private final StringProperty currentApiBaseUrl = new SimpleStringProperty();
-    private final BooleanProperty disableApiBaseUrl = new SimpleBooleanProperty(true); // {@link HuggingFaceChatModel} and {@link GoogleAiGeminiChatModel} doesn't support setting API base URL
+    private final BooleanProperty disableApiBaseUrl = new SimpleBooleanProperty(true); // {@link GoogleAiGeminiChatModel} doesn't support setting API base URL
 
     private final StringProperty openAiApiBaseUrl = new SimpleStringProperty();
     private final StringProperty mistralAiApiBaseUrl = new SimpleStringProperty();
@@ -138,7 +138,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         this.selectedAiProvider.addListener((_, oldValue, newValue) -> {
             List<String> models = AiDefaultPreferences.getAvailableModels(newValue);
 
-            disableApiBaseUrl.set(newValue == AiProvider.HUGGING_FACE || newValue == AiProvider.GEMINI);
+            disableApiBaseUrl.set(newValue == AiProvider.GEMINI);
 
             // When we setAll on Hugging Face, models are empty, and currentChatModel become null.
             // It becomes null because currentChatModel is bound to combobox, and this combobox becomes empty.
