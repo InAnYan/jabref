@@ -10,7 +10,7 @@ import org.jabref.gui.ai.components.aichat.chatmessage.ChatMessageComponent;
 import org.jabref.gui.util.UiTaskExecutor;
 
 import com.airhacks.afterburner.views.ViewLoader;
-import dev.langchain4j.data.message.ChatMessage;
+import org.jabref.logic.ai.framework.messages.ChatMessage;
 
 public class ChatHistoryComponent extends ScrollPane {
     @FXML private VBox vBox;

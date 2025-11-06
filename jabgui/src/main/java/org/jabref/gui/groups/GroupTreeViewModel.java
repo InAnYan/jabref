@@ -47,7 +47,7 @@ import org.jabref.model.groups.WordKeywordGroup;
 import org.jabref.model.metadata.MetaData;
 
 import com.tobiasdiez.easybind.EasyBind;
-import dev.langchain4j.data.message.ChatMessage;
+import org.jabref.logic.ai.framework.messages.ChatMessage;
 import org.jspecify.annotations.NonNull;
 
 public class GroupTreeViewModel extends AbstractViewModel {
