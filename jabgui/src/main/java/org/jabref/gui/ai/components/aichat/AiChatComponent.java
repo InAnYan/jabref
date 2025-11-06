@@ -41,9 +41,9 @@ import org.jabref.model.util.ListUtil;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import com.google.common.annotations.VisibleForTesting;
-import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.data.message.ChatMessage;
-import dev.langchain4j.data.message.UserMessage;
+import org.jabref.logic.ai.framework.messages.ChatMessage;
+import org.jabref.logic.ai.framework.messages.LlmMessage;
+import org.jabref.logic.ai.framework.messages.UserMessage;
 import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -264,11 +264,11 @@ public class AiChatComponent extends VBox {
         updatePromptHistory();
         setLoading(true);
 
-        BackgroundTask<AiMessage> task =
+        BackgroundTask<LlmMessage> task =
                 BackgroundTask
                         .wrap(() -> aiChatLogic.execute(userMessage))
                         .showToUser(true)
-                        .onSuccess(aiMessage -> {
+                        .onSuccess(llmMessage -> {
                             setLoading(false);
                             chatPrompt.requestPromptFocus();
                         })
@@ -299,7 +299,7 @@ public class AiChatComponent extends VBox {
 
     private void updatePromptHistory() {
         chatPrompt.getHistory().clear();
-        chatPrompt.getHistory().addAll(getReversedUserMessagesStream().map(UserMessage::singleText).toList());
+        chatPrompt.getHistory().addAll(getReversedUserMessagesStream().map(UserMessage::getText).toList());
     }
 
     private Stream<UserMessage> getReversedUserMessagesStream() {

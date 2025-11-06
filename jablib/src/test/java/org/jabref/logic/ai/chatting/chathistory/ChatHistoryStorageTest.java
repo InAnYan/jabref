@@ -3,9 +3,9 @@ package org.jabref.logic.ai.chatting.chathistory;
 import java.nio.file.Path;
 import java.util.List;
 
-import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.data.message.ChatMessage;
-import dev.langchain4j.data.message.UserMessage;
+import org.jabref.logic.ai.framework.messages.ChatMessage;
+import org.jabref.logic.ai.framework.messages.LlmMessage;
+import org.jabref.logic.ai.framework.messages.UserMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ abstract class ChatHistoryStorageTest {
     void entryChatHistory() {
         List<ChatMessage> messages = List.of(
                 new UserMessage("hi!"),
-                new AiMessage("hello!")
+                new LlmMessage("hello!")
         );
 
         storage.storeMessagesForEntry(tempDir.resolve("test.bib"), "citationKey", messages);
@@ -53,7 +53,7 @@ abstract class ChatHistoryStorageTest {
     void groupChatHistory() {
         List<ChatMessage> messages = List.of(
                 new UserMessage("hi!"),
-                new AiMessage("hello!")
+                new LlmMessage("hello!")
         );
 
         storage.storeMessagesForGroup(tempDir.resolve("test.bib"), "group", messages);

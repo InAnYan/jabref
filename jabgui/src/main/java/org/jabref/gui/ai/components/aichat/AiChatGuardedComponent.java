@@ -14,7 +14,7 @@ import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
-import dev.langchain4j.data.message.ChatMessage;
+import org.jabref.logic.ai.framework.messages.ChatMessage;
 
 /**
  * Main class for AI chatting. It checks if the AI features are enabled and if the embedding model is properly set up.

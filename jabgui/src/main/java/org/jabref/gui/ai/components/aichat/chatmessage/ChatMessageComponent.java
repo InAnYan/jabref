@@ -18,9 +18,9 @@ import org.jabref.logic.ai.util.ErrorMessage;
 import org.jabref.logic.l10n.Localization;
 
 import com.airhacks.afterburner.views.ViewLoader;
-import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.data.message.ChatMessage;
-import dev.langchain4j.data.message.UserMessage;
+import org.jabref.logic.ai.framework.messages.ChatMessage;
+import org.jabref.logic.ai.framework.messages.LlmMessage;
+import org.jabref.logic.ai.framework.messages.UserMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,32 +74,31 @@ public class ChatMessageComponent extends HBox {
     }
 
     private void loadChatMessage() {
-        switch (chatMessage.get()) {
-            case UserMessage userMessage -> {
-                setColor("-jr-ai-message-user", "-jr-ai-message-user-border");
-                setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
-                wrapperHBox.setAlignment(Pos.TOP_RIGHT);
-                sourceLabel.setText(Localization.lang("User"));
-                markdownTextFlow.setMarkdown(userMessage.singleText());
-            }
+        ChatMessage message = chatMessage.get();
 
-            case AiMessage aiMessage -> {
-                setColor("-jr-ai-message-ai", "-jr-ai-message-ai-border");
-                setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
-                wrapperHBox.setAlignment(Pos.TOP_LEFT);
-                sourceLabel.setText(Localization.lang("AI"));
-                markdownTextFlow.setMarkdown(aiMessage.text());
-            }
-
-            case ErrorMessage errorMessage -> {
-                setColor("-jr-ai-message-error", "-jr-ai-message-error-border");
-                setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
-                sourceLabel.setText(Localization.lang("Error"));
-                markdownTextFlow.setMarkdown(errorMessage.getText());
-            }
-
-            default ->
-                    LOGGER.error("ChatMessageComponent supports only user, AI, or error messages, but other type was passed: {}", chatMessage.get().type().name());
+        if (message instanceof UserMessage userMessage) {
+            setColor("-jr-ai-message-user", "-jr-ai-message-user-border");
+            setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+            wrapperHBox.setAlignment(Pos.TOP_RIGHT);
+            sourceLabel.setText(Localization.lang("User"));
+            markdownTextFlow.setMarkdown(userMessage.getText());
+        } else if (message instanceof LlmMessage llmMessage) {
+            setColor("-jr-ai-message-ai", "-jr-ai-message-ai-border");
+            setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
+            wrapperHBox.setAlignment(Pos.TOP_LEFT);
+            sourceLabel.setText(Localization.lang("AI"));
+            markdownTextFlow.setMarkdown(llmMessage.getText());
+        } else if (message instanceof ErrorMessage errorMessage) {
+            setColor("-jr-ai-message-error", "-jr-ai-message-error-border");
+            setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
+            sourceLabel.setText(Localization.lang("Error"));
+            markdownTextFlow.setMarkdown(errorMessage.getText());
+        } else {
+            setColor("-jr-ai-message-ai", "-jr-ai-message-ai-border");
+            setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
+            wrapperHBox.setAlignment(Pos.TOP_LEFT);
+            sourceLabel.setText(Localization.lang("Unknown"));
+            markdownTextFlow.setMarkdown(message.getText());
         }
     }
 

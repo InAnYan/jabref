@@ -12,9 +12,9 @@ import org.jabref.logic.ai.util.MVStoreBase;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.NotificationService;
 
-import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.data.message.ChatMessage;
-import dev.langchain4j.data.message.UserMessage;
+import org.jabref.logic.ai.framework.messages.ChatMessage;
+import org.jabref.logic.ai.framework.messages.LlmMessage;
+import org.jabref.logic.ai.framework.messages.UserMessage;
 import kotlin.ranges.IntRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,34 +33,28 @@ public class MVStoreChatHistoryStorage extends MVStoreBase implements ChatHistor
         }
 
         private static String getContentFromLangchainMessage(ChatMessage chatMessage) {
-            String content;
-
-            switch (chatMessage) {
-                case AiMessage aiMessage ->
-                        content = aiMessage.text();
-                case UserMessage userMessage ->
-                        content = userMessage.singleText();
-                case ErrorMessage errorMessage ->
-                        content = errorMessage.getText();
-                default -> {
-                    LOGGER.warn("ChatHistoryRecord supports only AI, user. and error messages, but added message has other type: {}", chatMessage.type().name());
-                    return "";
-                }
+            if (chatMessage instanceof LlmMessage llmMessage) {
+                return llmMessage.getText();
+            } else if (chatMessage instanceof UserMessage userMessage) {
+                return userMessage.getText();
+            } else if (chatMessage instanceof ErrorMessage errorMessage) {
+                return errorMessage.getText();
+            } else {
+                LOGGER.warn("ChatHistoryRecord supports only AI, user, and error messages, but added message has other type: {}", chatMessage.getClass().getSimpleName());
+                return "";
             }
-
-            return content;
         }
 
         public ChatMessage toLangchainMessage() {
-            if (className.equals(AiMessage.class.getName())) {
-                return new AiMessage(content);
-            } else if (className.equals(UserMessage.class.getName())) {
+            if (className.equals(LlmMessage.class.getName()) || className.equals("dev.langchain4j.data.message.AiMessage")) {
+                return new LlmMessage(content);
+            } else if (className.equals(UserMessage.class.getName()) || className.equals("dev.langchain4j.data.message.UserMessage")) {
                 return new UserMessage(content);
             } else if (className.equals(ErrorMessage.class.getName())) {
                 return new ErrorMessage(content);
             } else {
                 LOGGER.warn("ChatHistoryRecord supports only AI and user messages, but retrieved message has other type: {}. Will treat as an AI message.", className);
-                return new AiMessage(content);
+                return new LlmMessage(content);
             }
         }
     }
