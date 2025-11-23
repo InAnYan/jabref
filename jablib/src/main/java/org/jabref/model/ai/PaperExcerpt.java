@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.templates;
+package org.jabref.model.ai;
 
 public record PaperExcerpt(String citationKey, String text) {
 }
