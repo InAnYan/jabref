@@ -10,7 +10,7 @@ import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.ai.AiPreferences;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.rag.JabRefEmbeddingModel;
+import org.jabref.logic.ai.rag.CurrentlySelectedEmbeddingModel;
 import org.jabref.logic.l10n.Localization;
 
 import com.google.common.eventbus.Subscribe;
@@ -68,12 +68,12 @@ public abstract class EmbeddingModelGuardedComponent extends AiPrivacyNoticeGuar
     }
 
     @Subscribe
-    public void listen(JabRefEmbeddingModel.EmbeddingModelBuiltEvent event) {
+    public void listen(CurrentlySelectedEmbeddingModel.EmbeddingModelBuiltEvent event) {
         UiTaskExecutor.runInJavaFXThread(EmbeddingModelGuardedComponent.this::rebuildUi);
     }
 
     @Subscribe
-    public void listen(JabRefEmbeddingModel.EmbeddingModelBuildingErrorEvent event) {
+    public void listen(CurrentlySelectedEmbeddingModel.EmbeddingModelBuildingErrorEvent event) {
         UiTaskExecutor.runInJavaFXThread(EmbeddingModelGuardedComponent.this::rebuildUi);
     }
 }

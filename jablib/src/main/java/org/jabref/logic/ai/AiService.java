@@ -7,11 +7,11 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.chatting.JabRefChatLanguageModel;
+import org.jabref.logic.ai.chatting.CurrentlySelectedChatLanguageModel;
 import org.jabref.logic.ai.chatting.chathistory.ChatHistoryService;
 import org.jabref.logic.ai.chatting.chathistory.storages.MVStoreChatHistoryStorage;
+import org.jabref.logic.ai.rag.CurrentlySelectedEmbeddingModel;
 import org.jabref.logic.ai.rag.IngestionService;
-import org.jabref.logic.ai.rag.JabRefEmbeddingModel;
 import org.jabref.logic.ai.rag.storages.MVStoreEmbeddingStore;
 import org.jabref.logic.ai.rag.storages.MVStoreFullyIngestedDocumentsTracker;
 import org.jabref.logic.ai.summarization.SummariesService;
@@ -56,8 +56,8 @@ public class AiService implements AutoCloseable {
 
     private final AiTemplatesService templatesService;
     private final ChatHistoryService chatHistoryService;
-    private final JabRefChatLanguageModel jabRefChatLanguageModel;
-    private final JabRefEmbeddingModel jabRefEmbeddingModel;
+    private final CurrentlySelectedChatLanguageModel currentlySelectedChatLanguageModel;
+    private final CurrentlySelectedEmbeddingModel currentlySelectedEmbeddingModel;
     private final IngestionService ingestionService;
     private final SummariesService summariesService;
 
@@ -75,13 +75,13 @@ public class AiService implements AutoCloseable {
 
         this.templatesService = new AiTemplatesService(aiPreferences);
         this.chatHistoryService = new ChatHistoryService(citationKeyPatternPreferences, mvStoreChatHistoryStorage);
-        this.jabRefChatLanguageModel = new JabRefChatLanguageModel(aiPreferences);
-        this.jabRefEmbeddingModel = new JabRefEmbeddingModel(aiPreferences, notificationService, taskExecutor);
+        this.currentlySelectedChatLanguageModel = new CurrentlySelectedChatLanguageModel(aiPreferences);
+        this.currentlySelectedEmbeddingModel = new CurrentlySelectedEmbeddingModel(aiPreferences, notificationService, taskExecutor);
 
         this.ingestionService = new IngestionService(
                 aiPreferences,
                 shutdownSignal,
-                jabRefEmbeddingModel,
+                currentlySelectedEmbeddingModel,
                 mvStoreEmbeddingStore,
                 mvStoreFullyIngestedDocumentsTracker,
                 filePreferences,
@@ -91,7 +91,7 @@ public class AiService implements AutoCloseable {
         this.summariesService = new SummariesService(
                 aiPreferences,
                 mvStoreSummariesStorage,
-                jabRefChatLanguageModel,
+                currentlySelectedChatLanguageModel,
                 templatesService,
                 shutdownSignal,
                 filePreferences,
@@ -99,12 +99,12 @@ public class AiService implements AutoCloseable {
         );
     }
 
-    public JabRefChatLanguageModel getChatLanguageModel() {
-        return jabRefChatLanguageModel;
+    public CurrentlySelectedChatLanguageModel getChatLanguageModel() {
+        return currentlySelectedChatLanguageModel;
     }
 
-    public JabRefEmbeddingModel getEmbeddingModel() {
-        return jabRefEmbeddingModel;
+    public CurrentlySelectedEmbeddingModel getEmbeddingModel() {
+        return currentlySelectedEmbeddingModel;
     }
 
     public ChatHistoryService getChatHistoryService() {
@@ -138,8 +138,8 @@ public class AiService implements AutoCloseable {
         shutdownSignal.set(true);
 
         cachedThreadPool.shutdownNow();
-        jabRefChatLanguageModel.close();
-        jabRefEmbeddingModel.close();
+        currentlySelectedChatLanguageModel.close();
+        currentlySelectedEmbeddingModel.close();
 
         mvStoreFullyIngestedDocumentsTracker.close();
         mvStoreEmbeddingStore.close();

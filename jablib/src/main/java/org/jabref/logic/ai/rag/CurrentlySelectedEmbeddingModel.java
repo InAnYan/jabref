@@ -29,8 +29,8 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This class listens to preferences changes.
  */
-public class JabRefEmbeddingModel implements EmbeddingModel, AutoCloseable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JabRefEmbeddingModel.class);
+public class CurrentlySelectedEmbeddingModel implements EmbeddingModel, AutoCloseable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CurrentlySelectedEmbeddingModel.class);
 
     private final AiPreferences aiPreferences;
     private final NotificationService notificationService;
@@ -54,7 +54,7 @@ public class JabRefEmbeddingModel implements EmbeddingModel, AutoCloseable {
     // Empty if there is no error.
     private String errorWhileBuildingModel = "";
 
-    public JabRefEmbeddingModel(AiPreferences aiPreferences, NotificationService notificationService, TaskExecutor taskExecutor) {
+    public CurrentlySelectedEmbeddingModel(AiPreferences aiPreferences, NotificationService notificationService, TaskExecutor taskExecutor) {
         this.aiPreferences = aiPreferences;
         this.notificationService = notificationService;
         this.taskExecutor = taskExecutor;

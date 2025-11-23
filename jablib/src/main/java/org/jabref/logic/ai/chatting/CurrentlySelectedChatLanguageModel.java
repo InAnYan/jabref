@@ -29,7 +29,7 @@ import dev.langchain4j.model.mistralai.MistralAiChatModel;
  * Notice, that the real chat model is created lazily, when it's needed. This is done, so API key is fetched only,
  * when user wants to chat with AI.
  */
-public class JabRefChatLanguageModel implements ChatModel, AutoCloseable {
+public class CurrentlySelectedChatLanguageModel implements ChatModel, AutoCloseable {
     private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(5);
 
     private final AiPreferences aiPreferences;
@@ -41,7 +41,7 @@ public class JabRefChatLanguageModel implements ChatModel, AutoCloseable {
 
     private Optional<ChatModel> langchainChatModel = Optional.empty();
 
-    public JabRefChatLanguageModel(AiPreferences aiPreferences) {
+    public CurrentlySelectedChatLanguageModel(AiPreferences aiPreferences) {
         this.aiPreferences = aiPreferences;
         this.httpClient = HttpClient.newBuilder().connectTimeout(CONNECTION_TIMEOUT).executor(executorService).build();
 
