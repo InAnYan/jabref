@@ -11,13 +11,14 @@ import javafx.util.Pair;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiPreferences;
-import org.jabref.logic.ai.processingstatus.ProcessingInfo;
-import org.jabref.logic.ai.processingstatus.ProcessingState;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ProgressCounter;
 import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.ai.Summary;
+import org.jabref.model.ai.processingstatus.ProcessingInfo;
+import org.jabref.model.ai.processingstatus.ProcessingState;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 

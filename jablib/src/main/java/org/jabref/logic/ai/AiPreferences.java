@@ -16,9 +16,9 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-import org.jabref.logic.ai.templates.AiTemplate;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.AiProvider;
+import org.jabref.model.ai.AiTemplate;
 import org.jabref.model.ai.EmbeddingModel;
 
 import com.github.javakeyring.Keyring;

@@ -9,9 +9,9 @@ import javafx.collections.ObservableList;
 
 import org.jabref.logic.ai.AiPreferences;
 import org.jabref.logic.ai.ingestion.FileEmbeddingsManager;
-import org.jabref.logic.ai.templates.AiTemplate;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.ai.util.ErrorMessage;
+import org.jabref.model.ai.AiTemplate;
 import org.jabref.model.ai.PaperExcerpt;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;

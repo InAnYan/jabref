@@ -10,9 +10,9 @@ import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiPreferences;
-import org.jabref.logic.ai.processingstatus.ProcessingInfo;
-import org.jabref.logic.ai.processingstatus.ProcessingState;
 import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.ai.processingstatus.ProcessingInfo;
+import org.jabref.model.ai.processingstatus.ProcessingState;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.database.event.EntriesAddedEvent;
 import org.jabref.model.entry.LinkedFile;

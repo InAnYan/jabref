@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.jabref.logic.ai.templates.AiTemplate;
 import org.jabref.model.ai.AiProvider;
+import org.jabref.model.ai.AiTemplate;
 import org.jabref.model.ai.EmbeddingModel;
 
 public class AiDefaultPreferences {

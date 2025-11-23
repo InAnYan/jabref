@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.templates;
+package org.jabref.model.ai;
 
 public enum AiTemplate {
     // Templates that are used in AI chats.

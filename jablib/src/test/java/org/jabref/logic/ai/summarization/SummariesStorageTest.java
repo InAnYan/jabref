@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.jabref.model.ai.AiProvider;
+import org.jabref.model.ai.Summary;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

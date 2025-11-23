@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.processingstatus;
+package org.jabref.model.ai.processingstatus;
 
 public enum ProcessingState {
     PROCESSING,

@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.ingestion.model;
+package org.jabref.logic.ai.ingestion;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -6,6 +6,7 @@ import java.util.Optional;
 import javafx.beans.property.ObjectProperty;
 
 import org.jabref.logic.ai.AiPreferences;
+import org.jabref.logic.ai.customimplementations.embeddingmodels.DeepJavaEmbeddingModel;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ProgressCounter;

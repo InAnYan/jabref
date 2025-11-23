@@ -21,10 +21,10 @@ import org.jabref.gui.help.HelpAction;
 import org.jabref.gui.preferences.AbstractPreferenceTabView;
 import org.jabref.gui.preferences.PreferencesTab;
 import org.jabref.gui.util.ViewModelListCellFactory;
-import org.jabref.logic.ai.templates.AiTemplate;
 import org.jabref.logic.help.HelpFile;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.AiProvider;
+import org.jabref.model.ai.AiTemplate;
 import org.jabref.model.ai.EmbeddingModel;
 
 import com.airhacks.afterburner.views.ViewLoader;

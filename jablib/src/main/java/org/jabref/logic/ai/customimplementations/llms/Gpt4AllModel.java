@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.chatting.model;
+package org.jabref.logic.ai.customimplementations.llms;
 
 import java.io.IOException;
 import java.net.http.HttpClient;

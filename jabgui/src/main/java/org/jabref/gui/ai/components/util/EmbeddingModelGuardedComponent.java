@@ -10,7 +10,7 @@ import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.ai.AiPreferences;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.ingestion.model.JabRefEmbeddingModel;
+import org.jabref.logic.ai.ingestion.JabRefEmbeddingModel;
 import org.jabref.logic.l10n.Localization;
 
 import com.google.common.eventbus.Subscribe;

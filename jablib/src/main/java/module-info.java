@@ -62,7 +62,7 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.ingestion;
     exports org.jabref.logic.ai.ingestion.model;
     exports org.jabref.model.ai;
-    exports org.jabref.logic.ai.processingstatus;
+    exports org.jabref.model.ai.processingstatus;
     exports org.jabref.logic.ai.summarization;
     exports org.jabref.logic.layout.format;
     exports org.jabref.logic.auxparser;
@@ -120,6 +120,7 @@ open module org.jabref.jablib {
     exports org.jabref.logic.git.merge.planning;
     exports org.jabref.logic.git.merge.execution;
     exports org.jabref.model.sciteTallies;
+    exports org.jabref.logic.ai.customimplementations.embeddingmodels;
 
     requires java.base;
 
