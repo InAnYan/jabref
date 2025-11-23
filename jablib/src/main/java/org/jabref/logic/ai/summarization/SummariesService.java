@@ -10,6 +10,9 @@ import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiPreferences;
+import org.jabref.logic.ai.summarization.storages.SummariesStorage;
+import org.jabref.logic.ai.summarization.tasks.GenerateSummaryForSeveralTask;
+import org.jabref.logic.ai.summarization.tasks.GenerateSummaryTask;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.ai.util.CitationKeyCheck;
 import org.jabref.logic.util.TaskExecutor;

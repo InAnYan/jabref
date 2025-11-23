@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.ingestion;
+package org.jabref.logic.ai.rag.tasks;
 
 import java.io.IOException;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.ingestion;
+package org.jabref.logic.ai.rag;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +10,7 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import org.jabref.logic.ai.AiPreferences;
 import org.jabref.logic.ai.customimplementations.embeddingmodels.DeepJavaEmbeddingModel;
+import org.jabref.logic.ai.rag.tasks.UpdateEmbeddingModelTask;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;

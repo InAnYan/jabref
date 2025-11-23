@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.ingestion;
+package org.jabref.logic.ai.rag.tasks;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
+import org.jabref.logic.ai.rag.algorithms.FileToDocument;
+import org.jabref.logic.ai.rag.storages.FileEmbeddingsManager;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ProgressCounter;
@@ -75,7 +77,7 @@ public class GenerateEmbeddingsTask extends BackgroundTask<Void> {
 
     private void ingestLinkedFile(LinkedFile linkedFile) throws InterruptedException {
         // Rationale for RuntimeException here:
-        // See org.jabref.logic.ai.summarization.GenerateSummaryTask.summarizeAll
+        // See org.jabref.logic.ai.summarization.tasks.GenerateSummaryTask.summarizeAll
 
         LOGGER.debug("Generating embeddings for file \"{}\"", linkedFile.getLink());
 

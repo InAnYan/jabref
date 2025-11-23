@@ -59,7 +59,7 @@ open module org.jabref.jablib {
     exports org.jabref.model.metadata.event;
     exports org.jabref.logic.ai.chatting;
     exports org.jabref.logic.ai.util;
-    exports org.jabref.logic.ai.ingestion;
+    exports org.jabref.logic.ai.rag.ingestion;
     exports org.jabref.logic.ai.ingestion.model;
     exports org.jabref.model.ai;
     exports org.jabref.model.ai.processingstatus;
@@ -121,6 +121,15 @@ open module org.jabref.jablib {
     exports org.jabref.logic.git.merge.execution;
     exports org.jabref.model.sciteTallies;
     exports org.jabref.logic.ai.customimplementations.embeddingmodels;
+    exports org.jabref.logic.ai.rag;
+    exports org.jabref.logic.ai.chatting.chathistory;
+    exports org.jabref.logic.ai.summarization.tasks;
+    exports org.jabref.logic.ai.summarization.storages;
+    exports org.jabref.logic.ai.rag.tasks;
+    exports org.jabref.logic.ai.rag.storages;
+    exports org.jabref.logic.ai.rag.algorithms;
+    exports org.jabref.logic.ai.chatting.algorithms;
+    exports org.jabref.logic.ai.chatting.tasks;
 
     requires java.base;
 
@@ -267,5 +276,6 @@ open module org.jabref.jablib {
     requires org.jooq.jool;
     requires org.libreoffice.uno;
     requires transitive org.jspecify;
+    requires org.jabref.jablib;
     // endregion
 }

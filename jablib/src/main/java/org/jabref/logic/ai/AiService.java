@@ -7,14 +7,13 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.chatting.AiChatService;
-import org.jabref.logic.ai.chatting.ChatHistoryService;
 import org.jabref.logic.ai.chatting.JabRefChatLanguageModel;
+import org.jabref.logic.ai.chatting.chathistory.ChatHistoryService;
 import org.jabref.logic.ai.chatting.chathistory.storages.MVStoreChatHistoryStorage;
-import org.jabref.logic.ai.ingestion.IngestionService;
-import org.jabref.logic.ai.ingestion.JabRefEmbeddingModel;
-import org.jabref.logic.ai.ingestion.MVStoreEmbeddingStore;
-import org.jabref.logic.ai.ingestion.storages.MVStoreFullyIngestedDocumentsTracker;
+import org.jabref.logic.ai.rag.IngestionService;
+import org.jabref.logic.ai.rag.JabRefEmbeddingModel;
+import org.jabref.logic.ai.rag.storages.MVStoreEmbeddingStore;
+import org.jabref.logic.ai.rag.storages.MVStoreFullyIngestedDocumentsTracker;
 import org.jabref.logic.ai.summarization.SummariesService;
 import org.jabref.logic.ai.summarization.storages.MVStoreSummariesStorage;
 import org.jabref.logic.ai.templates.AiTemplatesService;
@@ -25,6 +24,8 @@ import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.database.BibDatabaseContext;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.store.embedding.EmbeddingStore;
 
 /**
  * The main class for the AI functionality.
@@ -57,7 +58,6 @@ public class AiService implements AutoCloseable {
     private final ChatHistoryService chatHistoryService;
     private final JabRefChatLanguageModel jabRefChatLanguageModel;
     private final JabRefEmbeddingModel jabRefEmbeddingModel;
-    private final AiChatService aiChatService;
     private final IngestionService ingestionService;
     private final SummariesService summariesService;
 
@@ -77,8 +77,6 @@ public class AiService implements AutoCloseable {
         this.chatHistoryService = new ChatHistoryService(citationKeyPatternPreferences, mvStoreChatHistoryStorage);
         this.jabRefChatLanguageModel = new JabRefChatLanguageModel(aiPreferences);
         this.jabRefEmbeddingModel = new JabRefEmbeddingModel(aiPreferences, notificationService, taskExecutor);
-
-        this.aiChatService = new AiChatService(aiPreferences, jabRefChatLanguageModel, jabRefEmbeddingModel, mvStoreEmbeddingStore, templatesService);
 
         this.ingestionService = new IngestionService(
                 aiPreferences,
@@ -113,10 +111,6 @@ public class AiService implements AutoCloseable {
         return chatHistoryService;
     }
 
-    public AiChatService getAiChatService() {
-        return aiChatService;
-    }
-
     public IngestionService getIngestionService() {
         return ingestionService;
     }
@@ -127,6 +121,10 @@ public class AiService implements AutoCloseable {
 
     public AiTemplatesService getTemplatesService() {
         return templatesService;
+    }
+
+    public EmbeddingStore<TextSegment> getEmbeddingStore() {
+        return mvStoreEmbeddingStore;
     }
 
     public void setupDatabase(BibDatabaseContext context) {

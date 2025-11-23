@@ -1,10 +1,9 @@
-package org.jabref.logic.ai.ingestion.storages;
+package org.jabref.logic.ai.rag.storages;
 
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 
-import org.jabref.logic.ai.ingestion.FullyIngestedDocumentsTracker;
 import org.jabref.logic.ai.util.MVStoreBase;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.NotificationService;

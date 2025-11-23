@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.summarization;
+package org.jabref.logic.ai.summarization.tasks;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -12,7 +12,9 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiPreferences;
-import org.jabref.logic.ai.ingestion.FileToDocument;
+import org.jabref.logic.ai.rag.algorithms.FileToDocument;
+import org.jabref.logic.ai.summarization.SummariesService;
+import org.jabref.logic.ai.summarization.storages.SummariesStorage;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.ai.util.CitationKeyCheck;
 import org.jabref.logic.l10n.Localization;

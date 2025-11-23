@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.ingestion;
+package org.jabref.logic.ai.rag;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -10,6 +10,10 @@ import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiPreferences;
+import org.jabref.logic.ai.rag.storages.FileEmbeddingsManager;
+import org.jabref.logic.ai.rag.storages.FullyIngestedDocumentsTracker;
+import org.jabref.logic.ai.rag.tasks.GenerateEmbeddingsForSeveralTask;
+import org.jabref.logic.ai.rag.tasks.GenerateEmbeddingsTask;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.processingstatus.ProcessingInfo;
 import org.jabref.model.ai.processingstatus.ProcessingState;

@@ -3,6 +3,8 @@ package org.jabref.logic.ai.ingestion;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import org.jabref.logic.ai.rag.storages.FullyIngestedDocumentsTracker;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.ingestion;
+package org.jabref.logic.ai.rag.algorithms;
 
 import java.util.List;
 

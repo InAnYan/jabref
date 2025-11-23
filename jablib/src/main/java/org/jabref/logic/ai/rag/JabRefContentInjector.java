@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.chatting;
+package org.jabref.logic.ai.rag;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +15,7 @@ import dev.langchain4j.model.input.PromptTemplate;
 import dev.langchain4j.rag.content.Content;
 import dev.langchain4j.rag.content.injector.ContentInjector;
 
-import static org.jabref.logic.ai.ingestion.FileEmbeddingsManager.LINK_METADATA_KEY;
+import static org.jabref.logic.ai.rag.storages.FileEmbeddingsManager.LINK_METADATA_KEY;
 
 public class JabRefContentInjector implements ContentInjector {
     public static final PromptTemplate DEFAULT_PROMPT_TEMPLATE = PromptTemplate.from("{{userMessage}}\n\nAnswer using the following information:\n{{contents}}");

@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.ingestion;
+package org.jabref.logic.ai.rag.storages;
 
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -34,7 +34,7 @@ import org.h2.mvstore.MVStore;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Comparator.comparingDouble;
-import static org.jabref.logic.ai.ingestion.FileEmbeddingsManager.LINK_METADATA_KEY;
+import static org.jabref.logic.ai.rag.storages.FileEmbeddingsManager.LINK_METADATA_KEY;
 
 /**
  * A custom implementation of langchain4j's {@link EmbeddingStore} that uses a {@link MVStore} as an embedded database.

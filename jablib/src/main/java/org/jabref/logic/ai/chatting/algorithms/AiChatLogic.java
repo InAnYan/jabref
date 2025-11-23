@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.chatting;
+package org.jabref.logic.ai.chatting.algorithms;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,7 +8,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 import org.jabref.logic.ai.AiPreferences;
-import org.jabref.logic.ai.ingestion.FileEmbeddingsManager;
+import org.jabref.logic.ai.rag.storages.FileEmbeddingsManager;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.ai.util.ErrorMessage;
 import org.jabref.model.ai.AiTemplate;

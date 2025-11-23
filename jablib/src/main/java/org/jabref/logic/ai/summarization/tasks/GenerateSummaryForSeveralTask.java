@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.summarization;
+package org.jabref.logic.ai.summarization.tasks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +11,7 @@ import javafx.util.Pair;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiPreferences;
+import org.jabref.logic.ai.summarization.storages.SummariesStorage;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;

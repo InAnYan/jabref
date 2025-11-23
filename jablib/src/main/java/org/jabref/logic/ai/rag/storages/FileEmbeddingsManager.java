@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.ingestion;
+package org.jabref.logic.ai.rag.storages;
 
 import java.util.List;
 import java.util.Optional;
@@ -7,6 +7,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 
 import org.jabref.logic.ai.AiPreferences;
+import org.jabref.logic.ai.rag.algorithms.LowLevelIngestor;
 import org.jabref.model.entry.LinkedFile;
 
 import dev.langchain4j.data.document.Document;

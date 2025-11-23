@@ -2,7 +2,8 @@ package org.jabref.logic.ai.ingestion;
 
 import java.nio.file.Path;
 
-import org.jabref.logic.ai.ingestion.storages.MVStoreFullyIngestedDocumentsTracker;
+import org.jabref.logic.ai.rag.storages.FullyIngestedDocumentsTracker;
+import org.jabref.logic.ai.rag.storages.MVStoreFullyIngestedDocumentsTracker;
 import org.jabref.logic.util.NotificationService;
 
 import static org.mockito.Mockito.mock;

@@ -29,7 +29,8 @@ import org.jabref.gui.icon.IconTheme;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.ai.AiPreferences;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.AiChatLogic;
+import org.jabref.logic.ai.chatting.algorithms.AiChatLogic;
+import org.jabref.logic.ai.chatting.tasks.GenerateAiResponseTask;
 import org.jabref.logic.ai.util.CitationKeyCheck;
 import org.jabref.logic.ai.util.ErrorMessage;
 import org.jabref.logic.l10n.Localization;
@@ -97,7 +98,17 @@ public class AiChatComponent extends VBox {
         this.dialogService = dialogService;
         this.taskExecutor = taskExecutor;
 
-        this.aiChatLogic = aiService.getAiChatService().makeChat(name, chatHistory, entries, bibDatabaseContext);
+        this.aiChatLogic = new AiChatLogic(
+                aiPreferences,
+                aiService.getChatLanguageModel(),
+                aiService.getEmbeddingModel(),
+                aiService.getEmbeddingStore(),
+                aiService.getTemplatesService(),
+                name,
+                chatHistory,
+                entries,
+                bibDatabaseContext
+        );
 
         aiService.getIngestionService().ingest(name, ListUtil.getLinkedFiles(entries).toList(), bibDatabaseContext);
 
@@ -282,30 +293,26 @@ public class AiChatComponent extends VBox {
         updatePromptHistory();
         setLoading(true);
 
-        BackgroundTask<AiMessage> task =
-                BackgroundTask
-                        .wrap(() -> aiChatLogic.execute(userMessage))
-                        .showToUser(true)
-                        .onSuccess(aiMessage -> {
-                            setLoading(false);
-                            chatPrompt.requestPromptFocus();
-                        })
-                        .onFailure(e -> {
-                            LOGGER.error("Got an error while sending a message to AI", e);
-                            setLoading(false);
+        BackgroundTask<AiMessage> task = new GenerateAiResponseTask(userMessage, aiChatLogic)
+                .onSuccess(aiMessage -> {
+                    setLoading(false);
+                    chatPrompt.requestPromptFocus();
+                })
+                .onFailure(e -> {
+                    LOGGER.error("Got an error while sending a message to AI", e);
+                    setLoading(false);
 
-                            // Typically, if user has entered an invalid API base URL, we get either "401 - null" or "404 - null" strings.
-                            // Since there might be other strings returned from other API endpoints, we use startsWith() here.
-                            if (e.getMessage().startsWith("404") || e.getMessage().startsWith("401")) {
-                                addError(Localization.lang("API base URL setting appears to be incorrect. Please check it in AI expert settings."));
-                            } else {
-                                addError(e.getMessage());
-                            }
+                    // Typically, if a user has entered an invalid API base URL, we get either "401 - null" or "404 - null" strings.
+                    // Since there might be other strings returned from other API endpoints, we use startsWith() here.
+                    if (e.getMessage().startsWith("404") || e.getMessage().startsWith("401")) {
+                        addError(Localization.lang("API base URL setting appears to be incorrect. Please check it in AI expert settings."));
+                    } else {
+                        addError(e.getMessage());
+                    }
 
-                            chatPrompt.switchToErrorState(userPrompt);
-                        });
-
-        task.titleProperty().set(Localization.lang("Waiting for AI reply..."));
+                    chatPrompt.switchToErrorState(userPrompt);
+                });
+        ;
 
         task.executeWith(taskExecutor);
     }

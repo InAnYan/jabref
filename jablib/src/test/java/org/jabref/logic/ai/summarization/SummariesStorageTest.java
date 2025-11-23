@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.jabref.logic.ai.summarization.storages.SummariesStorage;
 import org.jabref.model.ai.AiProvider;
 import org.jabref.model.ai.Summary;
 
