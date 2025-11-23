@@ -7,7 +7,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
-import org.jabref.logic.ai.AiPreferences;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.storages.FileEmbeddingsManager;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.ai.util.ErrorMessage;

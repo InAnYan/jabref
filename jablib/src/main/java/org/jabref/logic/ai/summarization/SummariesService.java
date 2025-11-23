@@ -9,7 +9,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.AiPreferences;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.storages.SummariesStorage;
 import org.jabref.logic.ai.summarization.tasks.GenerateSummaryForSeveralTask;
 import org.jabref.logic.ai.summarization.tasks.GenerateSummaryTask;

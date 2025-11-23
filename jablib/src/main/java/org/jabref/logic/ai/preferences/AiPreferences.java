@@ -1,4 +1,4 @@
-package org.jabref.logic.ai;
+package org.jabref.logic.ai.preferences;
 
 import java.util.List;
 import java.util.Map;

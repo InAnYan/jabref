@@ -9,9 +9,9 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 
 import org.jabref.gui.DialogService;
-import org.jabref.logic.ai.AiPreferences;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.algorithms.AiChatLogic;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.IngestionService;
 import org.jabref.logic.l10n.Language;
 import org.jabref.logic.l10n.Localization;

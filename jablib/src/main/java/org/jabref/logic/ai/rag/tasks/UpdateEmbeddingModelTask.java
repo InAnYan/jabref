@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import javafx.beans.property.ObjectProperty;
 
-import org.jabref.logic.ai.AiPreferences;
 import org.jabref.logic.ai.customimplementations.embeddingmodels.DeepJavaEmbeddingModel;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ProgressCounter;

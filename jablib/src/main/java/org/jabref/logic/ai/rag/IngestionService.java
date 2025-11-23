@@ -9,7 +9,7 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.AiPreferences;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.storages.FileEmbeddingsManager;
 import org.jabref.logic.ai.rag.storages.FullyIngestedDocumentsTracker;
 import org.jabref.logic.ai.rag.tasks.GenerateEmbeddingsForSeveralTask;

@@ -3,7 +3,7 @@ package org.jabref.logic.ai.templates;
 import java.io.StringWriter;
 import java.util.List;
 
-import org.jabref.logic.ai.AiPreferences;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.model.ai.AiTemplate;
 import org.jabref.model.ai.PaperExcerpt;
 import org.jabref.model.entry.BibEntry;

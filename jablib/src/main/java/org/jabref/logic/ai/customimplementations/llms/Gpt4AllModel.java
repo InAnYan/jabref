@@ -8,7 +8,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.jabref.logic.ai.AiPreferences;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.URLUtil;
 
 import com.google.gson.Gson;

@@ -5,7 +5,7 @@ import java.util.List;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 
-import org.jabref.logic.ai.AiPreferences;
+import org.jabref.logic.ai.preferences.AiPreferences;
 
 import dev.langchain4j.data.document.DefaultDocument;
 import dev.langchain4j.data.document.Document;

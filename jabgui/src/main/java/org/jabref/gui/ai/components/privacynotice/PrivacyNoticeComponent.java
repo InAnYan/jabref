@@ -18,7 +18,7 @@ import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.entryeditor.EntryEditorPreferences;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.preferences.GuiPreferences;
-import org.jabref.logic.ai.AiPreferences;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.model.ai.AiProvider;
 
 import com.airhacks.afterburner.views.ViewLoader;

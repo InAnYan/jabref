@@ -7,7 +7,7 @@ import org.jabref.gui.ai.components.aichat.AiChatGuardedComponent;
 import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.util.DynamicallyChangeableNode;
-import org.jabref.logic.ai.AiPreferences;
+import org.jabref.logic.ai.preferences.AiPreferences;
 
 /**
  * A class that guards a component, before AI privacy policy is accepted.
