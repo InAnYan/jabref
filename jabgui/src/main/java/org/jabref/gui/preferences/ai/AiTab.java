@@ -23,9 +23,9 @@ import org.jabref.gui.preferences.PreferencesTab;
 import org.jabref.gui.util.ViewModelListCellFactory;
 import org.jabref.logic.help.HelpFile;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.AiProvider;
-import org.jabref.model.ai.AiTemplate;
-import org.jabref.model.ai.EmbeddingModel;
+import org.jabref.model.ai.chatting.AiProvider;
+import org.jabref.model.ai.templating.AiTemplate;
+import org.jabref.model.ai.embeddings.EmbeddingModel;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import com.dlsc.unitfx.IntegerInputField;

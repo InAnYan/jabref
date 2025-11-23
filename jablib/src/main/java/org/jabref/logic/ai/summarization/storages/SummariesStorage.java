@@ -3,7 +3,7 @@ package org.jabref.logic.ai.summarization.storages;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import org.jabref.model.ai.Summary;
+import org.jabref.model.ai.summarization.Summary;
 
 public interface SummariesStorage {
     void set(Path bibDatabasePath, String citationKey, Summary summary);

@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.jabref.logic.ai.summarization.storages.SummariesStorage;
-import org.jabref.model.ai.AiProvider;
-import org.jabref.model.ai.Summary;
+import org.jabref.model.ai.chatting.AiProvider;
+import org.jabref.model.ai.summarization.Summary;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

@@ -17,9 +17,9 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.util.strings.StringUtil;
-import org.jabref.model.ai.AiProvider;
-import org.jabref.model.ai.AiTemplate;
-import org.jabref.model.ai.EmbeddingModel;
+import org.jabref.model.ai.chatting.AiProvider;
+import org.jabref.model.ai.templating.AiTemplate;
+import org.jabref.model.ai.embeddings.EmbeddingModel;
 
 import com.github.javakeyring.Keyring;
 import com.github.javakeyring.PasswordAccessException;

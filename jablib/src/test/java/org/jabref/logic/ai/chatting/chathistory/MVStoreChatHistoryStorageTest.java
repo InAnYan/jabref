@@ -2,7 +2,8 @@ package org.jabref.logic.ai.chatting.chathistory;
 
 import java.nio.file.Path;
 
-import org.jabref.logic.ai.chatting.chathistory.storages.MVStoreChatHistoryStorage;
+import org.jabref.logic.ai.chatting.storages.ChatHistoryStorage;
+import org.jabref.logic.ai.chatting.storages.MVStoreChatHistoryStorage;
 import org.jabref.logic.util.NotificationService;
 
 import static org.mockito.Mockito.mock;

@@ -129,6 +129,12 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.chatting.algorithms;
     exports org.jabref.logic.ai.chatting.tasks;
     exports org.jabref.logic.ai.preferences;
+    exports org.jabref.model.ai.chatting;
+    exports org.jabref.model.ai.templating;
+    exports org.jabref.model.ai.rag;
+    exports org.jabref.model.ai.embeddings;
+    exports org.jabref.model.ai.summarization;
+    exports org.jabref.logic.ai.chatting.storages;
 
     requires java.base;
 

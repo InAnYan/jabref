@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.jabref.logic.ai.util.MVStoreBase;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.NotificationService;
-import org.jabref.model.ai.Summary;
+import org.jabref.model.ai.summarization.Summary;
 
 public class MVStoreSummariesStorage extends MVStoreBase implements SummariesStorage {
     private static final String SUMMARIES_MAP_PREFIX = "summaries";

@@ -3,6 +3,8 @@ package org.jabref.logic.ai.chatting.chathistory;
 import java.nio.file.Path;
 import java.util.List;
 
+import org.jabref.logic.ai.chatting.storages.ChatHistoryStorage;
+
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;

@@ -14,7 +14,7 @@ import javafx.scene.web.WebView;
 
 import org.jabref.gui.util.WebViewStore;
 import org.jabref.logic.layout.format.MarkdownFormatter;
-import org.jabref.model.ai.Summary;
+import org.jabref.model.ai.summarization.Summary;
 
 import com.airhacks.afterburner.views.ViewLoader;
 

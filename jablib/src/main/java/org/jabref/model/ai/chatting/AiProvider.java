@@ -1,4 +1,4 @@
-package org.jabref.model.ai;
+package org.jabref.model.ai.chatting;
 
 import java.io.Serializable;
 

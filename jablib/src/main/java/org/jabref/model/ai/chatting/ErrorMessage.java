@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.util;
+package org.jabref.model.ai.chatting;
 
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.ChatMessageType;

@@ -14,8 +14,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import org.jabref.gui.util.MarkdownTextFlow;
-import org.jabref.logic.ai.util.ErrorMessage;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.model.ai.chatting.ErrorMessage;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import dev.langchain4j.data.message.AiMessage;

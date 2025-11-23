@@ -4,9 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.jabref.model.ai.AiProvider;
-import org.jabref.model.ai.AiTemplate;
-import org.jabref.model.ai.EmbeddingModel;
+import org.jabref.model.ai.chatting.AiProvider;
+import org.jabref.model.ai.templating.AiTemplate;
+import org.jabref.model.ai.embeddings.EmbeddingModel;
 
 public class AiDefaultPreferences {
     public enum PredefinedChatModel {

@@ -7,9 +7,9 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
+import org.jabref.logic.ai.chatting.ChatHistoryService;
 import org.jabref.logic.ai.chatting.CurrentlySelectedChatLanguageModel;
-import org.jabref.logic.ai.chatting.chathistory.ChatHistoryService;
-import org.jabref.logic.ai.chatting.chathistory.storages.MVStoreChatHistoryStorage;
+import org.jabref.logic.ai.chatting.storages.MVStoreChatHistoryStorage;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.CurrentlySelectedEmbeddingModel;
 import org.jabref.logic.ai.rag.IngestionService;

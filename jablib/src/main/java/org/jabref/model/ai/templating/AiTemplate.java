@@ -1,4 +1,4 @@
-package org.jabref.model.ai;
+package org.jabref.model.ai.templating;
 
 public enum AiTemplate {
     // Templates that are used in AI chats.

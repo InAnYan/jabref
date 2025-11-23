@@ -1,4 +1,4 @@
-package org.jabref.model.ai;
+package org.jabref.model.ai.embeddings;
 
 import org.apache.commons.io.FileUtils;
 

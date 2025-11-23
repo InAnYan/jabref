@@ -4,8 +4,8 @@ import java.io.StringWriter;
 import java.util.List;
 
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.model.ai.AiTemplate;
-import org.jabref.model.ai.PaperExcerpt;
+import org.jabref.model.ai.templating.AiTemplate;
+import org.jabref.model.ai.rag.PaperExcerpt;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.CanonicalBibEntry;
 
