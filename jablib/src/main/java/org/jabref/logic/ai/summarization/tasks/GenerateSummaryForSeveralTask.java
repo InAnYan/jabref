@@ -11,7 +11,7 @@ import javafx.util.Pair;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.summarization.storages.SummariesRepository;
+import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;

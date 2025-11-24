@@ -8,7 +8,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.rag.storages.FileEmbeddingsManager;
+import org.jabref.logic.ai.rag.repositories.FileEmbeddingsManager;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.model.ai.chatting.ErrorMessage;
 import org.jabref.model.ai.rag.PaperExcerpt;

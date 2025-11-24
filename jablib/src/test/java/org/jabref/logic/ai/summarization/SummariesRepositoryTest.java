@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.jabref.logic.ai.summarization.storages.SummariesRepository;
+import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.model.ai.chatting.AiProvider;
 import org.jabref.model.ai.summarization.Summary;
 

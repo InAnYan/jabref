@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.rag.storages;
+package org.jabref.logic.ai.rag.repositories;
 
 import java.util.List;
 import java.util.Optional;

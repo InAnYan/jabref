@@ -10,8 +10,8 @@ import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.rag.storages.FileEmbeddingsManager;
-import org.jabref.logic.ai.rag.storages.FullyIngestedDocumentsRepository;
+import org.jabref.logic.ai.rag.repositories.FileEmbeddingsManager;
+import org.jabref.logic.ai.rag.repositories.FullyIngestedDocumentsRepository;
 import org.jabref.logic.ai.rag.tasks.GenerateEmbeddingsForSeveralTask;
 import org.jabref.logic.ai.rag.tasks.GenerateEmbeddingsTask;
 import org.jabref.logic.util.TaskExecutor;

@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.summarization.storages;
+package org.jabref.logic.ai.summarization.repositories;
 
 import java.nio.file.Path;
 import java.util.Map;

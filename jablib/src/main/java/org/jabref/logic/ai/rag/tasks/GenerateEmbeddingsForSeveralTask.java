@@ -10,7 +10,7 @@ import javafx.beans.property.StringProperty;
 import javafx.util.Pair;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.rag.storages.FileEmbeddingsManager;
+import org.jabref.logic.ai.rag.repositories.FileEmbeddingsManager;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ProgressCounter;

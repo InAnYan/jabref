@@ -120,9 +120,9 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.customimplementations.embeddingmodels;
     exports org.jabref.logic.ai.rag;
     exports org.jabref.logic.ai.summarization.tasks;
-    exports org.jabref.logic.ai.summarization.storages;
+    exports org.jabref.logic.ai.summarization.repositories;
     exports org.jabref.logic.ai.rag.tasks;
-    exports org.jabref.logic.ai.rag.storages;
+    exports org.jabref.logic.ai.rag.repositories;
     exports org.jabref.logic.ai.rag.algorithms;
     exports org.jabref.logic.ai.chatting.algorithms;
     exports org.jabref.logic.ai.chatting.tasks;
@@ -132,7 +132,7 @@ open module org.jabref.jablib {
     exports org.jabref.model.ai.rag;
     exports org.jabref.model.ai.embeddings;
     exports org.jabref.model.ai.summarization;
-    exports org.jabref.logic.ai.chatting.storages;
+    exports org.jabref.logic.ai.chatting.repositories;
 
     requires java.base;
 

@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.chatting.storages;
+package org.jabref.logic.ai.chatting.repositories;
 
 import java.nio.file.Path;
 import java.util.List;
