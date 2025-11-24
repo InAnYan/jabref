@@ -54,13 +54,14 @@ public class SummariesService {
     private final FilePreferences filePreferences;
     private final TaskExecutor taskExecutor;
 
-    public SummariesService(AiPreferences aiPreferences,
-                            SummariesRepository summariesRepository,
-                            ChatModel chatLanguageModel,
-                            AiTemplatesService aiTemplatesService,
-                            BooleanProperty shutdownSignal,
-                            FilePreferences filePreferences,
-                            TaskExecutor taskExecutor
+    public SummariesService(
+            AiPreferences aiPreferences,
+            FilePreferences filePreferences,
+            AiTemplatesService aiTemplatesService,
+            TaskExecutor taskExecutor,
+            ChatModel chatLanguageModel,
+            SummariesRepository summariesRepository,
+            BooleanProperty shutdownSignal
     ) {
         this.aiPreferences = aiPreferences;
         this.summariesRepository = summariesRepository;
@@ -140,7 +141,7 @@ public class SummariesService {
     private void startSummarizationTask(BibEntry entry, BibDatabaseContext bibDatabaseContext, ProcessingInfo<BibEntry, Summary> processingInfo) {
         processingInfo.setState(ProcessingState.PROCESSING);
 
-        new GenerateSummaryTask(entry, bibDatabaseContext, summariesRepository, chatLanguageModel, aiTemplatesService, shutdownSignal, aiPreferences, filePreferences)
+        new GenerateSummaryTask(aiPreferences, filePreferences, aiTemplatesService, chatLanguageModel, summariesRepository, bibDatabaseContext, entry, shutdownSignal)
                 .onSuccess(processingInfo::setSuccess)
                 .onFailure(processingInfo::setException)
                 .executeWith(taskExecutor);
@@ -149,7 +150,7 @@ public class SummariesService {
     private void startSummarizationTask(StringProperty groupName, List<ProcessingInfo<BibEntry, Summary>> entries, BibDatabaseContext bibDatabaseContext) {
         entries.forEach(processingInfo -> processingInfo.setState(ProcessingState.PROCESSING));
 
-        new GenerateSummaryForSeveralTask(groupName, entries, bibDatabaseContext, summariesRepository, chatLanguageModel, aiTemplatesService, shutdownSignal, aiPreferences, filePreferences, taskExecutor)
+        new GenerateSummaryForSeveralTask(aiPreferences, filePreferences, aiTemplatesService, taskExecutor, chatLanguageModel, summariesRepository, bibDatabaseContext, groupName, entries, shutdownSignal)
                 .executeWith(taskExecutor);
     }
 

@@ -28,7 +28,10 @@ public class UpdateEmbeddingModelTask extends BackgroundTask<Void> {
 
     private final ProgressCounter progressCounter = new ProgressCounter();
 
-    public UpdateEmbeddingModelTask(AiPreferences aiPreferences, ObjectProperty<Optional<DeepJavaEmbeddingModel>> predictorProperty) {
+    public UpdateEmbeddingModelTask(
+            AiPreferences aiPreferences,
+            ObjectProperty<Optional<DeepJavaEmbeddingModel>> predictorProperty
+    ) {
         this.aiPreferences = aiPreferences;
         this.predictorProperty = predictorProperty;
 

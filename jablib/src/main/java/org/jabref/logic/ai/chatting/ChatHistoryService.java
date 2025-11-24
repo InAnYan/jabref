@@ -67,7 +67,10 @@ public class ChatHistoryService implements AutoCloseable {
     // We use {@link TreeMap} for group chat history for the same reason as for {@link BibEntry}ies.
     private final TreeMap<GroupTreeNode, ChatHistoryManagementRecord> groupsChatHistory = new TreeMap<>(Comparator.comparing(GroupTreeNode::getName));
 
-    public ChatHistoryService(CitationKeyPatternPreferences citationKeyPatternPreferences, ChatHistoryRepository implementation) {
+    public ChatHistoryService(
+            CitationKeyPatternPreferences citationKeyPatternPreferences,
+            ChatHistoryRepository implementation
+    ) {
         this.citationKeyPatternPreferences = citationKeyPatternPreferences;
         this.implementation = implementation;
     }

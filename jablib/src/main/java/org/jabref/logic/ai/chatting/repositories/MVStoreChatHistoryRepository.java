@@ -66,7 +66,7 @@ public class MVStoreChatHistoryRepository extends MVStoreBase implements ChatHis
         }
     }
 
-    public MVStoreChatHistoryRepository(Path path, NotificationService dialogService) {
+    public MVStoreChatHistoryRepository(NotificationService dialogService, Path path) {
         super(path, dialogService);
     }
 

@@ -44,12 +44,12 @@ public class GenerateEmbeddingsForSeveralTask extends BackgroundTask<Void> {
     private String currentFile = "";
 
     public GenerateEmbeddingsForSeveralTask(
-            StringProperty groupName,
-            List<ProcessingInfo<LinkedFile, Void>> linkedFiles,
-            FileEmbeddingsManager fileEmbeddingsManager,
-            BibDatabaseContext bibDatabaseContext,
             FilePreferences filePreferences,
             TaskExecutor taskExecutor,
+            FileEmbeddingsManager fileEmbeddingsManager,
+            BibDatabaseContext bibDatabaseContext,
+            StringProperty groupName,
+            List<ProcessingInfo<LinkedFile, Void>> linkedFiles,
             ReadOnlyBooleanProperty shutdownSignal
     ) {
         this.groupName = groupName;
@@ -85,10 +85,7 @@ public class GenerateEmbeddingsForSeveralTask extends BackgroundTask<Void> {
                     processingInfo.setState(ProcessingState.PROCESSING);
                     return new Pair<>(
                             new GenerateEmbeddingsTask(
-                                    processingInfo.getObject(),
-                                    fileEmbeddingsManager,
-                                    bibDatabaseContext,
-                                    filePreferences,
+                                    filePreferences, fileEmbeddingsManager, bibDatabaseContext, processingInfo.getObject(),
                                     shutdownSignal
                             )
                                     .showToUser(false)

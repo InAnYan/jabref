@@ -39,17 +39,18 @@ public class FileEmbeddingsManager {
     private final FullyIngestedDocumentsRepository fullyIngestedDocumentsRepository;
     private final LowLevelIngestor lowLevelIngestor;
 
-    public FileEmbeddingsManager(AiPreferences aiPreferences,
-                                 ReadOnlyBooleanProperty shutdownSignal,
-                                 EmbeddingModel embeddingModel,
-                                 EmbeddingStore<TextSegment> embeddingStore,
-                                 FullyIngestedDocumentsRepository fullyIngestedDocumentsRepository
+    public FileEmbeddingsManager(
+            AiPreferences aiPreferences,
+            EmbeddingModel embeddingModel,
+            EmbeddingStore<TextSegment> embeddingStore,
+            FullyIngestedDocumentsRepository fullyIngestedDocumentsRepository,
+            ReadOnlyBooleanProperty shutdownSignal
     ) {
         this.aiPreferences = aiPreferences;
         this.shutdownSignal = shutdownSignal;
         this.embeddingStore = embeddingStore;
         this.fullyIngestedDocumentsRepository = fullyIngestedDocumentsRepository;
-        this.lowLevelIngestor = new LowLevelIngestor(aiPreferences, embeddingStore, embeddingModel);
+        this.lowLevelIngestor = new LowLevelIngestor(aiPreferences, embeddingModel, embeddingStore);
 
         setupListeningToPreferencesChanges();
     }

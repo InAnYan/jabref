@@ -56,15 +56,16 @@ public class AiChatLogic {
 
     private Optional<Filter> filter = Optional.empty();
 
-    public AiChatLogic(AiPreferences aiPreferences,
-                       ChatModel chatLanguageModel,
-                       EmbeddingModel embeddingModel,
-                       EmbeddingStore<TextSegment> embeddingStore,
-                       AiTemplatesService aiTemplatesService,
-                       StringProperty name,
-                       ObservableList<ChatMessage> chatHistory,
-                       ObservableList<BibEntry> entries,
-                       BibDatabaseContext bibDatabaseContext
+    public AiChatLogic(
+            AiPreferences aiPreferences,
+            AiTemplatesService aiTemplatesService,
+            ChatModel chatLanguageModel,
+            EmbeddingModel embeddingModel,
+            EmbeddingStore<TextSegment> embeddingStore,
+            BibDatabaseContext bibDatabaseContext,
+            ObservableList<ChatMessage> chatHistory,
+            ObservableList<BibEntry> entries,
+            StringProperty name
     ) {
         this.aiPreferences = aiPreferences;
         this.chatLanguageModel = chatLanguageModel;

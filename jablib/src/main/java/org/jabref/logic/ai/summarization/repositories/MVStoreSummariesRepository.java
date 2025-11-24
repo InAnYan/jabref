@@ -12,7 +12,7 @@ import org.jabref.model.ai.summarization.Summary;
 public class MVStoreSummariesRepository extends MVStoreBase implements SummariesRepository {
     private static final String SUMMARIES_MAP_PREFIX = "summaries";
 
-    public MVStoreSummariesRepository(Path path, NotificationService dialogService) {
+    public MVStoreSummariesRepository(NotificationService dialogService, Path path) {
         super(path, dialogService);
     }
 

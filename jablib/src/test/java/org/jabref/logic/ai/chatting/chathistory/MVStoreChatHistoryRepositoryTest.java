@@ -11,7 +11,7 @@ import static org.mockito.Mockito.mock;
 class MVStoreChatHistoryRepositoryTest extends ChatHistoryRepositoryTest {
     @Override
     ChatHistoryRepository makeStorage(Path path) {
-        return new MVStoreChatHistoryRepository(path, mock(NotificationService.class));
+        return new MVStoreChatHistoryRepository(mock(NotificationService.class), path);
     }
 
     @Override

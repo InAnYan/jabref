@@ -117,7 +117,11 @@ open module org.jabref.jablib {
     exports org.jabref.logic.git.merge.planning;
     exports org.jabref.logic.git.merge.execution;
     exports org.jabref.model.sciteTallies;
+
+    // region: AI
     exports org.jabref.logic.ai.customimplementations.embeddingmodels;
+    exports org.jabref.logic.ai.customimplementations.embeddingstores;
+    exports org.jabref.logic.ai.customimplementations.llms;
     exports org.jabref.logic.ai.rag;
     exports org.jabref.logic.ai.summarization.tasks;
     exports org.jabref.logic.ai.summarization.repositories;
@@ -127,12 +131,14 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.chatting.algorithms;
     exports org.jabref.logic.ai.chatting.tasks;
     exports org.jabref.logic.ai.preferences;
+    exports org.jabref.logic.ai.chatting.repositories;
     exports org.jabref.model.ai.chatting;
     exports org.jabref.model.ai.templating;
     exports org.jabref.model.ai.rag;
     exports org.jabref.model.ai.embeddings;
     exports org.jabref.model.ai.summarization;
-    exports org.jabref.logic.ai.chatting.repositories;
+    exports org.jabref.model.ai.identifiers;
+    // endregion
 
     requires java.base;
 

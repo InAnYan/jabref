@@ -7,14 +7,10 @@ import java.util.Optional;
  * <p>
  * The class also records the document modification time.
  */
-public interface FullyIngestedDocumentsRepository {
+public interface FullyIngestedDocumentsRepository extends AutoCloseable{
     void markDocumentAsFullyIngested(String link, long modificationTimeInSeconds);
 
     Optional<Long> getIngestedDocumentModificationTimeInSeconds(String link);
 
     void unmarkDocumentAsFullyIngested(String link);
-
-    void commit();
-
-    void close();
 }

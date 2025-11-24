@@ -51,16 +51,16 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
     private String currentFile = "";
 
     public GenerateSummaryForSeveralTask(
-            StringProperty groupName,
-            List<ProcessingInfo<BibEntry, Summary>> entries,
-            BibDatabaseContext bibDatabaseContext,
-            SummariesRepository summariesRepository,
-            ChatModel chatLanguageModel,
-            AiTemplatesService aiTemplatesService,
-            ReadOnlyBooleanProperty shutdownSignal,
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            TaskExecutor taskExecutor
+            AiTemplatesService aiTemplatesService,
+            TaskExecutor taskExecutor,
+            ChatModel chatLanguageModel,
+            SummariesRepository summariesRepository,
+            BibDatabaseContext bibDatabaseContext,
+            StringProperty groupName,
+            List<ProcessingInfo<BibEntry, Summary>> entries,
+            ReadOnlyBooleanProperty shutdownSignal
     ) {
         this.groupName = groupName;
         this.entries = entries;
@@ -98,14 +98,8 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
                     processingInfo.setState(ProcessingState.PROCESSING);
                     return new Pair<>(
                             new GenerateSummaryTask(
-                                    processingInfo.getObject(),
-                                    bibDatabaseContext,
-                                    summariesRepository,
-                                    chatLanguageModel,
-                                    aiTemplatesService,
-                                    shutdownSignal,
-                                    aiPreferences,
-                                    filePreferences
+                                    aiPreferences, filePreferences, aiTemplatesService, chatLanguageModel, summariesRepository, bibDatabaseContext, processingInfo.getObject(),
+                                    shutdownSignal
                             )
                                     .showToUser(false)
                                     .onSuccess(processingInfo::setSuccess)

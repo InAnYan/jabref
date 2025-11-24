@@ -11,7 +11,7 @@ public class GenerateAiResponseTask extends BackgroundTask<AiMessage> {
     private final UserMessage userMessage;
     private final AiChatLogic aiChatLogic;
 
-    public GenerateAiResponseTask(UserMessage userMessage, AiChatLogic aiChatLogic) {
+    public GenerateAiResponseTask(AiChatLogic aiChatLogic, UserMessage userMessage) {
         this.userMessage = userMessage;
         this.aiChatLogic = aiChatLogic;
 

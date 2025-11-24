@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.rag.algorithms.UniversalFileParser;
+import org.jabref.logic.ai.rag.algorithms.parsing.UniversalFileParser;
 import org.jabref.logic.ai.rag.repositories.FileEmbeddingsManager;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
@@ -38,11 +38,12 @@ public class GenerateEmbeddingsTask extends BackgroundTask<Void> {
 
     private final ProgressCounter progressCounter = new ProgressCounter();
 
-    public GenerateEmbeddingsTask(LinkedFile linkedFile,
-                                  FileEmbeddingsManager fileEmbeddingsManager,
-                                  BibDatabaseContext bibDatabaseContext,
-                                  FilePreferences filePreferences,
-                                  ReadOnlyBooleanProperty shutdownSignal
+    public GenerateEmbeddingsTask(
+            FilePreferences filePreferences,
+            FileEmbeddingsManager fileEmbeddingsManager,
+            BibDatabaseContext bibDatabaseContext,
+            LinkedFile linkedFile,
+            ReadOnlyBooleanProperty shutdownSignal
     ) {
         this.linkedFile = linkedFile;
         this.fileEmbeddingsManager = fileEmbeddingsManager;

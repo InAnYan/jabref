@@ -12,7 +12,7 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.rag.algorithms.UniversalFileParser;
+import org.jabref.logic.ai.rag.algorithms.parsing.UniversalFileParser;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.ProgressCounter;

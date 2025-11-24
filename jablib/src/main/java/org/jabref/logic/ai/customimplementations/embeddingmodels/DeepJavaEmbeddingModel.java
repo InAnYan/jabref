@@ -19,7 +19,9 @@ public class DeepJavaEmbeddingModel implements EmbeddingModel, AutoCloseable {
     private final ZooModel<String, float[]> model;
     private final Predictor<String, float[]> predictor;
 
-    public DeepJavaEmbeddingModel(Criteria<String, float[]> criteria) throws ModelNotFoundException, MalformedModelException, IOException {
+    public DeepJavaEmbeddingModel(
+            Criteria<String, float[]> criteria
+    ) throws ModelNotFoundException, MalformedModelException, IOException {
         this.model = criteria.loadModel();
         this.predictor = model.newPredictor();
     }

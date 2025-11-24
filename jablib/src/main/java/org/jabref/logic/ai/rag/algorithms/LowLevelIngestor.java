@@ -25,7 +25,11 @@ public class LowLevelIngestor {
     private EmbeddingStoreIngestor ingestor;
     private DocumentSplitter documentSplitter;
 
-    public LowLevelIngestor(AiPreferences aiPreferences, EmbeddingStore<TextSegment> embeddingStore, EmbeddingModel embeddingModel) {
+    public LowLevelIngestor(
+            AiPreferences aiPreferences,
+            EmbeddingModel embeddingModel,
+            EmbeddingStore<TextSegment> embeddingStore
+    ) {
         this.aiPreferences = aiPreferences;
         this.embeddingStore = embeddingStore;
         this.embeddingModel = embeddingModel;

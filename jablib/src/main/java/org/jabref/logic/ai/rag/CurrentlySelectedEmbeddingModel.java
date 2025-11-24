@@ -54,7 +54,11 @@ public class CurrentlySelectedEmbeddingModel implements EmbeddingModel, AutoClos
     // Empty if there is no error.
     private String errorWhileBuildingModel = "";
 
-    public CurrentlySelectedEmbeddingModel(AiPreferences aiPreferences, NotificationService notificationService, TaskExecutor taskExecutor) {
+    public CurrentlySelectedEmbeddingModel(
+            AiPreferences aiPreferences,
+            NotificationService notificationService,
+            TaskExecutor taskExecutor
+    ) {
         this.aiPreferences = aiPreferences;
         this.notificationService = notificationService;
         this.taskExecutor = taskExecutor;

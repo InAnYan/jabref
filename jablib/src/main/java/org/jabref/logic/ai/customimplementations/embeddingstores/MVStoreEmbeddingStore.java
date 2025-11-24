@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.rag.repositories;
+package org.jabref.logic.ai.customimplementations.embeddingstores;
 
 import java.io.Serializable;
 import java.nio.file.Path;

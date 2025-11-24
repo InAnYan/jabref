@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.rag.algorithms;
+package org.jabref.logic.ai.rag.algorithms.parsing;
 
 import java.nio.file.Path;
 import java.util.Optional;

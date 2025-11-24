@@ -11,7 +11,7 @@ import static org.mockito.Mockito.mock;
 class MVStoreSummariesRepositoryTest extends SummariesRepositoryTest {
     @Override
     SummariesRepository makeSummariesStorage(Path path) {
-        return new MVStoreSummariesRepository(path, mock(NotificationService.class));
+        return new MVStoreSummariesRepository(mock(NotificationService.class), path);
     }
 
     @Override

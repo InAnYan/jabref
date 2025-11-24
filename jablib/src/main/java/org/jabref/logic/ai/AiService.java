@@ -10,10 +10,10 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.ChatHistoryService;
 import org.jabref.logic.ai.chatting.CurrentlySelectedChatLanguageModel;
 import org.jabref.logic.ai.chatting.repositories.MVStoreChatHistoryRepository;
+import org.jabref.logic.ai.customimplementations.embeddingstores.MVStoreEmbeddingStore;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.CurrentlySelectedEmbeddingModel;
 import org.jabref.logic.ai.rag.IngestionService;
-import org.jabref.logic.ai.rag.repositories.MVStoreEmbeddingStore;
 import org.jabref.logic.ai.rag.repositories.MVStoreFullyIngestedDocumentsRepository;
 import org.jabref.logic.ai.summarization.SummariesService;
 import org.jabref.logic.ai.summarization.repositories.MVStoreSummariesRepository;
@@ -69,10 +69,10 @@ public class AiService implements AutoCloseable {
                      TaskExecutor taskExecutor
     ) {
 
-        this.mvStoreChatHistoryStorage = new MVStoreChatHistoryRepository(Directories.getAiFilesDirectory().resolve(CHAT_HISTORY_FILE_NAME), notificationService);
+        this.mvStoreChatHistoryStorage = new MVStoreChatHistoryRepository(notificationService, Directories.getAiFilesDirectory().resolve(CHAT_HISTORY_FILE_NAME));
         this.mvStoreEmbeddingStore = new MVStoreEmbeddingStore(Directories.getAiFilesDirectory().resolve(EMBEDDINGS_FILE_NAME), notificationService);
-        this.mvStoreFullyIngestedDocumentsTracker = new MVStoreFullyIngestedDocumentsRepository(Directories.getAiFilesDirectory().resolve(FULLY_INGESTED_FILE_NAME), notificationService);
-        this.mvStoreSummariesStorage = new MVStoreSummariesRepository(Directories.getAiFilesDirectory().resolve(SUMMARIES_FILE_NAME), notificationService);
+        this.mvStoreFullyIngestedDocumentsTracker = new MVStoreFullyIngestedDocumentsRepository(notificationService, Directories.getAiFilesDirectory().resolve(FULLY_INGESTED_FILE_NAME));
+        this.mvStoreSummariesStorage = new MVStoreSummariesRepository(notificationService, Directories.getAiFilesDirectory().resolve(SUMMARIES_FILE_NAME));
 
         this.templatesService = new AiTemplatesService(aiPreferences);
         this.chatHistoryService = new ChatHistoryService(citationKeyPatternPreferences, mvStoreChatHistoryStorage);
@@ -81,22 +81,13 @@ public class AiService implements AutoCloseable {
 
         this.ingestionService = new IngestionService(
                 aiPreferences,
-                shutdownSignal,
-                currentlySelectedEmbeddingModel,
-                mvStoreEmbeddingStore,
-                mvStoreFullyIngestedDocumentsTracker,
-                filePreferences,
-                taskExecutor
+                filePreferences, taskExecutor, currentlySelectedEmbeddingModel, mvStoreEmbeddingStore, mvStoreFullyIngestedDocumentsTracker, shutdownSignal
         );
 
         this.summariesService = new SummariesService(
                 aiPreferences,
-                mvStoreSummariesStorage,
-                currentlySelectedChatLanguageModel,
-                templatesService,
-                shutdownSignal,
-                filePreferences,
-                taskExecutor
+                filePreferences, templatesService, taskExecutor, currentlySelectedChatLanguageModel, mvStoreSummariesStorage,
+                shutdownSignal
         );
     }
 

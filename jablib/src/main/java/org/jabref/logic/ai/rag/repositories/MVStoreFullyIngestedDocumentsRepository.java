@@ -23,7 +23,10 @@ public class MVStoreFullyIngestedDocumentsRepository extends MVStoreBase impleme
     // it doesn't mean the document is fully ingested.
     private final Map<String, Long> ingestedMap;
 
-    public MVStoreFullyIngestedDocumentsRepository(Path path, NotificationService dialogService) {
+    public MVStoreFullyIngestedDocumentsRepository(
+            NotificationService dialogService,
+            Path path
+    ) {
         super(path, dialogService);
 
         this.ingestedMap = this.mvStore.openMap(INGESTED_MAP_NAME);

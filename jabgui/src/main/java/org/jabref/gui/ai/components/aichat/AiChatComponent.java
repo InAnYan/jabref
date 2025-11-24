@@ -100,14 +100,10 @@ public class AiChatComponent extends VBox {
 
         this.aiChatLogic = new AiChatLogic(
                 aiPreferences,
-                aiService.getChatLanguageModel(),
+                aiService.getTemplatesService(), aiService.getChatLanguageModel(),
                 aiService.getEmbeddingModel(),
                 aiService.getEmbeddingStore(),
-                aiService.getTemplatesService(),
-                name,
-                chatHistory,
-                entries,
-                bibDatabaseContext
+                bibDatabaseContext, chatHistory, entries, name
         );
 
         aiService.getIngestionService().ingest(name, ListUtil.getLinkedFiles(entries).toList(), bibDatabaseContext);
@@ -293,7 +289,7 @@ public class AiChatComponent extends VBox {
         updatePromptHistory();
         setLoading(true);
 
-        BackgroundTask<AiMessage> task = new GenerateAiResponseTask(userMessage, aiChatLogic)
+        BackgroundTask<AiMessage> task = new GenerateAiResponseTask(aiChatLogic, userMessage)
                 .onSuccess(aiMessage -> {
                     setLoading(false);
                     chatPrompt.requestPromptFocus();

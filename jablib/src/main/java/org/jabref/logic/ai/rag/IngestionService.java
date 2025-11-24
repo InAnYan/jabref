@@ -46,13 +46,14 @@ public class IngestionService {
 
     private final ReadOnlyBooleanProperty shutdownSignal;
 
-    public IngestionService(AiPreferences aiPreferences,
-                            ReadOnlyBooleanProperty shutdownSignal,
-                            EmbeddingModel embeddingModel,
-                            EmbeddingStore<TextSegment> embeddingStore,
-                            FullyIngestedDocumentsRepository fullyIngestedDocumentsRepository,
-                            FilePreferences filePreferences,
-                            TaskExecutor taskExecutor
+    public IngestionService(
+            AiPreferences aiPreferences,
+            FilePreferences filePreferences,
+            TaskExecutor taskExecutor,
+            EmbeddingModel embeddingModel,
+            EmbeddingStore<TextSegment> embeddingStore,
+            FullyIngestedDocumentsRepository fullyIngestedDocumentsRepository,
+            ReadOnlyBooleanProperty shutdownSignal
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
@@ -60,10 +61,7 @@ public class IngestionService {
 
         this.fileEmbeddingsManager = new FileEmbeddingsManager(
                 aiPreferences,
-                shutdownSignal,
-                embeddingModel,
-                embeddingStore,
-                fullyIngestedDocumentsRepository
+                embeddingModel, embeddingStore, fullyIngestedDocumentsRepository, shutdownSignal
         );
 
         this.shutdownSignal = shutdownSignal;
@@ -146,7 +144,7 @@ public class IngestionService {
     private void startEmbeddingsGenerationTask(LinkedFile linkedFile, BibDatabaseContext bibDatabaseContext, ProcessingInfo<LinkedFile, Void> processingInfo) {
         processingInfo.setState(ProcessingState.PROCESSING);
 
-        new GenerateEmbeddingsTask(linkedFile, fileEmbeddingsManager, bibDatabaseContext, filePreferences, shutdownSignal)
+        new GenerateEmbeddingsTask(filePreferences, fileEmbeddingsManager, bibDatabaseContext, linkedFile, shutdownSignal)
                 .showToUser(true)
                 .onSuccess(v -> processingInfo.setState(ProcessingState.SUCCESS))
                 .onFailure(processingInfo::setException)
@@ -156,7 +154,7 @@ public class IngestionService {
     private void startEmbeddingsGenerationTask(StringProperty groupName, List<ProcessingInfo<LinkedFile, Void>> linkedFiles, BibDatabaseContext bibDatabaseContext) {
         linkedFiles.forEach(processingInfo -> processingInfo.setState(ProcessingState.PROCESSING));
 
-        new GenerateEmbeddingsForSeveralTask(groupName, linkedFiles, fileEmbeddingsManager, bibDatabaseContext, filePreferences, taskExecutor, shutdownSignal)
+        new GenerateEmbeddingsForSeveralTask(filePreferences, taskExecutor, fileEmbeddingsManager, bibDatabaseContext, groupName, linkedFiles, shutdownSignal)
                 .executeWith(taskExecutor);
     }
 

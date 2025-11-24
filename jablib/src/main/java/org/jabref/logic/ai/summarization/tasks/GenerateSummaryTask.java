@@ -38,14 +38,15 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
 
     private final ProgressCounter progressCounter = new ProgressCounter();
 
-    public GenerateSummaryTask(BibEntry entry,
-                               BibDatabaseContext bibDatabaseContext,
-                               SummariesRepository summariesRepository,
-                               ChatModel chatLanguageModel,
-                               AiTemplatesService aiTemplatesService,
-                               ReadOnlyBooleanProperty shutdownSignal,
-                               AiPreferences aiPreferences,
-                               FilePreferences filePreferences
+    public GenerateSummaryTask(
+            AiPreferences aiPreferences,
+            FilePreferences filePreferences,
+            AiTemplatesService aiTemplatesService,
+            ChatModel chatLanguageModel,
+            SummariesRepository summariesRepository,
+            BibDatabaseContext bibDatabaseContext,
+            BibEntry entry,
+            ReadOnlyBooleanProperty shutdownSignal
     ) {
         this.bibDatabaseContext = bibDatabaseContext;
         this.entry = entry;

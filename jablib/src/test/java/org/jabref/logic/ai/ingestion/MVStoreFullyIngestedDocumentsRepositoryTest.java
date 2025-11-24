@@ -11,7 +11,7 @@ import static org.mockito.Mockito.mock;
 class MVStoreFullyIngestedDocumentsRepositoryTest extends FullyIngestedDocumentsRepositoryTest {
     @Override
     FullyIngestedDocumentsRepository makeTracker(Path path) {
-        return new MVStoreFullyIngestedDocumentsRepository(path, mock(NotificationService.class));
+        return new MVStoreFullyIngestedDocumentsRepository(mock(NotificationService.class), path);
     }
 
     @Override
