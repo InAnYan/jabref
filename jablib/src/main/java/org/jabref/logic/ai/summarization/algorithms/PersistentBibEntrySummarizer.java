@@ -8,7 +8,7 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.templates.AiTemplatesService;
-import org.jabref.logic.ai.util.CitationKeyCheck;
+import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.ProgressCounter;
 import org.jabref.model.ai.summarization.Summary;
 import org.jabref.model.database.BibDatabaseContext;

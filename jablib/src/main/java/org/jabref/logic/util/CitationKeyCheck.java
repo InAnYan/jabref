@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.util;
+package org.jabref.logic.util;
 
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;

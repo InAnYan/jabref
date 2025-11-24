@@ -14,7 +14,7 @@ import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.summarization.tasks.GenerateSummaryForSeveralTask;
 import org.jabref.logic.ai.summarization.tasks.GenerateSummaryTask;
 import org.jabref.logic.ai.templates.AiTemplatesService;
-import org.jabref.logic.ai.util.CitationKeyCheck;
+import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.processingstatus.ProcessingInfo;
 import org.jabref.model.ai.processingstatus.ProcessingState;

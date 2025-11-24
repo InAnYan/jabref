@@ -10,9 +10,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
-import org.jabref.logic.ai.util.CitationKeyCheck;
 import org.jabref.logic.citationkeypattern.CitationKeyGenerator;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
+import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.event.FieldChangedEvent;
