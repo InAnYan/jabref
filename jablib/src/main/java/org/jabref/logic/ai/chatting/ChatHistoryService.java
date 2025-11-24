@@ -196,14 +196,13 @@ public class ChatHistoryService implements AutoCloseable {
     }
 
     @Override
-    public void close() {
+    public void close() throws Exception {
         // We need to clone `bibEntriesChatHistory.keySet()` because closeChatHistoryForEntry() modifies the `bibEntriesChatHistory` map.
         new HashSet<>(bibEntriesChatHistory.keySet()).forEach(this::closeChatHistoryForEntry);
 
         // Clone is for the same reason, as written above.
         new HashSet<>(groupsChatHistory.keySet()).forEach(this::closeChatHistoryForGroup);
 
-        implementation.commit();
         implementation.close();
     }
 

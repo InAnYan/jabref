@@ -21,7 +21,6 @@ import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
 
-import dev.langchain4j.data.document.Document;
 import dev.langchain4j.model.chat.ChatModel;
 import org.slf4j.Logger;
 
@@ -33,6 +32,7 @@ public class BibEntrySummarizer {
     private final FilePreferences filePreferences;
 
     private final ChunkedSummarizationAlgorithm chunkedSummarizationAlgorithm;
+    private final UniversalFileParser universalFileParser = new UniversalFileParser();
 
     public BibEntrySummarizer(
             AiPreferences aiPreferences,
@@ -98,7 +98,7 @@ public class BibEntrySummarizer {
             return Optional.empty();
         }
 
-        Optional<Document> document = new UniversalFileParser(shutdownSignal).fromFile(path.get());
+        Optional<String> document = universalFileParser.parse(path.get(), shutdownSignal);
 
         if (document.isEmpty()) {
             LOGGER.warn("Could not extract text from a linked file \"{}\" of entry {}. It will be skipped when generating a summary.", linkedFile.getLink(), citationKey);
@@ -106,7 +106,7 @@ public class BibEntrySummarizer {
             return Optional.empty();
         }
 
-        String linkedFileSummary = chunkedSummarizationAlgorithm.summarize(document.get().text(), progressCounter, shutdownSignal);
+        String linkedFileSummary = chunkedSummarizationAlgorithm.summarize(document.get(), progressCounter, shutdownSignal);
 
         LOGGER.debug("Summary for file \"{}\" of entry {} was generated successfully", linkedFile.getLink(), citationKey);
         return Optional.of(linkedFileSummary);

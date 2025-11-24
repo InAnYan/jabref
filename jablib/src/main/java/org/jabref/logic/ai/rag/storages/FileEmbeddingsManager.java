@@ -10,6 +10,7 @@ import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.algorithms.LowLevelIngestor;
 import org.jabref.model.entry.LinkedFile;
 
+import dev.langchain4j.data.document.DefaultDocument;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
@@ -57,7 +58,8 @@ public class FileEmbeddingsManager {
         aiPreferences.addListenerToEmbeddingsParametersChange(embeddingStore::removeAll);
     }
 
-    public void addDocument(String link, Document document, long modificationTimeInSeconds, IntegerProperty workDone, IntegerProperty workMax) throws InterruptedException {
+    public void addDocument(String link, String documentSource, long modificationTimeInSeconds, IntegerProperty workDone, IntegerProperty workMax) throws InterruptedException {
+        Document document = new DefaultDocument(documentSource);
         document.metadata().put(LINK_METADATA_KEY, link);
         lowLevelIngestor.ingestDocument(document, shutdownSignal, workDone, workMax);
 

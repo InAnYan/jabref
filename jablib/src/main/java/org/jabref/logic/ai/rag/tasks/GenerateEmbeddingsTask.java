@@ -18,7 +18,6 @@ import org.jabref.logic.util.ProgressCounter;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.LinkedFile;
 
-import dev.langchain4j.data.document.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +34,7 @@ public class GenerateEmbeddingsTask extends BackgroundTask<Void> {
     private final BibDatabaseContext bibDatabaseContext;
     private final FilePreferences filePreferences;
     private final ReadOnlyBooleanProperty shutdownSignal;
+    private final UniversalFileParser universalFileParser = new UniversalFileParser();
 
     private final ProgressCounter progressCounter = new ProgressCounter();
 
@@ -118,7 +118,7 @@ public class GenerateEmbeddingsTask extends BackgroundTask<Void> {
             return;
         }
 
-        Optional<Document> document = new UniversalFileParser(shutdownSignal).fromFile(path.get());
+        Optional<String> document = universalFileParser.parse(path.get(), shutdownSignal);
         if (document.isPresent()) {
             fileEmbeddingsManager.addDocument(linkedFile.getLink(), document.get(), modTime.orElse(0L), progressCounter.workDoneProperty(), progressCounter.workMaxProperty());
             LOGGER.debug("Embeddings for file \"{}\" were generated successfully", linkedFile.getLink());
