@@ -3,7 +3,7 @@ package org.jabref.logic.ai.ingestion;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import org.jabref.logic.ai.rag.storages.FullyIngestedDocumentsTracker;
+import org.jabref.logic.ai.rag.storages.FullyIngestedDocumentsRepository;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,14 +12,14 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-abstract class FullyIngestedDocumentsTrackerTest {
+abstract class FullyIngestedDocumentsRepositoryTest {
     @TempDir Path tempDir;
 
-    private FullyIngestedDocumentsTracker tracker;
+    private FullyIngestedDocumentsRepository tracker;
 
-    abstract FullyIngestedDocumentsTracker makeTracker(Path path);
+    abstract FullyIngestedDocumentsRepository makeTracker(Path path);
 
-    abstract void close(FullyIngestedDocumentsTracker tracker);
+    abstract void close(FullyIngestedDocumentsRepository tracker);
 
     @BeforeEach
     void setUp() {

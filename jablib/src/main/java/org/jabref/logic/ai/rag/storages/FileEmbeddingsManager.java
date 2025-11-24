@@ -35,19 +35,19 @@ public class FileEmbeddingsManager {
     private final ReadOnlyBooleanProperty shutdownSignal;
 
     private final EmbeddingStore<TextSegment> embeddingStore;
-    private final FullyIngestedDocumentsTracker fullyIngestedDocumentsTracker;
+    private final FullyIngestedDocumentsRepository fullyIngestedDocumentsRepository;
     private final LowLevelIngestor lowLevelIngestor;
 
     public FileEmbeddingsManager(AiPreferences aiPreferences,
                                  ReadOnlyBooleanProperty shutdownSignal,
                                  EmbeddingModel embeddingModel,
                                  EmbeddingStore<TextSegment> embeddingStore,
-                                 FullyIngestedDocumentsTracker fullyIngestedDocumentsTracker
+                                 FullyIngestedDocumentsRepository fullyIngestedDocumentsRepository
     ) {
         this.aiPreferences = aiPreferences;
         this.shutdownSignal = shutdownSignal;
         this.embeddingStore = embeddingStore;
-        this.fullyIngestedDocumentsTracker = fullyIngestedDocumentsTracker;
+        this.fullyIngestedDocumentsRepository = fullyIngestedDocumentsRepository;
         this.lowLevelIngestor = new LowLevelIngestor(aiPreferences, embeddingStore, embeddingModel);
 
         setupListeningToPreferencesChanges();
@@ -62,13 +62,13 @@ public class FileEmbeddingsManager {
         lowLevelIngestor.ingestDocument(document, shutdownSignal, workDone, workMax);
 
         if (!shutdownSignal.get()) {
-            fullyIngestedDocumentsTracker.markDocumentAsFullyIngested(link, modificationTimeInSeconds);
+            fullyIngestedDocumentsRepository.markDocumentAsFullyIngested(link, modificationTimeInSeconds);
         }
     }
 
     public void removeDocument(String link) {
         embeddingStore.removeAll(MetadataFilterBuilder.metadataKey(LINK_METADATA_KEY).isEqualTo(link));
-        fullyIngestedDocumentsTracker.unmarkDocumentAsFullyIngested(link);
+        fullyIngestedDocumentsRepository.unmarkDocumentAsFullyIngested(link);
     }
 
     public EmbeddingStore<TextSegment> getEmbeddingsStore() {
@@ -76,7 +76,7 @@ public class FileEmbeddingsManager {
     }
 
     public Optional<Long> getIngestedDocumentModificationTimeInSeconds(String link) {
-        return fullyIngestedDocumentsTracker.getIngestedDocumentModificationTimeInSeconds(link);
+        return fullyIngestedDocumentsRepository.getIngestedDocumentModificationTimeInSeconds(link);
     }
 
     public void clearEmbeddingsFor(List<LinkedFile> linkedFiles) {

@@ -9,7 +9,7 @@ import java.util.TreeMap;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-import org.jabref.logic.ai.chatting.storages.ChatHistoryStorage;
+import org.jabref.logic.ai.chatting.storages.ChatHistoryRepository;
 import org.jabref.logic.ai.util.CitationKeyCheck;
 import org.jabref.logic.citationkeypattern.CitationKeyGenerator;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 /// [BibEntry] and [org.jabref.model.groups.AbstractGroup]. The chat history is stored in runtime.
 ///
 /// To save and load chat history, [BibEntry] and [org.jabref.model.groups.AbstractGroup] must satisfy several constraints.
-/// Serialization and deserialization is handled in [ChatHistoryStorage].
+/// Serialization and deserialization is handled in [ChatHistoryRepository].
 ///
 /// Constraints for serialization and deserialization of a chat history of a [BibEntry]:
 /// 1. There should exist an associated [BibDatabaseContext] for the [BibEntry].
@@ -48,7 +48,7 @@ public class ChatHistoryService implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatHistoryService.class);
 
     private final CitationKeyPatternPreferences citationKeyPatternPreferences;
-    private final ChatHistoryStorage implementation;
+    private final ChatHistoryRepository implementation;
 
     // Note about `Optional<BibDatabaseContext>`: it was necessary in previous version, but currently we never save an `Optional.empty()`.
     // However, we decided to left it here: to reduce migrations and to make possible to chat with a {@link BibEntry} without {@link BibDatabaseContext}
@@ -65,7 +65,7 @@ public class ChatHistoryService implements AutoCloseable {
     // We use {@link TreeMap} for group chat history for the same reason as for {@link BibEntry}ies.
     private final TreeMap<GroupTreeNode, ChatHistoryManagementRecord> groupsChatHistory = new TreeMap<>(Comparator.comparing(GroupTreeNode::getName));
 
-    public ChatHistoryService(CitationKeyPatternPreferences citationKeyPatternPreferences, ChatHistoryStorage implementation) {
+    public ChatHistoryService(CitationKeyPatternPreferences citationKeyPatternPreferences, ChatHistoryRepository implementation) {
         this.citationKeyPatternPreferences = citationKeyPatternPreferences;
         this.implementation = implementation;
     }
@@ -108,7 +108,7 @@ public class ChatHistoryService implements AutoCloseable {
      * Removes the chat history for the given {@link BibEntry} from the internal RAM map.
      * If the {@link BibEntry} satisfies requirements for serialization and deserialization of chat history (see
      * the docstring for the {@link ChatHistoryService}), then the chat history will be stored via the
-     * {@link ChatHistoryStorage}.
+     * {@link ChatHistoryRepository}.
      * <p>
      * It is not necessary to call this method (everything will be stored in {@link ChatHistoryService#close()},
      * but it's best to call it when the chat history {@link BibEntry} is no longer needed.
@@ -158,7 +158,7 @@ public class ChatHistoryService implements AutoCloseable {
      * Removes the chat history for the given {@link GroupTreeNode} from the internal RAM map.
      * If the {@link GroupTreeNode} satisfies requirements for serialization and deserialization of chat history (see
      * the docstring for the {@link ChatHistoryService}), then the chat history will be stored via the
-     * {@link ChatHistoryStorage}.
+     * {@link ChatHistoryRepository}.
      * <p>
      * It is not necessary to call this method (everything will be stored in {@link ChatHistoryService#close()},
      * but it's best to call it when the chat history {@link GroupTreeNode} is no longer needed.

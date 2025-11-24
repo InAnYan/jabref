@@ -6,7 +6,7 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.SummariesService;
 import org.jabref.logic.ai.summarization.algorithms.PersistentBibEntrySummarizer;
-import org.jabref.logic.ai.summarization.storages.SummariesStorage;
+import org.jabref.logic.ai.summarization.storages.SummariesRepository;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * It will check if summary was already generated.
  * And it also will store the summary.
  * <p>
- * This task is created in the {@link SummariesService}, and stored then in a {@link SummariesStorage}.
+ * This task is created in the {@link SummariesService}, and stored then in a {@link SummariesRepository}.
  */
 public class GenerateSummaryTask extends BackgroundTask<Summary> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSummaryTask.class);
@@ -40,7 +40,7 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
 
     public GenerateSummaryTask(BibEntry entry,
                                BibDatabaseContext bibDatabaseContext,
-                               SummariesStorage summariesStorage,
+                               SummariesRepository summariesRepository,
                                ChatModel chatLanguageModel,
                                AiTemplatesService aiTemplatesService,
                                ReadOnlyBooleanProperty shutdownSignal,
@@ -55,7 +55,7 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
         this.persistentBibEntrySummarizer = new PersistentBibEntrySummarizer(
                 aiPreferences,
                 filePreferences,
-                summariesStorage,
+                summariesRepository,
                 aiTemplatesService,
                 chatLanguageModel
         );

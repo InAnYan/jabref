@@ -13,7 +13,7 @@ import org.jabref.logic.util.NotificationService;
  * <p>
  * The class also records the document modification time.
  */
-public class MVStoreFullyIngestedDocumentsTracker extends MVStoreBase implements FullyIngestedDocumentsTracker {
+public class MVStoreFullyIngestedDocumentsRepository extends MVStoreBase implements FullyIngestedDocumentsRepository {
     private static final String INGESTED_MAP_NAME = "ingested";
 
     // This map stores the ingested documents. The key is LinkedDocument.getLink(), and the value is the modification time in seconds.
@@ -23,7 +23,7 @@ public class MVStoreFullyIngestedDocumentsTracker extends MVStoreBase implements
     // it doesn't mean the document is fully ingested.
     private final Map<String, Long> ingestedMap;
 
-    public MVStoreFullyIngestedDocumentsTracker(Path path, NotificationService dialogService) {
+    public MVStoreFullyIngestedDocumentsRepository(Path path, NotificationService dialogService) {
         super(path, dialogService);
 
         this.ingestedMap = this.mvStore.openMap(INGESTED_MAP_NAME);

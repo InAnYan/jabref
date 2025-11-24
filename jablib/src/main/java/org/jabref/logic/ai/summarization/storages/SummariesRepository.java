@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.jabref.model.ai.summarization.Summary;
 
-public interface SummariesStorage {
+public interface SummariesRepository {
     void set(Path bibDatabasePath, String citationKey, Summary summary);
 
     Optional<Summary> get(Path bibDatabasePath, String citationKey);

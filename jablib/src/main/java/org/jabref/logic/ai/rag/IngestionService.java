@@ -11,7 +11,7 @@ import javafx.beans.property.StringProperty;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.storages.FileEmbeddingsManager;
-import org.jabref.logic.ai.rag.storages.FullyIngestedDocumentsTracker;
+import org.jabref.logic.ai.rag.storages.FullyIngestedDocumentsRepository;
 import org.jabref.logic.ai.rag.tasks.GenerateEmbeddingsForSeveralTask;
 import org.jabref.logic.ai.rag.tasks.GenerateEmbeddingsTask;
 import org.jabref.logic.util.TaskExecutor;
@@ -50,7 +50,7 @@ public class IngestionService {
                             ReadOnlyBooleanProperty shutdownSignal,
                             EmbeddingModel embeddingModel,
                             EmbeddingStore<TextSegment> embeddingStore,
-                            FullyIngestedDocumentsTracker fullyIngestedDocumentsTracker,
+                            FullyIngestedDocumentsRepository fullyIngestedDocumentsRepository,
                             FilePreferences filePreferences,
                             TaskExecutor taskExecutor
     ) {
@@ -63,7 +63,7 @@ public class IngestionService {
                 shutdownSignal,
                 embeddingModel,
                 embeddingStore,
-                fullyIngestedDocumentsTracker
+                fullyIngestedDocumentsRepository
         );
 
         this.shutdownSignal = shutdownSignal;

@@ -9,14 +9,14 @@ import javafx.beans.property.SimpleBooleanProperty;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.ChatHistoryService;
 import org.jabref.logic.ai.chatting.CurrentlySelectedChatLanguageModel;
-import org.jabref.logic.ai.chatting.storages.MVStoreChatHistoryStorage;
+import org.jabref.logic.ai.chatting.storages.MVStoreChatHistoryRepository;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.CurrentlySelectedEmbeddingModel;
 import org.jabref.logic.ai.rag.IngestionService;
 import org.jabref.logic.ai.rag.storages.MVStoreEmbeddingStore;
-import org.jabref.logic.ai.rag.storages.MVStoreFullyIngestedDocumentsTracker;
+import org.jabref.logic.ai.rag.storages.MVStoreFullyIngestedDocumentsRepository;
 import org.jabref.logic.ai.summarization.SummariesService;
-import org.jabref.logic.ai.summarization.storages.MVStoreSummariesStorage;
+import org.jabref.logic.ai.summarization.storages.MVStoreSummariesRepository;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
 import org.jabref.logic.util.Directories;
@@ -50,10 +50,10 @@ public class AiService implements AutoCloseable {
             new ThreadFactoryBuilder().setNameFormat("ai-retrieval-pool-%d").build()
     );
 
-    private final MVStoreChatHistoryStorage mvStoreChatHistoryStorage;
+    private final MVStoreChatHistoryRepository mvStoreChatHistoryStorage;
     private final MVStoreEmbeddingStore mvStoreEmbeddingStore;
-    private final MVStoreFullyIngestedDocumentsTracker mvStoreFullyIngestedDocumentsTracker;
-    private final MVStoreSummariesStorage mvStoreSummariesStorage;
+    private final MVStoreFullyIngestedDocumentsRepository mvStoreFullyIngestedDocumentsTracker;
+    private final MVStoreSummariesRepository mvStoreSummariesStorage;
 
     private final AiTemplatesService templatesService;
     private final ChatHistoryService chatHistoryService;
@@ -69,10 +69,10 @@ public class AiService implements AutoCloseable {
                      TaskExecutor taskExecutor
     ) {
 
-        this.mvStoreChatHistoryStorage = new MVStoreChatHistoryStorage(Directories.getAiFilesDirectory().resolve(CHAT_HISTORY_FILE_NAME), notificationService);
+        this.mvStoreChatHistoryStorage = new MVStoreChatHistoryRepository(Directories.getAiFilesDirectory().resolve(CHAT_HISTORY_FILE_NAME), notificationService);
         this.mvStoreEmbeddingStore = new MVStoreEmbeddingStore(Directories.getAiFilesDirectory().resolve(EMBEDDINGS_FILE_NAME), notificationService);
-        this.mvStoreFullyIngestedDocumentsTracker = new MVStoreFullyIngestedDocumentsTracker(Directories.getAiFilesDirectory().resolve(FULLY_INGESTED_FILE_NAME), notificationService);
-        this.mvStoreSummariesStorage = new MVStoreSummariesStorage(Directories.getAiFilesDirectory().resolve(SUMMARIES_FILE_NAME), notificationService);
+        this.mvStoreFullyIngestedDocumentsTracker = new MVStoreFullyIngestedDocumentsRepository(Directories.getAiFilesDirectory().resolve(FULLY_INGESTED_FILE_NAME), notificationService);
+        this.mvStoreSummariesStorage = new MVStoreSummariesRepository(Directories.getAiFilesDirectory().resolve(SUMMARIES_FILE_NAME), notificationService);
 
         this.templatesService = new AiTemplatesService(aiPreferences);
         this.chatHistoryService = new ChatHistoryService(citationKeyPatternPreferences, mvStoreChatHistoryStorage);

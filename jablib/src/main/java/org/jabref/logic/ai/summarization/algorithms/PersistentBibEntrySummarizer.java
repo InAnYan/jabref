@@ -6,7 +6,7 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.summarization.storages.SummariesStorage;
+import org.jabref.logic.ai.summarization.storages.SummariesRepository;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.ai.util.CitationKeyCheck;
 import org.jabref.logic.util.ProgressCounter;
@@ -21,18 +21,18 @@ import org.slf4j.LoggerFactory;
 public class PersistentBibEntrySummarizer {
     private static final Logger LOGGER = LoggerFactory.getLogger(PersistentBibEntrySummarizer.class);
 
-    private final SummariesStorage summariesStorage;
+    private final SummariesRepository summariesRepository;
 
     private final BibEntrySummarizer bibEntrySummarizer;
 
     public PersistentBibEntrySummarizer(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            SummariesStorage summariesStorage,
+            SummariesRepository summariesRepository,
             AiTemplatesService aiTemplatesService,
             ChatModel chatModel
     ) {
-        this.summariesStorage = summariesStorage;
+        this.summariesRepository = summariesRepository;
 
         this.bibEntrySummarizer = new BibEntrySummarizer(
                 aiPreferences,
@@ -50,7 +50,7 @@ public class PersistentBibEntrySummarizer {
         } else if (entry.getCitationKey().isEmpty()) {
             LOGGER.info("No citation key is present. Summary will not be stored in the next sessions");
         } else {
-            savedSummary = summariesStorage.get(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get());
+            savedSummary = summariesRepository.get(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get());
         }
 
         Summary summary;
@@ -71,7 +71,7 @@ public class PersistentBibEntrySummarizer {
         } else if (CitationKeyCheck.citationKeyIsPresentAndUnique(bibDatabaseContext, entry)) {
             LOGGER.info("No valid citation key is present. Summary will not be stored in the next sessions");
         } else {
-            summariesStorage.set(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get(), summary);
+            summariesRepository.set(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get(), summary);
         }
 
         return summary;
