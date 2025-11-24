@@ -38,7 +38,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
     private final StringProperty groupName;
     private final List<ProcessingInfo<BibEntry, Summary>> entries;
     private final BibDatabaseContext bibDatabaseContext;
-    private final SummariesStorage summariesStorage;
+    private final SummariesRepository summariesRepository;
     private final ChatModel chatLanguageModel;
     private final AiTemplatesService aiTemplatesService;
     private final ReadOnlyBooleanProperty shutdownSignal;
@@ -54,7 +54,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
             StringProperty groupName,
             List<ProcessingInfo<BibEntry, Summary>> entries,
             BibDatabaseContext bibDatabaseContext,
-            SummariesStorage summariesStorage,
+            SummariesRepository summariesRepository,
             ChatModel chatLanguageModel,
             AiTemplatesService aiTemplatesService,
             ReadOnlyBooleanProperty shutdownSignal,
@@ -65,7 +65,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
         this.groupName = groupName;
         this.entries = entries;
         this.bibDatabaseContext = bibDatabaseContext;
-        this.summariesStorage = summariesStorage;
+        this.summariesRepository = summariesRepository;
         this.chatLanguageModel = chatLanguageModel;
         this.aiTemplatesService = aiTemplatesService;
         this.shutdownSignal = shutdownSignal;
@@ -100,7 +100,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
                             new GenerateSummaryTask(
                                     processingInfo.getObject(),
                                     bibDatabaseContext,
-                                    summariesStorage,
+                                    summariesRepository,
                                     chatLanguageModel,
                                     aiTemplatesService,
                                     shutdownSignal,

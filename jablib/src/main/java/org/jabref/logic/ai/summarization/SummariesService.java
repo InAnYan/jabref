@@ -47,7 +47,7 @@ public class SummariesService {
     private final List<List<BibEntry>> listsUnderSummarization = new ArrayList<>();
 
     private final AiPreferences aiPreferences;
-    private final SummariesStorage summariesStorage;
+    private final SummariesRepository summariesRepository;
     private final ChatModel chatLanguageModel;
     private final AiTemplatesService aiTemplatesService;
     private final BooleanProperty shutdownSignal;
@@ -55,7 +55,7 @@ public class SummariesService {
     private final TaskExecutor taskExecutor;
 
     public SummariesService(AiPreferences aiPreferences,
-                            SummariesStorage summariesStorage,
+                            SummariesRepository summariesRepository,
                             ChatModel chatLanguageModel,
                             AiTemplatesService aiTemplatesService,
                             BooleanProperty shutdownSignal,
@@ -63,7 +63,7 @@ public class SummariesService {
                             TaskExecutor taskExecutor
     ) {
         this.aiPreferences = aiPreferences;
-        this.summariesStorage = summariesStorage;
+        this.summariesRepository = summariesRepository;
         this.chatLanguageModel = chatLanguageModel;
         this.aiTemplatesService = aiTemplatesService;
         this.shutdownSignal = shutdownSignal;
@@ -140,7 +140,7 @@ public class SummariesService {
     private void startSummarizationTask(BibEntry entry, BibDatabaseContext bibDatabaseContext, ProcessingInfo<BibEntry, Summary> processingInfo) {
         processingInfo.setState(ProcessingState.PROCESSING);
 
-        new GenerateSummaryTask(entry, bibDatabaseContext, summariesStorage, chatLanguageModel, aiTemplatesService, shutdownSignal, aiPreferences, filePreferences)
+        new GenerateSummaryTask(entry, bibDatabaseContext, summariesRepository, chatLanguageModel, aiTemplatesService, shutdownSignal, aiPreferences, filePreferences)
                 .onSuccess(processingInfo::setSuccess)
                 .onFailure(processingInfo::setException)
                 .executeWith(taskExecutor);
@@ -149,7 +149,7 @@ public class SummariesService {
     private void startSummarizationTask(StringProperty groupName, List<ProcessingInfo<BibEntry, Summary>> entries, BibDatabaseContext bibDatabaseContext) {
         entries.forEach(processingInfo -> processingInfo.setState(ProcessingState.PROCESSING));
 
-        new GenerateSummaryForSeveralTask(groupName, entries, bibDatabaseContext, summariesStorage, chatLanguageModel, aiTemplatesService, shutdownSignal, aiPreferences, filePreferences, taskExecutor)
+        new GenerateSummaryForSeveralTask(groupName, entries, bibDatabaseContext, summariesRepository, chatLanguageModel, aiTemplatesService, shutdownSignal, aiPreferences, filePreferences, taskExecutor)
                 .executeWith(taskExecutor);
     }
 
@@ -165,7 +165,7 @@ public class SummariesService {
         } else if (bibEntry.getCitationKey().isEmpty() || CitationKeyCheck.citationKeyIsPresentAndUnique(bibDatabaseContext, bibEntry)) {
             LOGGER.info("No valid citation key is present. Could not clear stored summary for regeneration");
         } else {
-            summariesStorage.clear(bibDatabaseContext.getDatabasePath().get(), bibEntry.getCitationKey().get());
+            summariesRepository.clear(bibDatabaseContext.getDatabasePath().get(), bibEntry.getCitationKey().get());
         }
 
         startSummarizationTask(bibEntry, bibDatabaseContext, processingInfo);
