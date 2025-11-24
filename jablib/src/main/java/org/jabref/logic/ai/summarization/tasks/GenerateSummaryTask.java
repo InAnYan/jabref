@@ -5,6 +5,7 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.SummariesService;
+import org.jabref.logic.ai.summarization.algorithms.PersistentBibEntrySummarizer;
 import org.jabref.logic.ai.summarization.storages.SummariesStorage;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.l10n.Localization;
@@ -31,12 +32,9 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
     private final BibDatabaseContext bibDatabaseContext;
     private final BibEntry entry;
     private final String citationKey;
-    private final ChatModel chatLanguageModel;
-    private final SummariesStorage summariesStorage;
-    private final AiTemplatesService aiTemplatesService;
     private final ReadOnlyBooleanProperty shutdownSignal;
-    private final AiPreferences aiPreferences;
-    private final FilePreferences filePreferences;
+
+    private final PersistentBibEntrySummarizer persistentBibEntrySummarizer;
 
     private final ProgressCounter progressCounter = new ProgressCounter();
 
@@ -52,12 +50,15 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
         this.bibDatabaseContext = bibDatabaseContext;
         this.entry = entry;
         this.citationKey = entry.getCitationKey().orElse("<no citation key>");
-        this.chatLanguageModel = chatLanguageModel;
-        this.summariesStorage = summariesStorage;
-        this.aiTemplatesService = aiTemplatesService;
         this.shutdownSignal = shutdownSignal;
-        this.aiPreferences = aiPreferences;
-        this.filePreferences = filePreferences;
+
+        this.persistentBibEntrySummarizer = new PersistentBibEntrySummarizer(
+                aiPreferences,
+                filePreferences,
+                summariesStorage,
+                aiTemplatesService,
+                chatLanguageModel
+        );
 
         configure();
     }
@@ -73,7 +74,7 @@ public class GenerateSummaryTask extends BackgroundTask<Summary> {
     public Summary call() {
         LOGGER.debug("Starting summarization task for entry {}", citationKey);
 
-
+        Summary summary = persistentBibEntrySummarizer.summarize(entry, bibDatabaseContext, progressCounter, shutdownSignal);
 
         LOGGER.debug("Finished summarization task for entry {}", citationKey);
         progressCounter.stop();
