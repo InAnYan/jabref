@@ -20,16 +20,17 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 
 import org.jabref.gui.preferences.PreferenceTabViewModel;
-import org.jabref.logic.ai.preferences.AiDefaultPreferences;
+import org.jabref.logic.ai.preferences.AiDefaultTemplates;
 import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.logic.ai.preferences.PredefinedChatModel;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.preferences.CliPreferences;
 import org.jabref.logic.util.LocalizedNumbers;
 import org.jabref.logic.util.OptionalObjectProperty;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.AiProvider;
-import org.jabref.model.ai.templating.AiTemplate;
 import org.jabref.model.ai.embeddings.EmbeddingModel;
+import org.jabref.model.ai.templating.AiTemplate;
 
 import de.saxsys.mvvmfx.utils.validation.FunctionBasedValidator;
 import de.saxsys.mvvmfx.utils.validation.ValidationMessage;
@@ -136,7 +137,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         );
 
         this.selectedAiProvider.addListener((_, oldValue, newValue) -> {
-            List<String> models = AiDefaultPreferences.getAvailableModels(newValue);
+            List<String> models = PredefinedChatModel.getAvailableModels(newValue);
 
             disableApiBaseUrl.set(newValue == AiProvider.HUGGING_FACE || newValue == AiProvider.GEMINI);
 
@@ -223,7 +224,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
                         gpt4AllChatModel.set(newValue);
             }
 
-            contextWindowSize.set(AiDefaultPreferences.getContextWindowSize(selectedAiProvider.get(), newValue));
+            contextWindowSize.set(PredefinedChatModel.getContextWindowSize(selectedAiProvider.get(), newValue));
         });
 
         this.currentApiKey.addListener((_, _, newValue) -> {
@@ -407,23 +408,24 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         String resetApiBaseUrl = selectedAiProvider.get().getApiUrl();
         currentApiBaseUrl.set(resetApiBaseUrl);
 
-        contextWindowSize.set(AiDefaultPreferences.getContextWindowSize(selectedAiProvider.get(), currentChatModel.get()));
+        contextWindowSize.set(PredefinedChatModel.getContextWindowSize(selectedAiProvider.get(), currentChatModel.get()));
 
-        temperature.set(LocalizedNumbers.doubleToString(AiDefaultPreferences.TEMPERATURE));
-        documentSplitterChunkSize.set(AiDefaultPreferences.DOCUMENT_SPLITTER_CHUNK_SIZE);
-        documentSplitterOverlapSize.set(AiDefaultPreferences.DOCUMENT_SPLITTER_OVERLAP);
-        ragMaxResultsCount.set(AiDefaultPreferences.RAG_MAX_RESULTS_COUNT);
-        ragMinScore.set(LocalizedNumbers.doubleToString(AiDefaultPreferences.RAG_MIN_SCORE));
+        // TODO: Get default values.
+        temperature.set(LocalizedNumbers.doubleToString(0.7));
+        documentSplitterChunkSize.set(300);
+        documentSplitterOverlapSize.set(100);
+        ragMaxResultsCount.set(10);
+        ragMinScore.set(LocalizedNumbers.doubleToString(0.3));
     }
 
     public void resetTemplates() {
         Arrays.stream(AiTemplate.values()).forEach(template ->
-                templateSources.get(template).set(AiDefaultPreferences.TEMPLATES.get(template)));
+                templateSources.get(template).set(AiDefaultTemplates.getTemplate(template)));
     }
 
     public void resetCurrentTemplate() {
         selectedTemplateProperty().get().ifPresent(template -> {
-            String defaultTemplate = AiDefaultPreferences.TEMPLATES.get(template);
+            String defaultTemplate = AiDefaultTemplates.getTemplate(template);
             templateSources.get(template).set(defaultTemplate);
         });
     }

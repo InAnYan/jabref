@@ -18,8 +18,8 @@ import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.AiProvider;
-import org.jabref.model.ai.templating.AiTemplate;
 import org.jabref.model.ai.embeddings.EmbeddingModel;
+import org.jabref.model.ai.templating.AiTemplate;
 
 import com.github.javakeyring.Keyring;
 import com.github.javakeyring.PasswordAccessException;
@@ -287,7 +287,8 @@ public class AiPreferences {
         if (getCustomizeExpertSettings()) {
             return embeddingModel.get();
         } else {
-            return AiDefaultPreferences.EMBEDDING_MODEL;
+            // TODO: Think why this is? It was taken from AiDefaultSettings.
+            return EmbeddingModel.SENTENCE_TRANSFORMERS_ALL_MINILM_L12_V2;
         }
     }
 
@@ -363,7 +364,8 @@ public class AiPreferences {
         if (getCustomizeExpertSettings()) {
             return temperature.get();
         } else {
-            return AiDefaultPreferences.TEMPERATURE;
+            // TODO: default return values
+            return 0.7;
         }
     }
 
@@ -381,15 +383,15 @@ public class AiPreferences {
         } else {
             return switch (aiProvider.get()) {
                 case OPEN_AI ->
-                        AiDefaultPreferences.getContextWindowSize(AiProvider.OPEN_AI, openAiChatModel.get());
+                        PredefinedChatModel.getContextWindowSize(AiProvider.OPEN_AI, openAiChatModel.get());
                 case MISTRAL_AI ->
-                        AiDefaultPreferences.getContextWindowSize(AiProvider.MISTRAL_AI, mistralAiChatModel.get());
+                        PredefinedChatModel.getContextWindowSize(AiProvider.MISTRAL_AI, mistralAiChatModel.get());
                 case HUGGING_FACE ->
-                        AiDefaultPreferences.getContextWindowSize(AiProvider.HUGGING_FACE, huggingFaceChatModel.get());
+                        PredefinedChatModel.getContextWindowSize(AiProvider.HUGGING_FACE, huggingFaceChatModel.get());
                 case GEMINI ->
-                        AiDefaultPreferences.getContextWindowSize(AiProvider.GEMINI, geminiChatModel.get());
+                        PredefinedChatModel.getContextWindowSize(AiProvider.GEMINI, geminiChatModel.get());
                 case GPT4ALL ->
-                        AiDefaultPreferences.getContextWindowSize(AiProvider.GPT4ALL, gpt4AllChatModel.get());
+                        PredefinedChatModel.getContextWindowSize(AiProvider.GPT4ALL, gpt4AllChatModel.get());
             };
         }
     }
@@ -406,7 +408,8 @@ public class AiPreferences {
         if (getCustomizeExpertSettings()) {
             return documentSplitterChunkSize.get();
         } else {
-            return AiDefaultPreferences.DOCUMENT_SPLITTER_CHUNK_SIZE;
+            // TODO: default value.
+            return 300;
         }
     }
 
@@ -422,7 +425,8 @@ public class AiPreferences {
         if (getCustomizeExpertSettings()) {
             return documentSplitterOverlapSize.get();
         } else {
-            return AiDefaultPreferences.DOCUMENT_SPLITTER_OVERLAP;
+            // TODO: default value
+            return 100;
         }
     }
 
@@ -438,7 +442,8 @@ public class AiPreferences {
         if (getCustomizeExpertSettings()) {
             return ragMaxResultsCount.get();
         } else {
-            return AiDefaultPreferences.RAG_MAX_RESULTS_COUNT;
+            // TODO: Default value
+            return 10;
         }
     }
 
@@ -454,7 +459,8 @@ public class AiPreferences {
         if (getCustomizeExpertSettings()) {
             return ragMinScore.get();
         } else {
-            return AiDefaultPreferences.RAG_MIN_SCORE;
+            // TODO: default value
+            return 0.3;
         }
     }
 

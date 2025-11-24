@@ -33,8 +33,10 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.InternalPreferences;
 import org.jabref.logic.JabRefException;
 import org.jabref.logic.LibraryPreferences;
-import org.jabref.logic.ai.preferences.AiDefaultPreferences;
+import org.jabref.logic.ai.preferences.AiDefaultTemplates;
 import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.logic.ai.preferences.AiProviderDefaultChatModels;
+import org.jabref.logic.ai.preferences.PredefinedChatModel;
 import org.jabref.logic.bibtex.FieldPreferences;
 import org.jabref.logic.citationkeypattern.CitationKeyPattern;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
@@ -96,8 +98,8 @@ import org.jabref.logic.util.io.FileHistory;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.logic.xmp.XmpPreferences;
 import org.jabref.model.ai.chatting.AiProvider;
-import org.jabref.model.ai.templating.AiTemplate;
 import org.jabref.model.ai.embeddings.EmbeddingModel;
+import org.jabref.model.ai.templating.AiTemplate;
 import org.jabref.model.database.BibDatabaseMode;
 import org.jabref.model.entry.BibEntryPreferences;
 import org.jabref.model.entry.BibEntryType;
@@ -392,7 +394,6 @@ public class JabRefCliPreferences implements CliPreferences {
     private static final String AI_GEMINI_API_BASE_URL = "aiGeminiApiBaseUrl";
     private static final String AI_HUGGING_FACE_API_BASE_URL = "aiHuggingFaceApiBaseUrl";
     private static final String AI_GPT_4_ALL_API_BASE_URL = "aiGpt4AllApiBaseUrl";
-    private static final String AI_SYSTEM_MESSAGE = "aiSystemMessage";
     private static final String AI_TEMPERATURE = "aiTemperature";
     private static final String AI_CONTEXT_WINDOW_SIZE = "aiMessageWindowSize";
     private static final String AI_DOCUMENT_SPLITTER_CHUNK_SIZE = "aiDocumentSplitterChunkSize";
@@ -725,39 +726,38 @@ public class JabRefCliPreferences implements CliPreferences {
         // endregion
 
         // region:AI
-        defaults.put(AI_ENABLED, AiDefaultPreferences.ENABLE_CHAT);
-        defaults.put(AI_AUTO_GENERATE_EMBEDDINGS, AiDefaultPreferences.AUTO_GENERATE_EMBEDDINGS);
-        defaults.put(AI_AUTO_GENERATE_SUMMARIES, AiDefaultPreferences.AUTO_GENERATE_SUMMARIES);
-        defaults.put(AI_PROVIDER, AiDefaultPreferences.PROVIDER.name());
-        defaults.put(AI_OPEN_AI_CHAT_MODEL, AiDefaultPreferences.CHAT_MODELS.get(AiProvider.OPEN_AI).getName());
-        defaults.put(AI_MISTRAL_AI_CHAT_MODEL, AiDefaultPreferences.CHAT_MODELS.get(AiProvider.MISTRAL_AI).getName());
-        defaults.put(AI_GEMINI_CHAT_MODEL, AiDefaultPreferences.CHAT_MODELS.get(AiProvider.GEMINI).getName());
-        defaults.put(AI_HUGGING_FACE_CHAT_MODEL, AiDefaultPreferences.CHAT_MODELS.get(AiProvider.HUGGING_FACE).getName());
-        defaults.put(AI_GPT_4_ALL_MODEL, AiDefaultPreferences.CHAT_MODELS.get(AiProvider.GPT4ALL).getName());
-        defaults.put(AI_CUSTOMIZE_SETTINGS, AiDefaultPreferences.CUSTOMIZE_SETTINGS);
-        defaults.put(AI_EMBEDDING_MODEL, AiDefaultPreferences.EMBEDDING_MODEL.name());
+        defaults.put(AI_ENABLED, false);
+        defaults.put(AI_AUTO_GENERATE_EMBEDDINGS, false);
+        defaults.put(AI_AUTO_GENERATE_SUMMARIES, false);
+        defaults.put(AI_PROVIDER, AiProvider.OPEN_AI.name());
+        defaults.put(AI_OPEN_AI_CHAT_MODEL, AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.OPEN_AI).getName());
+        defaults.put(AI_MISTRAL_AI_CHAT_MODEL, AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.MISTRAL_AI).getName());
+        defaults.put(AI_GEMINI_CHAT_MODEL, AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.GEMINI).getName());
+        defaults.put(AI_HUGGING_FACE_CHAT_MODEL, AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.HUGGING_FACE).getName());
+        defaults.put(AI_GPT_4_ALL_MODEL, AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.GPT4ALL).getName());
+        defaults.put(AI_CUSTOMIZE_SETTINGS, false);
+        defaults.put(AI_EMBEDDING_MODEL, EmbeddingModel.SENTENCE_TRANSFORMERS_ALL_MINILM_L12_V2.name());
         defaults.put(AI_OPEN_AI_API_BASE_URL, AiProvider.OPEN_AI.getApiUrl());
         defaults.put(AI_MISTRAL_AI_API_BASE_URL, AiProvider.MISTRAL_AI.getApiUrl());
         defaults.put(AI_GEMINI_API_BASE_URL, AiProvider.GEMINI.getApiUrl());
         defaults.put(AI_HUGGING_FACE_API_BASE_URL, AiProvider.HUGGING_FACE.getApiUrl());
         defaults.put(AI_GPT_4_ALL_API_BASE_URL, AiProvider.GPT4ALL.getApiUrl());
-        defaults.put(AI_SYSTEM_MESSAGE, AiDefaultPreferences.SYSTEM_MESSAGE);
-        defaults.put(AI_TEMPERATURE, AiDefaultPreferences.TEMPERATURE);
-        defaults.put(AI_CONTEXT_WINDOW_SIZE, AiDefaultPreferences.getContextWindowSize(AiDefaultPreferences.PROVIDER, AiDefaultPreferences.CHAT_MODELS.get(AiDefaultPreferences.PROVIDER).getName()));
-        defaults.put(AI_DOCUMENT_SPLITTER_CHUNK_SIZE, AiDefaultPreferences.DOCUMENT_SPLITTER_CHUNK_SIZE);
-        defaults.put(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE, AiDefaultPreferences.DOCUMENT_SPLITTER_OVERLAP);
-        defaults.put(AI_RAG_MAX_RESULTS_COUNT, AiDefaultPreferences.RAG_MAX_RESULTS_COUNT);
-        defaults.put(AI_RAG_MIN_SCORE, AiDefaultPreferences.RAG_MIN_SCORE);
+        defaults.put(AI_TEMPERATURE, 0.7);
+        defaults.put(AI_CONTEXT_WINDOW_SIZE, PredefinedChatModel.getContextWindowSize((AiProvider) defaults.get(AI_PROVIDER), AiProviderDefaultChatModels.getDefaultChatModel((AiProvider) defaults.get(AI_PROVIDER)).getName()));
+        defaults.put(AI_DOCUMENT_SPLITTER_CHUNK_SIZE, 300);
+        defaults.put(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE, 100);
+        defaults.put(AI_RAG_MAX_RESULTS_COUNT, 10);
+        defaults.put(AI_RAG_MIN_SCORE, 0.3);
 
         // region:AI templates
-        defaults.put(AI_CHATTING_SYSTEM_MESSAGE_TEMPLATE, AiDefaultPreferences.TEMPLATES.get(AiTemplate.CHATTING_SYSTEM_MESSAGE));
-        defaults.put(AI_CHATTING_USER_MESSAGE_TEMPLATE, AiDefaultPreferences.TEMPLATES.get(AiTemplate.CHATTING_USER_MESSAGE));
-        defaults.put(AI_SUMMARIZATION_CHUNK_SYSTEM_MESSAGE_TEMPLATE, AiDefaultPreferences.TEMPLATES.get(AiTemplate.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE));
-        defaults.put(AI_SUMMARIZATION_CHUNK_USER_MESSAGE_TEMPLATE, AiDefaultPreferences.TEMPLATES.get(AiTemplate.SUMMARIZATION_CHUNK_USER_MESSAGE));
-        defaults.put(AI_SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE, AiDefaultPreferences.TEMPLATES.get(AiTemplate.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE));
-        defaults.put(AI_SUMMARIZATION_COMBINE_USER_MESSAGE_TEMPLATE, AiDefaultPreferences.TEMPLATES.get(AiTemplate.SUMMARIZATION_COMBINE_USER_MESSAGE));
-        defaults.put(AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE, AiDefaultPreferences.TEMPLATES.get(AiTemplate.CITATION_PARSING_SYSTEM_MESSAGE));
-        defaults.put(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE, AiDefaultPreferences.TEMPLATES.get(AiTemplate.CITATION_PARSING_USER_MESSAGE));
+        defaults.put(AI_CHATTING_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.getTemplate(AiTemplate.CHATTING_SYSTEM_MESSAGE));
+        defaults.put(AI_CHATTING_USER_MESSAGE_TEMPLATE, AiDefaultTemplates.getTemplate(AiTemplate.CHATTING_USER_MESSAGE));
+        defaults.put(AI_SUMMARIZATION_CHUNK_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.getTemplate(AiTemplate.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE));
+        defaults.put(AI_SUMMARIZATION_CHUNK_USER_MESSAGE_TEMPLATE, AiDefaultTemplates.getTemplate(AiTemplate.SUMMARIZATION_CHUNK_USER_MESSAGE));
+        defaults.put(AI_SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.getTemplate(AiTemplate.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE));
+        defaults.put(AI_SUMMARIZATION_COMBINE_USER_MESSAGE_TEMPLATE, AiDefaultTemplates.getTemplate(AiTemplate.SUMMARIZATION_COMBINE_USER_MESSAGE));
+        defaults.put(AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.getTemplate(AiTemplate.CITATION_PARSING_SYSTEM_MESSAGE));
+        defaults.put(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE, AiDefaultTemplates.getTemplate(AiTemplate.CITATION_PARSING_USER_MESSAGE));
         // endregion
 
         // endregion
