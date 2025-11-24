@@ -4,6 +4,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.GroupAiIdentifier;
 
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
@@ -46,9 +48,15 @@ abstract class ChatHistoryRepositoryTest {
                 new AiMessage("hello!")
         );
 
-        storage.storeMessagesForEntry(tempDir.resolve("test.bib"), "citationKey", messages);
+        BibEntryAiIdentifier identifier = new BibEntryAiIdentifier(
+                tempDir.resolve("test.bib"),
+                "citationKey"
+        );
+        storage.storeMessagesForEntry(identifier, messages);
+
         reopen();
-        assertEquals(messages, storage.loadMessagesForEntry(tempDir.resolve("test.bib"), "citationKey"));
+
+        assertEquals(messages, storage.loadMessagesForEntry(identifier));
     }
 
     @Test
@@ -58,8 +66,11 @@ abstract class ChatHistoryRepositoryTest {
                 new AiMessage("hello!")
         );
 
-        storage.storeMessagesForGroup(tempDir.resolve("test.bib"), "group", messages);
+        GroupAiIdentifier identifier = new GroupAiIdentifier(tempDir.resolve("test.bib"), "group");
+        storage.storeMessagesForGroup(identifier, messages);
+
         reopen();
-        assertEquals(messages, storage.loadMessagesForGroup(tempDir.resolve("test.bib"), "group"));
+
+        assertEquals(messages, storage.loadMessagesForGroup(identifier));
     }
 }

@@ -13,6 +13,8 @@ import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.citationkeypattern.CitationKeyGenerator;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
 import org.jabref.logic.util.CitationKeyCheck;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.GroupAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.event.FieldChangedEvent;
@@ -96,7 +98,8 @@ public class ChatHistoryService implements AutoCloseable {
             if (entry.getCitationKey().isEmpty() || !correctCitationKey(bibDatabaseContext, entry) || bibDatabaseContext.getDatabasePath().isEmpty()) {
                 chatHistory = FXCollections.observableArrayList();
             } else {
-                List<ChatMessage> chatMessagesList = implementation.loadMessagesForEntry(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get());
+                BibEntryAiIdentifier identifier = new BibEntryAiIdentifier(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get());
+                List<ChatMessage> chatMessagesList = implementation.loadMessagesForEntry(identifier);
                 chatHistory = FXCollections.observableArrayList(chatMessagesList);
             }
 
@@ -124,9 +127,9 @@ public class ChatHistoryService implements AutoCloseable {
         if (bibDatabaseContext.isPresent() && entry.getCitationKey().isPresent() && correctCitationKey(bibDatabaseContext.get(), entry) && bibDatabaseContext.get().getDatabasePath().isPresent()) {
             // Method `correctCitationKey` will already check `entry.getCitationKey().isPresent()`, but it is still
             // there, to suppress warning from IntelliJ IDEA on `entry.getCitationKey().get()`.
+            BibEntryAiIdentifier identifier = new BibEntryAiIdentifier(bibDatabaseContext.get().getDatabasePath().get(), entry.getCitationKey().get());
             implementation.storeMessagesForEntry(
-                    bibDatabaseContext.get().getDatabasePath().get(),
-                    entry.getCitationKey().get(),
+                    identifier,
                     chatHistoryManagementRecord.chatHistory()
             );
         }
@@ -142,9 +145,9 @@ public class ChatHistoryService implements AutoCloseable {
             if (bibDatabaseContext.getDatabasePath().isEmpty()) {
                 chatHistory = FXCollections.observableArrayList();
             } else {
+                GroupAiIdentifier identifier = new GroupAiIdentifier(bibDatabaseContext.getDatabasePath().get(), group.getGroup().getName());
                 List<ChatMessage> chatMessagesList = implementation.loadMessagesForGroup(
-                        bibDatabaseContext.getDatabasePath().get(),
-                        group.getGroup().getName()
+                        identifier
                 );
 
                 chatHistory = FXCollections.observableArrayList(chatMessagesList);
@@ -172,9 +175,9 @@ public class ChatHistoryService implements AutoCloseable {
         Optional<BibDatabaseContext> bibDatabaseContext = chatHistoryManagementRecord.bibDatabaseContext();
 
         if (bibDatabaseContext.isPresent() && bibDatabaseContext.get().getDatabasePath().isPresent()) {
+            GroupAiIdentifier identifier = new GroupAiIdentifier(bibDatabaseContext.get().getDatabasePath().get(), group.getGroup().getName());
             implementation.storeMessagesForGroup(
-                    bibDatabaseContext.get().getDatabasePath().get(),
-                    group.getGroup().getName(),
+                    identifier,
                     chatHistoryManagementRecord.chatHistory()
             );
         }
@@ -214,8 +217,12 @@ public class ChatHistoryService implements AutoCloseable {
 
         List<ChatMessage> chatMessages = groupsChatHistory.computeIfAbsent(groupTreeNode,
                 e -> new ChatHistoryManagementRecord(Optional.of(bibDatabaseContext), FXCollections.observableArrayList())).chatHistory;
-        implementation.storeMessagesForGroup(bibDatabaseContext.getDatabasePath().get(), oldName, List.of());
-        implementation.storeMessagesForGroup(bibDatabaseContext.getDatabasePath().get(), newName, chatMessages);
+
+        GroupAiIdentifier oldIdentifier = new GroupAiIdentifier(bibDatabaseContext.getDatabasePath().get(), oldName);
+        GroupAiIdentifier newIdentifier = new GroupAiIdentifier(bibDatabaseContext.getDatabasePath().get(), newName);
+
+        implementation.storeMessagesForGroup(oldIdentifier, List.of());
+        implementation.storeMessagesForGroup(newIdentifier, chatMessages);
     }
 
     private void transferEntryHistory(BibDatabaseContext bibDatabaseContext, BibEntry entry, String oldCitationKey, String newCitationKey) {
@@ -228,8 +235,13 @@ public class ChatHistoryService implements AutoCloseable {
 
         List<ChatMessage> chatMessages = bibEntriesChatHistory.computeIfAbsent(entry,
                 e -> new ChatHistoryManagementRecord(Optional.of(bibDatabaseContext), FXCollections.observableArrayList())).chatHistory;
-        implementation.storeMessagesForGroup(bibDatabaseContext.getDatabasePath().get(), oldCitationKey, List.of());
-        implementation.storeMessagesForEntry(bibDatabaseContext.getDatabasePath().get(), newCitationKey, chatMessages);
+
+        GroupAiIdentifier groupIdentifier = new GroupAiIdentifier(bibDatabaseContext.getDatabasePath().get(), oldCitationKey);
+        BibEntryAiIdentifier bibEntryIdentifier = new BibEntryAiIdentifier(bibDatabaseContext.getDatabasePath().get(), newCitationKey);
+
+        // TODO: Why group here?
+        implementation.storeMessagesForGroup(groupIdentifier, List.of());
+        implementation.storeMessagesForEntry(bibEntryIdentifier, chatMessages);
     }
 
     private class CitationKeyChangeListener {

@@ -10,6 +10,8 @@ import org.jabref.logic.ai.util.MVStoreBase;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.model.ai.chatting.ErrorMessage;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.GroupAiIdentifier;
 
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
@@ -69,23 +71,23 @@ public class MVStoreChatHistoryRepository extends MVStoreBase implements ChatHis
     }
 
     @Override
-    public List<ChatMessage> loadMessagesForEntry(Path bibDatabasePath, String citationKey) {
-        return loadMessagesFromMap(getMapForEntry(bibDatabasePath, citationKey));
+    public List<ChatMessage> loadMessagesForEntry(BibEntryAiIdentifier identifier) {
+        return loadMessagesFromMap(getMapForEntry(identifier));
     }
 
     @Override
-    public void storeMessagesForEntry(Path bibDatabasePath, String citationKey, List<ChatMessage> messages) {
-        storeMessagesForMap(getMapForEntry(bibDatabasePath, citationKey), messages);
+    public void storeMessagesForEntry(BibEntryAiIdentifier identifier, List<ChatMessage> messages) {
+        storeMessagesForMap(getMapForEntry(identifier), messages);
     }
 
     @Override
-    public List<ChatMessage> loadMessagesForGroup(Path bibDatabasePath, String name) {
-        return loadMessagesFromMap(getMapForGroup(bibDatabasePath, name));
+    public List<ChatMessage> loadMessagesForGroup(GroupAiIdentifier identifier) {
+        return loadMessagesFromMap(getMapForGroup(identifier));
     }
 
     @Override
-    public void storeMessagesForGroup(Path bibDatabasePath, String name, List<ChatMessage> messages) {
-        storeMessagesForMap(getMapForGroup(bibDatabasePath, name), messages);
+    public void storeMessagesForGroup(GroupAiIdentifier identifier, List<ChatMessage> messages) {
+        storeMessagesForMap(getMapForGroup(identifier), messages);
     }
 
     private List<ChatMessage> loadMessagesFromMap(Map<Integer, ChatHistoryRecord> map) {
@@ -106,12 +108,12 @@ public class MVStoreChatHistoryRepository extends MVStoreBase implements ChatHis
         );
     }
 
-    private Map<Integer, ChatHistoryRecord> getMapForEntry(Path bibDatabasePath, String citationKey) {
-        return getMap(bibDatabasePath, ENTRY_CHAT_HISTORY_PREFIX, citationKey);
+    private Map<Integer, ChatHistoryRecord> getMapForEntry(BibEntryAiIdentifier identifier) {
+        return getMap(identifier.databasePath(), ENTRY_CHAT_HISTORY_PREFIX, identifier.citationKey());
     }
 
-    private Map<Integer, ChatHistoryRecord> getMapForGroup(Path bibDatabasePath, String name) {
-        return getMap(bibDatabasePath, GROUP_CHAT_HISTORY_PREFIX, name);
+    private Map<Integer, ChatHistoryRecord> getMapForGroup(GroupAiIdentifier identifier) {
+        return getMap(identifier.databasePath(), GROUP_CHAT_HISTORY_PREFIX, identifier.groupName());
     }
 
     private Map<Integer, ChatHistoryRecord> getMap(Path bibDatabasePath, String type, String name) {
