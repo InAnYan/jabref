@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.rag.algorithms.FileToDocument;
+import org.jabref.logic.ai.rag.algorithms.UniversalFileParser;
 import org.jabref.logic.ai.rag.storages.FileEmbeddingsManager;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
@@ -118,7 +118,7 @@ public class GenerateEmbeddingsTask extends BackgroundTask<Void> {
             return;
         }
 
-        Optional<Document> document = new FileToDocument(shutdownSignal).fromFile(path.get());
+        Optional<Document> document = new UniversalFileParser(shutdownSignal).fromFile(path.get());
         if (document.isPresent()) {
             fileEmbeddingsManager.addDocument(linkedFile.getLink(), document.get(), modTime.orElse(0L), progressCounter.workDoneProperty(), progressCounter.workMaxProperty());
             LOGGER.debug("Embeddings for file \"{}\" were generated successfully", linkedFile.getLink());

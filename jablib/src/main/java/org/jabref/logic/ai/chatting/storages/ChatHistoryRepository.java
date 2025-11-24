@@ -5,7 +5,7 @@ import java.util.List;
 
 import dev.langchain4j.data.message.ChatMessage;
 
-public interface ChatHistoryRepository {
+public interface ChatHistoryRepository extends AutoCloseable {
     List<ChatMessage> loadMessagesForEntry(Path bibDatabasePath, String citationKey);
 
     void storeMessagesForEntry(Path bibDatabasePath, String citationKey, List<ChatMessage> messages);
@@ -13,8 +13,4 @@ public interface ChatHistoryRepository {
     List<ChatMessage> loadMessagesForGroup(Path bibDatabasePath, String name);
 
     void storeMessagesForGroup(Path bibDatabasePath, String name, List<ChatMessage> messages);
-
-    void commit();
-
-    void close();
 }

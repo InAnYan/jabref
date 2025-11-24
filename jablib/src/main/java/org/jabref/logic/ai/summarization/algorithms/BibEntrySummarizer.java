@@ -12,7 +12,7 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.rag.algorithms.FileToDocument;
+import org.jabref.logic.ai.rag.algorithms.UniversalFileParser;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.ProgressCounter;
@@ -98,7 +98,7 @@ public class BibEntrySummarizer {
             return Optional.empty();
         }
 
-        Optional<Document> document = new FileToDocument(shutdownSignal).fromFile(path.get());
+        Optional<Document> document = new UniversalFileParser(shutdownSignal).fromFile(path.get());
 
         if (document.isEmpty()) {
             LOGGER.warn("Could not extract text from a linked file \"{}\" of entry {}. It will be skipped when generating a summary.", linkedFile.getLink(), citationKey);
