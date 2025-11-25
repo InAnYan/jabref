@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.model.ai.chatting.AiProvider;
-import org.jabref.model.ai.summarization.Summary;
+import org.jabref.model.ai.summarization.BibEntrySummary;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,14 +43,14 @@ abstract class SummariesRepositoryTest {
 
     @Test
     void set() {
-        summariesRepository.set(bibPath, "citationKey", new Summary(LocalDateTime.now(), AiProvider.OPEN_AI, "model", "contents"));
+        summariesRepository.set(bibPath, "citationKey", new BibEntrySummary(LocalDateTime.now(), AiProvider.OPEN_AI, "model", "contents"));
         reopen();
-        assertEquals(Optional.of("contents"), summariesRepository.get(bibPath, "citationKey").map(Summary::content));
+        assertEquals(Optional.of("contents"), summariesRepository.get(bibPath, "citationKey").map(BibEntrySummary::content));
     }
 
     @Test
     void clear() {
-        summariesRepository.set(bibPath, "citationKey", new Summary(LocalDateTime.now(), AiProvider.OPEN_AI, "model", "contents"));
+        summariesRepository.set(bibPath, "citationKey", new BibEntrySummary(LocalDateTime.now(), AiProvider.OPEN_AI, "model", "contents"));
         reopen();
         summariesRepository.clear(bibPath, "citationKey");
         reopen();

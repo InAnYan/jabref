@@ -19,6 +19,7 @@ import javafx.beans.property.StringProperty;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.AiProvider;
 import org.jabref.model.ai.embeddings.EmbeddingModel;
+import org.jabref.model.ai.summarization.SummarizationAlgorithmName;
 import org.jabref.model.ai.templating.AiTemplate;
 
 import com.github.javakeyring.Keyring;
@@ -52,6 +53,7 @@ public class AiPreferences {
     private final StringProperty huggingFaceApiBaseUrl;
     private final StringProperty gpt4AllApiBaseUrl;
 
+    private final ObjectProperty<SummarizationAlgorithmName> defaultSummarizationAlgorithm;
     private final ObjectProperty<EmbeddingModel> embeddingModel;
     private final DoubleProperty temperature;
     private final IntegerProperty contextWindowSize;
@@ -64,29 +66,31 @@ public class AiPreferences {
 
     private Runnable apiKeyChangeListener;
 
-    public AiPreferences(boolean enableAi,
-                         boolean autoGenerateEmbeddings,
-                         boolean autoGenerateSummaries,
-                         AiProvider aiProvider,
-                         String openAiChatModel,
-                         String mistralAiChatModel,
-                         String geminiChatModel,
-                         String huggingFaceChatModel,
-                         String gpt4AllModel,
-                         boolean customizeExpertSettings,
-                         String openAiApiBaseUrl,
-                         String mistralAiApiBaseUrl,
-                         String geminiApiBaseUrl,
-                         String huggingFaceApiBaseUrl,
-                         String gpt4AllApiBaseUrl,
-                         EmbeddingModel embeddingModel,
-                         double temperature,
-                         int contextWindowSize,
-                         int documentSplitterChunkSize,
-                         int documentSplitterOverlapSize,
-                         int ragMaxResultsCount,
-                         double ragMinScore,
-                         Map<AiTemplate, String> templates
+    public AiPreferences(
+            boolean enableAi,
+            boolean autoGenerateEmbeddings,
+            boolean autoGenerateSummaries,
+            AiProvider aiProvider,
+            String openAiChatModel,
+            String mistralAiChatModel,
+            String geminiChatModel,
+            String huggingFaceChatModel,
+            String gpt4AllModel,
+            boolean customizeExpertSettings,
+            String openAiApiBaseUrl,
+            String mistralAiApiBaseUrl,
+            String geminiApiBaseUrl,
+            String huggingFaceApiBaseUrl,
+            String gpt4AllApiBaseUrl,
+            SummarizationAlgorithmName defaultSummarizationAlgorithm,
+            EmbeddingModel embeddingModel,
+            double temperature,
+            int contextWindowSize,
+            int documentSplitterChunkSize,
+            int documentSplitterOverlapSize,
+            int ragMaxResultsCount,
+            double ragMinScore,
+            Map<AiTemplate, String> templates
     ) {
         this.enableAi = new SimpleBooleanProperty(enableAi);
         this.autoGenerateEmbeddings = new SimpleBooleanProperty(autoGenerateEmbeddings);
@@ -108,6 +112,7 @@ public class AiPreferences {
         this.huggingFaceApiBaseUrl = new SimpleStringProperty(huggingFaceApiBaseUrl);
         this.gpt4AllApiBaseUrl = new SimpleStringProperty(gpt4AllApiBaseUrl);
 
+        this.defaultSummarizationAlgorithm = new SimpleObjectProperty<>(defaultSummarizationAlgorithm);
         this.embeddingModel = new SimpleObjectProperty<>(embeddingModel);
         this.temperature = new SimpleDoubleProperty(temperature);
         this.contextWindowSize = new SimpleIntegerProperty(contextWindowSize);
@@ -277,6 +282,18 @@ public class AiPreferences {
 
     public void setCustomizeExpertSettings(boolean customizeExpertSettings) {
         this.customizeExpertSettings.set(customizeExpertSettings);
+    }
+
+    public ObjectProperty<SummarizationAlgorithmName> defaultSummarizationAlgorithmProperty() {
+        return defaultSummarizationAlgorithm;
+    }
+
+    public SummarizationAlgorithmName getDefaultSummarizationAlgorithm() {
+        return defaultSummarizationAlgorithm.get();
+    }
+
+    public void setDefaultSummarizationAlgorithm(SummarizationAlgorithmName defaultSummarizationAlgorithm) {
+        this.defaultSummarizationAlgorithm.set(defaultSummarizationAlgorithm);
     }
 
     public ObjectProperty<EmbeddingModel> embeddingModelProperty() {

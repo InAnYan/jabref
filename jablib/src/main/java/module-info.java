@@ -125,6 +125,8 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.rag;
     exports org.jabref.logic.ai.summarization.tasks;
     exports org.jabref.logic.ai.summarization.repositories;
+    exports org.jabref.logic.ai.summarization.templates;
+    exports org.jabref.logic.ai.summarization.algorithms;
     exports org.jabref.logic.ai.rag.tasks;
     exports org.jabref.logic.ai.rag.repositories;
     exports org.jabref.logic.ai.rag.algorithms;

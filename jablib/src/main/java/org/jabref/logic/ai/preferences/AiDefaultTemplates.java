@@ -27,7 +27,7 @@ public class AiDefaultTemplates {
 
             AiTemplate.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE, """
                     Please provide an overview of the following text. It is a part of a scientific paper.
-                    The summary should include the main objectives, methodologies used, key findings, and conclusions.
+                    The bibEntrySummary should include the main objectives, methodologies used, key findings, and conclusions.
                     Mention any significant experiments, data, or discussions presented in the paper.""",
 
             AiTemplate.SUMMARIZATION_CHUNK_USER_MESSAGE, "$text",

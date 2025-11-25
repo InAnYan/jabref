@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.jabref.logic.ai.util.MVStoreBase;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.NotificationService;
-import org.jabref.model.ai.summarization.Summary;
+import org.jabref.model.ai.summarization.BibEntrySummary;
 
 public class MVStoreSummariesRepository extends MVStoreBase implements SummariesRepository {
     private static final String SUMMARIES_MAP_PREFIX = "summaries";
@@ -16,11 +16,11 @@ public class MVStoreSummariesRepository extends MVStoreBase implements Summaries
         super(path, dialogService);
     }
 
-    public void set(Path bibDatabasePath, String citationKey, Summary summary) {
-        getMap(bibDatabasePath).put(citationKey, summary);
+    public void set(Path bibDatabasePath, String citationKey, BibEntrySummary bibEntrySummary) {
+        getMap(bibDatabasePath).put(citationKey, bibEntrySummary);
     }
 
-    public Optional<Summary> get(Path bibDatabasePath, String citationKey) {
+    public Optional<BibEntrySummary> get(Path bibDatabasePath, String citationKey) {
         return Optional.ofNullable(getMap(bibDatabasePath).get(citationKey));
     }
 
@@ -28,7 +28,7 @@ public class MVStoreSummariesRepository extends MVStoreBase implements Summaries
         getMap(bibDatabasePath).remove(citationKey);
     }
 
-    private Map<String, Summary> getMap(Path bibDatabasePath) {
+    private Map<String, BibEntrySummary> getMap(Path bibDatabasePath) {
         return mvStore.openMap(SUMMARIES_MAP_PREFIX + "-" + bibDatabasePath.toString());
     }
 

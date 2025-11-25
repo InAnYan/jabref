@@ -4,8 +4,8 @@ import java.io.StringWriter;
 import java.util.List;
 
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.model.ai.templating.AiTemplate;
 import org.jabref.model.ai.rag.PaperExcerpt;
+import org.jabref.model.ai.templating.AiTemplate;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.CanonicalBibEntry;
 
@@ -42,30 +42,6 @@ public class AiTemplatesService {
         return makeTemplate(AiTemplate.CHATTING_USER_MESSAGE, context);
     }
 
-    public String makeSummarizationChunkSystemMessage() {
-        VelocityContext context = new VelocityContext(baseContext);
-        return makeTemplate(AiTemplate.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE, context);
-    }
-
-    public String makeSummarizationChunkUserMessage(String text) {
-        VelocityContext context = new VelocityContext(baseContext);
-        context.put("text", text);
-
-        return makeTemplate(AiTemplate.SUMMARIZATION_CHUNK_USER_MESSAGE, context);
-    }
-
-    public String makeSummarizationCombineSystemMessage() {
-        VelocityContext context = new VelocityContext(baseContext);
-        return makeTemplate(AiTemplate.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE, context);
-    }
-
-    public String makeSummarizationCombineUserMessage(List<String> chunks) {
-        VelocityContext context = new VelocityContext(baseContext);
-        context.put("chunks", chunks);
-
-        return makeTemplate(AiTemplate.SUMMARIZATION_COMBINE_USER_MESSAGE, context);
-    }
-
     public String makeCitationParsingSystemMessage() {
         VelocityContext context = new VelocityContext(baseContext);
         return makeTemplate(AiTemplate.CITATION_PARSING_SYSTEM_MESSAGE, context);
@@ -84,5 +60,9 @@ public class AiTemplatesService {
         velocityEngine.evaluate(context, writer, template.name(), aiPreferences.getTemplate(template));
 
         return writer.toString();
+    }
+
+    public String getRawTemplate(AiTemplate template) {
+        return aiPreferences.getTemplate(template);
     }
 }

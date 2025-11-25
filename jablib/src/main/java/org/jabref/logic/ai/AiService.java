@@ -62,11 +62,12 @@ public class AiService implements AutoCloseable {
     private final IngestionService ingestionService;
     private final SummariesService summariesService;
 
-    public AiService(AiPreferences aiPreferences,
-                     FilePreferences filePreferences,
-                     CitationKeyPatternPreferences citationKeyPatternPreferences,
-                     NotificationService notificationService,
-                     TaskExecutor taskExecutor
+    public AiService(
+            AiPreferences aiPreferences,
+            FilePreferences filePreferences,
+            CitationKeyPatternPreferences citationKeyPatternPreferences,
+            NotificationService notificationService,
+            TaskExecutor taskExecutor
     ) {
 
         this.mvStoreChatHistoryStorage = new MVStoreChatHistoryRepository(notificationService, Directories.getAiFilesDirectory().resolve(CHAT_HISTORY_FILE_NAME));
@@ -81,12 +82,21 @@ public class AiService implements AutoCloseable {
 
         this.ingestionService = new IngestionService(
                 aiPreferences,
-                filePreferences, taskExecutor, currentlySelectedEmbeddingModel, mvStoreEmbeddingStore, mvStoreFullyIngestedDocumentsTracker, shutdownSignal
+                filePreferences,
+                taskExecutor,
+                currentlySelectedEmbeddingModel,
+                mvStoreEmbeddingStore,
+                mvStoreFullyIngestedDocumentsTracker,
+                shutdownSignal
         );
 
         this.summariesService = new SummariesService(
                 aiPreferences,
-                filePreferences, templatesService, taskExecutor, currentlySelectedChatLanguageModel, mvStoreSummariesStorage,
+                filePreferences,
+                templatesService,
+                taskExecutor,
+                currentlySelectedChatLanguageModel.getChatModelInfo(),
+                mvStoreSummariesStorage,
                 shutdownSignal
         );
     }

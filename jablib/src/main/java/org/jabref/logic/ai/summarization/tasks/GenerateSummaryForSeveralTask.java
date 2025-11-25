@@ -10,20 +10,19 @@ import javafx.beans.property.StringProperty;
 import javafx.util.Pair;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.logic.ai.summarization.algorithms.SummarizationAlgorithm;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
-import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ProgressCounter;
 import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.ai.chatting.ChatModelInfo;
 import org.jabref.model.ai.processingstatus.ProcessingInfo;
 import org.jabref.model.ai.processingstatus.ProcessingState;
-import org.jabref.model.ai.summarization.Summary;
+import org.jabref.model.ai.summarization.BibEntrySummary;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
-import dev.langchain4j.model.chat.ChatModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,13 +35,12 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSummaryForSeveralTask.class);
 
     private final StringProperty groupName;
-    private final List<ProcessingInfo<BibEntry, Summary>> entries;
+    private final List<ProcessingInfo<BibEntry, BibEntrySummary>> entries;
     private final BibDatabaseContext bibDatabaseContext;
     private final SummariesRepository summariesRepository;
-    private final ChatModel chatLanguageModel;
-    private final AiTemplatesService aiTemplatesService;
+    private final ChatModelInfo chatModelInfo;
+    private final SummarizationAlgorithm summarizationAlgorithm;
     private final ReadOnlyBooleanProperty shutdownSignal;
-    private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
     private final TaskExecutor taskExecutor;
 
@@ -51,25 +49,23 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
     private String currentFile = "";
 
     public GenerateSummaryForSeveralTask(
-            AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            AiTemplatesService aiTemplatesService,
             TaskExecutor taskExecutor,
-            ChatModel chatLanguageModel,
+            ChatModelInfo chatModelInfo,
             SummariesRepository summariesRepository,
+            SummarizationAlgorithm summarizationAlgorithm,
             BibDatabaseContext bibDatabaseContext,
             StringProperty groupName,
-            List<ProcessingInfo<BibEntry, Summary>> entries,
+            List<ProcessingInfo<BibEntry, BibEntrySummary>> entries,
             ReadOnlyBooleanProperty shutdownSignal
     ) {
         this.groupName = groupName;
         this.entries = entries;
         this.bibDatabaseContext = bibDatabaseContext;
         this.summariesRepository = summariesRepository;
-        this.chatLanguageModel = chatLanguageModel;
-        this.aiTemplatesService = aiTemplatesService;
+        this.chatModelInfo = chatModelInfo;
+        this.summarizationAlgorithm = summarizationAlgorithm;
         this.shutdownSignal = shutdownSignal;
-        this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
         this.taskExecutor = taskExecutor;
 
@@ -98,7 +94,12 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
                     processingInfo.setState(ProcessingState.PROCESSING);
                     return new Pair<>(
                             new GenerateSummaryTask(
-                                    aiPreferences, filePreferences, aiTemplatesService, chatLanguageModel, summariesRepository, bibDatabaseContext, processingInfo.getObject(),
+                                    filePreferences,
+                                    chatModelInfo,
+                                    summariesRepository,
+                                    summarizationAlgorithm,
+                                    bibDatabaseContext,
+                                    processingInfo.getObject(),
                                     shutdownSignal
                             )
                                     .showToUser(false)

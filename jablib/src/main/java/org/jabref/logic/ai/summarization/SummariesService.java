@@ -10,15 +10,16 @@ import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.logic.ai.summarization.algorithms.SummarizationAlgorithm;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.summarization.tasks.GenerateSummaryForSeveralTask;
 import org.jabref.logic.ai.summarization.tasks.GenerateSummaryTask;
-import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.ai.chatting.ChatModelInfo;
 import org.jabref.model.ai.processingstatus.ProcessingInfo;
 import org.jabref.model.ai.processingstatus.ProcessingState;
-import org.jabref.model.ai.summarization.Summary;
+import org.jabref.model.ai.summarization.BibEntrySummary;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.database.event.EntriesAddedEvent;
 import org.jabref.model.entry.BibEntry;
@@ -26,7 +27,6 @@ import org.jabref.model.entry.event.FieldChangedEvent;
 import org.jabref.model.entry.field.StandardField;
 
 import com.google.common.eventbus.Subscribe;
-import dev.langchain4j.model.chat.ChatModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,31 +42,32 @@ import org.slf4j.LoggerFactory;
 public class SummariesService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SummariesService.class);
 
-    private final TreeMap<BibEntry, ProcessingInfo<BibEntry, Summary>> summariesStatusMap = new TreeMap<>(Comparator.comparing(BibEntry::getId));
+    private final TreeMap<BibEntry, ProcessingInfo<BibEntry, BibEntrySummary>> summariesStatusMap = new TreeMap<>(Comparator.comparing(BibEntry::getId));
 
     private final List<List<BibEntry>> listsUnderSummarization = new ArrayList<>();
 
     private final AiPreferences aiPreferences;
     private final SummariesRepository summariesRepository;
-    private final ChatModel chatLanguageModel;
-    private final AiTemplatesService aiTemplatesService;
+    private final ChatModelInfo chatModelInfo;
+    private final SummarizationAlgorithm defaultSummarizationAlgorithm;
     private final BooleanProperty shutdownSignal;
     private final FilePreferences filePreferences;
     private final TaskExecutor taskExecutor;
 
+    // TODO: chat model should be argument.
     public SummariesService(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            AiTemplatesService aiTemplatesService,
             TaskExecutor taskExecutor,
-            ChatModel chatLanguageModel,
+            ChatModelInfo chatModelInfo,
+            SummarizationAlgorithm defaultSummarizationAlgorithm,
             SummariesRepository summariesRepository,
             BooleanProperty shutdownSignal
     ) {
         this.aiPreferences = aiPreferences;
         this.summariesRepository = summariesRepository;
-        this.chatLanguageModel = chatLanguageModel;
-        this.aiTemplatesService = aiTemplatesService;
+        this.chatModelInfo = chatModelInfo;
+        this.defaultSummarizationAlgorithm = defaultSummarizationAlgorithm;
         this.shutdownSignal = shutdownSignal;
         this.filePreferences = filePreferences;
         this.taskExecutor = taskExecutor;
@@ -88,7 +89,7 @@ public class SummariesService {
         public void listen(EntriesAddedEvent e) {
             e.getBibEntries().forEach(entry -> {
                 if (aiPreferences.getAutoGenerateSummaries()) {
-                    summarize(entry, bibDatabaseContext);
+                    summarize(defaultSummarizationAlgorithm, entry, bibDatabaseContext);
                 }
             });
         }
@@ -96,7 +97,7 @@ public class SummariesService {
         @Subscribe
         public void listen(FieldChangedEvent e) {
             if (e.getField() == StandardField.FILE && aiPreferences.getAutoGenerateSummaries()) {
-                summarize(e.getBibEntry(), bibDatabaseContext);
+                summarize(defaultSummarizationAlgorithm, e.getBibEntry(), bibDatabaseContext);
             }
         }
     }
@@ -107,26 +108,31 @@ public class SummariesService {
      * Returned {@link ProcessingInfo} is related to the passed {@link BibEntry}, so if you call this method twice
      * on the same {@link BibEntry}, the method will return the same {@link ProcessingInfo}.
      */
-    public ProcessingInfo<BibEntry, Summary> summarize(BibEntry bibEntry, BibDatabaseContext bibDatabaseContext) {
-        ProcessingInfo<BibEntry, Summary> processingInfo = getProcessingInfo(bibEntry);
+    public ProcessingInfo<BibEntry, BibEntrySummary> summarize(SummarizationAlgorithm summarizationAlgorithm, BibEntry bibEntry, BibDatabaseContext bibDatabaseContext) {
+        ProcessingInfo<BibEntry, BibEntrySummary> processingInfo = getProcessingInfo(bibEntry);
 
         if (processingInfo.getState() == ProcessingState.STOPPED) {
-            startSummarizationTask(bibEntry, bibDatabaseContext, processingInfo);
+            startSummarizationTask(summarizationAlgorithm, bibEntry, bibDatabaseContext, processingInfo);
         }
 
         return processingInfo;
     }
 
-    public ProcessingInfo<BibEntry, Summary> getProcessingInfo(BibEntry entry) {
+    public ProcessingInfo<BibEntry, BibEntrySummary> getProcessingInfo(BibEntry entry) {
         return summariesStatusMap.computeIfAbsent(entry, _ -> new ProcessingInfo<>(entry, ProcessingState.STOPPED));
     }
 
-    public List<ProcessingInfo<BibEntry, Summary>> getProcessingInfo(List<BibEntry> entries) {
+    public List<ProcessingInfo<BibEntry, BibEntrySummary>> getProcessingInfo(List<BibEntry> entries) {
         return entries.stream().map(this::getProcessingInfo).toList();
     }
 
-    public void summarize(StringProperty groupName, List<BibEntry> entries, BibDatabaseContext bibDatabaseContext) {
-        List<ProcessingInfo<BibEntry, Summary>> result = getProcessingInfo(entries);
+    public void summarize(
+            SummarizationAlgorithm summarizationAlgorithm,
+            StringProperty groupName,
+            List<BibEntry> entries,
+            BibDatabaseContext bibDatabaseContext
+    ) {
+        List<ProcessingInfo<BibEntry, BibEntrySummary>> result = getProcessingInfo(entries);
 
         if (listsUnderSummarization.contains(entries)) {
             return;
@@ -134,31 +140,68 @@ public class SummariesService {
 
         listsUnderSummarization.add(entries);
 
-        List<ProcessingInfo<BibEntry, Summary>> needToProcess = result.stream().filter(processingInfo -> processingInfo.getState() == ProcessingState.STOPPED).toList();
-        startSummarizationTask(groupName, needToProcess, bibDatabaseContext);
+        List<ProcessingInfo<BibEntry, BibEntrySummary>> needToProcess = result.stream().filter(processingInfo -> processingInfo.getState() == ProcessingState.STOPPED).toList();
+        startSummarizationTask(
+                summarizationAlgorithm,
+                groupName,
+                needToProcess,
+                bibDatabaseContext
+        );
     }
 
-    private void startSummarizationTask(BibEntry entry, BibDatabaseContext bibDatabaseContext, ProcessingInfo<BibEntry, Summary> processingInfo) {
+    private void startSummarizationTask(
+            SummarizationAlgorithm summarizationAlgorithm,
+            BibEntry entry,
+            BibDatabaseContext bibDatabaseContext,
+            ProcessingInfo<BibEntry, BibEntrySummary> processingInfo
+    ) {
         processingInfo.setState(ProcessingState.PROCESSING);
 
-        new GenerateSummaryTask(aiPreferences, filePreferences, aiTemplatesService, chatLanguageModel, summariesRepository, bibDatabaseContext, entry, shutdownSignal)
+        new GenerateSummaryTask(
+                filePreferences,
+                chatModelInfo,
+                summariesRepository,
+                summarizationAlgorithm,
+                bibDatabaseContext,
+                entry,
+                shutdownSignal
+        )
                 .onSuccess(processingInfo::setSuccess)
                 .onFailure(processingInfo::setException)
                 .executeWith(taskExecutor);
     }
 
-    private void startSummarizationTask(StringProperty groupName, List<ProcessingInfo<BibEntry, Summary>> entries, BibDatabaseContext bibDatabaseContext) {
+    private void startSummarizationTask(
+            SummarizationAlgorithm summarizationAlgorithm,
+            StringProperty groupName,
+            List<ProcessingInfo<BibEntry, BibEntrySummary>> entries,
+            BibDatabaseContext bibDatabaseContext
+    ) {
         entries.forEach(processingInfo -> processingInfo.setState(ProcessingState.PROCESSING));
 
-        new GenerateSummaryForSeveralTask(aiPreferences, filePreferences, aiTemplatesService, taskExecutor, chatLanguageModel, summariesRepository, bibDatabaseContext, groupName, entries, shutdownSignal)
+        new GenerateSummaryForSeveralTask(
+                filePreferences,
+                taskExecutor,
+                chatModelInfo,
+                summariesRepository,
+                summarizationAlgorithm,
+                bibDatabaseContext,
+                groupName,
+                entries,
+                shutdownSignal
+        )
                 .executeWith(taskExecutor);
     }
 
     /**
-     * Method, similar to {@link #summarize(BibEntry, BibDatabaseContext)}, but it allows you to regenerate summary.
+     * Method, similar to {@link #summarize(SummarizationAlgorithm, BibEntry, BibDatabaseContext)}, but it allows you to regenerate summary.
      */
-    public void regenerateSummary(BibEntry bibEntry, BibDatabaseContext bibDatabaseContext) {
-        ProcessingInfo<BibEntry, Summary> processingInfo = summarize(bibEntry, bibDatabaseContext);
+    public void regenerateSummary(
+            SummarizationAlgorithm summarizationAlgorithm,
+            BibEntry bibEntry,
+            BibDatabaseContext bibDatabaseContext
+    ) {
+        ProcessingInfo<BibEntry, BibEntrySummary> processingInfo = summarize(summarizationAlgorithm, bibEntry, bibDatabaseContext);
         processingInfo.setState(ProcessingState.PROCESSING);
 
         if (bibDatabaseContext.getDatabasePath().isEmpty()) {
@@ -169,6 +212,6 @@ public class SummariesService {
             summariesRepository.clear(bibDatabaseContext.getDatabasePath().get(), bibEntry.getCitationKey().get());
         }
 
-        startSummarizationTask(bibEntry, bibDatabaseContext, processingInfo);
+        startSummarizationTask(summarizationAlgorithm, bibEntry, bibDatabaseContext, processingInfo);
     }
 }

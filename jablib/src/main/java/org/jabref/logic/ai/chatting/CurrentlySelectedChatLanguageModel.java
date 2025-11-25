@@ -14,6 +14,7 @@ import org.jabref.logic.ai.customimplementations.llms.JvmOpenAiChatLanguageModel
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.chatting.AiProvider;
+import org.jabref.model.ai.chatting.ChatModelInfo;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import dev.langchain4j.data.message.ChatMessage;
@@ -114,6 +115,16 @@ public class CurrentlySelectedChatLanguageModel implements ChatModel, AutoClosea
         aiPreferences.addListenerToChatModels(() -> langchainChatModel = Optional.empty());
         aiPreferences.addListenerToApiBaseUrls(() -> langchainChatModel = Optional.empty());
         aiPreferences.setApiKeyChangeListener(() -> langchainChatModel = Optional.empty());
+    }
+
+    public ChatModelInfo getChatModelInfo() {
+        assert langchainChatModel.isPresent();
+        return new ChatModelInfo(
+                langchainChatModel.get(),
+                aiPreferences.getAiProvider(),
+                aiPreferences.getSelectedChatModel(),
+                aiPreferences.getContextWindowSize()
+        );
     }
 
     @Override

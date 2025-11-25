@@ -14,7 +14,7 @@ import javafx.scene.web.WebView;
 
 import org.jabref.gui.util.WebViewStore;
 import org.jabref.logic.layout.format.MarkdownFormatter;
-import org.jabref.model.ai.summarization.Summary;
+import org.jabref.model.ai.summarization.BibEntrySummary;
 
 import com.airhacks.afterburner.views.ViewLoader;
 
@@ -24,11 +24,11 @@ public class SummaryShowingComponent extends VBox {
     @FXML private CheckBox markdownCheckbox;
 
     private WebView contentWebView;
-    private final Summary summary;
+    private final BibEntrySummary bibEntrySummary;
     private final Runnable regenerateCallback;
 
-    public SummaryShowingComponent(Summary summary, Runnable regenerateCallback) {
-        this.summary = summary;
+    public SummaryShowingComponent(BibEntrySummary bibEntrySummary, Runnable regenerateCallback) {
+        this.bibEntrySummary = bibEntrySummary;
         this.regenerateCallback = regenerateCallback;
 
         ViewLoader.view(this)
@@ -51,7 +51,7 @@ public class SummaryShowingComponent extends VBox {
     }
 
     private void updateContent(boolean isMarkdown) {
-        String content = summary.content();
+        String content = bibEntrySummary.content();
         if (isMarkdown) {
             contentWebView.getEngine().loadContent(MARKDOWN_FORMATTER.format(content));
         } else {
@@ -67,8 +67,8 @@ public class SummaryShowingComponent extends VBox {
     private void updateInfoText() {
         String newInfo = summaryInfoText
                 .getText()
-                .replaceAll("%0", formatTimestamp(summary.timestamp()))
-                .replaceAll("%1", summary.aiProvider().getLabel() + " " + summary.model());
+                .replaceAll("%0", formatTimestamp(bibEntrySummary.timestamp()))
+                .replaceAll("%1", bibEntrySummary.aiProvider().getLabel() + " " + bibEntrySummary.model());
         summaryInfoText.setText(newInfo);
     }
 

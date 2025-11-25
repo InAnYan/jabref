@@ -8,45 +8,40 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
-
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.algorithms.parsing.UniversalFileParser;
-import org.jabref.logic.ai.templates.AiTemplatesService;
+import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.logic.util.ProgressCounter;
-import org.jabref.model.ai.summarization.Summary;
+import org.jabref.model.ai.chatting.ChatModelInfo;
+import org.jabref.model.ai.summarization.BibEntrySummary;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
 
-import dev.langchain4j.model.chat.ChatModel;
 import org.slf4j.Logger;
 
 public class BibEntrySummarizer {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(BibEntrySummarizer.class);
 
-    // TODO: Same thing.
-    private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
 
-    private final ChunkedSummarizationAlgorithm chunkedSummarizationAlgorithm;
+    private final SummarizationAlgorithm summarizationAlgorithm;
     private final UniversalFileParser universalFileParser = new UniversalFileParser();
 
     public BibEntrySummarizer(
-            AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            AiTemplatesService aiTemplatesService,
-            ChatModel chatModel
+            SummarizationAlgorithm summarizationAlgorithm
     ) {
-        this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
-
-        this.chunkedSummarizationAlgorithm = new ChunkedSummarizationAlgorithm(aiPreferences, aiTemplatesService, chatModel);
+        this.summarizationAlgorithm = summarizationAlgorithm;
     }
 
-    public Summary summarize(BibEntry entry, BibDatabaseContext bibDatabaseContext, ProgressCounter progressCounter, ReadOnlyBooleanProperty shutdownSignal) throws InterruptedException {
+    public BibEntrySummary summarize(
+            ChatModelInfo chatModelInfo,
+            LongTaskInfo longTaskInfo,
+            BibDatabaseContext bibDatabaseContext,
+            BibEntry entry
+    ) throws InterruptedException {
         String citationKey = entry.getCitationKey().orElse("<no citation key>");
 
         // Rationale for RuntimeException here:
@@ -56,12 +51,18 @@ public class BibEntrySummarizer {
         // Stream API would look better here, but we need to catch InterruptedException.
         List<String> linkedFilesSummary = new ArrayList<>();
         for (LinkedFile linkedFile : entry.getFiles()) {
-            generateSummary(linkedFile, bibDatabaseContext, citationKey, progressCounter, shutdownSignal)
+            generateSummary(
+                    chatModelInfo,
+                    longTaskInfo,
+                    bibDatabaseContext,
+                    linkedFile,
+                    citationKey
+            )
                     .ifPresent(linkedFilesSummary::add);
         }
 
         if (linkedFilesSummary.isEmpty()) {
-            progressCounter.increaseWorkDone(1); // Skipped generation of final summary.
+            longTaskInfo.progressCounter().increaseWorkDone(1); // Skipped generation of final summary.
             throw new RuntimeException(Localization.lang("No summary can be generated for entry '%0'. Could not find attached linked files.", citationKey));
         }
 
@@ -69,25 +70,36 @@ public class BibEntrySummarizer {
 
         String finalSummary;
 
-        progressCounter.increaseWorkMax(1); // For generating final summary.
+        longTaskInfo.progressCounter().increaseWorkMax(1); // For generating final summary.
 
         if (linkedFilesSummary.size() == 1) {
             finalSummary = linkedFilesSummary.getFirst();
         } else {
-            finalSummary = summarizeSeveralDocuments(linkedFilesSummary.stream(), progressCounter, shutdownSignal);
+            finalSummary = summarizeSeveralDocuments(
+                    chatModelInfo,
+                    longTaskInfo,
+                    linkedFilesSummary.stream()
+            );
         }
 
-        progressCounter.increaseWorkDone(1);
+        longTaskInfo.progressCounter().increaseWorkDone(1);
 
-        return new Summary(
+        return new BibEntrySummary(
                 LocalDateTime.now(),
-                aiPreferences.getAiProvider(),
-                aiPreferences.getSelectedChatModel(),
+                chatModelInfo.aiProvider(),
+                chatModelInfo.name(),
+                summarizationAlgorithm.getName(),
                 finalSummary
         );
     }
 
-    private Optional<String> generateSummary(LinkedFile linkedFile, BibDatabaseContext bibDatabaseContext, String citationKey, ProgressCounter progressCounter, ReadOnlyBooleanProperty shutdownSignal) throws InterruptedException {
+    private Optional<String> generateSummary(
+            ChatModelInfo chatModelInfo,
+            LongTaskInfo longTaskInfo,
+            BibDatabaseContext bibDatabaseContext,
+            LinkedFile linkedFile,
+            String citationKey
+    ) throws InterruptedException {
         LOGGER.debug("Generating summary for file \"{}\" of entry {}", linkedFile.getLink(), citationKey);
 
         Optional<Path> path = linkedFile.findIn(bibDatabaseContext, filePreferences);
@@ -98,7 +110,7 @@ public class BibEntrySummarizer {
             return Optional.empty();
         }
 
-        Optional<String> document = universalFileParser.parse(path.get(), shutdownSignal);
+        Optional<String> document = universalFileParser.parse(path.get(), longTaskInfo.shutdownSignal());
 
         if (document.isEmpty()) {
             LOGGER.warn("Could not extract text from a linked file \"{}\" of entry {}. It will be skipped when generating a summary.", linkedFile.getLink(), citationKey);
@@ -106,13 +118,25 @@ public class BibEntrySummarizer {
             return Optional.empty();
         }
 
-        String linkedFileSummary = chunkedSummarizationAlgorithm.summarize(document.get(), progressCounter, shutdownSignal);
+        String linkedFileSummary = summarizationAlgorithm.summarize(
+                chatModelInfo,
+                longTaskInfo,
+                document.get()
+        );
 
-        LOGGER.debug("Summary for file \"{}\" of entry {} was generated successfully", linkedFile.getLink(), citationKey);
+        LOGGER.debug("BibEntrySummary for file \"{}\" of entry {} was generated successfully", linkedFile.getLink(), citationKey);
         return Optional.of(linkedFileSummary);
     }
 
-    public String summarizeSeveralDocuments(Stream<String> documents, ProgressCounter progressCounter, ReadOnlyBooleanProperty shutdownSignal) throws InterruptedException {
-        return chunkedSummarizationAlgorithm.summarize(documents.collect(Collectors.joining("\n\n")), progressCounter, shutdownSignal);
+    public String summarizeSeveralDocuments(
+            ChatModelInfo chatModelInfo,
+            LongTaskInfo longTaskInfo,
+            Stream<String> documents
+    ) throws InterruptedException {
+        return summarizationAlgorithm.summarize(
+                chatModelInfo,
+                longTaskInfo,
+                documents.collect(Collectors.joining("\n\n"))
+        );
     }
 }

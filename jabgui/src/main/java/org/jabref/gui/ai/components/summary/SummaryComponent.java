@@ -17,7 +17,7 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.io.FileUtil;
 import org.jabref.model.ai.processingstatus.ProcessingInfo;
-import org.jabref.model.ai.summarization.Summary;
+import org.jabref.model.ai.summarization.BibEntrySummary;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
@@ -104,7 +104,7 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
     }
 
     private Node tryToShowSummary() {
-        ProcessingInfo<BibEntry, Summary> processingInfo = aiService.getSummariesService().summarize(entry, bibDatabaseContext);
+        ProcessingInfo<BibEntry, BibEntrySummary> processingInfo = aiService.getSummariesService().summarize(entry, bibDatabaseContext);
 
         return switch (processingInfo.getState()) {
             case SUCCESS -> {
@@ -119,7 +119,7 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
         };
     }
 
-    private Node showErrorWhileSummarizing(ProcessingInfo<BibEntry, Summary> processingInfo) {
+    private Node showErrorWhileSummarizing(ProcessingInfo<BibEntry, BibEntrySummary> processingInfo) {
         assert processingInfo.getException().isPresent(); // When the state is ERROR, the exception must be present.
 
         LOGGER.error("Got an error while generating a summary for entry {}", entry.getCitationKey().orElse("<no citation key>"), processingInfo.getException().get());
@@ -140,20 +140,20 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
         );
     }
 
-    private Node showSummary(Summary summary) {
-        return new SummaryShowingComponent(summary, () -> {
+    private Node showSummary(BibEntrySummary bibEntrySummary) {
+        return new SummaryShowingComponent(bibEntrySummary, () -> {
             if (bibDatabaseContext.getDatabasePath().isEmpty()) {
-                LOGGER.error("Bib database path is not set, but it was expected to be present. Unable to regenerate summary");
+                LOGGER.error("Bib database path is not set, but it was expected to be present. Unable to regenerate bibEntrySummary");
                 return;
             }
 
             if (entry.getCitationKey().isEmpty()) {
-                LOGGER.error("Citation key is not set, but it was expected to be present. Unable to regenerate summary");
+                LOGGER.error("Citation key is not set, but it was expected to be present. Unable to regenerate bibEntrySummary");
                 return;
             }
 
             aiService.getSummariesService().regenerateSummary(entry, bibDatabaseContext);
-            // No need to rebuildUi(), because this class listens to the state of ProcessingInfo of the summary.
+            // No need to rebuildUi(), because this class listens to the state of ProcessingInfo of the bibEntrySummary.
         });
     }
 }
