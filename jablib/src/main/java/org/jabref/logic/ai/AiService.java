@@ -8,8 +8,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.ChatHistoryService;
-import org.jabref.logic.ai.chatting.CurrentlySelectedChatLanguageModel;
 import org.jabref.logic.ai.chatting.repositories.MVStoreChatHistoryRepository;
+import org.jabref.logic.ai.currentsettings.CurrentlySelectedChatLanguageModel;
 import org.jabref.logic.ai.customimplementations.embeddingstores.MVStoreEmbeddingStore;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.CurrentlySelectedEmbeddingModel;

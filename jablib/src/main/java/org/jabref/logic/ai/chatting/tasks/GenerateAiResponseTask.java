@@ -1,6 +1,6 @@
 package org.jabref.logic.ai.chatting.tasks;
 
-import org.jabref.logic.ai.chatting.algorithms.AiChatLogic;
+import org.jabref.logic.ai.chatting.logic.AiChatLogic;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 

@@ -10,7 +10,7 @@ import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.summarization.algorithms.SummarizationAlgorithm;
+import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.summarization.tasks.GenerateSummaryForSeveralTask;
 import org.jabref.logic.ai.summarization.tasks.GenerateSummaryTask;

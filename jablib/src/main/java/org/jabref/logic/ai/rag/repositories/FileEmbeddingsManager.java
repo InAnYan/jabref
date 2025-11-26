@@ -7,7 +7,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.rag.algorithms.LowLevelIngestor;
+import org.jabref.logic.ai.rag.logic.LowLevelIngestor;
 import org.jabref.model.entry.LinkedFile;
 
 import dev.langchain4j.data.document.DefaultDocument;

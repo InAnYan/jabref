@@ -4,8 +4,8 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.summarization.SummariesService;
-import org.jabref.logic.ai.summarization.algorithms.PersistentBibEntrySummarizer;
-import org.jabref.logic.ai.summarization.algorithms.SummarizationAlgorithm;
+import org.jabref.logic.ai.summarization.logic.PersistentBibEntrySummarizer;
+import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.l10n.Localization;

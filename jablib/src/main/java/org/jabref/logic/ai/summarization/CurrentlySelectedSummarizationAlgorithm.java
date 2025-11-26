@@ -1,10 +1,8 @@
 package org.jabref.logic.ai.summarization;
 
-import java.util.Optional;
-
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.summarization.algorithms.ChunkedSummarizationAlgorithm;
-import org.jabref.logic.ai.summarization.algorithms.SummarizationAlgorithm;
+import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.ChunkedSummarizationAlgorithm;
+import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
 import org.jabref.logic.ai.summarization.templates.SummarizationChunkSystemMessageTemplate;
 import org.jabref.logic.ai.summarization.templates.SummarizationChunkUserMessageTemplate;
 import org.jabref.logic.ai.summarization.templates.SummarizationCombineSystemMessageTemplate;
@@ -28,10 +26,6 @@ public class CurrentlySelectedSummarizationAlgorithm implements SummarizationAlg
         this.aiPreferences = aiPreferences;
 
         configure();
-    }
-
-    public Optional<SummarizationAlgorithm> getSummarizationAlgorithm() {
-        return Optional.ofNullable(summarizationAlgorithm);
     }
 
     private void configure() {

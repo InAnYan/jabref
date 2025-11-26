@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.summarization.algorithms;
+package org.jabref.logic.ai.summarization.logic;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -9,7 +9,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.rag.algorithms.parsing.UniversalFileParser;
+import org.jabref.logic.ai.rag.logic.parsing.UniversalFileParser;
+import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
 import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.chatting.ChatModelInfo;

@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.rag.algorithms.parsing;
+package org.jabref.logic.ai.rag.logic.parsing;
 
 import java.io.IOException;
 import java.io.StringWriter;

@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.summarization.algorithms;
+package org.jabref.logic.ai.summarization.logic.summarizationalgorithms;
 
 import java.util.ArrayList;
 import java.util.List;

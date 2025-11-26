@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.chatting.algorithms;
+package org.jabref.logic.ai.chatting.logic;
 
 import java.util.List;
 import java.util.Optional;

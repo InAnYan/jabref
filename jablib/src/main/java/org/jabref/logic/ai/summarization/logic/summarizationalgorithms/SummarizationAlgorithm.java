@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.summarization.algorithms;
+package org.jabref.logic.ai.summarization.logic.summarizationalgorithms;
 
 import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.model.ai.chatting.ChatModelInfo;

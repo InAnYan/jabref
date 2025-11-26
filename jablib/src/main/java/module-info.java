@@ -126,11 +126,11 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.summarization.tasks;
     exports org.jabref.logic.ai.summarization.repositories;
     exports org.jabref.logic.ai.summarization.templates;
-    exports org.jabref.logic.ai.summarization.algorithms;
+    exports org.jabref.logic.ai.summarization.logic;
     exports org.jabref.logic.ai.rag.tasks;
     exports org.jabref.logic.ai.rag.repositories;
-    exports org.jabref.logic.ai.rag.algorithms;
-    exports org.jabref.logic.ai.chatting.algorithms;
+    exports org.jabref.logic.ai.rag.logic;
+    exports org.jabref.logic.ai.chatting.logic;
     exports org.jabref.logic.ai.chatting.tasks;
     exports org.jabref.logic.ai.preferences;
     exports org.jabref.logic.ai.chatting.repositories;
@@ -140,6 +140,7 @@ open module org.jabref.jablib {
     exports org.jabref.model.ai.embeddings;
     exports org.jabref.model.ai.summarization;
     exports org.jabref.model.ai.identifiers;
+    exports org.jabref.logic.ai.summarization.logic.summarizationalgorithms;
     // endregion
 
     requires java.base;
