@@ -33,6 +33,7 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.InternalPreferences;
 import org.jabref.logic.JabRefException;
 import org.jabref.logic.LibraryPreferences;
+import org.jabref.logic.ai.preferences.AiDefaultExpertSettings;
 import org.jabref.logic.ai.preferences.AiDefaultTemplates;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.preferences.AiProviderDefaultChatModels;
@@ -740,20 +741,20 @@ public class JabRefCliPreferences implements CliPreferences {
         defaults.put(AI_HUGGING_FACE_CHAT_MODEL, AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.HUGGING_FACE).getName());
         defaults.put(AI_GPT_4_ALL_MODEL, AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.GPT4ALL).getName());
         defaults.put(AI_CUSTOMIZE_SETTINGS, false);
-        defaults.put(AI_EMBEDDING_MODEL, EmbeddingModel.SENTENCE_TRANSFORMERS_ALL_MINILM_L12_V2.name());
+        defaults.put(AI_EMBEDDING_MODEL, AiDefaultExpertSettings.EMBEDDING_MODEL.name());
         defaults.put(AI_OPEN_AI_API_BASE_URL, AiProvider.OPEN_AI.getApiUrl());
         defaults.put(AI_MISTRAL_AI_API_BASE_URL, AiProvider.MISTRAL_AI.getApiUrl());
         defaults.put(AI_GEMINI_API_BASE_URL, AiProvider.GEMINI.getApiUrl());
         defaults.put(AI_HUGGING_FACE_API_BASE_URL, AiProvider.HUGGING_FACE.getApiUrl());
         defaults.put(AI_GPT_4_ALL_API_BASE_URL, AiProvider.GPT4ALL.getApiUrl());
-        defaults.put(AI_SUMMARIZATION_ALGORITHM, SummarizationAlgorithmName.CHUNKED.name());
-        defaults.put(AI_TOKEN_ESTIMATION_ALGORITHM, TokenEstimationStrategy.MAX.name());
-        defaults.put(AI_TEMPERATURE, 0.7);
+        defaults.put(AI_SUMMARIZATION_ALGORITHM, AiDefaultExpertSettings.SUMMARIZATION_ALGORITHM_NAME.name());
+        defaults.put(AI_TOKEN_ESTIMATION_ALGORITHM, AiDefaultExpertSettings.TOKEN_ESTIMATION_STRATEGY.name());
+        defaults.put(AI_TEMPERATURE, AiDefaultExpertSettings.TEMPERATURE);
         defaults.put(AI_CONTEXT_WINDOW_SIZE, PredefinedChatModel.getContextWindowSize((AiProvider) defaults.get(AI_PROVIDER), AiProviderDefaultChatModels.getDefaultChatModel((AiProvider) defaults.get(AI_PROVIDER)).getName()));
-        defaults.put(AI_DOCUMENT_SPLITTER_CHUNK_SIZE, 300);
-        defaults.put(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE, 100);
-        defaults.put(AI_RAG_MAX_RESULTS_COUNT, 10);
-        defaults.put(AI_RAG_MIN_SCORE, 0.3);
+        defaults.put(AI_DOCUMENT_SPLITTER_CHUNK_SIZE, AiDefaultExpertSettings.DOCUMENT_SPLITTER_CHUNK_SIZE);
+        defaults.put(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE, AiDefaultExpertSettings.DOCUMENT_SPLITTER_OVERLAP_SIZE);
+        defaults.put(AI_RAG_MAX_RESULTS_COUNT, AiDefaultExpertSettings.RAG_MAX_RESULTS_COUNT);
+        defaults.put(AI_RAG_MIN_SCORE, AiDefaultExpertSettings.RAG_MIN_SCORE);
 
         // region:AI templates
         defaults.put(AI_CHATTING_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.getTemplate(AiTemplate.CHATTING_SYSTEM_MESSAGE));

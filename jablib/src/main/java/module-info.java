@@ -122,7 +122,6 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.customimplementations.embeddingmodels;
     exports org.jabref.logic.ai.customimplementations.embeddingstores;
     exports org.jabref.logic.ai.customimplementations.llms;
-    exports org.jabref.logic.ai.customimplementations.tokenization;
     exports org.jabref.logic.ai.rag;
     exports org.jabref.logic.ai.summarization.tasks;
     exports org.jabref.logic.ai.summarization.repositories;
@@ -294,6 +293,5 @@ open module org.jabref.jablib {
     requires org.jooq.jool;
     requires org.libreoffice.uno;
     requires transitive org.jspecify;
-    requires org.jabref.jablib;
     // endregion
 }

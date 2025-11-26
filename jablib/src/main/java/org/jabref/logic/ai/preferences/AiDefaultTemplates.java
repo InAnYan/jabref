@@ -4,6 +4,10 @@ import java.util.Map;
 
 import org.jabref.model.ai.templating.AiTemplate;
 
+/// A collection of default AI templates.
+///
+/// This collection is made into a separate class (instead of putting into defaults at [org.jabref.logic.preferences.JabRefCliPreferences]),
+/// because they are too big.
 public class AiDefaultTemplates {
     private static final Map<AiTemplate, String> TEMPLATES = Map.of(
             AiTemplate.CHATTING_SYSTEM_MESSAGE, """

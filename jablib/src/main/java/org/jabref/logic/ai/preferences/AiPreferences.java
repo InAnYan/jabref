@@ -320,8 +320,7 @@ public class AiPreferences {
         if (getCustomizeExpertSettings()) {
             return embeddingModel.get();
         } else {
-            // TODO: Think why this is? It was taken from AiDefaultSettings.
-            return EmbeddingModel.SENTENCE_TRANSFORMERS_ALL_MINILM_L12_V2;
+            return AiDefaultExpertSettings.EMBEDDING_MODEL;
         }
     }
 
@@ -397,8 +396,7 @@ public class AiPreferences {
         if (getCustomizeExpertSettings()) {
             return temperature.get();
         } else {
-            // TODO: default return values
-            return 0.7;
+            return AiDefaultExpertSettings.TEMPERATURE;
         }
     }
 
@@ -441,8 +439,7 @@ public class AiPreferences {
         if (getCustomizeExpertSettings()) {
             return documentSplitterChunkSize.get();
         } else {
-            // TODO: default value.
-            return 300;
+            return AiDefaultExpertSettings.DOCUMENT_SPLITTER_CHUNK_SIZE;
         }
     }
 
@@ -458,8 +455,7 @@ public class AiPreferences {
         if (getCustomizeExpertSettings()) {
             return documentSplitterOverlapSize.get();
         } else {
-            // TODO: default value
-            return 100;
+            return AiDefaultExpertSettings.DOCUMENT_SPLITTER_OVERLAP_SIZE;
         }
     }
 
@@ -475,8 +471,7 @@ public class AiPreferences {
         if (getCustomizeExpertSettings()) {
             return ragMaxResultsCount.get();
         } else {
-            // TODO: Default value
-            return 10;
+            return AiDefaultExpertSettings.RAG_MAX_RESULTS_COUNT;
         }
     }
 
@@ -492,8 +487,7 @@ public class AiPreferences {
         if (getCustomizeExpertSettings()) {
             return ragMinScore.get();
         } else {
-            // TODO: default value
-            return 0.3;
+            return AiDefaultExpertSettings.RAG_MIN_SCORE;
         }
     }
 
