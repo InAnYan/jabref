@@ -8,14 +8,17 @@ import javafx.beans.property.SimpleBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.ChatHistoryService;
+import org.jabref.logic.ai.chatting.CurrentlySelectedChatLanguageModel;
 import org.jabref.logic.ai.chatting.repositories.MVStoreChatHistoryRepository;
-import org.jabref.logic.ai.currentsettings.CurrentlySelectedChatLanguageModel;
 import org.jabref.logic.ai.customimplementations.embeddingstores.MVStoreEmbeddingStore;
+import org.jabref.logic.ai.customimplementations.tokenization.CurrentlySelectedTokenEstimationStrategy;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.CurrentlySelectedEmbeddingModel;
 import org.jabref.logic.ai.rag.IngestionService;
 import org.jabref.logic.ai.rag.repositories.MVStoreFullyIngestedDocumentsRepository;
+import org.jabref.logic.ai.summarization.CurrentlySelectedSummarizationAlgorithm;
 import org.jabref.logic.ai.summarization.SummariesService;
+import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
 import org.jabref.logic.ai.summarization.repositories.MVStoreSummariesRepository;
 import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
@@ -57,8 +60,10 @@ public class AiService implements AutoCloseable {
 
     private final AiTemplatesService templatesService;
     private final ChatHistoryService chatHistoryService;
+    private final CurrentlySelectedTokenEstimationStrategy currentlySelectedTokenEstimationStrategy;
     private final CurrentlySelectedChatLanguageModel currentlySelectedChatLanguageModel;
     private final CurrentlySelectedEmbeddingModel currentlySelectedEmbeddingModel;
+    private final CurrentlySelectedSummarizationAlgorithm currentlySelectedSummarizationAlgorithm;
     private final IngestionService ingestionService;
     private final SummariesService summariesService;
 
@@ -77,8 +82,10 @@ public class AiService implements AutoCloseable {
 
         this.templatesService = new AiTemplatesService(aiPreferences);
         this.chatHistoryService = new ChatHistoryService(citationKeyPatternPreferences, mvStoreChatHistoryStorage);
-        this.currentlySelectedChatLanguageModel = new CurrentlySelectedChatLanguageModel(aiPreferences);
+        this.currentlySelectedTokenEstimationStrategy = new CurrentlySelectedTokenEstimationStrategy(aiPreferences);
+        this.currentlySelectedChatLanguageModel = new CurrentlySelectedChatLanguageModel(aiPreferences, currentlySelectedTokenEstimationStrategy);
         this.currentlySelectedEmbeddingModel = new CurrentlySelectedEmbeddingModel(aiPreferences, notificationService, taskExecutor);
+        this.currentlySelectedSummarizationAlgorithm = new CurrentlySelectedSummarizationAlgorithm(aiPreferences);
 
         this.ingestionService = new IngestionService(
                 aiPreferences,
@@ -93,9 +100,9 @@ public class AiService implements AutoCloseable {
         this.summariesService = new SummariesService(
                 aiPreferences,
                 filePreferences,
-                templatesService,
                 taskExecutor,
                 currentlySelectedChatLanguageModel.getChatModelInfo(),
+                currentlySelectedSummarizationAlgorithm,
                 mvStoreSummariesStorage,
                 shutdownSignal
         );
@@ -129,6 +136,14 @@ public class AiService implements AutoCloseable {
         return mvStoreEmbeddingStore;
     }
 
+    public SummarizationAlgorithm getSummarizationAlgorithm() {
+        return currentlySelectedSummarizationAlgorithm;
+    }
+
+    public CurrentlySelectedTokenEstimationStrategy getTokenEstimationStrategy() {
+        return currentlySelectedTokenEstimationStrategy;
+    }
+
     public void setupDatabase(BibDatabaseContext context) {
         chatHistoryService.setupDatabase(context);
         ingestionService.setupDatabase(context);
@@ -143,6 +158,7 @@ public class AiService implements AutoCloseable {
         currentlySelectedChatLanguageModel.close();
         currentlySelectedEmbeddingModel.close();
 
+        mvStoreChatHistoryStorage.close();
         mvStoreFullyIngestedDocumentsTracker.close();
         mvStoreEmbeddingStore.close();
         mvStoreSummariesStorage.close();

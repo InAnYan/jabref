@@ -21,6 +21,7 @@ import org.jabref.model.ai.chatting.AiProvider;
 import org.jabref.model.ai.embeddings.EmbeddingModel;
 import org.jabref.model.ai.summarization.SummarizationAlgorithmName;
 import org.jabref.model.ai.templating.AiTemplate;
+import org.jabref.model.ai.tokenization.TokenEstimationStrategy;
 
 import com.github.javakeyring.Keyring;
 import com.github.javakeyring.PasswordAccessException;
@@ -54,6 +55,7 @@ public class AiPreferences {
     private final StringProperty gpt4AllApiBaseUrl;
 
     private final ObjectProperty<SummarizationAlgorithmName> defaultSummarizationAlgorithm;
+    private final ObjectProperty<TokenEstimationStrategy> tokenEstimationStrategy;
     private final ObjectProperty<EmbeddingModel> embeddingModel;
     private final DoubleProperty temperature;
     private final IntegerProperty contextWindowSize;
@@ -83,6 +85,7 @@ public class AiPreferences {
             String huggingFaceApiBaseUrl,
             String gpt4AllApiBaseUrl,
             SummarizationAlgorithmName defaultSummarizationAlgorithm,
+            TokenEstimationStrategy tokenEstimationStrategy,
             EmbeddingModel embeddingModel,
             double temperature,
             int contextWindowSize,
@@ -113,6 +116,7 @@ public class AiPreferences {
         this.gpt4AllApiBaseUrl = new SimpleStringProperty(gpt4AllApiBaseUrl);
 
         this.defaultSummarizationAlgorithm = new SimpleObjectProperty<>(defaultSummarizationAlgorithm);
+        this.tokenEstimationStrategy = new SimpleObjectProperty<>(tokenEstimationStrategy);
         this.embeddingModel = new SimpleObjectProperty<>(embeddingModel);
         this.temperature = new SimpleDoubleProperty(temperature);
         this.contextWindowSize = new SimpleIntegerProperty(contextWindowSize);
@@ -294,6 +298,18 @@ public class AiPreferences {
 
     public void setDefaultSummarizationAlgorithm(SummarizationAlgorithmName defaultSummarizationAlgorithm) {
         this.defaultSummarizationAlgorithm.set(defaultSummarizationAlgorithm);
+    }
+
+    public ObjectProperty<TokenEstimationStrategy> tokenEstimationStrategyProperty() {
+        return tokenEstimationStrategy;
+    }
+
+    public TokenEstimationStrategy getTokenEstimationStrategy() {
+        return tokenEstimationStrategy.get();
+    }
+
+    public void setTokenEstimationStrategy(TokenEstimationStrategy tokenEstimationStrategy) {
+        this.tokenEstimationStrategy.set(tokenEstimationStrategy);
     }
 
     public ObjectProperty<EmbeddingModel> embeddingModelProperty() {

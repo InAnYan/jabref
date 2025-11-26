@@ -11,6 +11,7 @@ import org.jabref.logic.ai.chatting.logic.AiChatLogic;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.customimplementations.llms.Gpt4AllModel;
 import org.jabref.logic.ai.customimplementations.llms.JvmOpenAiChatLanguageModel;
+import org.jabref.logic.ai.customimplementations.tokenization.CurrentlySelectedTokenEstimationStrategy;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.chatting.AiProvider;
@@ -36,6 +37,8 @@ public class CurrentlySelectedChatLanguageModel implements ChatModel, AutoClosea
 
     private final AiPreferences aiPreferences;
 
+    private final CurrentlySelectedTokenEstimationStrategy currentlySelectedTokenEstimationStrategy;
+
     private final HttpClient httpClient;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor(
             new ThreadFactoryBuilder().setNameFormat("ai-api-connection-pool-%d").build()
@@ -43,8 +46,14 @@ public class CurrentlySelectedChatLanguageModel implements ChatModel, AutoClosea
 
     private Optional<ChatModel> langchainChatModel = Optional.empty();
 
-    public CurrentlySelectedChatLanguageModel(AiPreferences aiPreferences) {
+    public CurrentlySelectedChatLanguageModel(
+            AiPreferences aiPreferences,
+            CurrentlySelectedTokenEstimationStrategy currentlySelectedTokenEstimationStrategy
+    ) {
         this.aiPreferences = aiPreferences;
+
+        this.currentlySelectedTokenEstimationStrategy = currentlySelectedTokenEstimationStrategy;
+
         this.httpClient = HttpClient.newBuilder().connectTimeout(CONNECTION_TIMEOUT).executor(executorService).build();
 
         setupListeningToPreferencesChanges();
@@ -121,6 +130,7 @@ public class CurrentlySelectedChatLanguageModel implements ChatModel, AutoClosea
         assert langchainChatModel.isPresent();
         return new ChatModelInfo(
                 langchainChatModel.get(),
+                currentlySelectedTokenEstimationStrategy,
                 aiPreferences.getAiProvider(),
                 aiPreferences.getSelectedChatModel(),
                 aiPreferences.getContextWindowSize()

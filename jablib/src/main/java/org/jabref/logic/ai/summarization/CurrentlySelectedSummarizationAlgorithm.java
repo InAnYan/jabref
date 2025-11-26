@@ -25,10 +25,10 @@ public class CurrentlySelectedSummarizationAlgorithm implements SummarizationAlg
     ) {
         this.aiPreferences = aiPreferences;
 
-        configure();
+        setupListeningToPreferences();
     }
 
-    private void configure() {
+    private void setupListeningToPreferences() {
         aiPreferences.defaultSummarizationAlgorithmProperty().addListener(_ -> {
             updateAlgorithm();
         });

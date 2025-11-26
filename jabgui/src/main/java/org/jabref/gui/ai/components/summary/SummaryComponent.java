@@ -51,7 +51,11 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
         this.aiService = aiService;
         this.aiPreferences = aiPreferences;
 
-        aiService.getSummariesService().summarize(entry, bibDatabaseContext).stateProperty().addListener(o -> rebuildUi());
+        aiService.getSummariesService().summarize(
+                aiService.getSummarizationAlgorithm(),
+                entry,
+                bibDatabaseContext
+        ).stateProperty().addListener(o -> rebuildUi());
 
         rebuildUi();
     }
@@ -104,7 +108,7 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
     }
 
     private Node tryToShowSummary() {
-        ProcessingInfo<BibEntry, BibEntrySummary> processingInfo = aiService.getSummariesService().summarize(entry, bibDatabaseContext);
+        ProcessingInfo<BibEntry, BibEntrySummary> processingInfo = aiService.getSummariesService().summarize(aiService.getSummarizationAlgorithm(), entry, bibDatabaseContext);
 
         return switch (processingInfo.getState()) {
             case SUCCESS -> {
@@ -129,7 +133,7 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
                 Localization.lang("Got error while processing the file:"),
                 processingInfo.getException().get().getLocalizedMessage(),
                 Localization.lang("Regenerate"),
-                () -> aiService.getSummariesService().regenerateSummary(entry, bibDatabaseContext)
+                () -> aiService.getSummariesService().regenerateSummary(aiService.getSummarizationAlgorithm(), entry, bibDatabaseContext)
         );
     }
 
@@ -152,7 +156,7 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
                 return;
             }
 
-            aiService.getSummariesService().regenerateSummary(entry, bibDatabaseContext);
+            aiService.getSummariesService().regenerateSummary(aiService.getSummarizationAlgorithm(), entry, bibDatabaseContext);
             // No need to rebuildUi(), because this class listens to the state of ProcessingInfo of the bibEntrySummary.
         });
     }

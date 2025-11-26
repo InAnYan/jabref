@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
 public class ChunkedSummarizationAlgorithm implements SummarizationAlgorithm {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChunkedSummarizationAlgorithm.class);
 
+    // TODO: Make a parameter?
     private static final int MAX_OVERLAP_SIZE_IN_CHARS = 100;
-    private static final int CHAR_TOKEN_FACTOR = 4; // Means, every token is roughly 4 characters.
 
     private final SummarizationChunkSystemMessageTemplate summarizationChunkSystemMessageTemplate;
     private final SummarizationChunkUserMessageTemplate summarizationChunkUserMessageTemplate;
@@ -54,7 +54,7 @@ public class ChunkedSummarizationAlgorithm implements SummarizationAlgorithm {
         longTaskInfo.progressCounter().increaseWorkMax(1); // For the combination of summary chunks.
 
         DocumentSplitter documentSplitter = DocumentSplitters.recursive(
-                chatModelInfo.contextWindowSize() - MAX_OVERLAP_SIZE_IN_CHARS * 2 - estimateTokenCount(summarizationChunkSystemMessageTemplate.getSource()),
+                chatModelInfo.contextWindowSize() - MAX_OVERLAP_SIZE_IN_CHARS * 2 - chatModelInfo.tokenizer().estimate(new SystemMessage(summarizationChunkSystemMessageTemplate.getSource())),
                 MAX_OVERLAP_SIZE_IN_CHARS
         );
 
@@ -93,7 +93,7 @@ public class ChunkedSummarizationAlgorithm implements SummarizationAlgorithm {
             }
 
             chunkSummaries = list;
-        } while (estimateTokenCount(chunkSummaries) > chatModelInfo.contextWindowSize() - estimateTokenCount(summarizationCombineSystemMessageTemplate.getSource()));
+        } while (chatModelInfo.tokenizer().estimate(chunkSummaries.stream().map(UserMessage::new).toList()) > chatModelInfo.contextWindowSize() - chatModelInfo.tokenizer().estimate(new SystemMessage(summarizationCombineSystemMessageTemplate.getSource())));
 
         if (chunkSummaries.size() == 1) {
             longTaskInfo.progressCounter().increaseWorkDone(1); // No need to call LLM for combination of summary chunks.
@@ -122,17 +122,5 @@ public class ChunkedSummarizationAlgorithm implements SummarizationAlgorithm {
     @Override
     public SummarizationAlgorithmName getName() {
         return SummarizationAlgorithmName.CHUNKED;
-    }
-
-    private static int estimateTokenCount(List<String> chunkSummaries) {
-        return chunkSummaries.stream().mapToInt(ChunkedSummarizationAlgorithm::estimateTokenCount).sum();
-    }
-
-    private static int estimateTokenCount(String string) {
-        return estimateTokenCount(string.length());
-    }
-
-    private static int estimateTokenCount(int numOfChars) {
-        return numOfChars / CHAR_TOKEN_FACTOR;
     }
 }

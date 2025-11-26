@@ -534,6 +534,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
                 .toList();
 
         aiService.getSummariesService().summarize(
+                aiService.getSummarizationAlgorithm(),
                 group.nameProperty(),
                 entries,
                 currentDatabase.get()

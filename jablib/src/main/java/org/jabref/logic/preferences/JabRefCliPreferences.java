@@ -99,7 +99,9 @@ import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.logic.xmp.XmpPreferences;
 import org.jabref.model.ai.chatting.AiProvider;
 import org.jabref.model.ai.embeddings.EmbeddingModel;
+import org.jabref.model.ai.summarization.SummarizationAlgorithmName;
 import org.jabref.model.ai.templating.AiTemplate;
+import org.jabref.model.ai.tokenization.TokenEstimationStrategy;
 import org.jabref.model.database.BibDatabaseMode;
 import org.jabref.model.entry.BibEntryPreferences;
 import org.jabref.model.entry.BibEntryType;
@@ -394,6 +396,8 @@ public class JabRefCliPreferences implements CliPreferences {
     private static final String AI_GEMINI_API_BASE_URL = "aiGeminiApiBaseUrl";
     private static final String AI_HUGGING_FACE_API_BASE_URL = "aiHuggingFaceApiBaseUrl";
     private static final String AI_GPT_4_ALL_API_BASE_URL = "aiGpt4AllApiBaseUrl";
+    private static final String AI_SUMMARIZATION_ALGORITHM = "aiSummarizationAlgorithm";
+    private static final String AI_TOKEN_ESTIMATION_ALGORITHM = "aiTokenEstimationAlgorithm";
     private static final String AI_TEMPERATURE = "aiTemperature";
     private static final String AI_CONTEXT_WINDOW_SIZE = "aiMessageWindowSize";
     private static final String AI_DOCUMENT_SPLITTER_CHUNK_SIZE = "aiDocumentSplitterChunkSize";
@@ -742,6 +746,8 @@ public class JabRefCliPreferences implements CliPreferences {
         defaults.put(AI_GEMINI_API_BASE_URL, AiProvider.GEMINI.getApiUrl());
         defaults.put(AI_HUGGING_FACE_API_BASE_URL, AiProvider.HUGGING_FACE.getApiUrl());
         defaults.put(AI_GPT_4_ALL_API_BASE_URL, AiProvider.GPT4ALL.getApiUrl());
+        defaults.put(AI_SUMMARIZATION_ALGORITHM, SummarizationAlgorithmName.CHUNKED.name());
+        defaults.put(AI_TOKEN_ESTIMATION_ALGORITHM, TokenEstimationStrategy.MAX.name());
         defaults.put(AI_TEMPERATURE, 0.7);
         defaults.put(AI_CONTEXT_WINDOW_SIZE, PredefinedChatModel.getContextWindowSize((AiProvider) defaults.get(AI_PROVIDER), AiProviderDefaultChatModels.getDefaultChatModel((AiProvider) defaults.get(AI_PROVIDER)).getName()));
         defaults.put(AI_DOCUMENT_SPLITTER_CHUNK_SIZE, 300);
@@ -2035,6 +2041,8 @@ public class JabRefCliPreferences implements CliPreferences {
                 get(AI_GEMINI_API_BASE_URL),
                 get(AI_HUGGING_FACE_API_BASE_URL),
                 get(AI_GPT_4_ALL_API_BASE_URL),
+                SummarizationAlgorithmName.valueOf(get(AI_SUMMARIZATION_ALGORITHM)),
+                TokenEstimationStrategy.valueOf(get(AI_TOKEN_ESTIMATION_ALGORITHM)),
                 EmbeddingModel.valueOf(get(AI_EMBEDDING_MODEL)),
                 getDouble(AI_TEMPERATURE),
                 getInt(AI_CONTEXT_WINDOW_SIZE),
@@ -2073,6 +2081,8 @@ public class JabRefCliPreferences implements CliPreferences {
         EasyBind.listen(aiPreferences.huggingFaceApiBaseUrlProperty(), (_, _, newValue) -> put(AI_HUGGING_FACE_API_BASE_URL, newValue));
         EasyBind.listen(aiPreferences.gpt4AllApiBaseUrlProperty(), (_, _, newValue) -> put(AI_GPT_4_ALL_API_BASE_URL, newValue));
 
+        EasyBind.listen(aiPreferences.defaultSummarizationAlgorithmProperty(), (_, _, newValue) -> put(AI_SUMMARIZATION_ALGORITHM, newValue.name()));
+        EasyBind.listen(aiPreferences.tokenEstimationStrategyProperty(), (_, _, newValue) -> put(AI_TOKEN_ESTIMATION_ALGORITHM, newValue.name()));
         EasyBind.listen(aiPreferences.embeddingModelProperty(), (_, _, newValue) -> put(AI_EMBEDDING_MODEL, newValue.name()));
         EasyBind.listen(aiPreferences.temperatureProperty(), (_, _, newValue) -> putDouble(AI_TEMPERATURE, newValue.doubleValue()));
         EasyBind.listen(aiPreferences.contextWindowSizeProperty(), (_, _, newValue) -> putInt(AI_CONTEXT_WINDOW_SIZE, newValue));
