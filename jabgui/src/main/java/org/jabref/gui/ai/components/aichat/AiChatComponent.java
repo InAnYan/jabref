@@ -82,14 +82,15 @@ public class AiChatComponent extends VBox {
 
     private String noticeTemplate;
 
-    public AiChatComponent(AiService aiService,
-                           StringProperty name,
-                           ObservableList<ChatMessage> chatHistory,
-                           ObservableList<BibEntry> entries,
-                           BibDatabaseContext bibDatabaseContext,
-                           AiPreferences aiPreferences,
-                           DialogService dialogService,
-                           TaskExecutor taskExecutor
+    public AiChatComponent(
+            AiService aiService,
+            StringProperty name,
+            ObservableList<ChatMessage> chatHistory,
+            ObservableList<BibEntry> entries,
+            BibDatabaseContext bibDatabaseContext,
+            AiPreferences aiPreferences,
+            DialogService dialogService,
+            TaskExecutor taskExecutor
     ) {
         this.aiService = aiService;
         this.entries = entries;
@@ -100,10 +101,15 @@ public class AiChatComponent extends VBox {
 
         this.aiChatLogic = new AiChatLogic(
                 aiPreferences,
-                aiService.getTemplatesService(), aiService.getChatLanguageModel(),
+                aiService.getChatLanguageModel(),
                 aiService.getEmbeddingModel(),
                 aiService.getEmbeddingStore(),
-                bibDatabaseContext, chatHistory, entries, name
+                aiService.getCurrentAiTemplates().getChattingSystemMessageTemplate(),
+                aiService.getCurrentAiTemplates().getChattingUserMessageTemplate(),
+                bibDatabaseContext,
+                chatHistory,
+                entries,
+                name
         );
 
         aiService.getIngestionService().ingest(name, ListUtil.getLinkedFiles(entries).toList(), bibDatabaseContext);

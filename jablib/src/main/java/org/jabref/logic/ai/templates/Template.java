@@ -1,6 +1,7 @@
 package org.jabref.logic.ai.templates;
 
 import java.io.StringWriter;
+import java.util.function.Supplier;
 
 import org.jabref.model.entry.CanonicalBibEntry;
 
@@ -17,15 +18,15 @@ public abstract class Template {
         BASE_CONTEXT.put("CanonicalBibEntry", CanonicalBibEntry.class);
     }
 
-    private final String source;
+    private final Supplier<String> sourceSupplier;
 
-    public Template(String source) {
-        this.source = source;
+    public Template(Supplier<String> sourceSupplier) {
+        this.sourceSupplier = sourceSupplier;
     }
 
     protected String render(VelocityContext context) {
         StringWriter writer = new StringWriter();
-        VELOCITY_ENGINE.evaluate(context, writer, getLogName(), source);
+        VELOCITY_ENGINE.evaluate(context, writer, getLogName(), sourceSupplier.get());
         return writer.toString();
     }
 
@@ -34,7 +35,7 @@ public abstract class Template {
     }
 
     public String getSource() {
-        return source;
+        return sourceSupplier.get();
     }
 
     // Required by Velocity.

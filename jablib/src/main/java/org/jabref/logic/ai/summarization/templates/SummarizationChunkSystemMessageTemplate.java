@@ -1,12 +1,14 @@
 package org.jabref.logic.ai.summarization.templates;
 
+import java.util.function.Supplier;
+
 import org.jabref.logic.ai.templates.Template;
 import org.jabref.model.ai.templating.AiTemplate;
 
 import org.apache.velocity.VelocityContext;
 
 public class SummarizationChunkSystemMessageTemplate extends Template {
-    public SummarizationChunkSystemMessageTemplate(String source) {
+    public SummarizationChunkSystemMessageTemplate(Supplier<String> source) {
         super(source);
     }
 

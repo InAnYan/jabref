@@ -7,9 +7,10 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
+import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageTemplate;
+import org.jabref.logic.ai.chatting.templates.ChattingUserMessageTemplate;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.repositories.FileEmbeddingsManager;
-import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.model.ai.chatting.ErrorMessage;
 import org.jabref.model.ai.rag.PaperExcerpt;
 import org.jabref.model.ai.templating.AiTemplate;
@@ -45,7 +46,8 @@ public class AiChatLogic {
     private final ChatModel chatLanguageModel;
     private final EmbeddingModel embeddingModel;
     private final EmbeddingStore<TextSegment> embeddingStore;
-    private final AiTemplatesService aiTemplatesService;
+    private final ChattingSystemMessageTemplate chattingSystemMessageTemplate;
+    private final ChattingUserMessageTemplate chattingUserMessageTemplate;
 
     private final ObservableList<ChatMessage> chatHistory;
     private final ObservableList<BibEntry> entries;
@@ -58,10 +60,11 @@ public class AiChatLogic {
 
     public AiChatLogic(
             AiPreferences aiPreferences,
-            AiTemplatesService aiTemplatesService,
             ChatModel chatLanguageModel,
             EmbeddingModel embeddingModel,
             EmbeddingStore<TextSegment> embeddingStore,
+            ChattingSystemMessageTemplate chattingSystemMessageTemplate,
+            ChattingUserMessageTemplate chattingUserMessageTemplate,
             BibDatabaseContext bibDatabaseContext,
             ObservableList<ChatMessage> chatHistory,
             ObservableList<BibEntry> entries,
@@ -71,7 +74,8 @@ public class AiChatLogic {
         this.chatLanguageModel = chatLanguageModel;
         this.embeddingModel = embeddingModel;
         this.embeddingStore = embeddingStore;
-        this.aiTemplatesService = aiTemplatesService;
+        this.chattingSystemMessageTemplate = chattingSystemMessageTemplate;
+        this.chattingUserMessageTemplate = chattingUserMessageTemplate;
         this.chatHistory = chatHistory;
         this.entries = entries;
         this.name = name;
@@ -87,7 +91,7 @@ public class AiChatLogic {
         aiPreferences
                 .templateProperty(AiTemplate.CHATTING_SYSTEM_MESSAGE)
                 .addListener(obs ->
-                        setSystemMessage(aiTemplatesService.makeChattingSystemMessage(entries)));
+                        setSystemMessage(chattingSystemMessageTemplate.render(entries)));
 
         aiPreferences.contextWindowSizeProperty().addListener(obs -> rebuildFull(chatMemory.messages()));
     }
@@ -114,7 +118,7 @@ public class AiChatLogic {
 
         chatMessages.stream().filter(chatMessage -> !(chatMessage instanceof ErrorMessage)).forEach(chatMemory::add);
 
-        setSystemMessage(aiTemplatesService.makeChattingSystemMessage(entries));
+        setSystemMessage(chattingSystemMessageTemplate.render(entries));
     }
 
     private void rebuildFilter() {
@@ -182,7 +186,7 @@ public class AiChatLogic {
 
         chatMemory.messages().forEach(tempChatMemory::add);
 
-        tempChatMemory.add(new UserMessage(aiTemplatesService.makeChattingUserMessage(entries, message.singleText(), excerpts)));
+        tempChatMemory.add(new UserMessage(chattingUserMessageTemplate.render(entries, message.singleText(), excerpts)));
         chatMemory.add(message);
 
         AiMessage aiMessage = chatLanguageModel.chat(tempChatMemory.messages()).aiMessage();

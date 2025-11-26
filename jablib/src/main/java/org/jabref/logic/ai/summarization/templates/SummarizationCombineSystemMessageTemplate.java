@@ -1,12 +1,14 @@
 package org.jabref.logic.ai.summarization.templates;
 
+import java.util.function.Supplier;
+
 import org.jabref.logic.ai.templates.Template;
 import org.jabref.model.ai.templating.AiTemplate;
 
 import org.apache.velocity.VelocityContext;
 
 public class SummarizationCombineSystemMessageTemplate extends Template {
-    public SummarizationCombineSystemMessageTemplate(String source) {
+    public SummarizationCombineSystemMessageTemplate(Supplier<String> source) {
         super(source);
     }
 

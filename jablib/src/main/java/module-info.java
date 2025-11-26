@@ -122,6 +122,7 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.customimplementations.embeddingmodels;
     exports org.jabref.logic.ai.customimplementations.embeddingstores;
     exports org.jabref.logic.ai.customimplementations.llms;
+    exports org.jabref.logic.ai.customimplementations.tokenization;
     exports org.jabref.logic.ai.rag;
     exports org.jabref.logic.ai.summarization.tasks;
     exports org.jabref.logic.ai.summarization.repositories;
@@ -133,6 +134,7 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.rag.logic;
     exports org.jabref.logic.ai.chatting.logic;
     exports org.jabref.logic.ai.chatting.tasks;
+    exports org.jabref.logic.ai.chatting.templates;
     exports org.jabref.logic.ai.preferences;
     exports org.jabref.logic.ai.chatting.repositories;
     exports org.jabref.model.ai.chatting;
