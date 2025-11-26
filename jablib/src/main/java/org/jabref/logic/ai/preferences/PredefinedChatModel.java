@@ -46,7 +46,7 @@ public enum PredefinedChatModel {
                      .filter(model -> model.getAiProvider() == aiProvider && model.getName().equals(modelName))
                      .map(PredefinedChatModel::getContextWindowSize)
                      .findFirst()
-                     .orElse(AiFallbackSettings.FALLBACK_CONTEXT_WINDOW_SIZE);
+                     .orElse(AiDefaultExpertSettings.CONTEXT_WINDOW_SIZE);
     }
 
     public AiProvider getAiProvider() {
