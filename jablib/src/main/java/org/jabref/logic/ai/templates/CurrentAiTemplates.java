@@ -2,6 +2,8 @@ package org.jabref.logic.ai.templates;
 
 import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageTemplate;
 import org.jabref.logic.ai.chatting.templates.ChattingUserMessageTemplate;
+import org.jabref.logic.ai.citationparsing.templates.CitationParsingSystemMessageTemplate;
+import org.jabref.logic.ai.citationparsing.templates.CitationParsingUserMessageTemplate;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.templates.SummarizationChunkSystemMessageTemplate;
 import org.jabref.logic.ai.summarization.templates.SummarizationChunkUserMessageTemplate;
@@ -17,6 +19,9 @@ public class CurrentAiTemplates {
 
     private final ChattingSystemMessageTemplate chattingSystemMessageTemplate;
     private final ChattingUserMessageTemplate chattingUserMessageTemplate;
+
+    private final CitationParsingSystemMessageTemplate citationParsingSystemMessageTemplate;
+    private final CitationParsingUserMessageTemplate citationParsingUserMessageTemplate;
 
     public CurrentAiTemplates(AiPreferences aiPreferences) {
         this.summarizationChunkSystemMessageTemplate = new SummarizationChunkSystemMessageTemplate(
@@ -37,6 +42,13 @@ public class CurrentAiTemplates {
         );
         this.chattingUserMessageTemplate = new ChattingUserMessageTemplate(
                 () -> aiPreferences.getTemplate(AiTemplate.CHATTING_USER_MESSAGE)
+        );
+
+        this.citationParsingSystemMessageTemplate = new CitationParsingSystemMessageTemplate(
+                () -> aiPreferences.getTemplate(AiTemplate.CITATION_PARSING_SYSTEM_MESSAGE)
+        );
+        this.citationParsingUserMessageTemplate = new CitationParsingUserMessageTemplate(
+                () -> aiPreferences.getTemplate(AiTemplate.CITATION_PARSING_USER_MESSAGE)
         );
     }
 
@@ -62,5 +74,13 @@ public class CurrentAiTemplates {
 
     public ChattingUserMessageTemplate getChattingUserMessageTemplate() {
         return chattingUserMessageTemplate;
+    }
+
+    public CitationParsingSystemMessageTemplate getCitationParsingSystemMessageTemplate() {
+        return citationParsingSystemMessageTemplate;
+    }
+
+    public CitationParsingUserMessageTemplate getCitationParsingUserMessageTemplate() {
+        return citationParsingUserMessageTemplate;
     }
 }

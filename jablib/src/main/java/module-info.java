@@ -135,8 +135,10 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.chatting.logic;
     exports org.jabref.logic.ai.chatting.tasks;
     exports org.jabref.logic.ai.chatting.templates;
-    exports org.jabref.logic.ai.preferences;
     exports org.jabref.logic.ai.chatting.repositories;
+    exports org.jabref.logic.ai.citationparsing.logic;
+    exports org.jabref.logic.ai.citationparsing.templates;
+    exports org.jabref.logic.ai.preferences;
     exports org.jabref.model.ai.chatting;
     exports org.jabref.model.ai.templating;
     exports org.jabref.model.ai.rag;
@@ -291,5 +293,6 @@ open module org.jabref.jablib {
     requires org.jooq.jool;
     requires org.libreoffice.uno;
     requires transitive org.jspecify;
+    requires org.jabref.jablib;
     // endregion
 }

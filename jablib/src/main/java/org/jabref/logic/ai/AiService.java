@@ -20,7 +20,6 @@ import org.jabref.logic.ai.summarization.CurrentlySelectedSummarizationAlgorithm
 import org.jabref.logic.ai.summarization.SummariesService;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
 import org.jabref.logic.ai.summarization.repositories.MVStoreSummariesRepository;
-import org.jabref.logic.ai.templates.AiTemplatesService;
 import org.jabref.logic.ai.templates.CurrentAiTemplates;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
 import org.jabref.logic.util.Directories;
@@ -59,7 +58,6 @@ public class AiService implements AutoCloseable {
     private final MVStoreFullyIngestedDocumentsRepository mvStoreFullyIngestedDocumentsTracker;
     private final MVStoreSummariesRepository mvStoreSummariesStorage;
 
-    private final AiTemplatesService templatesService;
     private final CurrentAiTemplates currentAiTemplates;
     private final ChatHistoryService chatHistoryService;
     private final CurrentlySelectedTokenEstimationStrategy currentlySelectedTokenEstimationStrategy;
@@ -82,7 +80,6 @@ public class AiService implements AutoCloseable {
         this.mvStoreFullyIngestedDocumentsTracker = new MVStoreFullyIngestedDocumentsRepository(notificationService, Directories.getAiFilesDirectory().resolve(FULLY_INGESTED_FILE_NAME));
         this.mvStoreSummariesStorage = new MVStoreSummariesRepository(notificationService, Directories.getAiFilesDirectory().resolve(SUMMARIES_FILE_NAME));
 
-        this.templatesService = new AiTemplatesService(aiPreferences);
         this.currentAiTemplates = new CurrentAiTemplates(aiPreferences);
         this.chatHistoryService = new ChatHistoryService(citationKeyPatternPreferences, mvStoreChatHistoryStorage);
         this.currentlySelectedTokenEstimationStrategy = new CurrentlySelectedTokenEstimationStrategy(aiPreferences);
@@ -129,10 +126,6 @@ public class AiService implements AutoCloseable {
 
     public SummariesService getSummariesService() {
         return summariesService;
-    }
-
-    public AiTemplatesService getTemplatesService() {
-        return templatesService;
     }
 
     public CurrentAiTemplates getCurrentAiTemplates() {

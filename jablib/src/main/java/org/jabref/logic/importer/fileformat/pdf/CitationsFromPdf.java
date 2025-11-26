@@ -32,7 +32,12 @@ public class CitationsFromPdf {
                 preferences.getCitationKeyPatternPreferences(),
                 notificationService,
                 new CurrentThreadTaskExecutor())) {
-            LlmPlainCitationParser importer = new LlmPlainCitationParser(aiService.getTemplatesService(), preferences.getImportFormatPreferences(), aiService.getChatLanguageModel());
+            LlmPlainCitationParser importer = new LlmPlainCitationParser(
+                    aiService,
+                    preferences.getImportFormatPreferences(),
+                    aiService.getChatLanguageModel().getChatModelInfo()
+            );
+
             return importer.importDatabase(path);
         }
     }
