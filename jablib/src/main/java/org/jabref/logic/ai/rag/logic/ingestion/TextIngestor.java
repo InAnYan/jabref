@@ -25,6 +25,8 @@ public class TextIngestor {
                 .builder()
                 .embeddingStore(embeddingStore)
                 .embeddingModel(embeddingModel)
+                // TODO: remove this stub.
+                .documentSplitter(document -> List.of(new TextSegment(document.text(), document.metadata())))
                 .build();
 
         this.documentSplitterAlgorithm = documentSplitterAlgorithm;
