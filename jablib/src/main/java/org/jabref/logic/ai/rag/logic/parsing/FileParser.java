@@ -3,8 +3,8 @@ package org.jabref.logic.ai.rag.logic.parsing;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
+import org.jabref.logic.ai.util.LongTaskInfo;
 
 public interface FileParser {
-    Optional<String> parse(Path path, ReadOnlyBooleanProperty shutdownSignal);
+    Optional<String> parse(LongTaskInfo longTaskInfo, Path path);
 }

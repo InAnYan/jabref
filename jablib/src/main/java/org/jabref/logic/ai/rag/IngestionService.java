@@ -10,7 +10,8 @@ import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.rag.repositories.FileEmbeddingsManager;
+import org.jabref.logic.ai.rag.logic.EmbeddingsCleaner;
+import org.jabref.logic.ai.rag.logic.documentsplitting.DocumentSplitterAlgorithm;
 import org.jabref.logic.ai.rag.repositories.FullyIngestedDocumentsRepository;
 import org.jabref.logic.ai.rag.tasks.GenerateEmbeddingsForSeveralTask;
 import org.jabref.logic.ai.rag.tasks.GenerateEmbeddingsTask;
@@ -42,7 +43,11 @@ public class IngestionService {
     private final FilePreferences filePreferences;
     private final TaskExecutor taskExecutor;
 
-    private final FileEmbeddingsManager fileEmbeddingsManager;
+    private final EmbeddingModel embeddingModel;
+    private final EmbeddingStore<TextSegment> embeddingStore;
+    private final DocumentSplitterAlgorithm documentSplitterAlgorithm;
+    private final FullyIngestedDocumentsRepository fullyIngestedDocumentsRepository;
+    private final EmbeddingsCleaner embeddingsCleaner;
 
     private final ReadOnlyBooleanProperty shutdownSignal;
 
@@ -52,6 +57,7 @@ public class IngestionService {
             TaskExecutor taskExecutor,
             EmbeddingModel embeddingModel,
             EmbeddingStore<TextSegment> embeddingStore,
+            DocumentSplitterAlgorithm documentSplitterAlgorithm,
             FullyIngestedDocumentsRepository fullyIngestedDocumentsRepository,
             ReadOnlyBooleanProperty shutdownSignal
     ) {
@@ -59,9 +65,14 @@ public class IngestionService {
         this.filePreferences = filePreferences;
         this.taskExecutor = taskExecutor;
 
-        this.fileEmbeddingsManager = new FileEmbeddingsManager(
+        this.embeddingModel = embeddingModel;
+        this.embeddingStore = embeddingStore;
+        this.documentSplitterAlgorithm = documentSplitterAlgorithm;
+        this.fullyIngestedDocumentsRepository = fullyIngestedDocumentsRepository;
+        this.embeddingsCleaner = new EmbeddingsCleaner(
                 aiPreferences,
-                embeddingModel, embeddingStore, fullyIngestedDocumentsRepository, shutdownSignal
+                embeddingStore,
+                fullyIngestedDocumentsRepository
         );
 
         this.shutdownSignal = shutdownSignal;
@@ -126,7 +137,11 @@ public class IngestionService {
         return linkedFiles.stream().map(this::getProcessingInfo).toList();
     }
 
-    public List<ProcessingInfo<LinkedFile, Void>> ingest(StringProperty groupName, List<LinkedFile> linkedFiles, BibDatabaseContext bibDatabaseContext) {
+    public List<ProcessingInfo<LinkedFile, Void>> ingest(
+            StringProperty groupName,
+            List<LinkedFile> linkedFiles,
+            BibDatabaseContext bibDatabaseContext
+    ) {
         List<ProcessingInfo<LinkedFile, Void>> result = getProcessingInfo(linkedFiles);
 
         if (listsUnderIngestion.contains(linkedFiles)) {
@@ -141,10 +156,23 @@ public class IngestionService {
         return result;
     }
 
-    private void startEmbeddingsGenerationTask(LinkedFile linkedFile, BibDatabaseContext bibDatabaseContext, ProcessingInfo<LinkedFile, Void> processingInfo) {
+    private void startEmbeddingsGenerationTask(
+            LinkedFile linkedFile,
+            BibDatabaseContext bibDatabaseContext,
+            ProcessingInfo<LinkedFile, Void> processingInfo
+    ) {
         processingInfo.setState(ProcessingState.PROCESSING);
 
-        new GenerateEmbeddingsTask(filePreferences, fileEmbeddingsManager, bibDatabaseContext, linkedFile, shutdownSignal)
+        new GenerateEmbeddingsTask(
+                filePreferences,
+                fullyIngestedDocumentsRepository,
+                embeddingStore,
+                embeddingModel,
+                documentSplitterAlgorithm,
+                bibDatabaseContext,
+                linkedFile,
+                shutdownSignal
+        )
                 .showToUser(true)
                 .onSuccess(v -> processingInfo.setState(ProcessingState.SUCCESS))
                 .onFailure(processingInfo::setException)
@@ -154,12 +182,23 @@ public class IngestionService {
     private void startEmbeddingsGenerationTask(StringProperty groupName, List<ProcessingInfo<LinkedFile, Void>> linkedFiles, BibDatabaseContext bibDatabaseContext) {
         linkedFiles.forEach(processingInfo -> processingInfo.setState(ProcessingState.PROCESSING));
 
-        new GenerateEmbeddingsForSeveralTask(filePreferences, taskExecutor, fileEmbeddingsManager, bibDatabaseContext, groupName, linkedFiles, shutdownSignal)
+        new GenerateEmbeddingsForSeveralTask(
+                filePreferences,
+                fullyIngestedDocumentsRepository,
+                embeddingStore,
+                embeddingModel,
+                documentSplitterAlgorithm,
+                bibDatabaseContext,
+                groupName,
+                linkedFiles,
+                shutdownSignal,
+                taskExecutor
+        )
                 .executeWith(taskExecutor);
     }
 
     public void clearEmbeddingsFor(List<LinkedFile> linkedFiles) {
-        fileEmbeddingsManager.clearEmbeddingsFor(linkedFiles);
+        embeddingsCleaner.clearEmbeddingsFor(linkedFiles);
         ingestionStatusMap.values().forEach(processingInfo -> processingInfo.setState(ProcessingState.STOPPED));
     }
 }

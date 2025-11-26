@@ -3,12 +3,12 @@ package org.jabref.logic.ai.summarization.logic.summarizationalgorithms;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.templates.SummarizationChunkSystemMessageTemplate;
 import org.jabref.logic.ai.summarization.templates.SummarizationChunkUserMessageTemplate;
 import org.jabref.logic.ai.summarization.templates.SummarizationCombineSystemMessageTemplate;
 import org.jabref.logic.ai.summarization.templates.SummarizationCombineUserMessageTemplate;
 import org.jabref.logic.ai.util.LongTaskInfo;
-import org.jabref.model.ai.chatting.ChatModelInfo;
 import org.jabref.model.ai.summarization.SummarizationAlgorithmName;
 
 import dev.langchain4j.data.document.DefaultDocument;
@@ -45,16 +45,17 @@ public class ChunkedSummarizationAlgorithm implements SummarizationAlgorithm {
 
     @Override
     public String summarize(
-            ChatModelInfo chatModelInfo,
+            ChatModel chatModel,
             LongTaskInfo longTaskInfo,
             String text
     ) throws InterruptedException {
+        // TODO: Simplify.
         LOGGER.debug("Summarizing text ({} chars)", text.length());
 
         longTaskInfo.progressCounter().increaseWorkMax(1); // For the combination of summary chunks.
 
         DocumentSplitter documentSplitter = DocumentSplitters.recursive(
-                chatModelInfo.contextWindowSize() - MAX_OVERLAP_SIZE_IN_CHARS * 2 - chatModelInfo.tokenizer().estimate(new SystemMessage(summarizationChunkSystemMessageTemplate.getSource())),
+                chatModel.getContextWindowSize() - MAX_OVERLAP_SIZE_IN_CHARS * 2 - chatModel.getTokenizer().estimate(new SystemMessage(summarizationChunkSystemMessageTemplate.getSource())),
                 MAX_OVERLAP_SIZE_IN_CHARS
         );
 
@@ -82,7 +83,7 @@ public class ChunkedSummarizationAlgorithm implements SummarizationAlgorithm {
                 String userMessage = summarizationChunkUserMessageTemplate.render(chunkSummary);
 
                 LOGGER.debug("Sending request to AI provider to summarize a chunk");
-                String chunk = chatModelInfo.chatModel().chat(List.of(
+                String chunk = chatModel.chat(List.of(
                         new SystemMessage(systemMessage),
                         new UserMessage(userMessage)
                 )).aiMessage().text();
@@ -93,7 +94,7 @@ public class ChunkedSummarizationAlgorithm implements SummarizationAlgorithm {
             }
 
             chunkSummaries = list;
-        } while (chatModelInfo.tokenizer().estimate(chunkSummaries.stream().map(UserMessage::new).toList()) > chatModelInfo.contextWindowSize() - chatModelInfo.tokenizer().estimate(new SystemMessage(summarizationCombineSystemMessageTemplate.getSource())));
+        } while (chatModel.getTokenizer().estimate(chunkSummaries.stream().map(UserMessage::new).toList()) > chatModel.getContextWindowSize() - chatModel.getTokenizer().estimate(new SystemMessage(summarizationCombineSystemMessageTemplate.getSource())));
 
         if (chunkSummaries.size() == 1) {
             longTaskInfo.progressCounter().increaseWorkDone(1); // No need to call LLM for combination of summary chunks.
@@ -109,7 +110,7 @@ public class ChunkedSummarizationAlgorithm implements SummarizationAlgorithm {
         }
 
         LOGGER.debug("Sending request to AI provider to combine summary chunks");
-        String result = chatModelInfo.chatModel().chat(List.of(
+        String result = chatModel.chat(List.of(
                 new SystemMessage(systemMessage),
                 new UserMessage(userMessage)
         )).aiMessage().text();

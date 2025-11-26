@@ -25,6 +25,7 @@ public class CurrentlySelectedTokenEstimationStrategy implements Tokenizer {
     ) {
         this.aiPreferences = aiPreferences;
 
+        createTokenizer();
         setupListeningToPreferences();
     }
 

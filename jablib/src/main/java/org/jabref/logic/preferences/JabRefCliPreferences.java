@@ -100,6 +100,7 @@ import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.logic.xmp.XmpPreferences;
 import org.jabref.model.ai.chatting.AiProvider;
 import org.jabref.model.ai.embeddings.EmbeddingModel;
+import org.jabref.model.ai.rag.DocumentSplittingStrategy;
 import org.jabref.model.ai.summarization.SummarizationAlgorithmName;
 import org.jabref.model.ai.templating.AiTemplate;
 import org.jabref.model.ai.tokenization.TokenEstimationStrategy;
@@ -401,6 +402,7 @@ public class JabRefCliPreferences implements CliPreferences {
     private static final String AI_TOKEN_ESTIMATION_ALGORITHM = "aiTokenEstimationAlgorithm";
     private static final String AI_TEMPERATURE = "aiTemperature";
     private static final String AI_CONTEXT_WINDOW_SIZE = "aiMessageWindowSize";
+    private static final String AI_DOCUMENT_SPLITTING_STRATEGY = "aiDocumentSplittingStrategy";
     private static final String AI_DOCUMENT_SPLITTER_CHUNK_SIZE = "aiDocumentSplitterChunkSize";
     private static final String AI_DOCUMENT_SPLITTER_OVERLAP_SIZE = "aiDocumentSplitterOverlapSize";
     private static final String AI_RAG_MAX_RESULTS_COUNT = "aiRagMaxResultsCount";
@@ -750,7 +752,13 @@ public class JabRefCliPreferences implements CliPreferences {
         defaults.put(AI_SUMMARIZATION_ALGORITHM, AiDefaultExpertSettings.SUMMARIZATION_ALGORITHM_NAME.name());
         defaults.put(AI_TOKEN_ESTIMATION_ALGORITHM, AiDefaultExpertSettings.TOKEN_ESTIMATION_STRATEGY.name());
         defaults.put(AI_TEMPERATURE, AiDefaultExpertSettings.TEMPERATURE);
-        defaults.put(AI_CONTEXT_WINDOW_SIZE, PredefinedChatModel.getContextWindowSize((AiProvider) defaults.get(AI_PROVIDER), AiProviderDefaultChatModels.getDefaultChatModel((AiProvider) defaults.get(AI_PROVIDER)).getName()));
+        defaults.put(AI_CONTEXT_WINDOW_SIZE,
+                PredefinedChatModel.getContextWindowSize(
+                        AiProvider.valueOf((String) defaults.get(AI_PROVIDER)),
+                        AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.valueOf((String) defaults.get(AI_PROVIDER))).getName()
+                )
+        );
+        defaults.put(AI_DOCUMENT_SPLITTING_STRATEGY, AiDefaultExpertSettings.DOCUMENT_SPLITTING_STRATEGY.name());
         defaults.put(AI_DOCUMENT_SPLITTER_CHUNK_SIZE, AiDefaultExpertSettings.DOCUMENT_SPLITTER_CHUNK_SIZE);
         defaults.put(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE, AiDefaultExpertSettings.DOCUMENT_SPLITTER_OVERLAP_SIZE);
         defaults.put(AI_RAG_MAX_RESULTS_COUNT, AiDefaultExpertSettings.RAG_MAX_RESULTS_COUNT);
@@ -2047,6 +2055,7 @@ public class JabRefCliPreferences implements CliPreferences {
                 EmbeddingModel.valueOf(get(AI_EMBEDDING_MODEL)),
                 getDouble(AI_TEMPERATURE),
                 getInt(AI_CONTEXT_WINDOW_SIZE),
+                DocumentSplittingStrategy.valueOf(get(AI_DOCUMENT_SPLITTING_STRATEGY)),
                 getInt(AI_DOCUMENT_SPLITTER_CHUNK_SIZE),
                 getInt(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE),
                 getInt(AI_RAG_MAX_RESULTS_COUNT),
@@ -2087,6 +2096,7 @@ public class JabRefCliPreferences implements CliPreferences {
         EasyBind.listen(aiPreferences.embeddingModelProperty(), (_, _, newValue) -> put(AI_EMBEDDING_MODEL, newValue.name()));
         EasyBind.listen(aiPreferences.temperatureProperty(), (_, _, newValue) -> putDouble(AI_TEMPERATURE, newValue.doubleValue()));
         EasyBind.listen(aiPreferences.contextWindowSizeProperty(), (_, _, newValue) -> putInt(AI_CONTEXT_WINDOW_SIZE, newValue));
+        EasyBind.listen(aiPreferences.documentSplittingStrategyProperty(), (_, _, newValue) -> put(AI_DOCUMENT_SPLITTING_STRATEGY, newValue.name()));
         EasyBind.listen(aiPreferences.documentSplitterChunkSizeProperty(), (_, _, newValue) -> putInt(AI_DOCUMENT_SPLITTER_CHUNK_SIZE, newValue));
         EasyBind.listen(aiPreferences.documentSplitterOverlapSizeProperty(), (_, _, newValue) -> putInt(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE, newValue));
         EasyBind.listen(aiPreferences.ragMaxResultsCountProperty(), (_, _, newValue) -> putInt(AI_RAG_MAX_RESULTS_COUNT, newValue));

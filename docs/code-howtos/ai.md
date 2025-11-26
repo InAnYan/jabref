@@ -1,0 +1,8 @@
+- ai package organization
+- gui / logic / model
+- how to make ui -> view view-model pattern
+- currents
+- task organization
+- generic classess
+- long task and shutdown signal
+- ensure to use ChatModel from jabref

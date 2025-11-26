@@ -9,6 +9,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
+import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
@@ -16,7 +17,6 @@ import org.jabref.logic.ai.summarization.tasks.GenerateSummaryForSeveralTask;
 import org.jabref.logic.ai.summarization.tasks.GenerateSummaryTask;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.ai.chatting.ChatModelInfo;
 import org.jabref.model.ai.processingstatus.ProcessingInfo;
 import org.jabref.model.ai.processingstatus.ProcessingState;
 import org.jabref.model.ai.summarization.BibEntrySummary;
@@ -48,7 +48,7 @@ public class SummariesService {
 
     private final AiPreferences aiPreferences;
     private final SummariesRepository summariesRepository;
-    private final ChatModelInfo chatModelInfo;
+    private final ChatModel chatModel;
     private final SummarizationAlgorithm defaultSummarizationAlgorithm;
     private final BooleanProperty shutdownSignal;
     private final FilePreferences filePreferences;
@@ -59,14 +59,14 @@ public class SummariesService {
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
             TaskExecutor taskExecutor,
-            ChatModelInfo chatModelInfo,
+            ChatModel chatModel,
             SummarizationAlgorithm defaultSummarizationAlgorithm,
             SummariesRepository summariesRepository,
             BooleanProperty shutdownSignal
     ) {
         this.aiPreferences = aiPreferences;
         this.summariesRepository = summariesRepository;
-        this.chatModelInfo = chatModelInfo;
+        this.chatModel = chatModel;
         this.defaultSummarizationAlgorithm = defaultSummarizationAlgorithm;
         this.shutdownSignal = shutdownSignal;
         this.filePreferences = filePreferences;
@@ -159,7 +159,7 @@ public class SummariesService {
 
         new GenerateSummaryTask(
                 filePreferences,
-                chatModelInfo,
+                chatModel,
                 summariesRepository,
                 summarizationAlgorithm,
                 bibDatabaseContext,
@@ -182,7 +182,7 @@ public class SummariesService {
         new GenerateSummaryForSeveralTask(
                 filePreferences,
                 taskExecutor,
-                chatModelInfo,
+                chatModel,
                 summariesRepository,
                 summarizationAlgorithm,
                 bibDatabaseContext,

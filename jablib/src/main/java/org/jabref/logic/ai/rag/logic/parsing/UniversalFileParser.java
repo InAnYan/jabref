@@ -3,8 +3,7 @@ package org.jabref.logic.ai.rag.logic.parsing;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
-
+import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.util.io.FileUtil;
 
 import org.slf4j.Logger;
@@ -15,9 +14,9 @@ public class UniversalFileParser implements FileParser {
 
     private final PdfFileParser pdfFileParser = new PdfFileParser();
 
-    public Optional<String> parse(Path path, ReadOnlyBooleanProperty shutdownSignal) {
+    public Optional<String> parse(LongTaskInfo longTaskInfo, Path path) {
         if (FileUtil.isPDFFile(path)) {
-            return pdfFileParser.parse(path, shutdownSignal);
+            return pdfFileParser.parse(longTaskInfo, path);
         } else {
             LOGGER.info("Unsupported file type of file: {}. Currently, only PDF files are supported", path);
             return Optional.empty();

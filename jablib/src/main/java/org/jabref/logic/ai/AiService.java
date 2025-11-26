@@ -11,6 +11,7 @@ import org.jabref.logic.ai.chatting.ChatHistoryService;
 import org.jabref.logic.ai.chatting.repositories.MVStoreChatHistoryRepository;
 import org.jabref.logic.ai.current.CurrentAiTemplates;
 import org.jabref.logic.ai.current.CurrentlySelectedChatLanguageModel;
+import org.jabref.logic.ai.current.CurrentlySelectedDocumentSplitter;
 import org.jabref.logic.ai.current.CurrentlySelectedEmbeddingModel;
 import org.jabref.logic.ai.current.CurrentlySelectedSummarizationAlgorithm;
 import org.jabref.logic.ai.current.CurrentlySelectedTokenEstimationStrategy;
@@ -60,6 +61,7 @@ public class AiService implements AutoCloseable {
 
     private final CurrentAiTemplates currentAiTemplates;
     private final ChatHistoryService chatHistoryService;
+    private final CurrentlySelectedDocumentSplitter currentlySelectedDocumentSplitter;
     private final CurrentlySelectedTokenEstimationStrategy currentlySelectedTokenEstimationStrategy;
     private final CurrentlySelectedChatLanguageModel currentlySelectedChatLanguageModel;
     private final CurrentlySelectedEmbeddingModel currentlySelectedEmbeddingModel;
@@ -82,6 +84,8 @@ public class AiService implements AutoCloseable {
 
         this.currentAiTemplates = new CurrentAiTemplates(aiPreferences);
         this.chatHistoryService = new ChatHistoryService(citationKeyPatternPreferences, mvStoreChatHistoryStorage);
+
+        this.currentlySelectedDocumentSplitter = new CurrentlySelectedDocumentSplitter(aiPreferences);
         this.currentlySelectedTokenEstimationStrategy = new CurrentlySelectedTokenEstimationStrategy(aiPreferences);
         this.currentlySelectedChatLanguageModel = new CurrentlySelectedChatLanguageModel(aiPreferences, currentlySelectedTokenEstimationStrategy);
         this.currentlySelectedEmbeddingModel = new CurrentlySelectedEmbeddingModel(aiPreferences, notificationService, taskExecutor);
@@ -93,6 +97,7 @@ public class AiService implements AutoCloseable {
                 taskExecutor,
                 currentlySelectedEmbeddingModel,
                 mvStoreEmbeddingStore,
+                currentlySelectedDocumentSplitter,
                 mvStoreFullyIngestedDocumentsTracker,
                 shutdownSignal
         );
@@ -101,11 +106,15 @@ public class AiService implements AutoCloseable {
                 aiPreferences,
                 filePreferences,
                 taskExecutor,
-                currentlySelectedChatLanguageModel.getChatModelInfo(),
+                currentlySelectedChatLanguageModel,
                 currentlySelectedSummarizationAlgorithm,
                 mvStoreSummariesStorage,
                 shutdownSignal
         );
+    }
+
+    public CurrentlySelectedDocumentSplitter getDocumentSplitter() {
+        return currentlySelectedDocumentSplitter;
     }
 
     public CurrentlySelectedChatLanguageModel getChatLanguageModel() {

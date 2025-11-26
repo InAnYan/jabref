@@ -9,11 +9,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jabref.logic.FilePreferences;
+import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.rag.logic.parsing.UniversalFileParser;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
 import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.chatting.ChatModelInfo;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
@@ -22,6 +22,7 @@ import org.jabref.model.entry.LinkedFile;
 import org.slf4j.Logger;
 
 public class BibEntrySummarizer {
+    // TODO: Simplify this class.
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(BibEntrySummarizer.class);
 
     private final FilePreferences filePreferences;
@@ -38,7 +39,7 @@ public class BibEntrySummarizer {
     }
 
     public BibEntrySummary summarize(
-            ChatModelInfo chatModelInfo,
+            ChatModel chatModel,
             LongTaskInfo longTaskInfo,
             BibDatabaseContext bibDatabaseContext,
             BibEntry entry
@@ -53,7 +54,7 @@ public class BibEntrySummarizer {
         List<String> linkedFilesSummary = new ArrayList<>();
         for (LinkedFile linkedFile : entry.getFiles()) {
             generateSummary(
-                    chatModelInfo,
+                    chatModel,
                     longTaskInfo,
                     bibDatabaseContext,
                     linkedFile,
@@ -77,7 +78,7 @@ public class BibEntrySummarizer {
             finalSummary = linkedFilesSummary.getFirst();
         } else {
             finalSummary = summarizeSeveralDocuments(
-                    chatModelInfo,
+                    chatModel,
                     longTaskInfo,
                     linkedFilesSummary.stream()
             );
@@ -87,15 +88,15 @@ public class BibEntrySummarizer {
 
         return new BibEntrySummary(
                 LocalDateTime.now(),
-                chatModelInfo.aiProvider(),
-                chatModelInfo.name(),
+                chatModel.getAiProvider(),
+                chatModel.getName(),
                 summarizationAlgorithm.getName(),
                 finalSummary
         );
     }
 
     private Optional<String> generateSummary(
-            ChatModelInfo chatModelInfo,
+            ChatModel chatModel,
             LongTaskInfo longTaskInfo,
             BibDatabaseContext bibDatabaseContext,
             LinkedFile linkedFile,
@@ -111,7 +112,7 @@ public class BibEntrySummarizer {
             return Optional.empty();
         }
 
-        Optional<String> document = universalFileParser.parse(path.get(), longTaskInfo.shutdownSignal());
+        Optional<String> document = universalFileParser.parse(longTaskInfo, path.get());
 
         if (document.isEmpty()) {
             LOGGER.warn("Could not extract text from a linked file \"{}\" of entry {}. It will be skipped when generating a summary.", linkedFile.getLink(), citationKey);
@@ -120,7 +121,7 @@ public class BibEntrySummarizer {
         }
 
         String linkedFileSummary = summarizationAlgorithm.summarize(
-                chatModelInfo,
+                chatModel,
                 longTaskInfo,
                 document.get()
         );
@@ -130,12 +131,12 @@ public class BibEntrySummarizer {
     }
 
     public String summarizeSeveralDocuments(
-            ChatModelInfo chatModelInfo,
+            ChatModel chatModel,
             LongTaskInfo longTaskInfo,
             Stream<String> documents
     ) throws InterruptedException {
         return summarizationAlgorithm.summarize(
-                chatModelInfo,
+                chatModel,
                 longTaskInfo,
                 documents.collect(Collectors.joining("\n\n"))
         );

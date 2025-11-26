@@ -10,13 +10,13 @@ import javafx.beans.property.StringProperty;
 import javafx.util.Pair;
 
 import org.jabref.logic.FilePreferences;
+import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ProgressCounter;
 import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.ai.chatting.ChatModelInfo;
 import org.jabref.model.ai.processingstatus.ProcessingInfo;
 import org.jabref.model.ai.processingstatus.ProcessingState;
 import org.jabref.model.ai.summarization.BibEntrySummary;
@@ -38,7 +38,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
     private final List<ProcessingInfo<BibEntry, BibEntrySummary>> entries;
     private final BibDatabaseContext bibDatabaseContext;
     private final SummariesRepository summariesRepository;
-    private final ChatModelInfo chatModelInfo;
+    private final ChatModel chatModel;
     private final SummarizationAlgorithm summarizationAlgorithm;
     private final ReadOnlyBooleanProperty shutdownSignal;
     private final FilePreferences filePreferences;
@@ -51,7 +51,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
     public GenerateSummaryForSeveralTask(
             FilePreferences filePreferences,
             TaskExecutor taskExecutor,
-            ChatModelInfo chatModelInfo,
+            ChatModel chatModel,
             SummariesRepository summariesRepository,
             SummarizationAlgorithm summarizationAlgorithm,
             BibDatabaseContext bibDatabaseContext,
@@ -63,7 +63,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
         this.entries = entries;
         this.bibDatabaseContext = bibDatabaseContext;
         this.summariesRepository = summariesRepository;
-        this.chatModelInfo = chatModelInfo;
+        this.chatModel = chatModel;
         this.summarizationAlgorithm = summarizationAlgorithm;
         this.shutdownSignal = shutdownSignal;
         this.filePreferences = filePreferences;
@@ -95,7 +95,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
                     return new Pair<>(
                             new GenerateSummaryTask(
                                     filePreferences,
-                                    chatModelInfo,
+                                    chatModel,
                                     summariesRepository,
                                     summarizationAlgorithm,
                                     bibDatabaseContext,

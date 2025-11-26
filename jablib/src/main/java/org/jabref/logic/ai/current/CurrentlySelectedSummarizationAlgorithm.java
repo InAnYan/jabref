@@ -1,10 +1,10 @@
 package org.jabref.logic.ai.current;
 
+import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.ChunkedSummarizationAlgorithm;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
 import org.jabref.logic.ai.util.LongTaskInfo;
-import org.jabref.model.ai.chatting.ChatModelInfo;
 import org.jabref.model.ai.summarization.SummarizationAlgorithmName;
 import org.jabref.model.ai.templating.AiTemplate;
 
@@ -24,6 +24,7 @@ public class CurrentlySelectedSummarizationAlgorithm implements SummarizationAlg
         this.aiPreferences = aiPreferences;
         this.currentAiTemplates = currentAiTemplates;
 
+        updateAlgorithm();
         setupListeningToPreferences();
     }
 
@@ -48,6 +49,7 @@ public class CurrentlySelectedSummarizationAlgorithm implements SummarizationAlg
     }
 
     private void updateAlgorithm() {
+        // Because in the future there will be more strategies.
         //noinspection SwitchStatementWithTooFewBranches
         switch (aiPreferences.getDefaultSummarizationAlgorithm()) {
             case SummarizationAlgorithmName.CHUNKED -> {
@@ -66,12 +68,12 @@ public class CurrentlySelectedSummarizationAlgorithm implements SummarizationAlg
     }
 
     @Override
-    public String summarize(ChatModelInfo chatModelInfo, LongTaskInfo longTaskInfo, String text) throws InterruptedException {
+    public String summarize(ChatModel chatModel, LongTaskInfo longTaskInfo, String text) throws InterruptedException {
         if (summarizationAlgorithm == null) {
-            return "";
+            throw new RuntimeException("No summarization algorithm selected.");
         }
 
-        return summarizationAlgorithm.summarize(chatModelInfo, longTaskInfo, text);
+        return summarizationAlgorithm.summarize(chatModel, longTaskInfo, text);
     }
 
     @Override

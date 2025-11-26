@@ -10,7 +10,8 @@ import javafx.beans.property.StringProperty;
 import javafx.util.Pair;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.rag.repositories.FileEmbeddingsManager;
+import org.jabref.logic.ai.rag.logic.documentsplitting.DocumentSplitterAlgorithm;
+import org.jabref.logic.ai.rag.repositories.FullyIngestedDocumentsRepository;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ProgressCounter;
@@ -20,6 +21,9 @@ import org.jabref.model.ai.processingstatus.ProcessingState;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.LinkedFile;
 
+import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,34 +35,43 @@ import org.slf4j.LoggerFactory;
 public class GenerateEmbeddingsForSeveralTask extends BackgroundTask<Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateEmbeddingsForSeveralTask.class);
 
+    private final FilePreferences filePreferences;
+    private final FullyIngestedDocumentsRepository fullyIngestedDocumentsRepository;
+    private final EmbeddingStore<TextSegment> embeddingStore;
+    private final EmbeddingModel embeddingModel;
+    private final DocumentSplitterAlgorithm documentSplitterAlgorithm;
+    private final BibDatabaseContext bibDatabaseContext;
     private final StringProperty groupName;
     private final List<ProcessingInfo<LinkedFile, Void>> linkedFiles;
-    private final FileEmbeddingsManager fileEmbeddingsManager;
-    private final BibDatabaseContext bibDatabaseContext;
-    private final FilePreferences filePreferences;
-    private final TaskExecutor taskExecutor;
+    private final ProgressCounter progressCounter;
     private final ReadOnlyBooleanProperty shutdownSignal;
-
-    private final ProgressCounter progressCounter = new ProgressCounter();
+    private final TaskExecutor taskExecutor;
 
     private String currentFile = "";
 
     public GenerateEmbeddingsForSeveralTask(
             FilePreferences filePreferences,
-            TaskExecutor taskExecutor,
-            FileEmbeddingsManager fileEmbeddingsManager,
+            FullyIngestedDocumentsRepository fullyIngestedDocumentsRepository,
+            EmbeddingStore<TextSegment> embeddingStore,
+            EmbeddingModel embeddingModel,
+            DocumentSplitterAlgorithm documentSplitterAlgorithm,
             BibDatabaseContext bibDatabaseContext,
             StringProperty groupName,
             List<ProcessingInfo<LinkedFile, Void>> linkedFiles,
-            ReadOnlyBooleanProperty shutdownSignal
+            ReadOnlyBooleanProperty shutdownSignal,
+            TaskExecutor taskExecutor
     ) {
+        this.filePreferences = filePreferences;
+        this.fullyIngestedDocumentsRepository = fullyIngestedDocumentsRepository;
+        this.embeddingStore = embeddingStore;
+        this.embeddingModel = embeddingModel;
+        this.documentSplitterAlgorithm = documentSplitterAlgorithm;
+        this.bibDatabaseContext = bibDatabaseContext;
         this.groupName = groupName;
         this.linkedFiles = linkedFiles;
-        this.fileEmbeddingsManager = fileEmbeddingsManager;
-        this.bibDatabaseContext = bibDatabaseContext;
-        this.filePreferences = filePreferences;
-        this.taskExecutor = taskExecutor;
+        this.progressCounter = new ProgressCounter();
         this.shutdownSignal = shutdownSignal;
+        this.taskExecutor = taskExecutor;
 
         configure(groupName);
     }
@@ -85,7 +98,13 @@ public class GenerateEmbeddingsForSeveralTask extends BackgroundTask<Void> {
                     processingInfo.setState(ProcessingState.PROCESSING);
                     return new Pair<>(
                             new GenerateEmbeddingsTask(
-                                    filePreferences, fileEmbeddingsManager, bibDatabaseContext, processingInfo.getObject(),
+                                    filePreferences,
+                                    fullyIngestedDocumentsRepository,
+                                    embeddingStore,
+                                    embeddingModel,
+                                    documentSplitterAlgorithm,
+                                    bibDatabaseContext,
+                                    processingInfo.getObject(),
                                     shutdownSignal
                             )
                                     .showToUser(false)

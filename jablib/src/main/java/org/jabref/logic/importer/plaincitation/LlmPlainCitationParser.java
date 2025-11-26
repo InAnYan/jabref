@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.citationparsing.logic.ParseCitationsWithLlm;
+import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.importer.FetcherException;
 import org.jabref.logic.importer.ImportFormatPreferences;
 import org.jabref.logic.importer.ParseException;
@@ -13,24 +14,23 @@ import org.jabref.logic.importer.fileformat.BibtexParser;
 import org.jabref.logic.importer.fileformat.pdf.PdfImporterWithPlainCitationParser;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.Result;
-import org.jabref.model.ai.chatting.ChatModelInfo;
 import org.jabref.model.entry.BibEntry;
 
 public class LlmPlainCitationParser extends PdfImporterWithPlainCitationParser implements PlainCitationParser {
     private final ImportFormatPreferences importFormatPreferences;
 
-    private final ChatModelInfo chatModelInfo;
+    private final ChatModel chatModel;
 
     private final ParseCitationsWithLlm parseCitationsWithLlm;
 
     public LlmPlainCitationParser(
             AiService aiService,
             ImportFormatPreferences importFormatPreferences,
-            ChatModelInfo chatModelInfo
+            ChatModel chatModel
     ) {
         this.importFormatPreferences = importFormatPreferences;
 
-        this.chatModelInfo = chatModelInfo;
+        this.chatModel = chatModel;
 
         this.parseCitationsWithLlm = new ParseCitationsWithLlm(
                 importFormatPreferences,
@@ -57,7 +57,7 @@ public class LlmPlainCitationParser extends PdfImporterWithPlainCitationParser i
     @Override
     public Optional<BibEntry> parsePlainCitation(String text) throws FetcherException {
         try {
-            String string = parseCitationsWithLlm.getBibtexStringFromLlm(chatModelInfo, text);
+            String string = parseCitationsWithLlm.getBibtexStringFromLlm(chatModel, text);
             return BibtexParser.singleFromString(string, importFormatPreferences);
         } catch (ParseException e) {
             throw new FetcherException("Could not parse BibTeX returned from LLM", e);
@@ -66,7 +66,7 @@ public class LlmPlainCitationParser extends PdfImporterWithPlainCitationParser i
 
     @Override
     public List<BibEntry> parseMultiplePlainCitations(String text) throws FetcherException {
-        Result<List<BibEntry>, IOException> result = parseCitationsWithLlm.parseMultiplePlainCitations(chatModelInfo, text);
+        Result<List<BibEntry>, IOException> result = parseCitationsWithLlm.parseMultiplePlainCitations(chatModel, text);
 
         if (result.isErr()) {
             throw new FetcherException("Could not parse BibTeX returned from LLM", result.getError());

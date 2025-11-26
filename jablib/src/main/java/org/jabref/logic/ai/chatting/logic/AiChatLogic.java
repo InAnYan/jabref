@@ -10,7 +10,7 @@ import javafx.collections.ObservableList;
 import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageTemplate;
 import org.jabref.logic.ai.chatting.templates.ChattingUserMessageTemplate;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.rag.repositories.FileEmbeddingsManager;
+import org.jabref.logic.ai.rag.logic.EmbeddingsCleaner;
 import org.jabref.model.ai.chatting.ErrorMessage;
 import org.jabref.model.ai.rag.PaperExcerpt;
 import org.jabref.model.ai.templating.AiTemplate;
@@ -128,7 +128,7 @@ public class AiChatLogic {
             filter = Optional.empty();
         } else {
             filter = Optional.of(MetadataFilterBuilder
-                    .metadataKey(FileEmbeddingsManager.LINK_METADATA_KEY)
+                    .metadataKey(EmbeddingsCleaner.LINK_METADATA_KEY)
                     .isIn(linkedFiles
                             .stream()
                             .map(LinkedFile::getLink)
@@ -166,7 +166,7 @@ public class AiChatLogic {
                 .stream()
                 .map(EmbeddingMatch::embedded)
                 .map(textSegment -> {
-                    String link = textSegment.metadata().getString(FileEmbeddingsManager.LINK_METADATA_KEY);
+                    String link = textSegment.metadata().getString(EmbeddingsCleaner.LINK_METADATA_KEY);
 
                     if (link == null) {
                         return new PaperExcerpt("", textSegment.text());

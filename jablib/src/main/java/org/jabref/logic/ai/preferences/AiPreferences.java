@@ -19,6 +19,7 @@ import javafx.beans.property.StringProperty;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.AiProvider;
 import org.jabref.model.ai.embeddings.EmbeddingModel;
+import org.jabref.model.ai.rag.DocumentSplittingStrategy;
 import org.jabref.model.ai.summarization.SummarizationAlgorithmName;
 import org.jabref.model.ai.templating.AiTemplate;
 import org.jabref.model.ai.tokenization.TokenEstimationStrategy;
@@ -59,8 +60,11 @@ public class AiPreferences {
     private final ObjectProperty<EmbeddingModel> embeddingModel;
     private final DoubleProperty temperature;
     private final IntegerProperty contextWindowSize;
+
+    private final ObjectProperty<DocumentSplittingStrategy> documentSplittingStrategy;
     private final IntegerProperty documentSplitterChunkSize;
     private final IntegerProperty documentSplitterOverlapSize;
+
     private final IntegerProperty ragMaxResultsCount;
     private final DoubleProperty ragMinScore;
 
@@ -89,6 +93,7 @@ public class AiPreferences {
             EmbeddingModel embeddingModel,
             double temperature,
             int contextWindowSize,
+            DocumentSplittingStrategy documentSplittingStrategy,
             int documentSplitterChunkSize,
             int documentSplitterOverlapSize,
             int ragMaxResultsCount,
@@ -120,8 +125,11 @@ public class AiPreferences {
         this.embeddingModel = new SimpleObjectProperty<>(embeddingModel);
         this.temperature = new SimpleDoubleProperty(temperature);
         this.contextWindowSize = new SimpleIntegerProperty(contextWindowSize);
+
+        this.documentSplittingStrategy = new SimpleObjectProperty<>(documentSplittingStrategy);
         this.documentSplitterChunkSize = new SimpleIntegerProperty(documentSplitterChunkSize);
         this.documentSplitterOverlapSize = new SimpleIntegerProperty(documentSplitterOverlapSize);
+
         this.ragMaxResultsCount = new SimpleIntegerProperty(ragMaxResultsCount);
         this.ragMinScore = new SimpleDoubleProperty(ragMinScore);
 
@@ -429,6 +437,18 @@ public class AiPreferences {
 
     public void setContextWindowSize(int contextWindowSize) {
         this.contextWindowSize.set(contextWindowSize);
+    }
+
+    public ObjectProperty<DocumentSplittingStrategy> documentSplittingStrategyProperty() {
+        return documentSplittingStrategy;
+    }
+
+    public DocumentSplittingStrategy getDocumentSplittingStrategy() {
+        return documentSplittingStrategy.get();
+    }
+
+    public void setDocumentSplittingStrategy(DocumentSplittingStrategy documentSplittingStrategy) {
+        this.documentSplittingStrategy.set(documentSplittingStrategy);
     }
 
     public IntegerProperty documentSplitterChunkSizeProperty() {

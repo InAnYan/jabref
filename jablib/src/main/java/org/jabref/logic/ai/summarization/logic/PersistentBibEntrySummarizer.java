@@ -3,11 +3,11 @@ package org.jabref.logic.ai.summarization.logic;
 import java.util.Optional;
 
 import org.jabref.logic.FilePreferences;
+import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.util.CitationKeyCheck;
-import org.jabref.model.ai.chatting.ChatModelInfo;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
@@ -36,7 +36,7 @@ public class PersistentBibEntrySummarizer {
     }
 
     public BibEntrySummary summarize(
-            ChatModelInfo chatModelInfo,
+            ChatModel chatModel,
             LongTaskInfo longTaskInfo,
             BibDatabaseContext bibDatabaseContext,
             BibEntry entry
@@ -61,7 +61,7 @@ public class PersistentBibEntrySummarizer {
         } else {
             try {
                 bibEntrySummary = bibEntrySummarizer.summarize(
-                        chatModelInfo,
+                        chatModel,
                         longTaskInfo,
                         bibDatabaseContext,
                         entry
@@ -74,8 +74,8 @@ public class PersistentBibEntrySummarizer {
 
         if (bibDatabaseContext.getDatabasePath().isEmpty()) {
             LOGGER.info("No database path is present. BibEntrySummary will not be stored in the next sessions");
-        } else if (CitationKeyCheck.citationKeyIsPresentAndUnique(bibDatabaseContext, entry)) {
-            LOGGER.info("No valid citation key is present. BibEntrySummary will not be stored in the next sessions");
+        } else if (!CitationKeyCheck.citationKeyIsPresentAndUnique(bibDatabaseContext, entry)) {
+            LOGGER.info("No valid citation key is present. Summary will not be stored in the next sessions");
         } else {
             summariesRepository.set(
                     bibDatabaseContext.getDatabasePath().get(),

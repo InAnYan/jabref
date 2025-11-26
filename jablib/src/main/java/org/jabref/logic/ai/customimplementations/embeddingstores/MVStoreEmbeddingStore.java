@@ -34,7 +34,7 @@ import org.h2.mvstore.MVStore;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Comparator.comparingDouble;
-import static org.jabref.logic.ai.rag.repositories.FileEmbeddingsManager.LINK_METADATA_KEY;
+import static org.jabref.logic.ai.rag.logic.EmbeddingsCleaner.LINK_METADATA_KEY;
 
 /**
  * A custom implementation of langchain4j's {@link EmbeddingStore} that uses a {@link MVStore} as an embedded database.

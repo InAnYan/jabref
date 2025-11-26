@@ -23,7 +23,7 @@ public class PlainCitationParserFactory {
             case PlainCitationParserChoice.GROBID ->
                     new GrobidPlainCitationParser(grobidPreferences, importFormatPreferences);
             case PlainCitationParserChoice.LLM ->
-                    new LlmPlainCitationParser(aiService, importFormatPreferences, aiService.getChatLanguageModel().getChatModelInfo());
+                    new LlmPlainCitationParser(aiService, importFormatPreferences, aiService.getChatLanguageModel());
         };
     }
 }

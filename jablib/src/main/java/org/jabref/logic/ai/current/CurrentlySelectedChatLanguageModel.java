@@ -3,27 +3,27 @@ package org.jabref.logic.ai.current;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.jabref.logic.ai.chatting.logic.AiChatLogic;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
+import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.customimplementations.llms.Gpt4AllModel;
 import org.jabref.logic.ai.customimplementations.llms.JvmOpenAiChatLanguageModel;
+import org.jabref.logic.ai.customimplementations.tokenization.algorithms.Tokenizer;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.chatting.AiProvider;
-import org.jabref.model.ai.chatting.ChatModelInfo;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.memory.ChatMemory;
-import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import dev.langchain4j.model.huggingface.HuggingFaceChatModel;
 import dev.langchain4j.model.mistralai.MistralAiChatModel;
+import jakarta.annotation.Nullable;
 
 /**
  * Wrapper around langchain4j chat language model.
@@ -43,7 +43,8 @@ public class CurrentlySelectedChatLanguageModel implements ChatModel, AutoClosea
             new ThreadFactoryBuilder().setNameFormat("ai-api-connection-pool-%d").build()
     );
 
-    private Optional<ChatModel> langchainChatModel = Optional.empty();
+    @Nullable
+    private dev.langchain4j.model.chat.ChatModel langchainChatModel = null;
 
     public CurrentlySelectedChatLanguageModel(
             AiPreferences aiPreferences,
@@ -67,19 +68,19 @@ public class CurrentlySelectedChatLanguageModel implements ChatModel, AutoClosea
     private void rebuild() {
         String apiKey = aiPreferences.getApiKeyForAiProvider(aiPreferences.getAiProvider());
         if (!aiPreferences.getEnableAi() || (apiKey.isEmpty() && aiPreferences.getAiProvider() != AiProvider.GPT4ALL)) {
-            langchainChatModel = Optional.empty();
+            langchainChatModel = null;
             return;
         }
 
         switch (aiPreferences.getAiProvider()) {
             case OPEN_AI ->
-                    langchainChatModel = Optional.of(new JvmOpenAiChatLanguageModel(aiPreferences, httpClient));
+                    langchainChatModel = new JvmOpenAiChatLanguageModel(aiPreferences, httpClient);
 
             case GPT4ALL ->
-                    langchainChatModel = Optional.of(new Gpt4AllModel(aiPreferences, httpClient));
+                    langchainChatModel = new Gpt4AllModel(aiPreferences, httpClient);
 
             case MISTRAL_AI ->
-                    langchainChatModel = Optional.of(MistralAiChatModel
+                    langchainChatModel = MistralAiChatModel
                             .builder()
                             .apiKey(apiKey)
                             .modelName(aiPreferences.getSelectedChatModel())
@@ -87,53 +88,40 @@ public class CurrentlySelectedChatLanguageModel implements ChatModel, AutoClosea
                             .baseUrl(aiPreferences.getSelectedApiBaseUrl())
                             .logRequests(true)
                             .logResponses(true)
-                            .build()
-                    );
+                            .build();
 
             case GEMINI -> // NOTE: {@link GoogleAiGeminiChatModel} doesn't support API base url.
-                    langchainChatModel = Optional.of(GoogleAiGeminiChatModel
+                    langchainChatModel = GoogleAiGeminiChatModel
                             .builder()
                             .apiKey(apiKey)
                             .modelName(aiPreferences.getSelectedChatModel())
                             .temperature(aiPreferences.getTemperature())
                             .logRequestsAndResponses(true)
-                            .build()
-                    );
+                            .build();
 
             case HUGGING_FACE -> // NOTE: {@link HuggingFaceChatModel} doesn't support API base url.
-                    langchainChatModel = Optional.of(HuggingFaceChatModel
+                    langchainChatModel = HuggingFaceChatModel
                             .builder()
                             .accessToken(apiKey)
                             .modelId(aiPreferences.getSelectedChatModel())
                             .temperature(aiPreferences.getTemperature())
                             .timeout(Duration.ofMinutes(2))
-                            .build()
-                    );
+                            .build();
         }
     }
 
     private void setupListeningToPreferencesChanges() {
-        // Setting "langchainChatModel" to "Optional.empty()" will trigger a rebuild on the next usage
+        // TODO: written below is weird, but works.
+        // Setting "langchainChatModel" to "null" will trigger a rebuild on the next usage
 
-        aiPreferences.enableAiProperty().addListener(_ -> langchainChatModel = Optional.empty());
-        aiPreferences.aiProviderProperty().addListener(_ -> langchainChatModel = Optional.empty());
-        aiPreferences.customizeExpertSettingsProperty().addListener(_ -> langchainChatModel = Optional.empty());
-        aiPreferences.temperatureProperty().addListener(_ -> langchainChatModel = Optional.empty());
+        aiPreferences.enableAiProperty().addListener(_ -> langchainChatModel = null);
+        aiPreferences.aiProviderProperty().addListener(_ -> langchainChatModel = null);
+        aiPreferences.customizeExpertSettingsProperty().addListener(_ -> langchainChatModel = null);
+        aiPreferences.temperatureProperty().addListener(_ -> langchainChatModel = null);
 
-        aiPreferences.addListenerToChatModels(() -> langchainChatModel = Optional.empty());
-        aiPreferences.addListenerToApiBaseUrls(() -> langchainChatModel = Optional.empty());
-        aiPreferences.setApiKeyChangeListener(() -> langchainChatModel = Optional.empty());
-    }
-
-    public ChatModelInfo getChatModelInfo() {
-        assert langchainChatModel.isPresent();
-        return new ChatModelInfo(
-                langchainChatModel.get(),
-                currentlySelectedTokenEstimationStrategy,
-                aiPreferences.getAiProvider(),
-                aiPreferences.getSelectedChatModel(),
-                aiPreferences.getContextWindowSize()
-        );
+        aiPreferences.addListenerToChatModels(() -> langchainChatModel = null);
+        aiPreferences.addListenerToApiBaseUrls(() -> langchainChatModel = null);
+        aiPreferences.setApiKeyChangeListener(() -> langchainChatModel = null);
     }
 
     @Override
@@ -146,25 +134,45 @@ public class CurrentlySelectedChatLanguageModel implements ChatModel, AutoClosea
         //    in the result type, nor "throws" in method signature. Actually,
         //    it's possible, but langchain4j doesn't do it.
 
-        if (langchainChatModel.isEmpty()) {
+        if (langchainChatModel == null) {
             if (!aiPreferences.getEnableAi()) {
                 throw new RuntimeException(Localization.lang("In order to use AI chat, you need to enable chatting with attached PDF files in JabRef preferences (AI tab)."));
             } else if (aiPreferences.getApiKeyForAiProvider(aiPreferences.getAiProvider()).isEmpty() && aiPreferences.getAiProvider() != AiProvider.GPT4ALL) {
                 throw new RuntimeException(Localization.lang("In order to use AI chat, set an API key inside JabRef preferences (AI tab)."));
             } else {
                 rebuild();
-                if (langchainChatModel.isEmpty()) {
+                if (langchainChatModel == null) {
                     throw new RuntimeException(Localization.lang("Unable to chat with AI."));
                 }
             }
         }
 
-        return langchainChatModel.get().chat(list);
+        return langchainChatModel.chat(list);
     }
 
     @Override
     public void close() {
         httpClient.shutdownNow();
         executorService.shutdownNow();
+    }
+
+    @Override
+    public Tokenizer getTokenizer() {
+        return currentlySelectedTokenEstimationStrategy;
+    }
+
+    @Override
+    public AiProvider getAiProvider() {
+        return aiPreferences.getAiProvider();
+    }
+
+    @Override
+    public String getName() {
+        return aiPreferences.getSelectedChatModel();
+    }
+
+    @Override
+    public int getContextWindowSize() {
+        return aiPreferences.getContextWindowSize();
     }
 }
