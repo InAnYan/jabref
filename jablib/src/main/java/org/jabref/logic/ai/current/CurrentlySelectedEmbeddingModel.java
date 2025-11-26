@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.rag;
+package org.jabref.logic.ai.current;
 
 import java.util.List;
 import java.util.Optional;

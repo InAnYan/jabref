@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.templates;
+package org.jabref.logic.ai.current;
 
 import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageTemplate;
 import org.jabref.logic.ai.chatting.templates.ChattingUserMessageTemplate;

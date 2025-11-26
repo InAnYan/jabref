@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.customimplementations.tokenization;
+package org.jabref.logic.ai.current;
 
 import java.util.List;
 

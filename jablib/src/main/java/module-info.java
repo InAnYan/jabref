@@ -146,6 +146,7 @@ open module org.jabref.jablib {
     exports org.jabref.model.ai.summarization;
     exports org.jabref.model.ai.identifiers;
     exports org.jabref.model.ai.tokenization;
+    exports org.jabref.logic.ai.current;
     // endregion
 
     requires java.base;

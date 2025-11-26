@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.chatting;
+package org.jabref.logic.ai.current;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -11,7 +11,6 @@ import org.jabref.logic.ai.chatting.logic.AiChatLogic;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.customimplementations.llms.Gpt4AllModel;
 import org.jabref.logic.ai.customimplementations.llms.JvmOpenAiChatLanguageModel;
-import org.jabref.logic.ai.customimplementations.tokenization.CurrentlySelectedTokenEstimationStrategy;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.chatting.AiProvider;

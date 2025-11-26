@@ -9,8 +9,8 @@ import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.current.CurrentlySelectedEmbeddingModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.rag.CurrentlySelectedEmbeddingModel;
 import org.jabref.logic.l10n.Localization;
 
 import com.google.common.eventbus.Subscribe;

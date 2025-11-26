@@ -1,9 +1,8 @@
-package org.jabref.logic.ai.summarization;
+package org.jabref.logic.ai.current;
 
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.ChunkedSummarizationAlgorithm;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
-import org.jabref.logic.ai.templates.CurrentAiTemplates;
 import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.model.ai.chatting.ChatModelInfo;
 import org.jabref.model.ai.summarization.SummarizationAlgorithmName;
