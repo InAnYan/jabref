@@ -139,9 +139,6 @@ public class EntryChatHistoryService implements AutoCloseable {
     public void close() throws Exception {
         // We need to clone `bibEntriesChatHistory.keySet()` because closeChatHistoryForEntry() modifies the `bibEntriesChatHistory` map.
         new HashSet<>(bibEntriesChatHistory.keySet()).forEach(this::closeChatHistory);
-
-        // TODO: IT DOES NOT HAVE THE RIGHT TO CLOSE THIS.
-        entryChatHistoryRepository.close();
     }
 
     private void transferHistory(BibDatabaseContext bibDatabaseContext, BibEntry entry, String oldCitationKey, String newCitationKey) {

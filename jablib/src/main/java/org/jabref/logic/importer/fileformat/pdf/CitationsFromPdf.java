@@ -39,6 +39,8 @@ public class CitationsFromPdf {
             );
 
             return importer.importDatabase(path);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

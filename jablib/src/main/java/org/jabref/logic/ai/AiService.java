@@ -175,12 +175,15 @@ public class AiService implements AutoCloseable {
     }
 
     @Override
-    public void close() {
+    public void close() throws Exception {
         shutdownSignal.set(true);
 
         cachedThreadPool.shutdownNow();
         currentChatLanguageModel.close();
         currentEmbeddingModel.close();
+
+        entryChatHistoryService.close();
+        groupChatHistoryService.close();
 
         mvStoreChatHistoryStorage.close();
         mvStoreFullyIngestedDocumentsTracker.close();

@@ -120,8 +120,5 @@ public class GroupChatHistoryService implements AutoCloseable {
     public void close() throws Exception {
         // Clone is for the same reason, as written above.
         new HashSet<>(groupsChatHistory.keySet()).forEach(this::closeChatHistory);
-
-        // TODO: IT DOES NOT HAVE THE RIGHT TO CLOSE THIS.
-        groupChatHistoryRepository.close();
     }
 }
