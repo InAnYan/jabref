@@ -1,5 +1,6 @@
 package org.jabref.logic.ai.chatting.logic;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javafx.beans.property.SimpleBooleanProperty;
@@ -23,11 +24,7 @@ import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
-import dev.langchain4j.memory.ChatMemory;
-import dev.langchain4j.memory.chat.TokenWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
-import dev.langchain4j.model.openai.OpenAiChatModelName;
-import dev.langchain4j.model.openai.OpenAiTokenCountEstimator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +41,7 @@ public class AiChatLogic {
     private final StringProperty name;
     private final BibDatabaseContext bibDatabaseContext;
 
-    private ChatMemory chatMemory;
+    private final List<ChatMessage> chatMemory;
 
     private final AnswerEngine answerEngine;
 
@@ -69,8 +66,11 @@ public class AiChatLogic {
         this.bibDatabaseContext = bibDatabaseContext;
         this.answerEngine = answerEngine;
 
+        this.chatMemory = new ArrayList<>();
+        chatHistory.stream().filter(chatMessage -> !(chatMessage instanceof ErrorMessage)).forEach(chatMemory::add);
+        setSystemMessage(chattingSystemMessageTemplate.render(entries));
+
         setupListeningToPreferencesChanges();
-        rebuildFull(chatHistory);
     }
 
     private void setupListeningToPreferencesChanges() {
@@ -78,57 +78,25 @@ public class AiChatLogic {
                 .templateProperty(AiTemplate.CHATTING_SYSTEM_MESSAGE)
                 .addListener(obs ->
                         setSystemMessage(chattingSystemMessageTemplate.render(entries)));
-
-        aiPreferences.contextWindowSizeProperty().addListener(obs -> rebuildFull(chatMemory.messages()));
-    }
-
-    private void rebuildFull(List<ChatMessage> chatMessages) {
-        rebuildChatMemory(chatMessages);
-    }
-
-    private void rebuildChatMemory(List<ChatMessage> chatMessages) {
-        // TODO: remove this. No algorithm for squashing the conversation.
-        // Because we can't get a tokenizer for each model, {@link AiChatLogic} assumes that
-        // every text is tokenized like it's tokenized for OpenAI's GPT-4o-mini model.
-        //
-        // Reasons why we can't get tokenizer for each model:
-        // - Some tokenizers might not be available in langchain4j.
-        // - User may use a custom model, but there is no way to supply a custom tokenizer.
-        // - OpenAI API (and compatible ones) doesn't have an endpoint for tokenizing text.
-        //
-        // This is another dark workaround of AI integration. But it works "good-enough" for now.
-        this.chatMemory = TokenWindowChatMemory
-                .builder()
-                .maxTokens(aiPreferences.getContextWindowSize(), new OpenAiTokenCountEstimator(OpenAiChatModelName.GPT_4_O_MINI))
-                .build();
-
-        chatMessages.stream().filter(chatMessage -> !(chatMessage instanceof ErrorMessage)).forEach(chatMemory::add);
-
-        setSystemMessage(chattingSystemMessageTemplate.render(entries));
     }
 
     private void setSystemMessage(String systemMessage) {
-        chatMemory.add(new SystemMessage(systemMessage));
+        if (chatMemory.isEmpty()) {
+            chatMemory.add(new SystemMessage(systemMessage));
+        } else {
+            chatMemory.set(0, new SystemMessage(systemMessage));
+        }
     }
 
     public AiMessage execute(UserMessage message) {
-        // Message will be automatically added to ChatMemory through ConversationalRetrievalChain.
-
         chatHistory.add(message);
 
-        LOGGER.info("Sending message to AI provider ({}) for answering in {}: {}",
+        LOGGER.info(
+                "Sending message to AI provider ({}) for answering in {}: {}",
                 aiPreferences.getAiProvider().getApiUrl(),
                 name.get(),
-                message.singleText());
-
-
-        // This is crazy, but langchain4j {@link ChatMemory} does not allow to remove single messages.
-        ChatMemory tempChatMemory = TokenWindowChatMemory
-                .builder()
-                .maxTokens(aiPreferences.getContextWindowSize(), new OpenAiTokenCountEstimator(OpenAiChatModelName.GPT_4_O_MINI))
-                .build();
-
-        chatMemory.messages().forEach(tempChatMemory::add);
+                message.singleText()
+        );
 
         List<RelevantInformation> excerpts = answerEngine.process(
                 // TODO: think about this.
@@ -137,11 +105,11 @@ public class AiChatLogic {
                 entries.stream().map(entry -> new FullBibEntryAiIdentifier(bibDatabaseContext, entry)).toList()
         );
 
-        tempChatMemory.add(new UserMessage(chattingUserMessageTemplate.render(entries, message.singleText(), excerpts)));
-        chatMemory.add(message);
+        chatMemory.add(new UserMessage(chattingUserMessageTemplate.render(entries, message.singleText(), excerpts)));
 
-        AiMessage aiMessage = chatLanguageModel.chat(tempChatMemory.messages()).aiMessage();
+        AiMessage aiMessage = chatLanguageModel.chat(chatMemory).aiMessage();
 
+        chatMemory.set(chatMemory.size() - 1, message); // Removing excerpts from the chat history.
         chatMemory.add(aiMessage);
         chatHistory.add(aiMessage);
 
