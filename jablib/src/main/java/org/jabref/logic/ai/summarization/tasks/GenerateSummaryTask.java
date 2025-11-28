@@ -5,8 +5,8 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.SummariesService;
-import org.jabref.logic.ai.summarization.logic.PersistentBibEntrySummarizer;
-import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
+import org.jabref.logic.ai.summarization.logic.PersistentBibEntrySummarizator;
+import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.l10n.Localization;
@@ -35,7 +35,7 @@ public class GenerateSummaryTask extends BackgroundTask<BibEntrySummary> {
     private final String citationKey;
     private final ReadOnlyBooleanProperty shutdownSignal;
 
-    private final PersistentBibEntrySummarizer persistentBibEntrySummarizer;
+    private final PersistentBibEntrySummarizator persistentBibEntrySummarizator;
 
     private final ProgressCounter progressCounter = new ProgressCounter();
 
@@ -43,7 +43,7 @@ public class GenerateSummaryTask extends BackgroundTask<BibEntrySummary> {
             FilePreferences filePreferences,
             ChatModel chatModel,
             SummariesRepository summariesRepository,
-            SummarizationAlgorithm summarizationAlgorithm,
+            Summarizator summarizator,
             BibDatabaseContext bibDatabaseContext,
             BibEntry entry,
             ReadOnlyBooleanProperty shutdownSignal
@@ -54,10 +54,10 @@ public class GenerateSummaryTask extends BackgroundTask<BibEntrySummary> {
         this.citationKey = entry.getCitationKey().orElse("<no citation key>");
         this.shutdownSignal = shutdownSignal;
 
-        this.persistentBibEntrySummarizer = new PersistentBibEntrySummarizer(
+        this.persistentBibEntrySummarizator = new PersistentBibEntrySummarizator(
                 filePreferences,
                 summariesRepository,
-                summarizationAlgorithm
+                summarizator
         );
 
         configure();
@@ -79,7 +79,7 @@ public class GenerateSummaryTask extends BackgroundTask<BibEntrySummary> {
                 shutdownSignal
         );
 
-        BibEntrySummary bibEntrySummary = persistentBibEntrySummarizer.summarize(
+        BibEntrySummary bibEntrySummary = persistentBibEntrySummarizator.summarize(
                 chatModel,
                 longTaskInfo,
                 bibDatabaseContext,

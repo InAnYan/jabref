@@ -99,11 +99,11 @@ import org.jabref.logic.util.io.FileHistory;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.logic.xmp.XmpPreferences;
 import org.jabref.model.ai.chatting.AiProvider;
-import org.jabref.model.ai.embeddings.EmbeddingModel;
-import org.jabref.model.ai.rag.DocumentSplittingStrategy;
-import org.jabref.model.ai.summarization.SummarizationAlgorithmName;
+import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
+import org.jabref.model.ai.rag.DocumentSplitterKind;
+import org.jabref.model.ai.summarization.SummarizatorKind;
 import org.jabref.model.ai.templating.AiTemplate;
-import org.jabref.model.ai.tokenization.TokenEstimationStrategy;
+import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 import org.jabref.model.database.BibDatabaseMode;
 import org.jabref.model.entry.BibEntryPreferences;
 import org.jabref.model.entry.BibEntryType;
@@ -2050,12 +2050,12 @@ public class JabRefCliPreferences implements CliPreferences {
                 get(AI_GEMINI_API_BASE_URL),
                 get(AI_HUGGING_FACE_API_BASE_URL),
                 get(AI_GPT_4_ALL_API_BASE_URL),
-                SummarizationAlgorithmName.valueOf(get(AI_SUMMARIZATION_ALGORITHM)),
-                TokenEstimationStrategy.valueOf(get(AI_TOKEN_ESTIMATION_ALGORITHM)),
-                EmbeddingModel.valueOf(get(AI_EMBEDDING_MODEL)),
+                SummarizatorKind.valueOf(get(AI_SUMMARIZATION_ALGORITHM)),
+                TokenEstimatorKind.valueOf(get(AI_TOKEN_ESTIMATION_ALGORITHM)),
+                EmbeddingModelEnumeration.valueOf(get(AI_EMBEDDING_MODEL)),
                 getDouble(AI_TEMPERATURE),
                 getInt(AI_CONTEXT_WINDOW_SIZE),
-                DocumentSplittingStrategy.valueOf(get(AI_DOCUMENT_SPLITTING_STRATEGY)),
+                DocumentSplitterKind.valueOf(get(AI_DOCUMENT_SPLITTING_STRATEGY)),
                 getInt(AI_DOCUMENT_SPLITTER_CHUNK_SIZE),
                 getInt(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE),
                 getInt(AI_RAG_MAX_RESULTS_COUNT),

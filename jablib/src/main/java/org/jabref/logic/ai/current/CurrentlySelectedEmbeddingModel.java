@@ -9,8 +9,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 import org.jabref.logic.ai.customimplementations.embeddingmodels.DeepJavaEmbeddingModel;
+import org.jabref.logic.ai.pipeline.tasks.UpdateEmbeddingModelTask;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.rag.tasks.UpdateEmbeddingModelTask;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;

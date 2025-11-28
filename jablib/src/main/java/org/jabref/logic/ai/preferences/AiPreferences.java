@@ -18,11 +18,11 @@ import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.AiProvider;
-import org.jabref.model.ai.embeddings.EmbeddingModel;
-import org.jabref.model.ai.rag.DocumentSplittingStrategy;
-import org.jabref.model.ai.summarization.SummarizationAlgorithmName;
+import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
+import org.jabref.model.ai.rag.DocumentSplitterKind;
+import org.jabref.model.ai.summarization.SummarizatorKind;
 import org.jabref.model.ai.templating.AiTemplate;
-import org.jabref.model.ai.tokenization.TokenEstimationStrategy;
+import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
 import com.github.javakeyring.Keyring;
 import com.github.javakeyring.PasswordAccessException;
@@ -55,13 +55,13 @@ public class AiPreferences {
     private final StringProperty huggingFaceApiBaseUrl;
     private final StringProperty gpt4AllApiBaseUrl;
 
-    private final ObjectProperty<SummarizationAlgorithmName> defaultSummarizationAlgorithm;
-    private final ObjectProperty<TokenEstimationStrategy> tokenEstimationStrategy;
-    private final ObjectProperty<EmbeddingModel> embeddingModel;
+    private final ObjectProperty<SummarizatorKind> defaultSummarizationAlgorithm;
+    private final ObjectProperty<TokenEstimatorKind> tokenEstimationStrategy;
+    private final ObjectProperty<EmbeddingModelEnumeration> embeddingModel;
     private final DoubleProperty temperature;
     private final IntegerProperty contextWindowSize;
 
-    private final ObjectProperty<DocumentSplittingStrategy> documentSplittingStrategy;
+    private final ObjectProperty<DocumentSplitterKind> documentSplittingStrategy;
     private final IntegerProperty documentSplitterChunkSize;
     private final IntegerProperty documentSplitterOverlapSize;
 
@@ -88,12 +88,12 @@ public class AiPreferences {
             String geminiApiBaseUrl,
             String huggingFaceApiBaseUrl,
             String gpt4AllApiBaseUrl,
-            SummarizationAlgorithmName defaultSummarizationAlgorithm,
-            TokenEstimationStrategy tokenEstimationStrategy,
-            EmbeddingModel embeddingModel,
+            SummarizatorKind defaultSummarizationAlgorithm,
+            TokenEstimatorKind tokenEstimatorKind,
+            EmbeddingModelEnumeration embeddingModel,
             double temperature,
             int contextWindowSize,
-            DocumentSplittingStrategy documentSplittingStrategy,
+            DocumentSplitterKind documentSplitterKind,
             int documentSplitterChunkSize,
             int documentSplitterOverlapSize,
             int ragMaxResultsCount,
@@ -121,12 +121,12 @@ public class AiPreferences {
         this.gpt4AllApiBaseUrl = new SimpleStringProperty(gpt4AllApiBaseUrl);
 
         this.defaultSummarizationAlgorithm = new SimpleObjectProperty<>(defaultSummarizationAlgorithm);
-        this.tokenEstimationStrategy = new SimpleObjectProperty<>(tokenEstimationStrategy);
+        this.tokenEstimationStrategy = new SimpleObjectProperty<>(tokenEstimatorKind);
         this.embeddingModel = new SimpleObjectProperty<>(embeddingModel);
         this.temperature = new SimpleDoubleProperty(temperature);
         this.contextWindowSize = new SimpleIntegerProperty(contextWindowSize);
 
-        this.documentSplittingStrategy = new SimpleObjectProperty<>(documentSplittingStrategy);
+        this.documentSplittingStrategy = new SimpleObjectProperty<>(documentSplitterKind);
         this.documentSplitterChunkSize = new SimpleIntegerProperty(documentSplitterChunkSize);
         this.documentSplitterOverlapSize = new SimpleIntegerProperty(documentSplitterOverlapSize);
 
@@ -296,35 +296,35 @@ public class AiPreferences {
         this.customizeExpertSettings.set(customizeExpertSettings);
     }
 
-    public ObjectProperty<SummarizationAlgorithmName> defaultSummarizationAlgorithmProperty() {
+    public ObjectProperty<SummarizatorKind> defaultSummarizationAlgorithmProperty() {
         return defaultSummarizationAlgorithm;
     }
 
-    public SummarizationAlgorithmName getDefaultSummarizationAlgorithm() {
+    public SummarizatorKind getDefaultSummarizationAlgorithm() {
         return defaultSummarizationAlgorithm.get();
     }
 
-    public void setDefaultSummarizationAlgorithm(SummarizationAlgorithmName defaultSummarizationAlgorithm) {
+    public void setDefaultSummarizationAlgorithm(SummarizatorKind defaultSummarizationAlgorithm) {
         this.defaultSummarizationAlgorithm.set(defaultSummarizationAlgorithm);
     }
 
-    public ObjectProperty<TokenEstimationStrategy> tokenEstimationStrategyProperty() {
+    public ObjectProperty<TokenEstimatorKind> tokenEstimationStrategyProperty() {
         return tokenEstimationStrategy;
     }
 
-    public TokenEstimationStrategy getTokenEstimationStrategy() {
+    public TokenEstimatorKind getTokenEstimationStrategy() {
         return tokenEstimationStrategy.get();
     }
 
-    public void setTokenEstimationStrategy(TokenEstimationStrategy tokenEstimationStrategy) {
-        this.tokenEstimationStrategy.set(tokenEstimationStrategy);
+    public void setTokenEstimationStrategy(TokenEstimatorKind tokenEstimatorKind) {
+        this.tokenEstimationStrategy.set(tokenEstimatorKind);
     }
 
-    public ObjectProperty<EmbeddingModel> embeddingModelProperty() {
+    public ObjectProperty<EmbeddingModelEnumeration> embeddingModelProperty() {
         return embeddingModel;
     }
 
-    public EmbeddingModel getEmbeddingModel() {
+    public EmbeddingModelEnumeration getEmbeddingModel() {
         if (getCustomizeExpertSettings()) {
             return embeddingModel.get();
         } else {
@@ -332,7 +332,7 @@ public class AiPreferences {
         }
     }
 
-    public void setEmbeddingModel(EmbeddingModel embeddingModel) {
+    public void setEmbeddingModel(EmbeddingModelEnumeration embeddingModel) {
         this.embeddingModel.set(embeddingModel);
     }
 
@@ -439,16 +439,16 @@ public class AiPreferences {
         this.contextWindowSize.set(contextWindowSize);
     }
 
-    public ObjectProperty<DocumentSplittingStrategy> documentSplittingStrategyProperty() {
+    public ObjectProperty<DocumentSplitterKind> documentSplittingStrategyProperty() {
         return documentSplittingStrategy;
     }
 
-    public DocumentSplittingStrategy getDocumentSplittingStrategy() {
+    public DocumentSplitterKind getDocumentSplittingStrategy() {
         return documentSplittingStrategy.get();
     }
 
-    public void setDocumentSplittingStrategy(DocumentSplittingStrategy documentSplittingStrategy) {
-        this.documentSplittingStrategy.set(documentSplittingStrategy);
+    public void setDocumentSplittingStrategy(DocumentSplitterKind documentSplitterKind) {
+        this.documentSplittingStrategy.set(documentSplitterKind);
     }
 
     public IntegerProperty documentSplitterChunkSizeProperty() {

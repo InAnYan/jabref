@@ -9,8 +9,8 @@ import javafx.collections.ObservableList;
 
 import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageTemplate;
 import org.jabref.logic.ai.chatting.templates.ChattingUserMessageTemplate;
+import org.jabref.logic.ai.pipeline.logic.EmbeddingsCleaner;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.rag.logic.EmbeddingsCleaner;
 import org.jabref.model.ai.chatting.ErrorMessage;
 import org.jabref.model.ai.rag.PaperExcerpt;
 import org.jabref.model.ai.templating.AiTemplate;

@@ -13,14 +13,14 @@ import org.jabref.logic.ai.current.CurrentAiTemplates;
 import org.jabref.logic.ai.current.CurrentlySelectedChatLanguageModel;
 import org.jabref.logic.ai.current.CurrentlySelectedDocumentSplitter;
 import org.jabref.logic.ai.current.CurrentlySelectedEmbeddingModel;
-import org.jabref.logic.ai.current.CurrentlySelectedSummarizationAlgorithm;
+import org.jabref.logic.ai.current.CurrentlySelectedSummarizator;
 import org.jabref.logic.ai.current.CurrentlySelectedTokenEstimationStrategy;
 import org.jabref.logic.ai.customimplementations.embeddingstores.MVStoreEmbeddingStore;
+import org.jabref.logic.ai.pipeline.IngestionService;
+import org.jabref.logic.ai.pipeline.repositories.MVStoreIngestedDocumentsRepository;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.rag.IngestionService;
-import org.jabref.logic.ai.rag.repositories.MVStoreFullyIngestedDocumentsRepository;
 import org.jabref.logic.ai.summarization.SummariesService;
-import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
+import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.MVStoreSummariesRepository;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
 import org.jabref.logic.util.Directories;
@@ -56,7 +56,7 @@ public class AiService implements AutoCloseable {
 
     private final MVStoreChatHistoryRepository mvStoreChatHistoryStorage;
     private final MVStoreEmbeddingStore mvStoreEmbeddingStore;
-    private final MVStoreFullyIngestedDocumentsRepository mvStoreFullyIngestedDocumentsTracker;
+    private final MVStoreIngestedDocumentsRepository mvStoreFullyIngestedDocumentsTracker;
     private final MVStoreSummariesRepository mvStoreSummariesStorage;
 
     private final CurrentAiTemplates currentAiTemplates;
@@ -65,7 +65,7 @@ public class AiService implements AutoCloseable {
     private final CurrentlySelectedTokenEstimationStrategy currentlySelectedTokenEstimationStrategy;
     private final CurrentlySelectedChatLanguageModel currentlySelectedChatLanguageModel;
     private final CurrentlySelectedEmbeddingModel currentlySelectedEmbeddingModel;
-    private final CurrentlySelectedSummarizationAlgorithm currentlySelectedSummarizationAlgorithm;
+    private final CurrentlySelectedSummarizator currentlySelectedSummarizationAlgorithm;
     private final IngestionService ingestionService;
     private final SummariesService summariesService;
 
@@ -79,7 +79,7 @@ public class AiService implements AutoCloseable {
 
         this.mvStoreChatHistoryStorage = new MVStoreChatHistoryRepository(notificationService, Directories.getAiFilesDirectory().resolve(CHAT_HISTORY_FILE_NAME));
         this.mvStoreEmbeddingStore = new MVStoreEmbeddingStore(Directories.getAiFilesDirectory().resolve(EMBEDDINGS_FILE_NAME), notificationService);
-        this.mvStoreFullyIngestedDocumentsTracker = new MVStoreFullyIngestedDocumentsRepository(notificationService, Directories.getAiFilesDirectory().resolve(FULLY_INGESTED_FILE_NAME));
+        this.mvStoreFullyIngestedDocumentsTracker = new MVStoreIngestedDocumentsRepository(notificationService, Directories.getAiFilesDirectory().resolve(FULLY_INGESTED_FILE_NAME));
         this.mvStoreSummariesStorage = new MVStoreSummariesRepository(notificationService, Directories.getAiFilesDirectory().resolve(SUMMARIES_FILE_NAME));
 
         this.currentAiTemplates = new CurrentAiTemplates(aiPreferences);
@@ -89,7 +89,7 @@ public class AiService implements AutoCloseable {
         this.currentlySelectedTokenEstimationStrategy = new CurrentlySelectedTokenEstimationStrategy(aiPreferences);
         this.currentlySelectedChatLanguageModel = new CurrentlySelectedChatLanguageModel(aiPreferences, currentlySelectedTokenEstimationStrategy);
         this.currentlySelectedEmbeddingModel = new CurrentlySelectedEmbeddingModel(aiPreferences, notificationService, taskExecutor);
-        this.currentlySelectedSummarizationAlgorithm = new CurrentlySelectedSummarizationAlgorithm(aiPreferences, currentAiTemplates);
+        this.currentlySelectedSummarizationAlgorithm = new CurrentlySelectedSummarizator(aiPreferences, currentAiTemplates);
 
         this.ingestionService = new IngestionService(
                 aiPreferences,
@@ -145,7 +145,7 @@ public class AiService implements AutoCloseable {
         return mvStoreEmbeddingStore;
     }
 
-    public SummarizationAlgorithm getSummarizationAlgorithm() {
+    public Summarizator getSummarizationAlgorithm() {
         return currentlySelectedSummarizationAlgorithm;
     }
 

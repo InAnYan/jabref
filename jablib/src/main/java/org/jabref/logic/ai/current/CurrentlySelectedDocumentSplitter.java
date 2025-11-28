@@ -2,19 +2,19 @@ package org.jabref.logic.ai.current;
 
 import java.util.stream.Stream;
 
+import org.jabref.logic.ai.pipeline.logic.documentsplitting.DocumentSplitter;
+import org.jabref.logic.ai.pipeline.logic.documentsplitting.SlidingWindowDocumentSplitter;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.rag.logic.documentsplitting.DocumentSplitterAlgorithm;
-import org.jabref.logic.ai.rag.logic.documentsplitting.SlidingWindowDocumentSplitter;
 import org.jabref.logic.ai.util.LongTaskInfo;
-import org.jabref.model.ai.rag.DocumentSplittingStrategy;
+import org.jabref.model.ai.rag.DocumentSplitterKind;
 
 import org.jspecify.annotations.Nullable;
 
-public class CurrentlySelectedDocumentSplitter implements DocumentSplitterAlgorithm {
+public class CurrentlySelectedDocumentSplitter implements DocumentSplitter {
     private final AiPreferences aiPreferences;
 
     @Nullable
-    private DocumentSplitterAlgorithm documentSplitterAlgorithm = null;
+    private DocumentSplitter documentSplitter = null;
 
     public CurrentlySelectedDocumentSplitter(AiPreferences aiPreferences) {
         this.aiPreferences = aiPreferences;
@@ -34,8 +34,8 @@ public class CurrentlySelectedDocumentSplitter implements DocumentSplitterAlgori
         // Because in the future there will be more strategies.
         //noinspection SwitchStatementWithTooFewBranches
         switch (aiPreferences.getDocumentSplittingStrategy()) {
-            case DocumentSplittingStrategy.SLIDING_WINDOW -> {
-                documentSplitterAlgorithm = new SlidingWindowDocumentSplitter(
+            case DocumentSplitterKind.SLIDING_WINDOW -> {
+                documentSplitter = new SlidingWindowDocumentSplitter(
                         aiPreferences.getDocumentSplitterChunkSize(),
                         aiPreferences.getDocumentSplitterOverlapSize()
                 );
@@ -45,20 +45,20 @@ public class CurrentlySelectedDocumentSplitter implements DocumentSplitterAlgori
 
     @Override
     public Stream<String> split(LongTaskInfo longTaskInfo, String text) throws InterruptedException {
-        if (documentSplitterAlgorithm == null) {
+        if (documentSplitter == null) {
             return Stream.of(text);
         }
 
-        return documentSplitterAlgorithm.split(longTaskInfo, text);
+        return documentSplitter.split(longTaskInfo, text);
     }
 
     @Override
-    public DocumentSplittingStrategy getStrategy() {
-        if (documentSplitterAlgorithm == null) {
+    public DocumentSplitterKind getKind() {
+        if (documentSplitter == null) {
             // Unfortunately.
             return null;
         }
 
-        return documentSplitterAlgorithm.getStrategy();
+        return documentSplitter.getKind();
     }
 }

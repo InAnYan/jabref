@@ -9,7 +9,7 @@ import org.jabref.logic.ai.customimplementations.tokenization.algorithms.Maximum
 import org.jabref.logic.ai.customimplementations.tokenization.algorithms.MinimumTokenizer;
 import org.jabref.logic.ai.customimplementations.tokenization.algorithms.Tokenizer;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.model.ai.tokenization.TokenEstimationStrategy;
+import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
 import dev.langchain4j.data.message.ChatMessage;
 import org.jspecify.annotations.Nullable;
@@ -37,11 +37,11 @@ public class CurrentlySelectedTokenEstimationStrategy implements Tokenizer {
 
     private void createTokenizer() {
         switch (aiPreferences.getTokenEstimationStrategy()) {
-            case TokenEstimationStrategy.AVERAGE -> tokenizer = new AverageTokenizer();
-            case TokenEstimationStrategy.MAX -> tokenizer = new MaximumTokenizer();
-            case TokenEstimationStrategy.MIN -> tokenizer = new MinimumTokenizer();
-            case TokenEstimationStrategy.CHARS -> tokenizer = new ByCharacterTokenizer();
-            case TokenEstimationStrategy.WORDS -> tokenizer = new ByWordsTokenizer();
+            case TokenEstimatorKind.AVERAGE -> tokenizer = new AverageTokenizer();
+            case TokenEstimatorKind.MAX -> tokenizer = new MaximumTokenizer();
+            case TokenEstimatorKind.MIN -> tokenizer = new MinimumTokenizer();
+            case TokenEstimatorKind.CHARS -> tokenizer = new ByCharacterTokenizer();
+            case TokenEstimatorKind.WORDS -> tokenizer = new ByWordsTokenizer();
         }
     }
 
@@ -64,12 +64,12 @@ public class CurrentlySelectedTokenEstimationStrategy implements Tokenizer {
     }
 
     @Override
-    public TokenEstimationStrategy getEstimationStrategy() {
+    public TokenEstimatorKind getKind() {
         // Sadly.
         if (tokenizer == null) {
             return null;
         }
 
-        return tokenizer.getEstimationStrategy();
+        return tokenizer.getKind();
     }
 }

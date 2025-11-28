@@ -9,7 +9,7 @@ public record BibEntrySummary(
         LocalDateTime timestamp,
         AiProvider aiProvider,
         String model,
-        SummarizationAlgorithmName summarizationAlgorithm,
+        SummarizatorKind summarizationAlgorithm,
         String content
 ) implements Serializable {
 }

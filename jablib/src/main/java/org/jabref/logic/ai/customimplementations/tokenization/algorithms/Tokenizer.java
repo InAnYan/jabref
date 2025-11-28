@@ -2,7 +2,7 @@ package org.jabref.logic.ai.customimplementations.tokenization.algorithms;
 
 import java.util.List;
 
-import org.jabref.model.ai.tokenization.TokenEstimationStrategy;
+import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
 import dev.langchain4j.data.message.ChatMessage;
 
@@ -11,5 +11,5 @@ public interface Tokenizer {
 
     int estimate(List<? extends ChatMessage> messages);
 
-    TokenEstimationStrategy getEstimationStrategy();
+    TokenEstimatorKind getKind();
 }

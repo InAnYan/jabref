@@ -11,7 +11,7 @@ import javafx.util.Pair;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
-import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.SummarizationAlgorithm;
+import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
@@ -39,7 +39,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
     private final BibDatabaseContext bibDatabaseContext;
     private final SummariesRepository summariesRepository;
     private final ChatModel chatModel;
-    private final SummarizationAlgorithm summarizationAlgorithm;
+    private final Summarizator summarizator;
     private final ReadOnlyBooleanProperty shutdownSignal;
     private final FilePreferences filePreferences;
     private final TaskExecutor taskExecutor;
@@ -53,7 +53,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
             TaskExecutor taskExecutor,
             ChatModel chatModel,
             SummariesRepository summariesRepository,
-            SummarizationAlgorithm summarizationAlgorithm,
+            Summarizator summarizator,
             BibDatabaseContext bibDatabaseContext,
             StringProperty groupName,
             List<ProcessingInfo<BibEntry, BibEntrySummary>> entries,
@@ -64,7 +64,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
         this.bibDatabaseContext = bibDatabaseContext;
         this.summariesRepository = summariesRepository;
         this.chatModel = chatModel;
-        this.summarizationAlgorithm = summarizationAlgorithm;
+        this.summarizator = summarizator;
         this.shutdownSignal = shutdownSignal;
         this.filePreferences = filePreferences;
         this.taskExecutor = taskExecutor;
@@ -97,7 +97,7 @@ public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
                                     filePreferences,
                                     chatModel,
                                     summariesRepository,
-                                    summarizationAlgorithm,
+                                    summarizator,
                                     bibDatabaseContext,
                                     processingInfo.getObject(),
                                     shutdownSignal

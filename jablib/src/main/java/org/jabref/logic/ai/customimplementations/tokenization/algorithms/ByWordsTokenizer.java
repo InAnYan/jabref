@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.jabref.logic.ai.util.ChatMessagesUtil;
-import org.jabref.model.ai.tokenization.TokenEstimationStrategy;
+import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
 import dev.langchain4j.data.message.ChatMessage;
 
@@ -33,7 +33,7 @@ public class ByWordsTokenizer implements Tokenizer {
     }
 
     @Override
-    public TokenEstimationStrategy getEstimationStrategy() {
+    public TokenEstimatorKind getKind() {
         return null;
     }
 }

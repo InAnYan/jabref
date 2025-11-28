@@ -29,7 +29,7 @@ import org.jabref.logic.util.LocalizedNumbers;
 import org.jabref.logic.util.OptionalObjectProperty;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.AiProvider;
-import org.jabref.model.ai.embeddings.EmbeddingModel;
+import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
 import org.jabref.model.ai.templating.AiTemplate;
 
 import de.saxsys.mvvmfx.utils.validation.FunctionBasedValidator;
@@ -71,9 +71,9 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
     private final BooleanProperty customizeExpertSettings = new SimpleBooleanProperty();
 
-    private final ListProperty<EmbeddingModel> embeddingModelsList =
-            new SimpleListProperty<>(FXCollections.observableArrayList(EmbeddingModel.values()));
-    private final ObjectProperty<EmbeddingModel> selectedEmbeddingModel = new SimpleObjectProperty<>();
+    private final ListProperty<EmbeddingModelEnumeration> embeddingModelsList =
+            new SimpleListProperty<>(FXCollections.observableArrayList(EmbeddingModelEnumeration.values()));
+    private final ObjectProperty<EmbeddingModelEnumeration> selectedEmbeddingModel = new SimpleObjectProperty<>();
 
     private final StringProperty currentApiBaseUrl = new SimpleStringProperty();
     private final BooleanProperty disableApiBaseUrl = new SimpleBooleanProperty(true); // {@link HuggingFaceChatModel} and {@link GoogleAiGeminiChatModel} doesn't support setting API base URL
@@ -513,11 +513,11 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         return customizeExpertSettings;
     }
 
-    public ReadOnlyListProperty<EmbeddingModel> embeddingModelsProperty() {
+    public ReadOnlyListProperty<EmbeddingModelEnumeration> embeddingModelsProperty() {
         return embeddingModelsList;
     }
 
-    public ObjectProperty<EmbeddingModel> selectedEmbeddingModelProperty() {
+    public ObjectProperty<EmbeddingModelEnumeration> selectedEmbeddingModelProperty() {
         return selectedEmbeddingModel;
     }
 
