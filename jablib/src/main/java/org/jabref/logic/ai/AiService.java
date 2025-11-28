@@ -7,7 +7,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.chatting.ChatHistoryService;
+import org.jabref.logic.ai.chatting.EntryChatHistoryService;
+import org.jabref.logic.ai.chatting.GroupChatHistoryService;
 import org.jabref.logic.ai.chatting.repositories.MVStoreChatHistoryRepository;
 import org.jabref.logic.ai.current.CurrentAiTemplates;
 import org.jabref.logic.ai.current.CurrentAnswerEngine;
@@ -61,7 +62,8 @@ public class AiService implements AutoCloseable {
     private final MVStoreSummariesRepository mvStoreSummariesStorage;
 
     private final CurrentAiTemplates currentAiTemplates;
-    private final ChatHistoryService chatHistoryService;
+    private final EntryChatHistoryService entryChatHistoryService;
+    private final GroupChatHistoryService groupChatHistoryService;
     private final CurrentDocumentSplitter currentDocumentSplitter;
     private final CurrentTokenEstimator currentTokenEstimator;
     private final CurrentChatLanguageModel currentChatLanguageModel;
@@ -85,7 +87,8 @@ public class AiService implements AutoCloseable {
         this.mvStoreSummariesStorage = new MVStoreSummariesRepository(notificationService, Directories.getAiFilesDirectory().resolve(SUMMARIES_FILE_NAME));
 
         this.currentAiTemplates = new CurrentAiTemplates(aiPreferences);
-        this.chatHistoryService = new ChatHistoryService(citationKeyPatternPreferences, mvStoreChatHistoryStorage);
+        this.entryChatHistoryService = new EntryChatHistoryService(citationKeyPatternPreferences, mvStoreChatHistoryStorage);
+        this.groupChatHistoryService = new GroupChatHistoryService(mvStoreChatHistoryStorage);
 
         this.currentDocumentSplitter = new CurrentDocumentSplitter(aiPreferences);
         this.currentTokenEstimator = new CurrentTokenEstimator(aiPreferences);
@@ -128,8 +131,12 @@ public class AiService implements AutoCloseable {
         return currentEmbeddingModel;
     }
 
-    public ChatHistoryService getChatHistoryService() {
-        return chatHistoryService;
+    public EntryChatHistoryService getEntryChatHistoryService() {
+        return entryChatHistoryService;
+    }
+
+    public GroupChatHistoryService getGroupChatHistoryService() {
+        return groupChatHistoryService;
     }
 
     public IngestionService getIngestionService() {
@@ -161,7 +168,8 @@ public class AiService implements AutoCloseable {
     }
 
     public void setupDatabase(BibDatabaseContext context) {
-        chatHistoryService.setupDatabase(context);
+        entryChatHistoryService.setupDatabase(context);
+        groupChatHistoryService.setupDatabase(context);
         ingestionService.setupDatabase(context);
         summariesService.setupDatabase(context);
     }

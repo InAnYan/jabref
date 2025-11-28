@@ -34,7 +34,7 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
  * Use this class in the logic and UI.
  */
 public class IngestionService {
-    // We use a {@link TreeMap} here for the same reasons we use it in {@link ChatHistoryService}.
+    // We use a {@link TreeMap} here for the same reasons we use it in {@link EntryChatHistoryService}.
     private final TreeMap<LinkedFile, ProcessingInfo<LinkedFile, Void>> ingestionStatusMap = new TreeMap<>(Comparator.comparing(LinkedFile::getLink));
 
     private final List<List<LinkedFile>> listsUnderIngestion = new ArrayList<>();

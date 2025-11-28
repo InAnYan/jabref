@@ -74,7 +74,7 @@ public class AiChatTab extends EntryEditorTab {
      */
     @Override
     protected void bindToEntry(BibEntry entry) {
-        previousBibEntry.ifPresent(previousBibEntry -> aiService.getChatHistoryService().closeChatHistoryForEntry(previousBibEntry));
+        previousBibEntry.ifPresent(previousBibEntry -> aiService.getEntryChatHistoryService().closeChatHistory(previousBibEntry));
         previousBibEntry = Optional.of(entry);
         BibDatabaseContext bibDatabaseContext = stateManager.getActiveDatabase().orElse(new BibDatabaseContext());
 
@@ -135,7 +135,7 @@ public class AiChatTab extends EntryEditorTab {
 
         setContent(new AiChatGuardedComponent(
                 chatName,
-                aiService.getChatHistoryService().getChatHistoryForEntry(bibDatabaseContext, entry),
+                aiService.getEntryChatHistoryService().getChatHistory(bibDatabaseContext, entry),
                 bibDatabaseContext,
                 FXCollections.observableArrayList(new ArrayList<>(List.of(entry))),
                 aiService,
