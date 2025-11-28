@@ -124,6 +124,9 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.customimplementations.llms;
     exports org.jabref.logic.ai.pipeline;
     exports org.jabref.logic.ai.pipeline.logic.documentsplitting;
+    exports org.jabref.logic.ai.pipeline.logic.ingestion;
+    exports org.jabref.logic.ai.pipeline.logic.parsing;
+    exports org.jabref.logic.ai.pipeline.logic.rag;
     exports org.jabref.logic.ai.summarization.tasks;
     exports org.jabref.logic.ai.summarization.repositories;
     exports org.jabref.logic.ai.summarization.templates;
@@ -295,6 +298,5 @@ open module org.jabref.jablib {
     requires org.jooq.jool;
     requires org.libreoffice.uno;
     requires transitive org.jspecify;
-    requires org.jabref.jablib;
     // endregion
 }

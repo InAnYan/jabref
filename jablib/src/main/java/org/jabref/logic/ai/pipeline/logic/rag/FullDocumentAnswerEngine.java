@@ -1,15 +1,49 @@
 package org.jabref.logic.ai.pipeline.logic.rag;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.jabref.logic.FilePreferences;
+import org.jabref.logic.ai.pipeline.logic.parsing.UniversalContentParser;
+import org.jabref.logic.ai.util.LongTaskInfo;
+import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
-import org.jabref.model.entry.BibEntry;
 
 public class FullDocumentAnswerEngine implements AnswerEngine {
+    private final FilePreferences filePreferences;
+
+    // TODO: Add dependency on parsing.
+    private final UniversalContentParser universalContentParser = new UniversalContentParser();
+
+    public FullDocumentAnswerEngine(FilePreferences filePreferences) {
+        this.filePreferences = filePreferences;
+    }
+
     @Override
-    public List<RelevantInformation> process(String query, List<BibEntry> bibEntriesFilter) {
-        return List.of();
+    public List<RelevantInformation> process(
+            LongTaskInfo longTaskInfo,
+            String query,
+            List<FullBibEntryAiIdentifier> entriesFilter
+    ) {
+        // Look at this!
+        return entriesFilter
+                .stream()
+                .flatMap(entryIdentifier ->
+                        entryIdentifier
+                                .entry()
+                                .getFiles()
+                                .stream()
+                                .map(linkedFile ->
+                                        linkedFile
+                                                .findIn(entryIdentifier.databaseContext(), filePreferences)
+                                                .flatMap(p -> universalContentParser.parse(longTaskInfo, p))
+                                                .map(c -> new RelevantInformation(List.of(linkedFile.getLink()), c))
+                                )
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
+                )
+                .toList();
     }
 
     @Override

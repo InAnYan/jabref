@@ -1,23 +1,127 @@
 package org.jabref.logic.ai.pipeline.logic.rag;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.jabref.logic.ai.pipeline.logic.EmbeddingsCleaner;
+import org.jabref.logic.ai.util.LongTaskInfo;
+import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.LinkedFile;
+import org.jabref.model.util.ListUtil;
+
+import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.store.embedding.EmbeddingMatch;
+import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
+import dev.langchain4j.store.embedding.EmbeddingSearchResult;
+import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.store.embedding.filter.Filter;
+import dev.langchain4j.store.embedding.filter.MetadataFilterBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmbeddingsSearchAnswerEngine.class);
+
+    private final EmbeddingModel embeddingModel;
+    private final EmbeddingStore<TextSegment> embeddingStore;
     private final double minimumScore;
     private final int maximumResultsCount;
 
-    public EmbeddingsSearchAnswerEngine(double minimumScore, int maximumResultsCount) {
+    public EmbeddingsSearchAnswerEngine(
+            EmbeddingModel embeddingModel,
+            EmbeddingStore<TextSegment> embeddingStore,
+            double minimumScore,
+            int maximumResultsCount
+    ) {
+        this.embeddingModel = embeddingModel;
+        this.embeddingStore = embeddingStore;
         this.minimumScore = minimumScore;
         this.maximumResultsCount = maximumResultsCount;
     }
 
     @Override
-    public List<RelevantInformation> process(String query, List<BibEntry> bibEntriesFilter) {
-        return List.of();
+    public List<RelevantInformation> process(
+            LongTaskInfo longTaskInfo,
+            String query,
+            List<FullBibEntryAiIdentifier> entriesFilter
+    ) {
+        // TODO: Simplify.
+
+        List<BibEntry> entries = entriesFilter
+                .stream()
+                .map(FullBibEntryAiIdentifier::entry)
+                .toList();
+
+        List<LinkedFile> linkedFiles = ListUtil.getLinkedFiles(entries).toList();
+
+        Optional<Filter> filter;
+        if (linkedFiles.isEmpty()) {
+            filter = Optional.empty();
+        } else {
+            filter = Optional.of(MetadataFilterBuilder
+                    .metadataKey(EmbeddingsCleaner.LINK_METADATA_KEY)
+                    .isIn(linkedFiles
+                            .stream()
+                            .map(LinkedFile::getLink)
+                            .toList()
+                    ));
+        }
+
+        EmbeddingSearchRequest embeddingSearchRequest = EmbeddingSearchRequest
+                .builder()
+                .maxResults(maximumResultsCount)
+                .minScore(minimumScore)
+                .filter(filter.orElse(null))
+                .queryEmbedding(embeddingModel.embed(query).content())
+                .build();
+
+        EmbeddingSearchResult<TextSegment> embeddingSearchResult = embeddingStore.search(embeddingSearchRequest);
+
+        List<RelevantInformation> excerpts = embeddingSearchResult
+                .matches()
+                .stream()
+                .map(EmbeddingMatch::embedded)
+                .map(textSegment -> {
+                    String link = textSegment.metadata().getString(EmbeddingsCleaner.LINK_METADATA_KEY);
+
+                    if (link == null) {
+                        return new RelevantInformation(List.of(), textSegment.text());
+                    } else {
+                        return new RelevantInformation(List.of(findEntryByLink(entriesFilter, link).flatMap(BibEntry::getCitationKey).orElse("")), textSegment.text());
+                    }
+                })
+                .toList();
+
+        LOGGER.debug("Found excerpts for the message: {}", excerpts);
+
+        return excerpts;
+    }
+
+    private Optional<BibEntry> findEntryByLink(List<FullBibEntryAiIdentifier> entries, String link) {
+        // TODO: Simplify??
+        return entries
+                .stream()
+                .flatMap(identifier ->
+                        identifier
+                                .databaseContext()
+                                .getEntries()
+                                .stream()
+                                .filter(entry ->
+                                        entry
+                                                .getFiles()
+                                                .stream()
+                                                .anyMatch(file ->
+                                                        file
+                                                                .getLink().
+                                                                equals(link)
+                                                )
+                                )
+                )
+                .findFirst();
     }
 
     @Override

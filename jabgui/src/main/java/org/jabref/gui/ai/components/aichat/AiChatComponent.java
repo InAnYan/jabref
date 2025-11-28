@@ -102,14 +102,13 @@ public class AiChatComponent extends VBox {
         this.aiChatLogic = new AiChatLogic(
                 aiPreferences,
                 aiService.getChatLanguageModel(),
-                aiService.getEmbeddingModel(),
-                aiService.getEmbeddingStore(),
                 aiService.getCurrentAiTemplates().getChattingSystemMessageTemplate(),
                 aiService.getCurrentAiTemplates().getChattingUserMessageTemplate(),
                 bibDatabaseContext,
                 chatHistory,
                 entries,
-                name
+                name,
+                aiService.getAnswerEngine()
         );
 
         aiService.getIngestionService().ingest(name, ListUtil.getLinkedFiles(entries).toList(), bibDatabaseContext);

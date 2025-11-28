@@ -92,7 +92,7 @@ public class AiService implements AutoCloseable {
         this.currentChatLanguageModel = new CurrentChatLanguageModel(aiPreferences, currentTokenEstimator);
         this.currentEmbeddingModel = new CurrentEmbeddingModel(aiPreferences, notificationService, taskExecutor);
         this.currentSummarizator = new CurrentSummarizator(aiPreferences, currentAiTemplates);
-        this.currentAnswerEngine = new CurrentAnswerEngine(aiPreferences);
+        this.currentAnswerEngine = new CurrentAnswerEngine(aiPreferences, filePreferences, currentEmbeddingModel, mvStoreEmbeddingStore);
 
         this.ingestionService = new IngestionService(
                 aiPreferences,

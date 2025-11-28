@@ -54,6 +54,6 @@ public class CurrentDocumentSplitter implements DocumentSplitter {
 
     @Override
     public DocumentSplitterKind getKind() {
-        aiPreferences.getDocumentSplitterKind();
+        return aiPreferences.getDocumentSplitterKind();
     }
 }

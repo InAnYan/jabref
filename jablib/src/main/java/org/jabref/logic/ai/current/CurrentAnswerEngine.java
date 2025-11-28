@@ -2,24 +2,42 @@ package org.jabref.logic.ai.current;
 
 import java.util.List;
 
+import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.pipeline.logic.rag.AnswerEngine;
 import org.jabref.logic.ai.pipeline.logic.rag.EmbeddingsSearchAnswerEngine;
 import org.jabref.logic.ai.pipeline.logic.rag.FullDocumentAnswerEngine;
 import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.logic.ai.util.LongTaskInfo;
+import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
-import org.jabref.model.entry.BibEntry;
 
+import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.store.embedding.EmbeddingStore;
 import jakarta.annotation.Nullable;
 
 public class CurrentAnswerEngine implements AnswerEngine {
     private final AiPreferences aiPreferences;
+    private final FilePreferences filePreferences;
+
+    private final EmbeddingModel embeddingModel;
+    private final EmbeddingStore<TextSegment> embeddingStore;
 
     @Nullable
     private AnswerEngine answerEngine = null;
 
-    public CurrentAnswerEngine(AiPreferences aiPreferences) {
+    public CurrentAnswerEngine(
+            AiPreferences aiPreferences,
+            FilePreferences filePreferences,
+            EmbeddingModel embeddingModel,
+            EmbeddingStore<TextSegment> embeddingStore
+    ) {
         this.aiPreferences = aiPreferences;
+        this.filePreferences = filePreferences;
+
+        this.embeddingModel = embeddingModel;
+        this.embeddingStore = embeddingStore;
 
         update();
         configure();
@@ -29,12 +47,14 @@ public class CurrentAnswerEngine implements AnswerEngine {
         switch (aiPreferences.getAnswerEngineKind()) {
             case AnswerEngineKind.EMBEDDINGS_SEARCH ->
                     answerEngine = new EmbeddingsSearchAnswerEngine(
+                            embeddingModel,
+                            embeddingStore,
                             aiPreferences.getRagMinScore(),
                             aiPreferences.getRagMaxResultsCount()
                     );
 
             case FULL_DOCUMENT ->
-                    answerEngine = new FullDocumentAnswerEngine();
+                    answerEngine = new FullDocumentAnswerEngine(filePreferences);
         }
     }
 
@@ -46,11 +66,15 @@ public class CurrentAnswerEngine implements AnswerEngine {
     }
 
     @Override
-    public List<RelevantInformation> process(String query, List<BibEntry> bibEntriesFilter) {
+    public List<RelevantInformation> process(
+            LongTaskInfo longTaskInfo,
+            String query,
+            List<FullBibEntryAiIdentifier> entriesFilter
+    ) {
         if (answerEngine == null) {
             return List.of();
         } else {
-            return answerEngine.process(query, bibEntriesFilter);
+            return answerEngine.process(longTaskInfo, query, entriesFilter);
         }
     }
 
