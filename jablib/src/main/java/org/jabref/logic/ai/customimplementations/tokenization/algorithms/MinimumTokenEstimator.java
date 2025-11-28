@@ -6,9 +6,9 @@ import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
 import dev.langchain4j.data.message.ChatMessage;
 
-public class MaximumTokenizer implements Tokenizer {
-    private final ByCharacterTokenizer byCharacterTokenizer = new ByCharacterTokenizer();
-    private final ByWordsTokenizer byWordsTokenizer = new ByWordsTokenizer();
+public class MinimumTokenEstimator implements TokenEstimator {
+    private final ByCharacterTokenEstimator byCharacterTokenizer = new ByCharacterTokenEstimator();
+    private final ByWordsTokenEstimator byWordsTokenizer = new ByWordsTokenEstimator();
 
     @Override
     public int estimate(ChatMessage message) {
@@ -27,11 +27,11 @@ public class MaximumTokenizer implements Tokenizer {
     }
 
     private int calculate(int byWords, int byCharacters) {
-        return Math.max(byWords, byCharacters);
+        return Math.min(byWords, byCharacters);
     }
 
     @Override
     public TokenEstimatorKind getKind() {
-        return TokenEstimatorKind.MAX;
+        return TokenEstimatorKind.MIN;
     }
 }

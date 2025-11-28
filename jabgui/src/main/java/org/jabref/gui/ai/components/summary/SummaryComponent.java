@@ -52,7 +52,7 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
         this.aiPreferences = aiPreferences;
 
         aiService.getSummariesService().summarize(
-                aiService.getSummarizationAlgorithm(),
+                aiService.getSummarizator(),
                 entry,
                 bibDatabaseContext
         ).stateProperty().addListener(o -> rebuildUi());
@@ -108,7 +108,7 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
     }
 
     private Node tryToShowSummary() {
-        ProcessingInfo<BibEntry, BibEntrySummary> processingInfo = aiService.getSummariesService().summarize(aiService.getSummarizationAlgorithm(), entry, bibDatabaseContext);
+        ProcessingInfo<BibEntry, BibEntrySummary> processingInfo = aiService.getSummariesService().summarize(aiService.getSummarizator(), entry, bibDatabaseContext);
 
         return switch (processingInfo.getState()) {
             case SUCCESS -> {
@@ -133,7 +133,7 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
                 Localization.lang("Got error while processing the file:"),
                 processingInfo.getException().get().getLocalizedMessage(),
                 Localization.lang("Regenerate"),
-                () -> aiService.getSummariesService().regenerateSummary(aiService.getSummarizationAlgorithm(), entry, bibDatabaseContext)
+                () -> aiService.getSummariesService().regenerateSummary(aiService.getSummarizator(), entry, bibDatabaseContext)
         );
     }
 
@@ -156,7 +156,7 @@ public class SummaryComponent extends AiPrivacyNoticeGuardedComponent {
                 return;
             }
 
-            aiService.getSummariesService().regenerateSummary(aiService.getSummarizationAlgorithm(), entry, bibDatabaseContext);
+            aiService.getSummariesService().regenerateSummary(aiService.getSummarizator(), entry, bibDatabaseContext);
             // No need to rebuildUi(), because this class listens to the state of ProcessingInfo of the bibEntrySummary.
         });
     }

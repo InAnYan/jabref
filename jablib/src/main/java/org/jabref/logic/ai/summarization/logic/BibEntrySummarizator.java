@@ -90,7 +90,7 @@ public class BibEntrySummarizator {
                 LocalDateTime.now(),
                 chatModel.getAiProvider(),
                 chatModel.getName(),
-                summarizator.getName(),
+                summarizator.getKind(),
                 finalSummary
         );
     }

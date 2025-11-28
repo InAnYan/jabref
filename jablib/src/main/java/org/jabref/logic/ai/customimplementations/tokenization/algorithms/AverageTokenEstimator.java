@@ -6,9 +6,9 @@ import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
 import dev.langchain4j.data.message.ChatMessage;
 
-public class AverageTokenizer implements Tokenizer {
-    private final ByCharacterTokenizer byCharacterTokenizer = new ByCharacterTokenizer();
-    private final ByWordsTokenizer byWordsTokenizer = new ByWordsTokenizer();
+public class AverageTokenEstimator implements TokenEstimator {
+    private final ByCharacterTokenEstimator byCharacterTokenizer = new ByCharacterTokenEstimator();
+    private final ByWordsTokenEstimator byWordsTokenizer = new ByWordsTokenEstimator();
 
     @Override
     public int estimate(ChatMessage message) {

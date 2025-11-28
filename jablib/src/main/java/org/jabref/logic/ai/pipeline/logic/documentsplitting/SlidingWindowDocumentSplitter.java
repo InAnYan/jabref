@@ -3,7 +3,7 @@ package org.jabref.logic.ai.pipeline.logic.documentsplitting;
 import java.util.stream.Stream;
 
 import org.jabref.logic.ai.util.LongTaskInfo;
-import org.jabref.model.ai.rag.DocumentSplitterKind;
+import org.jabref.model.ai.pipeline.DocumentSplitterKind;
 
 import dev.langchain4j.data.document.DefaultDocument;
 import dev.langchain4j.data.document.splitter.DocumentSplitters;

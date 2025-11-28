@@ -100,7 +100,8 @@ import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.logic.xmp.XmpPreferences;
 import org.jabref.model.ai.chatting.AiProvider;
 import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
-import org.jabref.model.ai.rag.DocumentSplitterKind;
+import org.jabref.model.ai.pipeline.AnswerEngineKind;
+import org.jabref.model.ai.pipeline.DocumentSplitterKind;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 import org.jabref.model.ai.templating.AiTemplate;
 import org.jabref.model.ai.tokenization.TokenEstimatorKind;
@@ -398,13 +399,14 @@ public class JabRefCliPreferences implements CliPreferences {
     private static final String AI_GEMINI_API_BASE_URL = "aiGeminiApiBaseUrl";
     private static final String AI_HUGGING_FACE_API_BASE_URL = "aiHuggingFaceApiBaseUrl";
     private static final String AI_GPT_4_ALL_API_BASE_URL = "aiGpt4AllApiBaseUrl";
-    private static final String AI_SUMMARIZATION_ALGORITHM = "aiSummarizationAlgorithm";
-    private static final String AI_TOKEN_ESTIMATION_ALGORITHM = "aiTokenEstimationAlgorithm";
+    private static final String AI_SUMMARIZATOR_KIND = "aiSummarizatorKind";
+    private static final String AI_TOKEN_ESTIMATOR_KIND = "aiTokenEstimatorKind";
     private static final String AI_TEMPERATURE = "aiTemperature";
     private static final String AI_CONTEXT_WINDOW_SIZE = "aiMessageWindowSize";
-    private static final String AI_DOCUMENT_SPLITTING_STRATEGY = "aiDocumentSplittingStrategy";
+    private static final String AI_DOCUMENT_SPLITTER_KIND = "aiDocumentSplitterKind";
     private static final String AI_DOCUMENT_SPLITTER_CHUNK_SIZE = "aiDocumentSplitterChunkSize";
     private static final String AI_DOCUMENT_SPLITTER_OVERLAP_SIZE = "aiDocumentSplitterOverlapSize";
+    private static final String AI_ANSWER_ENGINE_KIND = "aiAnswerEngineKind";
     private static final String AI_RAG_MAX_RESULTS_COUNT = "aiRagMaxResultsCount";
     private static final String AI_RAG_MIN_SCORE = "aiRagMinScore";
 
@@ -749,8 +751,8 @@ public class JabRefCliPreferences implements CliPreferences {
         defaults.put(AI_GEMINI_API_BASE_URL, AiProvider.GEMINI.getApiUrl());
         defaults.put(AI_HUGGING_FACE_API_BASE_URL, AiProvider.HUGGING_FACE.getApiUrl());
         defaults.put(AI_GPT_4_ALL_API_BASE_URL, AiProvider.GPT4ALL.getApiUrl());
-        defaults.put(AI_SUMMARIZATION_ALGORITHM, AiDefaultExpertSettings.SUMMARIZATION_ALGORITHM_NAME.name());
-        defaults.put(AI_TOKEN_ESTIMATION_ALGORITHM, AiDefaultExpertSettings.TOKEN_ESTIMATION_STRATEGY.name());
+        defaults.put(AI_SUMMARIZATOR_KIND, AiDefaultExpertSettings.SUMMARIZATOR_KIND.name());
+        defaults.put(AI_TOKEN_ESTIMATOR_KIND, AiDefaultExpertSettings.TOKEN_ESTIMATOR_KIND.name());
         defaults.put(AI_TEMPERATURE, AiDefaultExpertSettings.TEMPERATURE);
         defaults.put(AI_CONTEXT_WINDOW_SIZE,
                 PredefinedChatModel.getContextWindowSize(
@@ -758,9 +760,10 @@ public class JabRefCliPreferences implements CliPreferences {
                         AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.valueOf((String) defaults.get(AI_PROVIDER))).getName()
                 )
         );
-        defaults.put(AI_DOCUMENT_SPLITTING_STRATEGY, AiDefaultExpertSettings.DOCUMENT_SPLITTING_STRATEGY.name());
+        defaults.put(AI_DOCUMENT_SPLITTER_KIND, AiDefaultExpertSettings.DOCUMENT_SPLITTER_KIND.name());
         defaults.put(AI_DOCUMENT_SPLITTER_CHUNK_SIZE, AiDefaultExpertSettings.DOCUMENT_SPLITTER_CHUNK_SIZE);
         defaults.put(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE, AiDefaultExpertSettings.DOCUMENT_SPLITTER_OVERLAP_SIZE);
+        defaults.put(AI_ANSWER_ENGINE_KIND, AiDefaultExpertSettings.ANSWER_ENGINE_KIND.name());
         defaults.put(AI_RAG_MAX_RESULTS_COUNT, AiDefaultExpertSettings.RAG_MAX_RESULTS_COUNT);
         defaults.put(AI_RAG_MIN_SCORE, AiDefaultExpertSettings.RAG_MIN_SCORE);
 
@@ -2050,14 +2053,15 @@ public class JabRefCliPreferences implements CliPreferences {
                 get(AI_GEMINI_API_BASE_URL),
                 get(AI_HUGGING_FACE_API_BASE_URL),
                 get(AI_GPT_4_ALL_API_BASE_URL),
-                SummarizatorKind.valueOf(get(AI_SUMMARIZATION_ALGORITHM)),
-                TokenEstimatorKind.valueOf(get(AI_TOKEN_ESTIMATION_ALGORITHM)),
+                SummarizatorKind.valueOf(get(AI_SUMMARIZATOR_KIND)),
+                TokenEstimatorKind.valueOf(get(AI_TOKEN_ESTIMATOR_KIND)),
                 EmbeddingModelEnumeration.valueOf(get(AI_EMBEDDING_MODEL)),
                 getDouble(AI_TEMPERATURE),
                 getInt(AI_CONTEXT_WINDOW_SIZE),
-                DocumentSplitterKind.valueOf(get(AI_DOCUMENT_SPLITTING_STRATEGY)),
+                DocumentSplitterKind.valueOf(get(AI_DOCUMENT_SPLITTER_KIND)),
                 getInt(AI_DOCUMENT_SPLITTER_CHUNK_SIZE),
                 getInt(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE),
+                AnswerEngineKind.valueOf(get(AI_ANSWER_ENGINE_KIND)),
                 getInt(AI_RAG_MAX_RESULTS_COUNT),
                 getDouble(AI_RAG_MIN_SCORE),
                 Map.of(
@@ -2091,14 +2095,17 @@ public class JabRefCliPreferences implements CliPreferences {
         EasyBind.listen(aiPreferences.huggingFaceApiBaseUrlProperty(), (_, _, newValue) -> put(AI_HUGGING_FACE_API_BASE_URL, newValue));
         EasyBind.listen(aiPreferences.gpt4AllApiBaseUrlProperty(), (_, _, newValue) -> put(AI_GPT_4_ALL_API_BASE_URL, newValue));
 
-        EasyBind.listen(aiPreferences.defaultSummarizationAlgorithmProperty(), (_, _, newValue) -> put(AI_SUMMARIZATION_ALGORITHM, newValue.name()));
-        EasyBind.listen(aiPreferences.tokenEstimationStrategyProperty(), (_, _, newValue) -> put(AI_TOKEN_ESTIMATION_ALGORITHM, newValue.name()));
+        EasyBind.listen(aiPreferences.summarizatorKindProperty(), (_, _, newValue) -> put(AI_SUMMARIZATOR_KIND, newValue.name()));
+        EasyBind.listen(aiPreferences.tokenEstimatorKindProperty(), (_, _, newValue) -> put(AI_TOKEN_ESTIMATOR_KIND, newValue.name()));
         EasyBind.listen(aiPreferences.embeddingModelProperty(), (_, _, newValue) -> put(AI_EMBEDDING_MODEL, newValue.name()));
         EasyBind.listen(aiPreferences.temperatureProperty(), (_, _, newValue) -> putDouble(AI_TEMPERATURE, newValue.doubleValue()));
         EasyBind.listen(aiPreferences.contextWindowSizeProperty(), (_, _, newValue) -> putInt(AI_CONTEXT_WINDOW_SIZE, newValue));
-        EasyBind.listen(aiPreferences.documentSplittingStrategyProperty(), (_, _, newValue) -> put(AI_DOCUMENT_SPLITTING_STRATEGY, newValue.name()));
+
+        EasyBind.listen(aiPreferences.documentSplitterKindProperty(), (_, _, newValue) -> put(AI_DOCUMENT_SPLITTER_KIND, newValue.name()));
         EasyBind.listen(aiPreferences.documentSplitterChunkSizeProperty(), (_, _, newValue) -> putInt(AI_DOCUMENT_SPLITTER_CHUNK_SIZE, newValue));
         EasyBind.listen(aiPreferences.documentSplitterOverlapSizeProperty(), (_, _, newValue) -> putInt(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE, newValue));
+
+        EasyBind.listen(aiPreferences.answerEngineKindProperty(), (_, _, newValue) -> put(AI_ANSWER_ENGINE_KIND, newValue.name()));
         EasyBind.listen(aiPreferences.ragMaxResultsCountProperty(), (_, _, newValue) -> putInt(AI_RAG_MAX_RESULTS_COUNT, newValue));
         EasyBind.listen(aiPreferences.ragMinScoreProperty(), (_, _, newValue) -> putDouble(AI_RAG_MIN_SCORE, newValue.doubleValue()));
 

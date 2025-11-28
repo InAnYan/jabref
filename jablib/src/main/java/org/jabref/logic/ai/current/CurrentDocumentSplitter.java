@@ -6,17 +6,17 @@ import org.jabref.logic.ai.pipeline.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.pipeline.logic.documentsplitting.SlidingWindowDocumentSplitter;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.util.LongTaskInfo;
-import org.jabref.model.ai.rag.DocumentSplitterKind;
+import org.jabref.model.ai.pipeline.DocumentSplitterKind;
 
 import org.jspecify.annotations.Nullable;
 
-public class CurrentlySelectedDocumentSplitter implements DocumentSplitter {
+public class CurrentDocumentSplitter implements DocumentSplitter {
     private final AiPreferences aiPreferences;
 
     @Nullable
     private DocumentSplitter documentSplitter = null;
 
-    public CurrentlySelectedDocumentSplitter(AiPreferences aiPreferences) {
+    public CurrentDocumentSplitter(AiPreferences aiPreferences) {
         this.aiPreferences = aiPreferences;
 
         update();
@@ -25,7 +25,7 @@ public class CurrentlySelectedDocumentSplitter implements DocumentSplitter {
 
     private void configure() {
         aiPreferences.customizeExpertSettingsProperty().addListener(_ -> update());
-        aiPreferences.documentSplittingStrategyProperty().addListener(_ -> update());
+        aiPreferences.documentSplitterKindProperty().addListener(_ -> update());
         aiPreferences.documentSplitterChunkSizeProperty().addListener(_ -> update());
         aiPreferences.documentSplitterOverlapSizeProperty().addListener(_ -> update());
     }
@@ -33,7 +33,7 @@ public class CurrentlySelectedDocumentSplitter implements DocumentSplitter {
     private void update() {
         // Because in the future there will be more strategies.
         //noinspection SwitchStatementWithTooFewBranches
-        switch (aiPreferences.getDocumentSplittingStrategy()) {
+        switch (aiPreferences.getDocumentSplitterKind()) {
             case DocumentSplitterKind.SLIDING_WINDOW -> {
                 documentSplitter = new SlidingWindowDocumentSplitter(
                         aiPreferences.getDocumentSplitterChunkSize(),
@@ -54,11 +54,6 @@ public class CurrentlySelectedDocumentSplitter implements DocumentSplitter {
 
     @Override
     public DocumentSplitterKind getKind() {
-        if (documentSplitter == null) {
-            // Unfortunately.
-            return null;
-        }
-
-        return documentSplitter.getKind();
+        aiPreferences.getDocumentSplitterKind();
     }
 }

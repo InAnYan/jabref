@@ -9,8 +9,8 @@ import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
 import dev.langchain4j.data.message.ChatMessage;
 
-public class ByWordsTokenizer implements Tokenizer {
-    private static final float WORD_FACTOR = 0.75f;
+public class ByCharacterTokenEstimator implements TokenEstimator {
+    private static final float CHAR_FACTOR = 4;
 
     @Override
     public int estimate(ChatMessage message) {
@@ -29,7 +29,7 @@ public class ByWordsTokenizer implements Tokenizer {
     }
 
     private int calculate(String content) {
-        return Math.round(content.length() / WORD_FACTOR);
+        return Math.round(content.length() / CHAR_FACTOR);
     }
 
     @Override

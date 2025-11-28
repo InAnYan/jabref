@@ -6,7 +6,7 @@ import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
 import dev.langchain4j.data.message.ChatMessage;
 
-public interface Tokenizer {
+public interface TokenEstimator {
     int estimate(ChatMessage message);
 
     int estimate(List<? extends ChatMessage> messages);

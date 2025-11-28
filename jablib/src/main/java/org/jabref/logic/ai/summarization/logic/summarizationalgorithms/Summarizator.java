@@ -11,5 +11,5 @@ public interface Summarizator {
             String text
     ) throws InterruptedException;
 
-    SummarizatorKind getName();
+    SummarizatorKind getKind();
 }

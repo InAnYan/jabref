@@ -12,7 +12,7 @@ import org.jabref.logic.ai.chatting.templates.ChattingUserMessageTemplate;
 import org.jabref.logic.ai.pipeline.logic.EmbeddingsCleaner;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.model.ai.chatting.ErrorMessage;
-import org.jabref.model.ai.rag.PaperExcerpt;
+import org.jabref.model.ai.pipeline.RelevantInformation;
 import org.jabref.model.ai.templating.AiTemplate;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
@@ -161,7 +161,7 @@ public class AiChatLogic {
 
         EmbeddingSearchResult<TextSegment> embeddingSearchResult = embeddingStore.search(embeddingSearchRequest);
 
-        List<PaperExcerpt> excerpts = embeddingSearchResult
+        List<RelevantInformation> excerpts = embeddingSearchResult
                 .matches()
                 .stream()
                 .map(EmbeddingMatch::embedded)
@@ -169,9 +169,9 @@ public class AiChatLogic {
                     String link = textSegment.metadata().getString(EmbeddingsCleaner.LINK_METADATA_KEY);
 
                     if (link == null) {
-                        return new PaperExcerpt("", textSegment.text());
+                        return new RelevantInformation(List.of(), textSegment.text());
                     } else {
-                        return new PaperExcerpt(findEntryByLink(link).flatMap(BibEntry::getCitationKey).orElse(""), textSegment.text());
+                        return new RelevantInformation(List.of(findEntryByLink(link).flatMap(BibEntry::getCitationKey).orElse("")), textSegment.text());
                     }
                 })
                 .toList();

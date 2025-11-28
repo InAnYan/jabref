@@ -121,7 +121,7 @@ public class ChunkedSummarizator implements Summarizator {
     }
 
     @Override
-    public SummarizatorKind getName() {
+    public SummarizatorKind getKind() {
         return SummarizatorKind.CHUNKED;
     }
 }

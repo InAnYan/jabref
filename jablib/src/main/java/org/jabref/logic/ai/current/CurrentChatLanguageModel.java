@@ -11,7 +11,7 @@ import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.customimplementations.llms.Gpt4AllModel;
 import org.jabref.logic.ai.customimplementations.llms.JvmOpenAiChatLanguageModel;
-import org.jabref.logic.ai.customimplementations.tokenization.algorithms.Tokenizer;
+import org.jabref.logic.ai.customimplementations.tokenization.algorithms.TokenEstimator;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.chatting.AiProvider;
@@ -31,12 +31,12 @@ import jakarta.annotation.Nullable;
  * Notice, that the real chat model is created lazily, when it's needed. This is done, so API key is fetched only,
  * when user wants to chat with AI.
  */
-public class CurrentlySelectedChatLanguageModel implements ChatModel, AutoCloseable {
+public class CurrentChatLanguageModel implements ChatModel, AutoCloseable {
     private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(5);
 
     private final AiPreferences aiPreferences;
 
-    private final CurrentlySelectedTokenEstimationStrategy currentlySelectedTokenEstimationStrategy;
+    private final CurrentTokenEstimator currentTokenEstimator;
 
     private final HttpClient httpClient;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor(
@@ -46,13 +46,13 @@ public class CurrentlySelectedChatLanguageModel implements ChatModel, AutoClosea
     @Nullable
     private dev.langchain4j.model.chat.ChatModel langchainChatModel = null;
 
-    public CurrentlySelectedChatLanguageModel(
+    public CurrentChatLanguageModel(
             AiPreferences aiPreferences,
-            CurrentlySelectedTokenEstimationStrategy currentlySelectedTokenEstimationStrategy
+            CurrentTokenEstimator currentTokenEstimator
     ) {
         this.aiPreferences = aiPreferences;
 
-        this.currentlySelectedTokenEstimationStrategy = currentlySelectedTokenEstimationStrategy;
+        this.currentTokenEstimator = currentTokenEstimator;
 
         this.httpClient = HttpClient.newBuilder().connectTimeout(CONNECTION_TIMEOUT).executor(executorService).build();
 
@@ -157,8 +157,8 @@ public class CurrentlySelectedChatLanguageModel implements ChatModel, AutoClosea
     }
 
     @Override
-    public Tokenizer getTokenizer() {
-        return currentlySelectedTokenEstimationStrategy;
+    public TokenEstimator getTokenizer() {
+        return currentTokenEstimator;
     }
 
     @Override

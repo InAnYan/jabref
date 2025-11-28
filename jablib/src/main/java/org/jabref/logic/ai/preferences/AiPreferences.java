@@ -19,7 +19,8 @@ import javafx.beans.property.StringProperty;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.AiProvider;
 import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
-import org.jabref.model.ai.rag.DocumentSplitterKind;
+import org.jabref.model.ai.pipeline.AnswerEngineKind;
+import org.jabref.model.ai.pipeline.DocumentSplitterKind;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 import org.jabref.model.ai.templating.AiTemplate;
 import org.jabref.model.ai.tokenization.TokenEstimatorKind;
@@ -55,16 +56,17 @@ public class AiPreferences {
     private final StringProperty huggingFaceApiBaseUrl;
     private final StringProperty gpt4AllApiBaseUrl;
 
-    private final ObjectProperty<SummarizatorKind> defaultSummarizationAlgorithm;
-    private final ObjectProperty<TokenEstimatorKind> tokenEstimationStrategy;
+    private final ObjectProperty<SummarizatorKind> summarizatorKind;
+    private final ObjectProperty<TokenEstimatorKind> tokenEstimatorKind;
     private final ObjectProperty<EmbeddingModelEnumeration> embeddingModel;
     private final DoubleProperty temperature;
     private final IntegerProperty contextWindowSize;
 
-    private final ObjectProperty<DocumentSplitterKind> documentSplittingStrategy;
+    private final ObjectProperty<DocumentSplitterKind> documentSplitterKind;
     private final IntegerProperty documentSplitterChunkSize;
     private final IntegerProperty documentSplitterOverlapSize;
 
+    private final ObjectProperty<AnswerEngineKind> answerEngineKind;
     private final IntegerProperty ragMaxResultsCount;
     private final DoubleProperty ragMinScore;
 
@@ -88,7 +90,7 @@ public class AiPreferences {
             String geminiApiBaseUrl,
             String huggingFaceApiBaseUrl,
             String gpt4AllApiBaseUrl,
-            SummarizatorKind defaultSummarizationAlgorithm,
+            SummarizatorKind summarizatorKind,
             TokenEstimatorKind tokenEstimatorKind,
             EmbeddingModelEnumeration embeddingModel,
             double temperature,
@@ -96,6 +98,7 @@ public class AiPreferences {
             DocumentSplitterKind documentSplitterKind,
             int documentSplitterChunkSize,
             int documentSplitterOverlapSize,
+            AnswerEngineKind answerEngineKind,
             int ragMaxResultsCount,
             double ragMinScore,
             Map<AiTemplate, String> templates
@@ -120,16 +123,17 @@ public class AiPreferences {
         this.huggingFaceApiBaseUrl = new SimpleStringProperty(huggingFaceApiBaseUrl);
         this.gpt4AllApiBaseUrl = new SimpleStringProperty(gpt4AllApiBaseUrl);
 
-        this.defaultSummarizationAlgorithm = new SimpleObjectProperty<>(defaultSummarizationAlgorithm);
-        this.tokenEstimationStrategy = new SimpleObjectProperty<>(tokenEstimatorKind);
+        this.summarizatorKind = new SimpleObjectProperty<>(summarizatorKind);
+        this.tokenEstimatorKind = new SimpleObjectProperty<>(tokenEstimatorKind);
         this.embeddingModel = new SimpleObjectProperty<>(embeddingModel);
         this.temperature = new SimpleDoubleProperty(temperature);
         this.contextWindowSize = new SimpleIntegerProperty(contextWindowSize);
 
-        this.documentSplittingStrategy = new SimpleObjectProperty<>(documentSplitterKind);
+        this.documentSplitterKind = new SimpleObjectProperty<>(documentSplitterKind);
         this.documentSplitterChunkSize = new SimpleIntegerProperty(documentSplitterChunkSize);
         this.documentSplitterOverlapSize = new SimpleIntegerProperty(documentSplitterOverlapSize);
 
+        this.answerEngineKind = new SimpleObjectProperty<>(answerEngineKind);
         this.ragMaxResultsCount = new SimpleIntegerProperty(ragMaxResultsCount);
         this.ragMinScore = new SimpleDoubleProperty(ragMinScore);
 
@@ -296,28 +300,28 @@ public class AiPreferences {
         this.customizeExpertSettings.set(customizeExpertSettings);
     }
 
-    public ObjectProperty<SummarizatorKind> defaultSummarizationAlgorithmProperty() {
-        return defaultSummarizationAlgorithm;
+    public ObjectProperty<SummarizatorKind> summarizatorKindProperty() {
+        return summarizatorKind;
     }
 
-    public SummarizatorKind getDefaultSummarizationAlgorithm() {
-        return defaultSummarizationAlgorithm.get();
+    public SummarizatorKind getSummarizatorKind() {
+        return summarizatorKind.get();
     }
 
-    public void setDefaultSummarizationAlgorithm(SummarizatorKind defaultSummarizationAlgorithm) {
-        this.defaultSummarizationAlgorithm.set(defaultSummarizationAlgorithm);
+    public void setSummarizatorKind(SummarizatorKind summarizatorKind) {
+        this.summarizatorKind.set(summarizatorKind);
     }
 
-    public ObjectProperty<TokenEstimatorKind> tokenEstimationStrategyProperty() {
-        return tokenEstimationStrategy;
+    public ObjectProperty<TokenEstimatorKind> tokenEstimatorKindProperty() {
+        return tokenEstimatorKind;
     }
 
-    public TokenEstimatorKind getTokenEstimationStrategy() {
-        return tokenEstimationStrategy.get();
+    public TokenEstimatorKind getTokenEstimatorKind() {
+        return tokenEstimatorKind.get();
     }
 
-    public void setTokenEstimationStrategy(TokenEstimatorKind tokenEstimatorKind) {
-        this.tokenEstimationStrategy.set(tokenEstimatorKind);
+    public void setTokenEstimatorKind(TokenEstimatorKind tokenEstimatorKind) {
+        this.tokenEstimatorKind.set(tokenEstimatorKind);
     }
 
     public ObjectProperty<EmbeddingModelEnumeration> embeddingModelProperty() {
@@ -439,16 +443,16 @@ public class AiPreferences {
         this.contextWindowSize.set(contextWindowSize);
     }
 
-    public ObjectProperty<DocumentSplitterKind> documentSplittingStrategyProperty() {
-        return documentSplittingStrategy;
+    public ObjectProperty<DocumentSplitterKind> documentSplitterKindProperty() {
+        return documentSplitterKind;
     }
 
-    public DocumentSplitterKind getDocumentSplittingStrategy() {
-        return documentSplittingStrategy.get();
+    public DocumentSplitterKind getDocumentSplitterKind() {
+        return documentSplitterKind.get();
     }
 
-    public void setDocumentSplittingStrategy(DocumentSplitterKind documentSplitterKind) {
-        this.documentSplittingStrategy.set(documentSplitterKind);
+    public void setDocumentSplitterKind(DocumentSplitterKind documentSplitterKind) {
+        this.documentSplitterKind.set(documentSplitterKind);
     }
 
     public IntegerProperty documentSplitterChunkSizeProperty() {
@@ -481,6 +485,18 @@ public class AiPreferences {
 
     public void setDocumentSplitterOverlapSize(int documentSplitterOverlapSize) {
         this.documentSplitterOverlapSize.set(documentSplitterOverlapSize);
+    }
+
+    public ObjectProperty<AnswerEngineKind> answerEngineKindProperty() {
+        return answerEngineKind;
+    }
+
+    public AnswerEngineKind getAnswerEngineKind() {
+        return answerEngineKind.get();
+    }
+
+    public void setAnswerEngineKind(AnswerEngineKind answerEngineKind) {
+        this.answerEngineKind.set(answerEngineKind);
     }
 
     public IntegerProperty ragMaxResultsCountProperty() {

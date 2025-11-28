@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.jabref.logic.ai.templates.Template;
-import org.jabref.model.ai.rag.PaperExcerpt;
+import org.jabref.model.ai.pipeline.RelevantInformation;
 import org.jabref.model.ai.templating.AiTemplate;
 import org.jabref.model.entry.BibEntry;
 
@@ -15,7 +15,7 @@ public class ChattingUserMessageTemplate extends Template {
         super(source);
     }
 
-    public String render(List<BibEntry> entries, String message, List<PaperExcerpt> excerpts) {
+    public String render(List<BibEntry> entries, String message, List<RelevantInformation> excerpts) {
         VelocityContext context = makeContext();
 
         context.put("entries", entries);

@@ -10,14 +10,14 @@ import org.jabref.model.ai.templating.AiTemplate;
 
 import org.jspecify.annotations.Nullable;
 
-public class CurrentlySelectedSummarizator implements Summarizator {
+public class CurrentSummarizator implements Summarizator {
     private final AiPreferences aiPreferences;
     private final CurrentAiTemplates currentAiTemplates;
 
     @Nullable
     private Summarizator summarizator = null;
 
-    public CurrentlySelectedSummarizator(
+    public CurrentSummarizator(
             AiPreferences aiPreferences,
             CurrentAiTemplates currentAiTemplates
     ) {
@@ -29,7 +29,7 @@ public class CurrentlySelectedSummarizator implements Summarizator {
     }
 
     private void setupListeningToPreferences() {
-        aiPreferences.defaultSummarizationAlgorithmProperty().addListener(_ -> {
+        aiPreferences.summarizatorKindProperty().addListener(_ -> {
             updateAlgorithm();
         });
 
@@ -51,7 +51,7 @@ public class CurrentlySelectedSummarizator implements Summarizator {
     private void updateAlgorithm() {
         // Because in the future there will be more strategies.
         //noinspection SwitchStatementWithTooFewBranches
-        switch (aiPreferences.getDefaultSummarizationAlgorithm()) {
+        switch (aiPreferences.getSummarizatorKind()) {
             case SummarizatorKind.CHUNKED -> {
                 summarizator = createChunkedSummarizationAlgorithm();
             }
@@ -77,12 +77,7 @@ public class CurrentlySelectedSummarizator implements Summarizator {
     }
 
     @Override
-    public SummarizatorKind getName() {
-        if (summarizator == null) {
-            // Sadly.
-            return null;
-        }
-
-        return summarizator.getName();
+    public SummarizatorKind getKind() {
+        return aiPreferences.getSummarizatorKind();
     }
 }
