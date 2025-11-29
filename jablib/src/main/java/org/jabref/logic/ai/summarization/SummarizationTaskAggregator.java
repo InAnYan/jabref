@@ -1,11 +1,8 @@
 package org.jabref.logic.ai.summarization;
 
 import java.util.Comparator;
-import java.util.List;
 import java.util.TreeMap;
 
-import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
-import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.processingstatus.ProcessingInfo;
 import org.jabref.model.ai.summarization.BibEntrySummary;
@@ -17,6 +14,7 @@ public class SummarizationTaskAggregator {
     private final TreeMap<BibEntry, ProcessingInfo<BibEntry, BibEntrySummary>> generateSummaryTasks =
             new TreeMap<>(Comparator.comparing(BibEntry::getId));
 
+    /*
     private final TreeMap<List<BibEntry>, ProcessingInfo<BibEntry, Void>> generateSummaryForSeveralTasks =
             new TreeMap<>((a, b) -> {
                 if (a.size() != b.size()) {
@@ -44,4 +42,6 @@ public class SummarizationTaskAggregator {
             return task;
         });
     }
+
+     */
 }
