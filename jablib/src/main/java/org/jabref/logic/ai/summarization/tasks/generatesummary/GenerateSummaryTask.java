@@ -1,20 +1,12 @@
 package org.jabref.logic.ai.summarization.tasks.generatesummary;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
-
-import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.SummariesService;
 import org.jabref.logic.ai.summarization.logic.PersistentBibEntrySummarizator;
-import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.util.LongTaskInfo;
+import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.logic.util.BackgroundTask;
-import org.jabref.logic.util.ProgressCounter;
 import org.jabref.model.ai.summarization.BibEntrySummary;
-import org.jabref.model.database.BibDatabaseContext;
-import org.jabref.model.entry.BibEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,38 +18,21 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This task is created in the {@link SummariesService}, and stored then in a {@link SummariesRepository}.
  */
-public class GenerateSummaryTask extends BackgroundTask<BibEntrySummary> {
+public class GenerateSummaryTask extends TrackedBackgroundTask<BibEntrySummary> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSummaryTask.class);
 
-    private final ChatModel chatModel;
-    private final BibDatabaseContext bibDatabaseContext;
-    private final BibEntry entry;
-    private final String citationKey;
-    private final ReadOnlyBooleanProperty shutdownSignal;
-
+    private final GenerateSummaryTaskRequest request;
+    private final String citationKey; // Useful for logging.
     private final PersistentBibEntrySummarizator persistentBibEntrySummarizator;
 
-    private final ProgressCounter progressCounter = new ProgressCounter();
-
-    public GenerateSummaryTask(
-            FilePreferences filePreferences,
-            ChatModel chatModel,
-            SummariesRepository summariesRepository,
-            Summarizator summarizator,
-            BibDatabaseContext bibDatabaseContext,
-            BibEntry entry,
-            ReadOnlyBooleanProperty shutdownSignal
-    ) {
-        this.chatModel = chatModel;
-        this.bibDatabaseContext = bibDatabaseContext;
-        this.entry = entry;
-        this.citationKey = entry.getCitationKey().orElse("<no citation key>");
-        this.shutdownSignal = shutdownSignal;
+    public GenerateSummaryTask(GenerateSummaryTaskRequest request) {
+        this.request = request;
+        this.citationKey = request.entry().getCitationKey().orElse("<no citation key>");
 
         this.persistentBibEntrySummarizator = new PersistentBibEntrySummarizator(
-                filePreferences,
-                summariesRepository,
-                summarizator
+                request.filePreferences(),
+                request.summariesRepository(),
+                request.summarizator()
         );
 
         configure();
@@ -66,34 +41,27 @@ public class GenerateSummaryTask extends BackgroundTask<BibEntrySummary> {
     private void configure() {
         showToUser(true);
         titleProperty().set(Localization.lang("Waiting summary for %0...", citationKey));
-
-        progressCounter.listenToAllProperties(this::updateProgress);
     }
 
     @Override
-    public BibEntrySummary call() {
+    public BibEntrySummary perform() {
         LOGGER.debug("Starting summarization task for entry {}", citationKey);
 
         LongTaskInfo longTaskInfo = new LongTaskInfo(
                 progressCounter,
-                shutdownSignal
+                request.shutdownSignal()
         );
 
         BibEntrySummary bibEntrySummary = persistentBibEntrySummarizator.summarize(
-                chatModel,
+                request.chatModel(),
                 longTaskInfo,
-                bibDatabaseContext,
-                entry
+                request.bibDatabaseContext(),
+                request.entry()
         );
 
         LOGGER.debug("Finished summarization task for entry {}", citationKey);
         progressCounter.stop();
 
         return bibEntrySummary;
-    }
-
-    private void updateProgress() {
-        updateProgress(progressCounter.getWorkDone(), progressCounter.getWorkMax());
-        updateMessage(progressCounter.getMessage());
     }
 }

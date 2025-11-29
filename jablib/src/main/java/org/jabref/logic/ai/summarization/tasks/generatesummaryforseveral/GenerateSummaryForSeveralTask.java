@@ -5,23 +5,11 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.StringProperty;
 import javafx.util.Pair;
 
-import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.customimplementations.llms.ChatModel;
-import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
-import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
+import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.logic.util.BackgroundTask;
-import org.jabref.logic.util.ProgressCounter;
-import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.ai.processingstatus.ProcessingInfo;
-import org.jabref.model.ai.processingstatus.ProcessingState;
-import org.jabref.model.ai.summarization.BibEntrySummary;
-import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
 import org.slf4j.Logger;
@@ -32,98 +20,55 @@ import org.slf4j.LoggerFactory;
  * It will check if summaries were already generated.
  * And it also will store the summaries.
  */
-public class GenerateSummaryForSeveralTask extends BackgroundTask<Void> {
+public class GenerateSummaryForSeveralTask extends TrackedBackgroundTask<Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSummaryForSeveralTask.class);
 
-    private final StringProperty groupName;
-    private final List<ProcessingInfo<BibEntry, BibEntrySummary>> entries;
-    private final BibDatabaseContext bibDatabaseContext;
-    private final SummariesRepository summariesRepository;
-    private final ChatModel chatModel;
-    private final Summarizator summarizator;
-    private final ReadOnlyBooleanProperty shutdownSignal;
-    private final FilePreferences filePreferences;
-    private final TaskExecutor taskExecutor;
+    private final GenerateSummaryForSeveralTaskRequest request;
 
-    private final ProgressCounter progressCounter = new ProgressCounter();
-
-    private String currentFile = "";
-
-    public GenerateSummaryForSeveralTask(
-            FilePreferences filePreferences,
-            TaskExecutor taskExecutor,
-            ChatModel chatModel,
-            SummariesRepository summariesRepository,
-            Summarizator summarizator,
-            BibDatabaseContext bibDatabaseContext,
-            StringProperty groupName,
-            List<ProcessingInfo<BibEntry, BibEntrySummary>> entries,
-            ReadOnlyBooleanProperty shutdownSignal
-    ) {
-        this.groupName = groupName;
-        this.entries = entries;
-        this.bibDatabaseContext = bibDatabaseContext;
-        this.summariesRepository = summariesRepository;
-        this.chatModel = chatModel;
-        this.summarizator = summarizator;
-        this.shutdownSignal = shutdownSignal;
-        this.filePreferences = filePreferences;
-        this.taskExecutor = taskExecutor;
+    public GenerateSummaryForSeveralTask(GenerateSummaryForSeveralTaskRequest request) {
+        this.request = request;
 
         configure();
     }
 
     private void configure() {
         showToUser(true);
-        titleProperty().set(Localization.lang("Generating summaries for %0", groupName.get()));
-        groupName.addListener((_, _, newValue) -> titleProperty().set(Localization.lang("Generating summaries for %0", newValue)));
+        titleProperty().set(Localization.lang("Generating summaries for %0", request.groupName().get()));
+        request.groupName().addListener((_, _, newValue) -> titleProperty().set(Localization.lang("Generating summaries for %0", newValue)));
 
-        progressCounter.increaseWorkMax(entries.size());
-        progressCounter.listenToAllProperties(this::updateProgress);
-        updateProgress();
+        progressCounter.increaseWorkMax(request.entries().size());
     }
 
     @Override
-    public Void call() throws ExecutionException, InterruptedException {
-        LOGGER.debug("Starting summaries generation of several files for {}", groupName.get());
+    public Void perform() throws ExecutionException, InterruptedException {
+        LOGGER.debug("Starting summaries generation of several files for {}", request.groupName().get());
 
-        List<Pair<? extends Future<?>, BibEntry>> futures = new ArrayList<>();
+        // We don't really care about the types. We just need to wait here.
+        List<Future<?>> futures = new ArrayList<>();
 
-        entries
-                .stream()
-                .map(processingInfo -> {
-                    processingInfo.setState(ProcessingState.PROCESSING);
-                    return new Pair<>(
-                            new GenerateSummaryTask(
-                                    filePreferences,
-                                    chatModel,
-                                    summariesRepository,
-                                    summarizator,
-                                    bibDatabaseContext,
-                                    processingInfo.getObject(),
-                                    shutdownSignal
-                            )
-                                    .showToUser(false)
-                                    .onSuccess(processingInfo::setSuccess)
-                                    .onFailure(processingInfo::setException)
-                                    .onFinished(() -> progressCounter.increaseWorkDone(1))
-                                    .executeWith(taskExecutor),
-                            processingInfo.getObject());
-                })
-                .forEach(futures::add);
+        request.entries()
+               .stream()
+               .map(entry -> {
+                   Pair<? extends Future<?>, GenerateSummaryTask> pair = request.summarizationTaskAggregator().startWithFuture(
+                           request.toSingle(entry)
+                   );
 
-        for (Pair<? extends Future<?>, BibEntry> pair : futures) {
-            currentFile = pair.getValue().getCitationKey().orElse("<no citation key>");
-            pair.getKey().get();
+                   pair.getValue().statusProperty().addListener((_, _, newValue) -> {
+                       if (newValue.isFinished()) {
+                           progressCounter.increaseWorkDone(1);
+                       }
+                   });
+
+                   return pair.getKey();
+               })
+               .forEach(futures::add);
+
+        for (Future<?> future : futures) {
+            future.get();
         }
 
-        LOGGER.debug("Finished embeddings generation task of several files for {}", groupName.get());
+        LOGGER.debug("Finished summary generation task of several files for {}", request.groupName().get());
         progressCounter.stop();
         return null;
-    }
-
-    private void updateProgress() {
-        updateProgress(progressCounter.getWorkDone(), progressCounter.getWorkMax());
-        updateMessage(progressCounter.getMessage() + " - " + currentFile + ", ...");
     }
 }

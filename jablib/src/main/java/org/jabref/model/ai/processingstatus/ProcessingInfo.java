@@ -8,6 +8,7 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import org.jspecify.annotations.Nullable;
 
+@Deprecated
 public class ProcessingInfo<O, D> {
     private final O object;
     private final ObjectProperty<ProcessingState> state;
