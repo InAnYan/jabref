@@ -7,8 +7,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.chatting.listeners.EntryChattingDatabaseListener;
-import org.jabref.logic.ai.chatting.listeners.GroupChattingDatabaseListener;
 import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepository;
 import org.jabref.logic.ai.chatting.repositories.GroupChatHistoryRepository;
 import org.jabref.logic.ai.chatting.repositories.MVStoreEntryChatHistoryRepository;
@@ -78,8 +76,7 @@ public class AiService implements AutoCloseable {
     private final IngestionService ingestionService;
     private final SummariesService summariesService;
 
-    private final EntryChattingDatabaseListener entryChattingDatabaseListener;
-    private final GroupChattingDatabaseListener groupChattingDatabaseListener;
+    private final AiDatabaseListeners aiDatabaseListeners;
 
     public AiService(
             AiPreferences aiPreferences,
@@ -114,17 +111,20 @@ public class AiService implements AutoCloseable {
         );
 
         this.summariesService = new SummariesService(
-                aiPreferences,
                 filePreferences,
                 taskExecutor,
                 currentChatLanguageModel,
-                currentSummarizator,
                 mvStoreSummariesStorage,
                 shutdownSignal
         );
 
-        this.entryChattingDatabaseListener = new EntryChattingDatabaseListener(mvStoreEntryChatHistoryStorage);
-        this.groupChattingDatabaseListener = new GroupChattingDatabaseListener(mvStoreGroupChatHistoryStorage);
+        this.aiDatabaseListeners = new AiDatabaseListeners(
+                mvStoreEntryChatHistoryStorage,
+                mvStoreGroupChatHistoryStorage,
+                aiPreferences,
+                summariesService,
+                currentSummarizator
+        );
     }
 
     public CurrentDocumentSplitter getDocumentSplitter() {
@@ -176,11 +176,8 @@ public class AiService implements AutoCloseable {
     }
 
     public void setupDatabase(BibDatabaseContext context) {
-        entryChattingDatabaseListener.setupDatabase(context);
-        groupChattingDatabaseListener.setupDatabase(context);
-
+        aiDatabaseListeners.setupDatabase(context);
         ingestionService.setupDatabase(context);
-        summariesService.setupDatabase(context);
     }
 
     @Override

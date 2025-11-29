@@ -10,7 +10,6 @@ import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
-import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.summarization.tasks.GenerateSummaryForSeveralTask;
@@ -21,12 +20,8 @@ import org.jabref.model.ai.processingstatus.ProcessingInfo;
 import org.jabref.model.ai.processingstatus.ProcessingState;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 import org.jabref.model.database.BibDatabaseContext;
-import org.jabref.model.database.event.EntriesAddedEvent;
 import org.jabref.model.entry.BibEntry;
-import org.jabref.model.entry.event.FieldChangedEvent;
-import org.jabref.model.entry.field.StandardField;
 
-import com.google.common.eventbus.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,60 +41,24 @@ public class SummariesService {
 
     private final List<List<BibEntry>> listsUnderSummarization = new ArrayList<>();
 
-    private final AiPreferences aiPreferences;
     private final SummariesRepository summariesRepository;
     private final ChatModel chatModel;
-    private final Summarizator defaultSummarizator;
     private final BooleanProperty shutdownSignal;
     private final FilePreferences filePreferences;
     private final TaskExecutor taskExecutor;
 
-    // TODO: chat model should be argument.
     public SummariesService(
-            AiPreferences aiPreferences,
             FilePreferences filePreferences,
             TaskExecutor taskExecutor,
             ChatModel chatModel,
-            Summarizator defaultSummarizator,
             SummariesRepository summariesRepository,
             BooleanProperty shutdownSignal
     ) {
-        this.aiPreferences = aiPreferences;
         this.summariesRepository = summariesRepository;
         this.chatModel = chatModel;
-        this.defaultSummarizator = defaultSummarizator;
         this.shutdownSignal = shutdownSignal;
         this.filePreferences = filePreferences;
         this.taskExecutor = taskExecutor;
-    }
-
-    public void setupDatabase(BibDatabaseContext bibDatabaseContext) {
-        // GC was eating the listeners, so we have to fall back to the event bus.
-        bibDatabaseContext.getDatabase().registerListener(new EntriesChangedListener(bibDatabaseContext));
-    }
-
-    private class EntriesChangedListener {
-        private final BibDatabaseContext bibDatabaseContext;
-
-        public EntriesChangedListener(BibDatabaseContext bibDatabaseContext) {
-            this.bibDatabaseContext = bibDatabaseContext;
-        }
-
-        @Subscribe
-        public void listen(EntriesAddedEvent e) {
-            e.getBibEntries().forEach(entry -> {
-                if (aiPreferences.getAutoGenerateSummaries()) {
-                    summarize(defaultSummarizator, entry, bibDatabaseContext);
-                }
-            });
-        }
-
-        @Subscribe
-        public void listen(FieldChangedEvent e) {
-            if (e.getField() == StandardField.FILE && aiPreferences.getAutoGenerateSummaries()) {
-                summarize(defaultSummarizator, e.getBibEntry(), bibDatabaseContext);
-            }
-        }
     }
 
     /**
