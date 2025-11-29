@@ -51,7 +51,7 @@ public class PersistentLinkedFileIngestor {
     ) throws InterruptedException {
         // TODO: Simplify this method.
         // Rationale for RuntimeException here:
-        // See org.jabref.logic.ai.summarization.tasks.GenerateSummaryTask.summarizeAll
+        // See org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask.summarizeAll
 
         LOGGER.debug("Generating embeddings for file \"{}\"", linkedFile.getLink());
 

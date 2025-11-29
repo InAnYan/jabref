@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.summarization.tasks;
+package org.jabref.logic.ai.summarization.tasks.generatesummary;
 
 import javafx.beans.property.ReadOnlyBooleanProperty;
 

@@ -155,6 +155,8 @@ open module org.jabref.jablib {
     exports org.jabref.model.ai.chatting.messages;
     exports org.jabref.logic.ai.chatting.listeners;
     exports org.jabref.logic.ai.chatting.util;
+    exports org.jabref.logic.ai.summarization.tasks.generatesummary;
+    exports org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral;
     // endregion
 
     requires java.base;

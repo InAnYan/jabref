@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.summarization.tasks;
+package org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +13,7 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
+import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ProgressCounter;
