@@ -9,7 +9,7 @@ import org.jabref.gui.ai.components.util.EmbeddingModelGuardedComponent;
 import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.ChatHistory;
+import org.jabref.logic.ai.chatting.util.ChatHistory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.database.BibDatabaseContext;

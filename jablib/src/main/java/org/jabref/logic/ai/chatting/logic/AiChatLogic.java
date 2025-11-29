@@ -10,9 +10,10 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 
-import org.jabref.logic.ai.chatting.ChatHistory;
 import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageTemplate;
 import org.jabref.logic.ai.chatting.templates.ChattingUserMessageTemplate;
+import org.jabref.logic.ai.chatting.util.ChatHistory;
+import org.jabref.logic.ai.chatting.util.ChatHistoryRecordUtils;
 import org.jabref.logic.ai.pipeline.logic.rag.AnswerEngine;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.util.LongTaskInfo;

@@ -1,12 +1,12 @@
-package org.jabref.logic.ai.chatting;
+package org.jabref.logic.ai.chatting.listeners;
 
-import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepositoryV2;
+import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepository;
 import org.jabref.model.database.BibDatabaseContext;
 
 public class EntryChattingDatabaseListener {
-    private final EntryChatHistoryRepositoryV2 entryChatHistoryRepository;
+    private final EntryChatHistoryRepository entryChatHistoryRepository;
 
-    public EntryChattingDatabaseListener(EntryChatHistoryRepositoryV2 entryChatHistoryRepository) {
+    public EntryChattingDatabaseListener(EntryChatHistoryRepository entryChatHistoryRepository) {
         this.entryChatHistoryRepository = entryChatHistoryRepository;
     }
 

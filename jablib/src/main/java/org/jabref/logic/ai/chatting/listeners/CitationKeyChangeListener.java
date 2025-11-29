@@ -1,10 +1,10 @@
-package org.jabref.logic.ai.chatting;
+package org.jabref.logic.ai.chatting.listeners;
 
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepositoryV2;
+import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepository;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
@@ -19,10 +19,10 @@ import org.slf4j.LoggerFactory;
 public class CitationKeyChangeListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(CitationKeyChangeListener.class);
 
-    private final EntryChatHistoryRepositoryV2 entryChatHistoryRepository;
+    private final EntryChatHistoryRepository entryChatHistoryRepository;
     private final BibDatabaseContext bibDatabaseContext;
 
-    public CitationKeyChangeListener(EntryChatHistoryRepositoryV2 entryChatHistoryRepository, BibDatabaseContext bibDatabaseContext) {
+    public CitationKeyChangeListener(EntryChatHistoryRepository entryChatHistoryRepository, BibDatabaseContext bibDatabaseContext) {
         this.entryChatHistoryRepository = entryChatHistoryRepository;
         this.bibDatabaseContext = bibDatabaseContext;
     }

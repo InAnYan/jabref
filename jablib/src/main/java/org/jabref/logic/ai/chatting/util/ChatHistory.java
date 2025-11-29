@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.chatting;
+package org.jabref.logic.ai.chatting.util;
 
 import java.util.List;
 

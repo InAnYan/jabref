@@ -152,6 +152,9 @@ open module org.jabref.jablib {
     exports org.jabref.model.ai.tokenization;
     exports org.jabref.logic.ai.current;
     exports org.jabref.model.ai.llm;
+    exports org.jabref.model.ai.chatting.messages;
+    exports org.jabref.logic.ai.chatting.listeners;
+    exports org.jabref.logic.ai.chatting.util;
     // endregion
 
     requires java.base;

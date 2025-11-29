@@ -1,17 +1,17 @@
-package org.jabref.logic.ai.chatting;
+package org.jabref.logic.ai.chatting.util;
 
 import java.util.List;
 
-import org.jabref.logic.ai.chatting.repositories.GroupChatHistoryRepositoryV2;
+import org.jabref.logic.ai.chatting.repositories.GroupChatHistoryRepository;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.identifiers.GroupAiIdentifier;
 
 public class GroupChatHistory implements ChatHistory {
-    private final GroupChatHistoryRepositoryV2 groupChatHistoryRepository;
+    private final GroupChatHistoryRepository groupChatHistoryRepository;
     private final GroupAiIdentifier identifier;
 
     public GroupChatHistory(
-            GroupChatHistoryRepositoryV2 groupChatHistoryRepository,
+            GroupChatHistoryRepository groupChatHistoryRepository,
             GroupAiIdentifier identifier
     ) {
         this.groupChatHistoryRepository = groupChatHistoryRepository;

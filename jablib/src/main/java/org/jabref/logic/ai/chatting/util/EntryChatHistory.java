@@ -1,17 +1,17 @@
-package org.jabref.logic.ai.chatting;
+package org.jabref.logic.ai.chatting.util;
 
 import java.util.List;
 
-import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepositoryV2;
+import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepository;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
 public class EntryChatHistory implements ChatHistory {
-    private final EntryChatHistoryRepositoryV2 entryChatHistoryRepository;
+    private final EntryChatHistoryRepository entryChatHistoryRepository;
     private final BibEntryAiIdentifier identifier;
 
     public EntryChatHistory(
-            EntryChatHistoryRepositoryV2 entryChatHistoryRepository,
+            EntryChatHistoryRepository entryChatHistoryRepository,
             BibEntryAiIdentifier identifier
     ) {
         this.entryChatHistoryRepository = entryChatHistoryRepository;

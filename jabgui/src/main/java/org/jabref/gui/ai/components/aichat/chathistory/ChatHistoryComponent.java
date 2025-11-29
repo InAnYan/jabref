@@ -8,7 +8,7 @@ import javafx.scene.layout.VBox;
 
 import org.jabref.gui.ai.components.aichat.chatmessage.ChatMessageComponent;
 import org.jabref.gui.util.UiTaskExecutor;
-import org.jabref.logic.ai.chatting.ChatHistory;
+import org.jabref.logic.ai.chatting.util.ChatHistory;
 
 import com.airhacks.afterburner.views.ViewLoader;
 

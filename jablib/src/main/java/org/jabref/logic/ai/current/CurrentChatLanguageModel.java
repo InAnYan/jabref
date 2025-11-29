@@ -7,7 +7,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.jabref.logic.ai.chatting.logic.AiChatLogic;
-import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepositoryV1;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.customimplementations.llms.Gpt4AllModel;
 import org.jabref.logic.ai.customimplementations.llms.JvmOpenAiChatLanguageModel;

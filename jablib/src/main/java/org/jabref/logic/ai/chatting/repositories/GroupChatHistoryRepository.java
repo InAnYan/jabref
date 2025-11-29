@@ -5,7 +5,7 @@ import java.util.List;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.identifiers.GroupAiIdentifier;
 
-public interface GroupChatHistoryRepositoryV2 {
+public interface GroupChatHistoryRepository {
     void addMessage(GroupAiIdentifier identifier, ChatHistoryRecordV2 chatHistoryRecord);
 
     void deleteMessage(GroupAiIdentifier identifier, String id);

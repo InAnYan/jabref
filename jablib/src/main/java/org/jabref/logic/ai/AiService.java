@@ -7,13 +7,12 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.chatting.EntryChattingDatabaseListener;
-import org.jabref.logic.ai.chatting.GroupChattingDatabaseListener;
-import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepositoryV2;
-import org.jabref.logic.ai.chatting.repositories.GroupChatHistoryRepositoryV2;
-import org.jabref.logic.ai.chatting.repositories.MVStoreChatHistoryRepositoryV1;
-import org.jabref.logic.ai.chatting.repositories.MVStoreEntryChatHistoryRepositoryV2;
-import org.jabref.logic.ai.chatting.repositories.MVStoreGroupChatHistoryRepositoryV2;
+import org.jabref.logic.ai.chatting.listeners.EntryChattingDatabaseListener;
+import org.jabref.logic.ai.chatting.listeners.GroupChattingDatabaseListener;
+import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepository;
+import org.jabref.logic.ai.chatting.repositories.GroupChatHistoryRepository;
+import org.jabref.logic.ai.chatting.repositories.MVStoreEntryChatHistoryRepository;
+import org.jabref.logic.ai.chatting.repositories.MVStoreGroupChatHistoryRepository;
 import org.jabref.logic.ai.current.CurrentAiTemplates;
 import org.jabref.logic.ai.current.CurrentAnswerEngine;
 import org.jabref.logic.ai.current.CurrentChatLanguageModel;
@@ -61,10 +60,8 @@ public class AiService implements AutoCloseable {
             new ThreadFactoryBuilder().setNameFormat("ai-retrieval-pool-%d").build()
     );
 
-    private final MVStoreChatHistoryRepositoryV1 mvStoreChatHistoryStorage;
-
-    private final MVStoreEntryChatHistoryRepositoryV2 mvStoreEntryChatHistoryStorage;
-    private final MVStoreGroupChatHistoryRepositoryV2 mvStoreGroupChatHistoryStorage;
+    private final MVStoreEntryChatHistoryRepository mvStoreEntryChatHistoryStorage;
+    private final MVStoreGroupChatHistoryRepository mvStoreGroupChatHistoryStorage;
 
     private final MVStoreEmbeddingStore mvStoreEmbeddingStore;
     private final MVStoreIngestedDocumentsRepository mvStoreFullyIngestedDocumentsTracker;
@@ -90,11 +87,8 @@ public class AiService implements AutoCloseable {
             NotificationService notificationService,
             TaskExecutor taskExecutor
     ) {
-
-        this.mvStoreChatHistoryStorage = new MVStoreChatHistoryRepositoryV1(notificationService, Directories.getAiFilesDirectory().resolve(CHAT_HISTORY_FILE_NAME));
-
-        this.mvStoreEntryChatHistoryStorage = new MVStoreEntryChatHistoryRepositoryV2(Directories.getAiFilesDirectory().resolve(ENTRY_CHAT_HISTORY_FILE_NAME), notificationService);
-        this.mvStoreGroupChatHistoryStorage = new MVStoreGroupChatHistoryRepositoryV2(Directories.getAiFilesDirectory().resolve(GROUP_CHAT_HISTORY_FILE_NAME), notificationService);
+        this.mvStoreEntryChatHistoryStorage = new MVStoreEntryChatHistoryRepository(Directories.getAiFilesDirectory().resolve(ENTRY_CHAT_HISTORY_FILE_NAME), notificationService);
+        this.mvStoreGroupChatHistoryStorage = new MVStoreGroupChatHistoryRepository(Directories.getAiFilesDirectory().resolve(GROUP_CHAT_HISTORY_FILE_NAME), notificationService);
 
         this.mvStoreEmbeddingStore = new MVStoreEmbeddingStore(Directories.getAiFilesDirectory().resolve(EMBEDDINGS_FILE_NAME), notificationService);
         this.mvStoreFullyIngestedDocumentsTracker = new MVStoreIngestedDocumentsRepository(notificationService, Directories.getAiFilesDirectory().resolve(FULLY_INGESTED_FILE_NAME));
@@ -173,11 +167,11 @@ public class AiService implements AutoCloseable {
         return currentAnswerEngine;
     }
 
-    public EntryChatHistoryRepositoryV2 getEntryChatHistoryRepository() {
+    public EntryChatHistoryRepository getEntryChatHistoryRepository() {
         return mvStoreEntryChatHistoryStorage;
     }
 
-    public GroupChatHistoryRepositoryV2 getGroupChatHistoryRepository() {
+    public GroupChatHistoryRepository getGroupChatHistoryRepository() {
         return mvStoreGroupChatHistoryStorage;
     }
 
@@ -197,7 +191,6 @@ public class AiService implements AutoCloseable {
         currentChatLanguageModel.close();
         currentEmbeddingModel.close();
 
-        mvStoreChatHistoryStorage.close();
         mvStoreFullyIngestedDocumentsTracker.close();
         mvStoreEmbeddingStore.close();
         mvStoreSummariesStorage.close();

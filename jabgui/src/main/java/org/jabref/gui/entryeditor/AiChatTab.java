@@ -18,7 +18,7 @@ import org.jabref.gui.ai.components.util.errorstate.ErrorStateComponent;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.EntryChatHistory;
+import org.jabref.logic.ai.chatting.util.EntryChatHistory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.citationkeypattern.CitationKeyGenerator;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;

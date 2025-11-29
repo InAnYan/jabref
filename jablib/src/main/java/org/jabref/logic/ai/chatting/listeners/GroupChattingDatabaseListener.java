@@ -1,8 +1,8 @@
-package org.jabref.logic.ai.chatting;
+package org.jabref.logic.ai.chatting.listeners;
 
 import java.util.List;
 
-import org.jabref.logic.ai.chatting.repositories.GroupChatHistoryRepositoryV2;
+import org.jabref.logic.ai.chatting.repositories.GroupChatHistoryRepository;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.identifiers.GroupAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
 public class GroupChattingDatabaseListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupChattingDatabaseListener.class);
 
-    private final GroupChatHistoryRepositoryV2 groupChatHistoryRepository;
+    private final GroupChatHistoryRepository groupChatHistoryRepository;
 
-    public GroupChattingDatabaseListener(GroupChatHistoryRepositoryV2 groupChatHistoryRepository) {
+    public GroupChattingDatabaseListener(GroupChatHistoryRepository groupChatHistoryRepository) {
         this.groupChatHistoryRepository = groupChatHistoryRepository;
     }
 

@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.chatting.logic;
+package org.jabref.logic.ai.chatting.util;
 
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.chatting.messages.ErrorMessage;

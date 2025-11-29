@@ -12,8 +12,8 @@ import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
 import org.jspecify.annotations.NonNull;
 
-public class MVStoreEntryChatHistoryRepositoryV2 extends MVStoreBase implements EntryChatHistoryRepositoryV2 {
-    public MVStoreEntryChatHistoryRepositoryV2(@NonNull Path path, NotificationService dialogService) {
+public class MVStoreEntryChatHistoryRepository extends MVStoreBase implements EntryChatHistoryRepository {
+    public MVStoreEntryChatHistoryRepository(@NonNull Path path, NotificationService dialogService) {
         super(path, dialogService);
     }
 

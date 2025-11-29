@@ -42,6 +42,8 @@ public class AiPreferences {
 
     private final ObjectProperty<AiProvider> aiProvider;
 
+    // TODO: Add chat model property.
+
     private final StringProperty openAiChatModel;
     private final StringProperty mistralAiChatModel;
     private final StringProperty geminiChatModel;

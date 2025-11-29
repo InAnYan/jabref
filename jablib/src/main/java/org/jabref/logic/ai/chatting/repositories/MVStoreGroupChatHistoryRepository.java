@@ -12,8 +12,8 @@ import org.jabref.model.ai.identifiers.GroupAiIdentifier;
 
 import org.jspecify.annotations.NonNull;
 
-public class MVStoreGroupChatHistoryRepositoryV2 extends MVStoreBase implements GroupChatHistoryRepositoryV2 {
-    public MVStoreGroupChatHistoryRepositoryV2(@NonNull Path path, NotificationService dialogService) {
+public class MVStoreGroupChatHistoryRepository extends MVStoreBase implements GroupChatHistoryRepository {
+    public MVStoreGroupChatHistoryRepository(@NonNull Path path, NotificationService dialogService) {
         super(path, dialogService);
     }
 

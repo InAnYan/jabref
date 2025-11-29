@@ -31,9 +31,9 @@ import org.jabref.gui.ai.components.util.notifications.NotificationsComponent;
 import org.jabref.gui.icon.IconTheme;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.ChatHistory;
 import org.jabref.logic.ai.chatting.logic.AiChatLogic;
 import org.jabref.logic.ai.chatting.tasks.GenerateAiResponseTask;
+import org.jabref.logic.ai.chatting.util.ChatHistory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
@@ -303,6 +303,7 @@ public class AiChatComponent extends VBox {
                 .onSuccess(aiMessage -> {
                     setLoading(false);
                     chatPrompt.requestPromptFocus();
+                    uiChatHistory.updateMessages(chatHistory);
                 })
                 .onFailure(e -> {
                     LOGGER.error("Got an error while sending a message to AI", e);
