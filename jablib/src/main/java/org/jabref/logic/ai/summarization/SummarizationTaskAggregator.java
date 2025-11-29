@@ -18,20 +18,20 @@ public class SummarizationTaskAggregator {
             new TreeMap<>(Comparator.comparing(BibEntry::getId));
 
     private final TreeMap<List<BibEntry>, ProcessingInfo<BibEntry, Void>> generateSummaryForSeveralTasks =
-            new TreeMap<>(new Comparator<List<BibEntry>>() {
-        @Override
-        public int compare(List<BibEntry> list1, List<BibEntry> list2) {
-            if (list1 == list2) return true;
-            if (list1 == null || list2 == null) return false;
-            if (list1.size() != list2.size()) return false;
+            new TreeMap<>((a, b) -> {
+                if (a.size() != b.size()) {
+                    return Integer.compare(a.size(), b.size());
+                }
 
-            // 2. Map to IDs and compare
-            List<String> ids1 = list1.stream().map(BibEntry::getId).toList();
-            List<String> ids2 = list2.stream().map(BibEntry::getId).toList();
+                for (int i = 0; i < a.size(); i++) {
+                    int cmp = a.get(i).getId().compareTo(b.get(i).getId());
+                    if (cmp != 0) {
+                        return cmp;
+                    }
+                }
 
-            return ids1.equals(ids2);
-        }
-    });
+                return 0;
+            });
 
     public SummarizationTaskAggregator(TaskExecutor taskExecutor) {
         this.taskExecutor = taskExecutor;
