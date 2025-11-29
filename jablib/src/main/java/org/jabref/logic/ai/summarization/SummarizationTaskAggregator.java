@@ -3,14 +3,14 @@ package org.jabref.logic.ai.summarization;
 import java.util.Comparator;
 import java.util.TreeMap;
 
-import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.processingstatus.ProcessingInfo;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 import org.jabref.model.entry.BibEntry;
 
 public class SummarizationTaskAggregator {
+    /*
     private final TaskExecutor taskExecutor;
-
+    */
     private final TreeMap<BibEntry, ProcessingInfo<BibEntry, BibEntrySummary>> generateSummaryTasks =
             new TreeMap<>(Comparator.comparing(BibEntry::getId));
 
