@@ -29,7 +29,6 @@ public class CitationsFromPdf {
         try (AiService aiService = new AiService(
                 preferences.getAiPreferences(),
                 preferences.getFilePreferences(),
-                preferences.getCitationKeyPatternPreferences(),
                 notificationService,
                 new CurrentThreadTaskExecutor())) {
             LlmPlainCitationParser importer = new LlmPlainCitationParser(

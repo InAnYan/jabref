@@ -9,13 +9,12 @@ import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.util.BaseWindow;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.chatting.ChatHistory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
-
-import dev.langchain4j.data.message.ChatMessage;
 
 public class AiChatWindow extends BaseWindow {
     private final AiService aiService;
@@ -28,12 +27,13 @@ public class AiChatWindow extends BaseWindow {
     // This field is used for finding an existing AI chat window when user wants to chat with the same group again.
     private String chatName;
 
-    public AiChatWindow(AiService aiService,
-                        DialogService dialogService,
-                        AiPreferences aiPreferences,
-                        ExternalApplicationsPreferences externalApplicationsPreferences,
-                        AdaptVisibleTabs adaptVisibleTabs,
-                        TaskExecutor taskExecutor
+    public AiChatWindow(
+            AiService aiService,
+            DialogService dialogService,
+            AiPreferences aiPreferences,
+            ExternalApplicationsPreferences externalApplicationsPreferences,
+            AdaptVisibleTabs adaptVisibleTabs,
+            TaskExecutor taskExecutor
     ) {
         this.aiService = aiService;
         this.dialogService = dialogService;
@@ -43,7 +43,12 @@ public class AiChatWindow extends BaseWindow {
         this.taskExecutor = taskExecutor;
     }
 
-    public void setChat(StringProperty name, ObservableList<ChatMessage> chatHistory, BibDatabaseContext bibDatabaseContext, ObservableList<BibEntry> entries) {
+    public void setChat(
+            StringProperty name,
+            ChatHistory chatHistory,
+            BibDatabaseContext bibDatabaseContext,
+            ObservableList<BibEntry> entries
+    ) {
         setTitle(Localization.lang("AI chat with %0", name.getValue()));
         chatName = name.getValue();
         setScene(

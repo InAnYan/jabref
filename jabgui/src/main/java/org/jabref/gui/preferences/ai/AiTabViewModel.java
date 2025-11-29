@@ -28,8 +28,8 @@ import org.jabref.logic.preferences.CliPreferences;
 import org.jabref.logic.util.LocalizedNumbers;
 import org.jabref.logic.util.OptionalObjectProperty;
 import org.jabref.logic.util.strings.StringUtil;
-import org.jabref.model.ai.chatting.AiProvider;
 import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
+import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.ai.templating.AiTemplate;
 
 import de.saxsys.mvvmfx.utils.validation.FunctionBasedValidator;

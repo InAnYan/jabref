@@ -2,7 +2,7 @@ package org.jabref.logic.ai.preferences;
 
 import java.util.Map;
 
-import org.jabref.model.ai.chatting.AiProvider;
+import org.jabref.model.ai.llm.AiProvider;
 
 public class AiProviderDefaultChatModels {
     private static final Map<AiProvider, PredefinedChatModel> CHAT_MODELS = Map.of(

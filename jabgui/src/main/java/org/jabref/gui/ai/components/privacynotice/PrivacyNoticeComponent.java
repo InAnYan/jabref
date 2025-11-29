@@ -19,7 +19,7 @@ import org.jabref.gui.entryeditor.EntryEditorPreferences;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.model.ai.chatting.AiProvider;
+import org.jabref.model.ai.llm.AiProvider;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;

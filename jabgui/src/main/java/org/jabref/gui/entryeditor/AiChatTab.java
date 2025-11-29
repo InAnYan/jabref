@@ -18,6 +18,7 @@ import org.jabref.gui.ai.components.util.errorstate.ErrorStateComponent;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.chatting.EntryChatHistory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.citationkeypattern.CitationKeyGenerator;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
@@ -25,6 +26,7 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.io.FileUtil;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
@@ -39,8 +41,6 @@ public class AiChatTab extends EntryEditorTab {
     private final TaskExecutor taskExecutor;
     private final AdaptVisibleTabs adaptVisibleTabs;
     private final CitationKeyPatternPreferences citationKeyPatternPreferences;
-
-    private Optional<BibEntry> previousBibEntry = Optional.empty();
 
     public AiChatTab(AiService aiService,
                      DialogService dialogService,
@@ -74,8 +74,6 @@ public class AiChatTab extends EntryEditorTab {
      */
     @Override
     protected void bindToEntry(BibEntry entry) {
-        previousBibEntry.ifPresent(previousBibEntry -> aiService.getEntryChatHistoryService().closeChatHistory(previousBibEntry));
-        previousBibEntry = Optional.of(entry);
         BibDatabaseContext bibDatabaseContext = stateManager.getActiveDatabase().orElse(new BibDatabaseContext());
 
         if (!aiPreferences.getEnableAi()) {
@@ -133,9 +131,14 @@ public class AiChatTab extends EntryEditorTab {
         StringProperty chatName = new SimpleStringProperty("entry " + entry.getCitationKey().orElse("<no citation key>"));
         entry.getCiteKeyBinding().addListener((observable, oldValue, newValue) -> chatName.setValue("entry " + newValue));
 
+        Optional<Path> databasePath = bibDatabaseContext.getDatabasePath();
+        Optional<String> citationKey = entry.getCitationKey();
+        assert databasePath.isPresent(); // TODO: WTF THINK ABOUT THIS.
+        assert citationKey.isPresent(); // TODO: WTF THINK ABOUT THIS.
+
         setContent(new AiChatGuardedComponent(
                 chatName,
-                aiService.getEntryChatHistoryService().getChatHistory(bibDatabaseContext, entry),
+                new EntryChatHistory(aiService.getEntryChatHistoryRepository(), new BibEntryAiIdentifier(databasePath.get(), citationKey.get())),
                 bibDatabaseContext,
                 FXCollections.observableArrayList(new ArrayList<>(List.of(entry))),
                 aiService,

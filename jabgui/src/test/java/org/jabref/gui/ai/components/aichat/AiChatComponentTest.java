@@ -16,7 +16,7 @@ import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Language;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.ai.chatting.AiProvider;
+import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.database.BibDatabaseContext;
 
 import org.junit.jupiter.api.BeforeEach;

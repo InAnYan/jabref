@@ -1,9 +1,12 @@
 package org.jabref.gui.ai.components.aichat;
 
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javafx.beans.Observable;
@@ -28,6 +31,7 @@ import org.jabref.gui.ai.components.util.notifications.NotificationsComponent;
 import org.jabref.gui.icon.IconTheme;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.chatting.ChatHistory;
 import org.jabref.logic.ai.chatting.logic.AiChatLogic;
 import org.jabref.logic.ai.chatting.tasks.GenerateAiResponseTask;
 import org.jabref.logic.ai.preferences.AiPreferences;
@@ -36,7 +40,8 @@ import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.io.FileUtil;
-import org.jabref.model.ai.chatting.ErrorMessage;
+import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
+import org.jabref.model.ai.chatting.messages.ErrorMessage;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.util.ListUtil;
@@ -44,8 +49,6 @@ import org.jabref.model.util.ListUtil;
 import com.airhacks.afterburner.views.ViewLoader;
 import com.google.common.annotations.VisibleForTesting;
 import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.data.message.ChatMessage;
-import dev.langchain4j.data.message.ChatMessageType;
 import dev.langchain4j.data.message.UserMessage;
 import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
@@ -61,6 +64,7 @@ public class AiChatComponent extends VBox {
 
     private final AiService aiService;
     private final ObservableList<BibEntry> entries;
+    private final ChatHistory chatHistory;
     private final BibDatabaseContext bibDatabaseContext;
     private final AiPreferences aiPreferences;
     private final DialogService dialogService;
@@ -85,7 +89,7 @@ public class AiChatComponent extends VBox {
     public AiChatComponent(
             AiService aiService,
             StringProperty name,
-            ObservableList<ChatMessage> chatHistory,
+            ChatHistory chatHistory,
             ObservableList<BibEntry> entries,
             BibDatabaseContext bibDatabaseContext,
             AiPreferences aiPreferences,
@@ -94,6 +98,7 @@ public class AiChatComponent extends VBox {
     ) {
         this.aiService = aiService;
         this.entries = entries;
+        this.chatHistory = chatHistory;
         this.bibDatabaseContext = bibDatabaseContext;
         this.aiPreferences = aiPreferences;
         this.dialogService = dialogService;
@@ -120,7 +125,7 @@ public class AiChatComponent extends VBox {
 
     @FXML
     public void initialize() {
-        uiChatHistory.setItems(aiChatLogic.getChatHistory());
+        uiChatHistory.updateMessages(chatHistory);
         initializeChatPrompt();
         initializeNotice();
         initializeNotifications();
@@ -207,17 +212,17 @@ public class AiChatComponent extends VBox {
 
         chatPrompt.setRegenerateCallback(() -> {
             setLoading(true);
-            Optional<UserMessage> lastUserPrompt = Optional.empty();
-            if (!aiChatLogic.getChatHistory().isEmpty()) {
+            Optional<ChatHistoryRecordV2> lastUserPrompt = Optional.empty();
+            if (!chatHistory.isEmpty()) {
                 lastUserPrompt = getLastUserMessage();
             }
             if (lastUserPrompt.isPresent()) {
-                while (aiChatLogic.getChatHistory().getLast().type() != ChatMessageType.USER) {
+                while (!Objects.equals(chatHistory.getAllMessages().getLast().messageTypeClassName(), UserMessage.class.getName())) {
                     deleteLastMessage();
                 }
                 deleteLastMessage();
                 chatPrompt.switchToNormalState();
-                onSendMessage(lastUserPrompt.get().singleText());
+                onSendMessage(lastUserPrompt.get().content());
             }
         });
 
@@ -320,7 +325,14 @@ public class AiChatComponent extends VBox {
 
     private void addError(String error) {
         ErrorMessage chatMessage = new ErrorMessage(error);
-        aiChatLogic.getChatHistory().add(chatMessage);
+
+        chatHistory.addMessage(new ChatHistoryRecordV2(
+                UUID.randomUUID().toString(),
+                chatMessage.getClass().getName(),
+                chatMessage.getText(),
+                Instant.now()
+        ));
+        uiChatHistory.updateMessages(chatHistory);
     }
 
     private void updatePromptHistory() {
@@ -329,11 +341,11 @@ public class AiChatComponent extends VBox {
     }
 
     private Stream<UserMessage> getReversedUserMessagesStream() {
-        return aiChatLogic
-                .getChatHistory()
+        return chatHistory
+                .getAllMessages()
                 .reversed()
                 .stream()
-                .filter(message -> message instanceof UserMessage)
+                .filter(message -> Objects.equals(message.messageTypeClassName(), UserMessage.class.getName()))
                 .map(UserMessage.class::cast);
     }
 
@@ -350,23 +362,26 @@ public class AiChatComponent extends VBox {
         );
 
         if (agreed) {
-            aiChatLogic.getChatHistory().clear();
+            chatHistory.clear();
         }
     }
 
     private void deleteLastMessage() {
-        if (!aiChatLogic.getChatHistory().isEmpty()) {
-            int index = aiChatLogic.getChatHistory().size() - 1;
-            aiChatLogic.getChatHistory().remove(index);
+        if (!chatHistory.isEmpty()) {
+            int index = chatHistory.size() - 1;
+            uiChatHistory.getMessage(index).map(component -> component.getChatMessage().id()).ifPresent(id -> {
+                chatHistory.deleteMessage(id);
+                uiChatHistory.updateMessages(chatHistory);
+            });
         }
     }
 
-    private Optional<UserMessage> getLastUserMessage() {
-        int messageIndex = aiChatLogic.getChatHistory().size() - 1;
+    private Optional<ChatHistoryRecordV2> getLastUserMessage() {
+        int messageIndex = chatHistory.size() - 1;
         while (messageIndex >= 0) {
-            ChatMessage chat = aiChatLogic.getChatHistory().get(messageIndex);
-            if (chat.type() == ChatMessageType.USER) {
-                return Optional.of((UserMessage) chat);
+            ChatHistoryRecordV2 chat = chatHistory.getAllMessages().get(messageIndex);
+            if (Objects.equals(chat.messageTypeClassName(), UserMessage.class.getName())) {
+                return Optional.of(chat);
             }
             messageIndex--;
         }

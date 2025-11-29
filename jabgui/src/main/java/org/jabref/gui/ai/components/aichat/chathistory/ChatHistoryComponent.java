@@ -1,16 +1,16 @@
 package org.jabref.gui.ai.components.aichat.chathistory;
 
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
+import java.util.Optional;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 
 import org.jabref.gui.ai.components.aichat.chatmessage.ChatMessageComponent;
 import org.jabref.gui.util.UiTaskExecutor;
+import org.jabref.logic.ai.chatting.ChatHistory;
 
 import com.airhacks.afterburner.views.ViewLoader;
-import dev.langchain4j.data.message.ChatMessage;
 
 public class ChatHistoryComponent extends ScrollPane {
     @FXML private VBox vBox;
@@ -27,27 +27,31 @@ public class ChatHistoryComponent extends ScrollPane {
         });
     }
 
-    /**
-     * @implNote You must call this method only once.
-     */
-    public void setItems(ObservableList<ChatMessage> items) {
-        fill(items);
-        items.addListener((ListChangeListener<? super ChatMessage>) obs -> fill(items));
-    }
-
-    private void fill(ObservableList<ChatMessage> items) {
+    public void updateMessages(ChatHistory chatHistory) {
         UiTaskExecutor.runInJavaFXThread(() -> {
             vBox.getChildren().clear();
-            items.forEach(chatMessage ->
-                    vBox.getChildren().add(new ChatMessageComponent(chatMessage, chatMessageComponent -> {
-                        int index = vBox.getChildren().indexOf(chatMessageComponent);
-                        items.remove(index);
-                    })));
+            // TODO: Inefficient.
+            chatHistory
+                    .getAllMessages()
+                    .forEach(chatMessage ->
+                            vBox.getChildren().add(new ChatMessageComponent(
+                                    chatMessage,
+                                    chatMessageComponent -> {
+                                        // TODO: Mix of logic.
+                                        chatHistory.deleteMessage(chatMessageComponent.getChatMessage().id());
+                                        updateMessages(chatHistory);
+                                    })
+                            )
+                    );
         });
     }
 
     public void scrollDown() {
         this.layout();
         this.setVvalue(this.getVmax());
+    }
+
+    public Optional<ChatMessageComponent> getMessage(int index) {
+        return Optional.ofNullable(vBox.getChildren().get(index)).map(node -> (ChatMessageComponent) node);
     }
 }

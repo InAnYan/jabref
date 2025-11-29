@@ -1,19 +1,24 @@
 package org.jabref.logic.ai.chatting.logic;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 
+import org.jabref.logic.ai.chatting.ChatHistory;
 import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageTemplate;
 import org.jabref.logic.ai.chatting.templates.ChattingUserMessageTemplate;
 import org.jabref.logic.ai.pipeline.logic.rag.AnswerEngine;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.util.ProgressCounter;
-import org.jabref.model.ai.chatting.ErrorMessage;
+import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
+import org.jabref.model.ai.chatting.messages.ErrorMessage;
 import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 import org.jabref.model.ai.templating.AiTemplate;
@@ -36,7 +41,7 @@ public class AiChatLogic {
     private final ChattingSystemMessageTemplate chattingSystemMessageTemplate;
     private final ChattingUserMessageTemplate chattingUserMessageTemplate;
 
-    private final ObservableList<ChatMessage> chatHistory;
+    private final ChatHistory chatHistory;
     private final ObservableList<BibEntry> entries;
     private final StringProperty name;
     private final BibDatabaseContext bibDatabaseContext;
@@ -51,7 +56,7 @@ public class AiChatLogic {
             ChattingSystemMessageTemplate chattingSystemMessageTemplate,
             ChattingUserMessageTemplate chattingUserMessageTemplate,
             BibDatabaseContext bibDatabaseContext,
-            ObservableList<ChatMessage> chatHistory,
+            ChatHistory chatHistory,
             ObservableList<BibEntry> entries,
             StringProperty name,
             AnswerEngine answerEngine
@@ -67,7 +72,11 @@ public class AiChatLogic {
         this.answerEngine = answerEngine;
 
         this.chatMemory = new ArrayList<>();
-        chatHistory.stream().filter(chatMessage -> !(chatMessage instanceof ErrorMessage)).forEach(chatMemory::add);
+        chatHistory
+                .getAllMessages()
+                .stream()
+                .filter(chatMessage -> !Objects.equals(chatMessage.messageTypeClassName(), ErrorMessage.class.getName()))
+                .forEach(record -> chatMemory.add(ChatHistoryRecordUtils.toLangchainMessage(record)));
         setSystemMessage(chattingSystemMessageTemplate.render(entries));
 
         setupListeningToPreferencesChanges();
@@ -89,7 +98,12 @@ public class AiChatLogic {
     }
 
     public AiMessage execute(UserMessage message) {
-        chatHistory.add(message);
+        chatHistory.addMessage(new ChatHistoryRecordV2(
+                UUID.randomUUID().toString(),
+                message.getClass().getName(),
+                message.singleText(),
+                Instant.now()
+        ));
 
         LOGGER.info(
                 "Sending message to AI provider ({}) for answering in {}: {}",
@@ -111,14 +125,15 @@ public class AiChatLogic {
 
         chatMemory.set(chatMemory.size() - 1, message); // Removing excerpts from the chat history.
         chatMemory.add(aiMessage);
-        chatHistory.add(aiMessage);
+        chatHistory.addMessage(new ChatHistoryRecordV2(
+                UUID.randomUUID().toString(),
+                aiMessage.getClass().getName(),
+                aiMessage.text(),
+                Instant.now()
+        ));
 
         LOGGER.debug("Message was answered by the AI provider for {}: {}", name.get(), aiMessage.text());
 
         return aiMessage;
-    }
-
-    public ObservableList<ChatMessage> getChatHistory() {
-        return chatHistory;
     }
 }

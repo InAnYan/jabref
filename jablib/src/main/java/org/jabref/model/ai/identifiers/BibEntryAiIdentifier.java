@@ -2,5 +2,11 @@ package org.jabref.model.ai.identifiers;
 
 import java.nio.file.Path;
 
+import org.jetbrains.annotations.NotNull;
+
 public record BibEntryAiIdentifier(Path databasePath, String citationKey) {
+    @Override
+    public @NotNull String toString() {
+        return databasePath.toString() + "/" + citationKey;
+    }
 }

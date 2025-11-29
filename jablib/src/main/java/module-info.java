@@ -151,6 +151,7 @@ open module org.jabref.jablib {
     exports org.jabref.model.ai.identifiers;
     exports org.jabref.model.ai.tokenization;
     exports org.jabref.logic.ai.current;
+    exports org.jabref.model.ai.llm;
     // endregion
 
     requires java.base;
@@ -298,5 +299,6 @@ open module org.jabref.jablib {
     requires org.jooq.jool;
     requires org.libreoffice.uno;
     requires transitive org.jspecify;
+    requires org.jetbrains.annotations;
     // endregion
 }

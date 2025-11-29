@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
-import org.jabref.model.ai.chatting.AiProvider;
+import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 
 import org.junit.jupiter.api.AfterEach;

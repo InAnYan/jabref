@@ -3,7 +3,7 @@ package org.jabref.logic.ai.preferences;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jabref.model.ai.chatting.AiProvider;
+import org.jabref.model.ai.llm.AiProvider;
 
 public enum PredefinedChatModel {
     GPT_4O_MINI(AiProvider.OPEN_AI, "gpt-4o-mini", 128000),

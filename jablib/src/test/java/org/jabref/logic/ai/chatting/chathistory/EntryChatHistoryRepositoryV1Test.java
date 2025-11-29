@@ -3,7 +3,7 @@ package org.jabref.logic.ai.chatting.chathistory;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepository;
+import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepositoryV1;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.identifiers.GroupAiIdentifier;
 
@@ -17,14 +17,14 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-abstract class EntryChatHistoryRepositoryTest {
+abstract class EntryChatHistoryRepositoryV1Test {
     @TempDir Path tempDir;
 
-    private EntryChatHistoryRepository storage;
+    private EntryChatHistoryRepositoryV1 storage;
 
-    abstract EntryChatHistoryRepository makeStorage(Path path);
+    abstract EntryChatHistoryRepositoryV1 makeStorage(Path path);
 
-    abstract void close(EntryChatHistoryRepository storage);
+    abstract void close(EntryChatHistoryRepositoryV1 storage);
 
     @BeforeEach
     void setUp() {

@@ -6,7 +6,8 @@ import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
 import dev.langchain4j.data.message.ChatMessage;
 
-public interface EntryChatHistoryRepository extends AutoCloseable {
+@Deprecated
+public interface EntryChatHistoryRepositoryV1 extends AutoCloseable {
     List<ChatMessage> loadMessagesForEntry(BibEntryAiIdentifier identifier);
 
     void storeMessagesForEntry(BibEntryAiIdentifier identifier, List<ChatMessage> messages);

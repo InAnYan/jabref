@@ -7,14 +7,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.jabref.logic.ai.chatting.logic.AiChatLogic;
-import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepository;
+import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepositoryV1;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.customimplementations.llms.Gpt4AllModel;
 import org.jabref.logic.ai.customimplementations.llms.JvmOpenAiChatLanguageModel;
 import org.jabref.logic.ai.customimplementations.tokenization.algorithms.TokenEstimator;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.chatting.AiProvider;
+import org.jabref.model.ai.llm.AiProvider;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import dev.langchain4j.data.message.ChatMessage;
@@ -63,7 +63,7 @@ public class CurrentChatLanguageModel implements ChatModel, AutoCloseable {
      * Update the underlying {@link dev.langchain4j.model.chat.ChatModel} by current {@link AiPreferences} parameters.
      * When the model is updated, the chat messages are not lost.
      * See {@link AiChatLogic}, where messages are stored in {@link ChatMemory},
-     * and see {@link EntryChatHistoryRepository}.
+     * and see {@link EntryChatHistoryRepositoryV1}.
      */
     private void rebuild() {
         String apiKey = aiPreferences.getApiKeyForAiProvider(aiPreferences.getAiProvider());

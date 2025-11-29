@@ -9,12 +9,11 @@ import org.jabref.gui.ai.components.util.EmbeddingModelGuardedComponent;
 import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.chatting.ChatHistory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
-
-import dev.langchain4j.data.message.ChatMessage;
 
 /**
  * Main class for AI chatting. It checks if the AI features are enabled and if the embedding model is properly set up.
@@ -27,7 +26,7 @@ public class AiChatGuardedComponent extends EmbeddingModelGuardedComponent {
     /// this parameter. However, for group chat window, you should.
     private final StringProperty name;
 
-    private final ObservableList<ChatMessage> chatHistory;
+    private final ChatHistory chatHistory;
     private final BibDatabaseContext bibDatabaseContext;
     private final ObservableList<BibEntry> entries;
     private final AiService aiService;
@@ -35,16 +34,17 @@ public class AiChatGuardedComponent extends EmbeddingModelGuardedComponent {
     private final AiPreferences aiPreferences;
     private final TaskExecutor taskExecutor;
 
-    public AiChatGuardedComponent(StringProperty name,
-                                  ObservableList<ChatMessage> chatHistory,
-                                  BibDatabaseContext bibDatabaseContext,
-                                  ObservableList<BibEntry> entries,
-                                  AiService aiService,
-                                  DialogService dialogService,
-                                  AiPreferences aiPreferences,
-                                  ExternalApplicationsPreferences externalApplicationsPreferences,
-                                  AdaptVisibleTabs adaptVisibleTabs,
-                                  TaskExecutor taskExecutor
+    public AiChatGuardedComponent(
+            StringProperty name,
+            ChatHistory chatHistory,
+            BibDatabaseContext bibDatabaseContext,
+            ObservableList<BibEntry> entries,
+            AiService aiService,
+            DialogService dialogService,
+            AiPreferences aiPreferences,
+            ExternalApplicationsPreferences externalApplicationsPreferences,
+            AdaptVisibleTabs adaptVisibleTabs,
+            TaskExecutor taskExecutor
     ) {
         super(aiService, aiPreferences, externalApplicationsPreferences, dialogService, adaptVisibleTabs);
 

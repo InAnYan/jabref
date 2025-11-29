@@ -1,4 +1,4 @@
-package org.jabref.model.ai.chatting;
+package org.jabref.model.ai.chatting.messages;
 
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.ChatMessageType;

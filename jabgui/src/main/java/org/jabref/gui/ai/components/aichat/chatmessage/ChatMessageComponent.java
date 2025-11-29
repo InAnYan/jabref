@@ -1,5 +1,6 @@
 package org.jabref.gui.ai.components.aichat.chatmessage;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import javafx.beans.property.ObjectProperty;
@@ -15,11 +16,11 @@ import javafx.scene.layout.VBox;
 
 import org.jabref.gui.util.MarkdownTextFlow;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.chatting.ErrorMessage;
+import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
+import org.jabref.model.ai.chatting.messages.ErrorMessage;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ import org.slf4j.LoggerFactory;
 public class ChatMessageComponent extends HBox {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatMessageComponent.class);
 
-    private final ObjectProperty<ChatMessage> chatMessage = new SimpleObjectProperty<>();
+    private final ObjectProperty<ChatHistoryRecordV2> chatMessage = new SimpleObjectProperty<>();
     private final ObjectProperty<Consumer<ChatMessageComponent>> onDelete = new SimpleObjectProperty<>();
 
     @FXML private HBox wrapperHBox;
@@ -55,17 +56,17 @@ public class ChatMessageComponent extends HBox {
         markdownContentPane.prefHeightProperty().bind(markdownTextFlow.heightProperty());
     }
 
-    public ChatMessageComponent(ChatMessage chatMessage, Consumer<ChatMessageComponent> onDeleteCallback) {
+    public ChatMessageComponent(ChatHistoryRecordV2 chatMessage, Consumer<ChatMessageComponent> onDeleteCallback) {
         this();
         setChatMessage(chatMessage);
         setOnDelete(onDeleteCallback);
     }
 
-    public void setChatMessage(ChatMessage chatMessage) {
+    public void setChatMessage(ChatHistoryRecordV2 chatMessage) {
         this.chatMessage.set(chatMessage);
     }
 
-    public ChatMessage getChatMessage() {
+    public ChatHistoryRecordV2 getChatMessage() {
         return chatMessage.get();
     }
 
@@ -74,32 +75,28 @@ public class ChatMessageComponent extends HBox {
     }
 
     private void loadChatMessage() {
-        switch (chatMessage.get()) {
-            case UserMessage userMessage -> {
-                setColor("-jr-ai-message-user", "-jr-ai-message-user-border");
-                setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
-                wrapperHBox.setAlignment(Pos.TOP_RIGHT);
-                sourceLabel.setText(Localization.lang("User"));
-                markdownTextFlow.setMarkdown(userMessage.singleText());
-            }
+        String type = chatMessage.get().messageTypeClassName();
+        String content = chatMessage.get().content();
 
-            case AiMessage aiMessage -> {
-                setColor("-jr-ai-message-ai", "-jr-ai-message-ai-border");
-                setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
-                wrapperHBox.setAlignment(Pos.TOP_LEFT);
-                sourceLabel.setText(Localization.lang("AI"));
-                markdownTextFlow.setMarkdown(aiMessage.text());
-            }
-
-            case ErrorMessage errorMessage -> {
-                setColor("-jr-ai-message-error", "-jr-ai-message-error-border");
-                setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
-                sourceLabel.setText(Localization.lang("Error"));
-                markdownTextFlow.setMarkdown(errorMessage.getText());
-            }
-
-            default ->
-                    LOGGER.error("ChatMessageComponent supports only user, AI, or error messages, but other type was passed: {}", chatMessage.get().type().name());
+        if (Objects.equals(type, UserMessage.class.getName())) {
+            setColor("-jr-ai-message-user", "-jr-ai-message-user-border");
+            setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+            wrapperHBox.setAlignment(Pos.TOP_RIGHT);
+            sourceLabel.setText(Localization.lang("User"));
+            markdownTextFlow.setMarkdown(content);
+        } else if (type == AiMessage.class.getName()) {
+            setColor("-jr-ai-message-ai", "-jr-ai-message-ai-border");
+            setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
+            wrapperHBox.setAlignment(Pos.TOP_LEFT);
+            sourceLabel.setText(Localization.lang("AI"));
+            markdownTextFlow.setMarkdown(content);
+        } else if (Objects.equals(type, ErrorMessage.class.getName())) {
+            setColor("-jr-ai-message-error", "-jr-ai-message-error-border");
+            setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
+            sourceLabel.setText(Localization.lang("Error"));
+            markdownTextFlow.setMarkdown(content);
+        } else {
+            LOGGER.error("ChatMessageComponent supports only user, AI, or error messages, but other type was passed: {}", type);
         }
     }
 

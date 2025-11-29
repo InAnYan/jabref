@@ -28,8 +28,11 @@ import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.CustomLocalDragboard;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.chatting.ChatHistory;
+import org.jabref.logic.ai.chatting.GroupChatHistory;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.ai.identifiers.GroupAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
@@ -47,7 +50,6 @@ import org.jabref.model.groups.WordKeywordGroup;
 import org.jabref.model.metadata.MetaData;
 
 import com.tobiasdiez.easybind.EasyBind;
-import dev.langchain4j.data.message.ChatMessage;
 import org.jspecify.annotations.NonNull;
 
 public class GroupTreeViewModel extends AbstractViewModel {
@@ -465,13 +467,15 @@ public class GroupTreeViewModel extends AbstractViewModel {
         StringProperty nameProperty = new SimpleStringProperty(Localization.lang("Group %0", groupNameProperty.get()));
         groupNameProperty.addListener((obs, oldValue, newValue) -> nameProperty.setValue(Localization.lang("Group %0", groupNameProperty.get())));
 
-        ObservableList<ChatMessage> chatHistory = aiService.getGroupChatHistoryService().getChatHistory(currentDatabase.get(), group.getGroupNode());
+        // TODO: Unchecked get.
+        ChatHistory chatHistory =
+                new GroupChatHistory(aiService.getGroupChatHistoryRepository(), new GroupAiIdentifier(currentDatabase.get().getDatabasePath().get(), group.getGroupNode().getGroup().nameProperty().get()));
         ObservableList<BibEntry> bibEntries = FXCollections.observableArrayList(group.getGroupNode().findMatches(currentDatabase.get().getDatabase()));
 
         openAiChat(nameProperty, chatHistory, currentDatabase.get(), bibEntries);
     }
 
-    private void openAiChat(StringProperty name, ObservableList<ChatMessage> chatHistory, BibDatabaseContext bibDatabaseContext, ObservableList<BibEntry> entries) {
+    private void openAiChat(StringProperty name, ChatHistory chatHistory, BibDatabaseContext bibDatabaseContext, ObservableList<BibEntry> entries) {
         Optional<AiChatWindow> existingWindow = stateManager.getAiChatWindows().stream().filter(window -> window.getChatName().equals(name.get())).findFirst();
 
         if (existingWindow.isPresent()) {
