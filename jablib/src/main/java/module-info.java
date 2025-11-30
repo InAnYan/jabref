@@ -127,7 +127,8 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.pipeline.logic.ingestion;
     exports org.jabref.logic.ai.pipeline.logic.parsing;
     exports org.jabref.logic.ai.pipeline.logic.rag;
-    exports org.jabref.logic.ai.summarization.tasks;
+    exports org.jabref.logic.ai.summarization.tasks.generatesummary;
+    exports org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral;
     exports org.jabref.logic.ai.summarization.repositories;
     exports org.jabref.logic.ai.summarization.templates;
     exports org.jabref.logic.ai.summarization.logic;
@@ -155,8 +156,6 @@ open module org.jabref.jablib {
     exports org.jabref.model.ai.chatting.messages;
     exports org.jabref.logic.ai.chatting.listeners;
     exports org.jabref.logic.ai.chatting.util;
-    exports org.jabref.logic.ai.summarization.tasks.generatesummary;
-    exports org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral;
     // endregion
 
     requires java.base;
@@ -305,6 +304,5 @@ open module org.jabref.jablib {
     requires org.libreoffice.uno;
     requires transitive org.jspecify;
     requires org.jetbrains.annotations;
-    requires org.jabref.jablib;
     // endregion
 }

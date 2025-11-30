@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
-import org.jabref.logic.ai.summarization.templates.SummarizationChunkSystemMessageTemplate;
-import org.jabref.logic.ai.summarization.templates.SummarizationChunkUserMessageTemplate;
-import org.jabref.logic.ai.summarization.templates.SummarizationCombineSystemMessageTemplate;
-import org.jabref.logic.ai.summarization.templates.SummarizationCombineUserMessageTemplate;
+import org.jabref.logic.ai.summarization.templates.SummarizationChunkSystemMessageAiTemplate;
+import org.jabref.logic.ai.summarization.templates.SummarizationChunkUserMessageAiTemplate;
+import org.jabref.logic.ai.summarization.templates.SummarizationCombineSystemMessageAiTemplate;
+import org.jabref.logic.ai.summarization.templates.SummarizationCombineUserMessageAiTemplate;
 import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
@@ -26,16 +26,16 @@ public class ChunkedSummarizator implements Summarizator {
     // TODO: Make a parameter?
     private static final int MAX_OVERLAP_SIZE_IN_CHARS = 100;
 
-    private final SummarizationChunkSystemMessageTemplate summarizationChunkSystemMessageTemplate;
-    private final SummarizationChunkUserMessageTemplate summarizationChunkUserMessageTemplate;
-    private final SummarizationCombineSystemMessageTemplate summarizationCombineSystemMessageTemplate;
-    private final SummarizationCombineUserMessageTemplate summarizationCombineUserMessageTemplate;
+    private final SummarizationChunkSystemMessageAiTemplate summarizationChunkSystemMessageTemplate;
+    private final SummarizationChunkUserMessageAiTemplate summarizationChunkUserMessageTemplate;
+    private final SummarizationCombineSystemMessageAiTemplate summarizationCombineSystemMessageTemplate;
+    private final SummarizationCombineUserMessageAiTemplate summarizationCombineUserMessageTemplate;
 
     public ChunkedSummarizator(
-            SummarizationChunkSystemMessageTemplate summarizationChunkSystemMessageTemplate,
-            SummarizationChunkUserMessageTemplate summarizationChunkUserMessageTemplate,
-            SummarizationCombineSystemMessageTemplate summarizationCombineSystemMessageTemplate,
-            SummarizationCombineUserMessageTemplate summarizationCombineUserMessageTemplate
+            SummarizationChunkSystemMessageAiTemplate summarizationChunkSystemMessageTemplate,
+            SummarizationChunkUserMessageAiTemplate summarizationChunkUserMessageTemplate,
+            SummarizationCombineSystemMessageAiTemplate summarizationCombineSystemMessageTemplate,
+            SummarizationCombineUserMessageAiTemplate summarizationCombineUserMessageTemplate
     ) {
         this.summarizationChunkSystemMessageTemplate = summarizationChunkSystemMessageTemplate;
         this.summarizationChunkUserMessageTemplate = summarizationChunkUserMessageTemplate;

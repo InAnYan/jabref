@@ -115,7 +115,7 @@ class AiChatComponentTest {
 
         Thread.sleep(50);
 
-        String expected = "Current AI model: " + provider.getLabel() + " " + prefs.getSelectedChatModel()
+        String expected = "Current AI model: " + provider.getDisplayName() + " " + prefs.getSelectedChatModel()
                 + ". The AI may generate inaccurate or inappropriate responses. Please verify any information provided.";
         assertEquals(expected, component.computeNoticeText());
     }
@@ -137,7 +137,7 @@ class AiChatComponentTest {
         prefs.gpt4AllChatModelProperty().set(newModel);
 
         Thread.sleep(50);
-        String expected = "Current AI model: " + provider.getLabel() + " " + newModel
+        String expected = "Current AI model: " + provider.getDisplayName() + " " + newModel
                 + ". The AI may generate inaccurate or inappropriate responses. Please verify any information provided.";
         assertEquals(expected, component.computeNoticeText());
     }

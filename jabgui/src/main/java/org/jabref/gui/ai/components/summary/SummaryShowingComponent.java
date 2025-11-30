@@ -68,7 +68,7 @@ public class SummaryShowingComponent extends VBox {
         String newInfo = summaryInfoText
                 .getText()
                 .replaceAll("%0", formatTimestamp(bibEntrySummary.timestamp()))
-                .replaceAll("%1", bibEntrySummary.aiProvider().getLabel() + " " + bibEntrySummary.model());
+                .replaceAll("%1", bibEntrySummary.aiProvider().getDisplayName() + " " + bibEntrySummary.model());
         summaryInfoText.setText(newInfo);
     }
 

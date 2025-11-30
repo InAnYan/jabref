@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
 
-import org.jabref.logic.ai.citationparsing.templates.CitationParsingSystemMessageTemplate;
-import org.jabref.logic.ai.citationparsing.templates.CitationParsingUserMessageTemplate;
+import org.jabref.logic.ai.citationparsing.templates.CitationParsingSystemMessageAiTemplate;
+import org.jabref.logic.ai.citationparsing.templates.CitationParsingUserMessageAiTemplate;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.importer.ImportFormatPreferences;
 import org.jabref.logic.importer.ParserResult;
@@ -19,13 +19,13 @@ import dev.langchain4j.data.message.UserMessage;
 public class ParseCitationsWithLlm {
     private final ImportFormatPreferences importFormatPreferences;
 
-    private final CitationParsingSystemMessageTemplate citationParsingSystemMessageTemplate;
-    private final CitationParsingUserMessageTemplate citationParsingUserMessageTemplate;
+    private final CitationParsingSystemMessageAiTemplate citationParsingSystemMessageTemplate;
+    private final CitationParsingUserMessageAiTemplate citationParsingUserMessageTemplate;
 
     public ParseCitationsWithLlm(
             ImportFormatPreferences importFormatPreferences,
-            CitationParsingSystemMessageTemplate citationParsingSystemMessageTemplate,
-            CitationParsingUserMessageTemplate citationParsingUserMessageTemplate
+            CitationParsingSystemMessageAiTemplate citationParsingSystemMessageTemplate,
+            CitationParsingUserMessageAiTemplate citationParsingUserMessageTemplate
     ) {
         this.importFormatPreferences = importFormatPreferences;
 

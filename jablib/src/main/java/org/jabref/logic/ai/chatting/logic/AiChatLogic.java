@@ -10,8 +10,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 
-import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageTemplate;
-import org.jabref.logic.ai.chatting.templates.ChattingUserMessageTemplate;
+import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageAiTemplate;
+import org.jabref.logic.ai.chatting.templates.ChattingUserMessageAiTemplate;
 import org.jabref.logic.ai.chatting.util.ChatHistory;
 import org.jabref.logic.ai.chatting.util.ChatHistoryRecordUtils;
 import org.jabref.logic.ai.pipeline.logic.rag.AnswerEngine;
@@ -22,7 +22,7 @@ import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.chatting.messages.ErrorMessage;
 import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.RelevantInformation;
-import org.jabref.model.ai.templating.AiTemplate;
+import org.jabref.model.ai.templating.AiTemplateKind;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -39,8 +39,8 @@ public class AiChatLogic {
 
     private final AiPreferences aiPreferences;
     private final ChatModel chatLanguageModel;
-    private final ChattingSystemMessageTemplate chattingSystemMessageTemplate;
-    private final ChattingUserMessageTemplate chattingUserMessageTemplate;
+    private final ChattingSystemMessageAiTemplate chattingSystemMessageTemplate;
+    private final ChattingUserMessageAiTemplate chattingUserMessageTemplate;
 
     private final ChatHistory chatHistory;
     private final ObservableList<BibEntry> entries;
@@ -54,8 +54,8 @@ public class AiChatLogic {
     public AiChatLogic(
             AiPreferences aiPreferences,
             ChatModel chatLanguageModel,
-            ChattingSystemMessageTemplate chattingSystemMessageTemplate,
-            ChattingUserMessageTemplate chattingUserMessageTemplate,
+            ChattingSystemMessageAiTemplate chattingSystemMessageTemplate,
+            ChattingUserMessageAiTemplate chattingUserMessageTemplate,
             BibDatabaseContext bibDatabaseContext,
             ChatHistory chatHistory,
             ObservableList<BibEntry> entries,
@@ -85,7 +85,7 @@ public class AiChatLogic {
 
     private void setupListeningToPreferencesChanges() {
         aiPreferences
-                .templateProperty(AiTemplate.CHATTING_SYSTEM_MESSAGE)
+                .templateProperty(AiTemplateKind.CHATTING_SYSTEM_MESSAGE)
                 .addListener(obs ->
                         setSystemMessage(chattingSystemMessageTemplate.render(entries)));
     }

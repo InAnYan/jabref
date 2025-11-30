@@ -30,7 +30,7 @@ import org.jabref.logic.util.OptionalObjectProperty;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
 import org.jabref.model.ai.llm.AiProvider;
-import org.jabref.model.ai.templating.AiTemplate;
+import org.jabref.model.ai.templating.AiTemplateKind;
 
 import de.saxsys.mvvmfx.utils.validation.FunctionBasedValidator;
 import de.saxsys.mvvmfx.utils.validation.ValidationMessage;
@@ -84,18 +84,18 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     private final StringProperty huggingFaceApiBaseUrl = new SimpleStringProperty();
     private final StringProperty gpt4AllApiBaseUrl = new SimpleStringProperty();
 
-    private final Map<AiTemplate, StringProperty> templateSources = Map.of(
-            AiTemplate.CHATTING_SYSTEM_MESSAGE, new SimpleStringProperty(),
-            AiTemplate.CHATTING_USER_MESSAGE, new SimpleStringProperty(),
-            AiTemplate.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE, new SimpleStringProperty(),
-            AiTemplate.SUMMARIZATION_CHUNK_USER_MESSAGE, new SimpleStringProperty(),
-            AiTemplate.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE, new SimpleStringProperty(),
-            AiTemplate.SUMMARIZATION_COMBINE_USER_MESSAGE, new SimpleStringProperty(),
-            AiTemplate.CITATION_PARSING_SYSTEM_MESSAGE, new SimpleStringProperty(),
-            AiTemplate.CITATION_PARSING_USER_MESSAGE, new SimpleStringProperty()
+    private final Map<AiTemplateKind, StringProperty> templateSources = Map.of(
+            AiTemplateKind.CHATTING_SYSTEM_MESSAGE, new SimpleStringProperty(),
+            AiTemplateKind.CHATTING_USER_MESSAGE, new SimpleStringProperty(),
+            AiTemplateKind.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE, new SimpleStringProperty(),
+            AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE, new SimpleStringProperty(),
+            AiTemplateKind.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE, new SimpleStringProperty(),
+            AiTemplateKind.SUMMARIZATION_COMBINE_USER_MESSAGE, new SimpleStringProperty(),
+            AiTemplateKind.CITATION_PARSING_SYSTEM_MESSAGE, new SimpleStringProperty(),
+            AiTemplateKind.CITATION_PARSING_USER_MESSAGE, new SimpleStringProperty()
     );
 
-    private final OptionalObjectProperty<AiTemplate> selectedTemplate = OptionalObjectProperty.empty();
+    private final OptionalObjectProperty<AiTemplateKind> selectedTemplate = OptionalObjectProperty.empty();
 
     private final StringProperty temperature = new SimpleStringProperty();
     private final IntegerProperty contextWindowSize = new SimpleIntegerProperty();
@@ -349,7 +349,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
         selectedEmbeddingModel.setValue(aiPreferences.getEmbeddingModel());
 
-        Arrays.stream(AiTemplate.values()).forEach(template ->
+        Arrays.stream(AiTemplateKind.values()).forEach(template ->
                 templateSources.get(template).set(aiPreferences.getTemplate(template)));
 
         temperature.setValue(LocalizedNumbers.doubleToString(aiPreferences.getTemperature()));
@@ -392,7 +392,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         aiPreferences.setHuggingFaceApiBaseUrl(huggingFaceApiBaseUrl.get() == null ? "" : huggingFaceApiBaseUrl.get());
         aiPreferences.setGpt4AllApiBaseUrl(gpt4AllApiBaseUrl.get() == null ? "" : gpt4AllApiBaseUrl.get());
 
-        Arrays.stream(AiTemplate.values()).forEach(template ->
+        Arrays.stream(AiTemplateKind.values()).forEach(template ->
                 aiPreferences.setTemplate(template, templateSources.get(template).get()));
 
         // We already check the correctness of temperature and RAG minimum score in validators, so we don't need to check it here.
@@ -419,7 +419,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     }
 
     public void resetTemplates() {
-        Arrays.stream(AiTemplate.values()).forEach(template ->
+        Arrays.stream(AiTemplateKind.values()).forEach(template ->
                 templateSources.get(template).set(AiDefaultTemplates.getTemplate(template)));
     }
 
@@ -529,11 +529,11 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         return disableApiBaseUrl;
     }
 
-    public Map<AiTemplate, StringProperty> getTemplateSources() {
+    public Map<AiTemplateKind, StringProperty> getTemplateSources() {
         return templateSources;
     }
 
-    public OptionalObjectProperty<AiTemplate> selectedTemplateProperty() {
+    public OptionalObjectProperty<AiTemplateKind> selectedTemplateProperty() {
         return selectedTemplate;
     }
 

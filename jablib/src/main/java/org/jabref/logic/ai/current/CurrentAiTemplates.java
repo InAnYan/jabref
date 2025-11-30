@@ -1,86 +1,117 @@
 package org.jabref.logic.ai.current;
 
-import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageTemplate;
-import org.jabref.logic.ai.chatting.templates.ChattingUserMessageTemplate;
-import org.jabref.logic.ai.citationparsing.templates.CitationParsingSystemMessageTemplate;
-import org.jabref.logic.ai.citationparsing.templates.CitationParsingUserMessageTemplate;
+import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageAiTemplate;
+import org.jabref.logic.ai.chatting.templates.ChattingUserMessageAiTemplate;
+import org.jabref.logic.ai.citationparsing.templates.CitationParsingSystemMessageAiTemplate;
+import org.jabref.logic.ai.citationparsing.templates.CitationParsingUserMessageAiTemplate;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.summarization.templates.SummarizationChunkSystemMessageTemplate;
-import org.jabref.logic.ai.summarization.templates.SummarizationChunkUserMessageTemplate;
-import org.jabref.logic.ai.summarization.templates.SummarizationCombineSystemMessageTemplate;
-import org.jabref.logic.ai.summarization.templates.SummarizationCombineUserMessageTemplate;
-import org.jabref.model.ai.templating.AiTemplate;
+import org.jabref.logic.ai.summarization.templates.SummarizationChunkSystemMessageAiTemplate;
+import org.jabref.logic.ai.summarization.templates.SummarizationChunkUserMessageAiTemplate;
+import org.jabref.logic.ai.summarization.templates.SummarizationCombineSystemMessageAiTemplate;
+import org.jabref.logic.ai.summarization.templates.SummarizationCombineUserMessageAiTemplate;
+import org.jabref.logic.ai.summarization.templates.SummarizationFullDocumentSystemMessageAiTemplate;
+import org.jabref.logic.ai.summarization.templates.SummarizationFullDocumentUserMessageAiTemplate;
+import org.jabref.logic.ai.templates.AiTemplatesFactory;
+import org.jabref.model.ai.templating.AiTemplateKind;
 
-public class CurrentAiTemplates {
-    private final SummarizationChunkSystemMessageTemplate summarizationChunkSystemMessageTemplate;
-    private final SummarizationChunkUserMessageTemplate summarizationChunkUserMessageTemplate;
-    private final SummarizationCombineSystemMessageTemplate summarizationCombineSystemMessageTemplate;
-    private final SummarizationCombineUserMessageTemplate summarizationCombineUserMessageTemplate;
+public class CurrentAiTemplates implements AiTemplatesFactory {
+    private final SummarizationChunkSystemMessageAiTemplate summarizationChunkSystemMessageTemplate;
+    private final SummarizationChunkUserMessageAiTemplate summarizationChunkUserMessageTemplate;
+    private final SummarizationCombineSystemMessageAiTemplate summarizationCombineSystemMessageTemplate;
+    private final SummarizationCombineUserMessageAiTemplate summarizationCombineUserMessageTemplate;
 
-    private final ChattingSystemMessageTemplate chattingSystemMessageTemplate;
-    private final ChattingUserMessageTemplate chattingUserMessageTemplate;
+    private final SummarizationFullDocumentSystemMessageAiTemplate summarizationFullDocumentSystemMessageTemplate;
+    private final SummarizationFullDocumentUserMessageAiTemplate summarizationFullDocumentUserMessageTemplate;
 
-    private final CitationParsingSystemMessageTemplate citationParsingSystemMessageTemplate;
-    private final CitationParsingUserMessageTemplate citationParsingUserMessageTemplate;
+    private final ChattingSystemMessageAiTemplate chattingSystemMessageTemplate;
+    private final ChattingUserMessageAiTemplate chattingUserMessageTemplate;
+
+    private final CitationParsingSystemMessageAiTemplate citationParsingSystemMessageTemplate;
+    private final CitationParsingUserMessageAiTemplate citationParsingUserMessageTemplate;
 
     public CurrentAiTemplates(AiPreferences aiPreferences) {
-        this.summarizationChunkSystemMessageTemplate = new SummarizationChunkSystemMessageTemplate(
-                () -> aiPreferences.getTemplate(AiTemplate.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE)
+        this.summarizationChunkSystemMessageTemplate = new SummarizationChunkSystemMessageAiTemplate(
+                () -> aiPreferences.getTemplate(AiTemplateKind.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE)
         );
-        this.summarizationChunkUserMessageTemplate = new SummarizationChunkUserMessageTemplate(
-                () -> aiPreferences.getTemplate(AiTemplate.SUMMARIZATION_CHUNK_USER_MESSAGE)
+        this.summarizationChunkUserMessageTemplate = new SummarizationChunkUserMessageAiTemplate(
+                () -> aiPreferences.getTemplate(AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE)
         );
-        this.summarizationCombineSystemMessageTemplate = new SummarizationCombineSystemMessageTemplate(
-                () -> aiPreferences.getTemplate(AiTemplate.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE)
+        this.summarizationCombineSystemMessageTemplate = new SummarizationCombineSystemMessageAiTemplate(
+                () -> aiPreferences.getTemplate(AiTemplateKind.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE)
         );
-        this.summarizationCombineUserMessageTemplate = new SummarizationCombineUserMessageTemplate(
-                () -> aiPreferences.getTemplate(AiTemplate.SUMMARIZATION_CHUNK_USER_MESSAGE)
-        );
-
-        this.chattingSystemMessageTemplate = new ChattingSystemMessageTemplate(
-                () -> aiPreferences.getTemplate(AiTemplate.CHATTING_SYSTEM_MESSAGE)
-        );
-        this.chattingUserMessageTemplate = new ChattingUserMessageTemplate(
-                () -> aiPreferences.getTemplate(AiTemplate.CHATTING_USER_MESSAGE)
+        this.summarizationCombineUserMessageTemplate = new SummarizationCombineUserMessageAiTemplate(
+                () -> aiPreferences.getTemplate(AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE)
         );
 
-        this.citationParsingSystemMessageTemplate = new CitationParsingSystemMessageTemplate(
-                () -> aiPreferences.getTemplate(AiTemplate.CITATION_PARSING_SYSTEM_MESSAGE)
+        this.summarizationFullDocumentSystemMessageTemplate = new SummarizationFullDocumentSystemMessageAiTemplate(
+                () -> aiPreferences.getTemplate(AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE)
         );
-        this.citationParsingUserMessageTemplate = new CitationParsingUserMessageTemplate(
-                () -> aiPreferences.getTemplate(AiTemplate.CITATION_PARSING_USER_MESSAGE)
+        this.summarizationFullDocumentUserMessageTemplate = new SummarizationFullDocumentUserMessageAiTemplate(
+                () -> aiPreferences.getTemplate(AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE)
+        );
+
+        this.chattingSystemMessageTemplate = new ChattingSystemMessageAiTemplate(
+                () -> aiPreferences.getTemplate(AiTemplateKind.CHATTING_SYSTEM_MESSAGE)
+        );
+        this.chattingUserMessageTemplate = new ChattingUserMessageAiTemplate(
+                () -> aiPreferences.getTemplate(AiTemplateKind.CHATTING_USER_MESSAGE)
+        );
+
+        this.citationParsingSystemMessageTemplate = new CitationParsingSystemMessageAiTemplate(
+                () -> aiPreferences.getTemplate(AiTemplateKind.CITATION_PARSING_SYSTEM_MESSAGE)
+        );
+        this.citationParsingUserMessageTemplate = new CitationParsingUserMessageAiTemplate(
+                () -> aiPreferences.getTemplate(AiTemplateKind.CITATION_PARSING_USER_MESSAGE)
         );
     }
 
-    public SummarizationChunkSystemMessageTemplate getSummarizationChunkSystemMessageTemplate() {
+    @Override
+    public SummarizationChunkSystemMessageAiTemplate getSummarizationChunkSystemMessageTemplate() {
         return summarizationChunkSystemMessageTemplate;
     }
 
-    public SummarizationChunkUserMessageTemplate getSummarizationChunkUserMessageTemplate() {
+    @Override
+    public SummarizationChunkUserMessageAiTemplate getSummarizationChunkUserMessageTemplate() {
         return summarizationChunkUserMessageTemplate;
     }
 
-    public SummarizationCombineSystemMessageTemplate getSummarizationCombineSystemMessageTemplate() {
+    @Override
+    public SummarizationCombineSystemMessageAiTemplate getSummarizationCombineSystemMessageTemplate() {
         return summarizationCombineSystemMessageTemplate;
     }
 
-    public SummarizationCombineUserMessageTemplate getSummarizationCombineUserMessageTemplate() {
+    @Override
+    public SummarizationCombineUserMessageAiTemplate getSummarizationCombineUserMessageTemplate() {
         return summarizationCombineUserMessageTemplate;
     }
 
-    public ChattingSystemMessageTemplate getChattingSystemMessageTemplate() {
+    @Override
+    public SummarizationFullDocumentSystemMessageAiTemplate getSummarizationFullDocumentSystemMessageTemplate() {
+        return summarizationFullDocumentSystemMessageTemplate;
+    }
+
+    @Override
+    public SummarizationFullDocumentUserMessageAiTemplate getSummarizationFullDocumentUserMessageTemplate() {
+        return summarizationFullDocumentUserMessageTemplate;
+    }
+
+    @Override
+    public ChattingSystemMessageAiTemplate getChattingSystemMessageTemplate() {
         return chattingSystemMessageTemplate;
     }
 
-    public ChattingUserMessageTemplate getChattingUserMessageTemplate() {
+    @Override
+    public ChattingUserMessageAiTemplate getChattingUserMessageTemplate() {
         return chattingUserMessageTemplate;
     }
 
-    public CitationParsingSystemMessageTemplate getCitationParsingSystemMessageTemplate() {
+    @Override
+    public CitationParsingSystemMessageAiTemplate getCitationParsingSystemMessageTemplate() {
         return citationParsingSystemMessageTemplate;
     }
 
-    public CitationParsingUserMessageTemplate getCitationParsingUserMessageTemplate() {
+    @Override
+    public CitationParsingUserMessageAiTemplate getCitationParsingUserMessageTemplate() {
         return citationParsingUserMessageTemplate;
     }
 }

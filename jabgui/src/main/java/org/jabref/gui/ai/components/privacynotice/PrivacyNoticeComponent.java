@@ -16,9 +16,7 @@ import org.jabref.gui.DialogService;
 import org.jabref.gui.desktop.os.NativeDesktop;
 import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.entryeditor.EntryEditorPreferences;
-import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.preferences.GuiPreferences;
-import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.model.ai.llm.AiProvider;
 
 import com.airhacks.afterburner.views.ViewLoader;
@@ -33,19 +31,14 @@ public class PrivacyNoticeComponent extends ScrollPane {
     @FXML private GridPane aiPolicies;
     @FXML private Text embeddingModelText;
 
-    private final AiPreferences aiPreferences;
     private final Runnable onIAgreeButtonClickCallback;
-    private final DialogService dialogService;
     private final AdaptVisibleTabs adaptVisibleTabs;
-    private final ExternalApplicationsPreferences externalApplicationsPreferences;
 
+    @Inject private DialogService dialogService;
     @Inject private GuiPreferences preferences;
 
-    public PrivacyNoticeComponent(AiPreferences aiPreferences, Runnable onIAgreeButtonClickCallback, ExternalApplicationsPreferences externalApplicationsPreferences, DialogService dialogService, AdaptVisibleTabs adaptVisibleTabs) {
-        this.aiPreferences = aiPreferences;
+    public PrivacyNoticeComponent(Runnable onIAgreeButtonClickCallback, AdaptVisibleTabs adaptVisibleTabs) {
         this.onIAgreeButtonClickCallback = onIAgreeButtonClickCallback;
-        this.externalApplicationsPreferences = externalApplicationsPreferences;
-        this.dialogService = dialogService;
         this.adaptVisibleTabs = adaptVisibleTabs;
 
         ViewLoader.view(this)
@@ -61,7 +54,7 @@ public class PrivacyNoticeComponent extends ScrollPane {
         addPrivacyHyperlink(aiPolicies, AiProvider.HUGGING_FACE);
         addPrivacyHyperlink(aiPolicies, AiProvider.GPT4ALL);
 
-        String newEmbeddingModelText = embeddingModelText.getText().replaceAll("%0", aiPreferences.getEmbeddingModel().sizeInfo());
+        String newEmbeddingModelText = embeddingModelText.getText().replaceAll("%0", preferences.getAiPreferences().getEmbeddingModel().sizeInfo());
         embeddingModelText.setText(newEmbeddingModelText);
 
         // Because of the https://bugs.openjdk.org/browse/JDK-8090400 bug, the text in the privacy policy cannot be
@@ -79,7 +72,7 @@ public class PrivacyNoticeComponent extends ScrollPane {
 
     private void addPrivacyHyperlink(GridPane gridPane, AiProvider aiProvider) {
         int row = gridPane.getRowCount();
-        Label aiName = new Label(aiProvider.getLabel());
+        Label aiName = new Label(aiProvider.getDisplayName());
         gridPane.add(aiName, 0, row);
 
         Hyperlink hyperlink = new Hyperlink(aiProvider.getPrivacyPolicyUrl());
@@ -91,7 +84,7 @@ public class PrivacyNoticeComponent extends ScrollPane {
 
     @FXML
     private void onIAgreeButtonClick() {
-        aiPreferences.setEnableAi(true);
+        preferences.getAiPreferences().setEnableAi(true);
         onIAgreeButtonClickCallback.run();
     }
 
@@ -102,7 +95,7 @@ public class PrivacyNoticeComponent extends ScrollPane {
 
     private void openBrowser(String link) {
         try {
-            NativeDesktop.openBrowser(link, externalApplicationsPreferences);
+            NativeDesktop.openBrowser(link, preferences.getExternalApplicationsPreferences());
         } catch (IOException e) {
             LOGGER.error("Error opening the browser to the Privacy Policy page of the AI provider.", e);
             dialogService.showErrorDialogAndWait(e);

@@ -4,6 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
 import org.jabref.logic.FilePreferences;
@@ -23,8 +24,10 @@ import org.jabref.logic.ai.pipeline.IngestionService;
 import org.jabref.logic.ai.pipeline.repositories.MVStoreIngestedDocumentsRepository;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.SummariesService;
+import org.jabref.logic.ai.summarization.SummarizationTaskAggregator;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.MVStoreSummariesRepository;
+import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;
@@ -76,6 +79,8 @@ public class AiService implements AutoCloseable {
     private final IngestionService ingestionService;
     private final SummariesService summariesService;
 
+    private final SummarizationTaskAggregator summarizationTaskAggregator;
+
     private final AiDatabaseListeners aiDatabaseListeners;
 
     public AiService(
@@ -118,6 +123,8 @@ public class AiService implements AutoCloseable {
                 shutdownSignal
         );
 
+        this.summarizationTaskAggregator = new SummarizationTaskAggregator(taskExecutor);
+
         this.aiDatabaseListeners = new AiDatabaseListeners(
                 mvStoreEntryChatHistoryStorage,
                 mvStoreGroupChatHistoryStorage,
@@ -145,6 +152,14 @@ public class AiService implements AutoCloseable {
 
     public SummariesService getSummariesService() {
         return summariesService;
+    }
+
+    public SummariesRepository getSummariesRepository() {
+        return mvStoreSummariesStorage;
+    }
+
+    public SummarizationTaskAggregator getSummarizationTaskAggregator() {
+        return summarizationTaskAggregator;
     }
 
     public CurrentAiTemplates getCurrentAiTemplates() {
@@ -178,6 +193,10 @@ public class AiService implements AutoCloseable {
     public void setupDatabase(BibDatabaseContext context) {
         aiDatabaseListeners.setupDatabase(context);
         ingestionService.setupDatabase(context);
+    }
+
+    public ReadOnlyBooleanProperty getShutdownSignal() {
+        return shutdownSignal;
     }
 
     @Override

@@ -22,7 +22,7 @@ import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.DocumentSplitterKind;
 import org.jabref.model.ai.summarization.SummarizatorKind;
-import org.jabref.model.ai.templating.AiTemplate;
+import org.jabref.model.ai.templating.AiTemplateKind;
 import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
 import com.github.javakeyring.Keyring;
@@ -72,7 +72,7 @@ public class AiPreferences {
     private final IntegerProperty ragMaxResultsCount;
     private final DoubleProperty ragMinScore;
 
-    private final Map<AiTemplate, StringProperty> templates;
+    private final Map<AiTemplateKind, StringProperty> templates;
 
     private Runnable apiKeyChangeListener;
 
@@ -103,7 +103,7 @@ public class AiPreferences {
             AnswerEngineKind answerEngineKind,
             int ragMaxResultsCount,
             double ragMinScore,
-            Map<AiTemplate, String> templates
+            Map<AiTemplateKind, String> templates
     ) {
         this.enableAi = new SimpleBooleanProperty(enableAi);
         this.autoGenerateEmbeddings = new SimpleBooleanProperty(autoGenerateEmbeddings);
@@ -143,14 +143,16 @@ public class AiPreferences {
         };
 
         this.templates = Map.of(
-                AiTemplate.CHATTING_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplate.CHATTING_SYSTEM_MESSAGE)),
-                AiTemplate.CHATTING_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplate.CHATTING_USER_MESSAGE)),
-                AiTemplate.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplate.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE)),
-                AiTemplate.SUMMARIZATION_CHUNK_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplate.SUMMARIZATION_CHUNK_USER_MESSAGE)),
-                AiTemplate.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplate.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE)),
-                AiTemplate.SUMMARIZATION_COMBINE_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplate.SUMMARIZATION_COMBINE_USER_MESSAGE)),
-                AiTemplate.CITATION_PARSING_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplate.CITATION_PARSING_SYSTEM_MESSAGE)),
-                AiTemplate.CITATION_PARSING_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplate.CITATION_PARSING_USER_MESSAGE))
+                AiTemplateKind.CHATTING_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.CHATTING_SYSTEM_MESSAGE)),
+                AiTemplateKind.CHATTING_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.CHATTING_USER_MESSAGE)),
+                AiTemplateKind.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE)),
+                AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE)),
+                AiTemplateKind.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE)),
+                AiTemplateKind.SUMMARIZATION_COMBINE_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.SUMMARIZATION_COMBINE_USER_MESSAGE)),
+                AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE)),
+                AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE)),
+                AiTemplateKind.CITATION_PARSING_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.CITATION_PARSING_SYSTEM_MESSAGE)),
+                AiTemplateKind.CITATION_PARSING_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.CITATION_PARSING_USER_MESSAGE))
         );
     }
 
@@ -158,10 +160,10 @@ public class AiPreferences {
         try (final Keyring keyring = Keyring.create()) {
             return keyring.getPassword(KEYRING_AI_SERVICE, KEYRING_AI_SERVICE_ACCOUNT + "-" + aiProvider.name());
         } catch (PasswordAccessException e) {
-            LOGGER.debug("No API key stored for provider {}. Returning an empty string", aiProvider.getLabel());
+            LOGGER.debug("No API key stored for provider {}. Returning an empty string", aiProvider.getDisplayName());
             return "";
         } catch (Exception e) {
-            LOGGER.warn("JabRef could not open keyring for retrieving {} API token", aiProvider.getLabel(), e);
+            LOGGER.warn("JabRef could not open keyring for retrieving {} API token", aiProvider.getDisplayName(), e);
             return "";
         }
     }
@@ -172,13 +174,13 @@ public class AiPreferences {
                 try {
                     keyring.deletePassword(KEYRING_AI_SERVICE, KEYRING_AI_SERVICE_ACCOUNT + "-" + aiProvider.name());
                 } catch (PasswordAccessException ex) {
-                    LOGGER.debug("API key for provider {} not stored in keyring. JabRef does not store an empty key.", aiProvider.getLabel());
+                    LOGGER.debug("API key for provider {} not stored in keyring. JabRef does not store an empty key.", aiProvider.getDisplayName());
                 }
             } else {
                 keyring.setPassword(KEYRING_AI_SERVICE, KEYRING_AI_SERVICE_ACCOUNT + "-" + aiProvider.name(), newKey);
             }
         } catch (Exception e) {
-            LOGGER.warn("JabRef could not open keyring for storing {} API token", aiProvider.getLabel(), e);
+            LOGGER.warn("JabRef could not open keyring for storing {} API token", aiProvider.getDisplayName(), e);
         }
     }
 
@@ -623,15 +625,15 @@ public class AiPreferences {
         apiKeyChangeListener.run();
     }
 
-    public void setTemplate(AiTemplate aiTemplate, String template) {
-        templateProperty(aiTemplate).set(template);
+    public void setTemplate(AiTemplateKind aiTemplateKind, String template) {
+        templateProperty(aiTemplateKind).set(template);
     }
 
-    public String getTemplate(AiTemplate aiTemplate) {
-        return templateProperty(aiTemplate).get();
+    public String getTemplate(AiTemplateKind aiTemplateKind) {
+        return templateProperty(aiTemplateKind).get();
     }
 
-    public StringProperty templateProperty(AiTemplate aiTemplate) {
-        return templates.getOrDefault(aiTemplate, new SimpleStringProperty(""));
+    public StringProperty templateProperty(AiTemplateKind aiTemplateKind) {
+        return templates.getOrDefault(aiTemplateKind, new SimpleStringProperty(""));
     }
 }

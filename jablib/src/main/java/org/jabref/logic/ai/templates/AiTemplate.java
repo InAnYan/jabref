@@ -3,12 +3,13 @@ package org.jabref.logic.ai.templates;
 import java.io.StringWriter;
 import java.util.function.Supplier;
 
+import org.jabref.model.ai.templating.AiTemplateKind;
 import org.jabref.model.entry.CanonicalBibEntry;
 
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 
-public abstract class Template {
+public abstract class AiTemplate {
     private static final VelocityEngine VELOCITY_ENGINE = new VelocityEngine();
     private static final VelocityContext BASE_CONTEXT = new VelocityContext();
 
@@ -20,7 +21,7 @@ public abstract class Template {
 
     private final Supplier<String> sourceSupplier;
 
-    public Template(Supplier<String> sourceSupplier) {
+    public AiTemplate(Supplier<String> sourceSupplier) {
         this.sourceSupplier = sourceSupplier;
     }
 
@@ -40,4 +41,6 @@ public abstract class Template {
 
     // Required by Velocity.
     public abstract String getLogName();
+
+    public abstract AiTemplateKind getKind();
 }

@@ -12,8 +12,6 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
-import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
-import org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral.GenerateSummaryForSeveralTask;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.processingstatus.ProcessingInfo;
@@ -34,6 +32,7 @@ import org.slf4j.LoggerFactory;
  * 2. The database path of the associated {@link BibDatabaseContext} must be set.
  * 3. The citation key of the {@link BibEntry} must be set and unique.
  */
+@Deprecated
 public class SummariesService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SummariesService.class);
 
@@ -116,6 +115,7 @@ public class SummariesService {
     ) {
         processingInfo.setState(ProcessingState.PROCESSING);
 
+        /*
         new GenerateSummaryTask(
                 filePreferences,
                 chatModel,
@@ -128,6 +128,8 @@ public class SummariesService {
                 .onSuccess(processingInfo::setSuccess)
                 .onFailure(processingInfo::setException)
                 .executeWith(taskExecutor);
+
+         */
     }
 
     private void startSummarizationTask(
@@ -138,6 +140,7 @@ public class SummariesService {
     ) {
         entries.forEach(processingInfo -> processingInfo.setState(ProcessingState.PROCESSING));
 
+        /*
         new GenerateSummaryForSeveralTask(
                 filePreferences,
                 taskExecutor,
@@ -149,7 +152,7 @@ public class SummariesService {
                 entries,
                 shutdownSignal
         )
-                .executeWith(taskExecutor);
+                .executeWith(taskExecutor);*/
     }
 
     /**
@@ -168,7 +171,7 @@ public class SummariesService {
         } else if (bibEntry.getCitationKey().isEmpty() || CitationKeyCheck.citationKeyIsPresentAndUnique(bibDatabaseContext, bibEntry)) {
             LOGGER.info("No valid citation key is present. Could not clear stored summary for regeneration");
         } else {
-            summariesRepository.clear(bibDatabaseContext.getDatabasePath().get(), bibEntry.getCitationKey().get());
+            //summariesRepository.clear(bibDatabaseContext.getDatabasePath().get(), bibEntry.getCitationKey().get());
         }
 
         startSummarizationTask(summarizator, bibEntry, bibDatabaseContext, processingInfo);

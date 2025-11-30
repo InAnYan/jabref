@@ -3,15 +3,15 @@ package org.jabref.logic.ai.chatting.templates;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.jabref.logic.ai.templates.Template;
+import org.jabref.logic.ai.templates.AiTemplate;
 import org.jabref.model.ai.pipeline.RelevantInformation;
-import org.jabref.model.ai.templating.AiTemplate;
+import org.jabref.model.ai.templating.AiTemplateKind;
 import org.jabref.model.entry.BibEntry;
 
 import org.apache.velocity.VelocityContext;
 
-public class ChattingUserMessageTemplate extends Template {
-    public ChattingUserMessageTemplate(Supplier<String> source) {
+public class ChattingUserMessageAiTemplate extends AiTemplate {
+    public ChattingUserMessageAiTemplate(Supplier<String> source) {
         super(source);
     }
 
@@ -27,6 +27,11 @@ public class ChattingUserMessageTemplate extends Template {
 
     @Override
     public String getLogName() {
-        return AiTemplate.CHATTING_USER_MESSAGE.name();
+        return AiTemplateKind.CHATTING_USER_MESSAGE.name();
+    }
+
+    @Override
+    public AiTemplateKind getKind() {
+        return AiTemplateKind.CHATTING_USER_MESSAGE;
     }
 }

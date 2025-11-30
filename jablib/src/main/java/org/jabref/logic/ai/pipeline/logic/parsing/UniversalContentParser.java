@@ -22,4 +22,8 @@ public class UniversalContentParser implements FileContentParser {
             return Optional.empty();
         }
     }
+
+    public static boolean isSupportedFileType(Path path) {
+        return FileUtil.isPDFFile(path);
+    }
 }

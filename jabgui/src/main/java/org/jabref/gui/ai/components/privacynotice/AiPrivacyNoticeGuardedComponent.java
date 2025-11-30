@@ -34,10 +34,7 @@ public abstract class AiPrivacyNoticeGuardedComponent extends DynamicallyChangea
         } else {
             setContent(
                     new PrivacyNoticeComponent(
-                            aiPreferences,
                             this::rebuildUi,
-                            externalApplicationsPreferences,
-                            dialogService,
                             adaptVisibleTabs
                     )
             );

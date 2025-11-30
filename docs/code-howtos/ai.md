@@ -21,3 +21,6 @@ I would like a forth layer: to distrinct database and entry, but it is what it i
 
 explain how messages are stored (v1 and v2).
 
+
+
+logical flaw in task aggregation: yoou need to add status listeners BEFORE executing.

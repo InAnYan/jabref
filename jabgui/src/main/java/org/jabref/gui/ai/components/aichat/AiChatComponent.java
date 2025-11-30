@@ -148,7 +148,7 @@ public class AiChatComponent extends VBox {
 
     @VisibleForTesting
     String computeNoticeText() {
-        String provider = aiPreferences.getAiProvider().getLabel();
+        String provider = aiPreferences.getAiProvider().getDisplayName();
         String model = aiPreferences.getSelectedChatModel();
         return noticeTemplate.replace("%0", provider + " " + model);
     }

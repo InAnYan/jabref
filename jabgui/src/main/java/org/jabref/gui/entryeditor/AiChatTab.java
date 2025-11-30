@@ -90,7 +90,7 @@ public class AiChatTab extends EntryEditorTab {
     }
 
     private void showPrivacyNotice(BibEntry entry) {
-        setContent(new PrivacyNoticeComponent(aiPreferences, () -> bindToEntry(entry), externalApplicationsPreferences, dialogService, adaptVisibleTabs));
+        setContent(new PrivacyNoticeComponent(() -> bindToEntry(entry), adaptVisibleTabs));
     }
 
     private void showErrorNotPdfs() {

@@ -56,7 +56,8 @@ public class GenerateSummaryTask extends TrackedBackgroundTask<BibEntrySummary> 
                 request.chatModel(),
                 longTaskInfo,
                 request.bibDatabaseContext(),
-                request.entry()
+                request.entry(),
+                request.regenerate()
         );
 
         LOGGER.debug("Finished summarization task for entry {}", citationKey);

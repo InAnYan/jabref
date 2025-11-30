@@ -2,25 +2,27 @@ package org.jabref.model.ai.llm;
 
 import java.io.Serializable;
 
-public enum AiProvider implements Serializable {
-    OPEN_AI("OpenAI (or API compatible)", "https://api.openai.com/v1", "https://openai.com/policies/privacy-policy/"),
-    MISTRAL_AI("Mistral AI", "https://api.mistral.ai/v1", "https://mistral.ai/terms/#privacy-policy"),
-    GEMINI("Gemini", "https://generativelanguage.googleapis.com/v1beta/", "https://ai.google.dev/gemini-api/terms"),
-    HUGGING_FACE("Hugging Face", "https://huggingface.co/api", "https://huggingface.co/privacy"),
-    GPT4ALL("GPT4All", "http://localhost:4891/v1", "https://www.nomic.ai/gpt4all/legal/privacy-policy");
+import org.jabref.logic.l10n.Localization;
 
-    private final String label;
+public enum AiProvider implements Serializable {
+    OPEN_AI(Localization.lang("OpenAI (or API compatible)"), "https://api.openai.com/v1", "https://openai.com/policies/privacy-policy/"),
+    MISTRAL_AI(Localization.lang("Mistral AI"), "https://api.mistral.ai/v1", "https://mistral.ai/terms/#privacy-policy"),
+    GEMINI(Localization.lang("Gemini"), "https://generativelanguage.googleapis.com/v1beta/", "https://ai.google.dev/gemini-api/terms"),
+    HUGGING_FACE(Localization.lang("Hugging Face"), "https://huggingface.co/api", "https://huggingface.co/privacy"),
+    GPT4ALL(Localization.lang("GPT4All"), "http://localhost:4891/v1", "https://www.nomic.ai/gpt4all/legal/privacy-policy");
+
+    private final String displayName;
     private final String apiUrl;
     private final String privacyPolicyUrl;
 
-    AiProvider(String label, String apiUrl, String privacyPolicyUrl) {
-        this.label = label;
+    AiProvider(String displayName, String apiUrl, String privacyPolicyUrl) {
+        this.displayName = displayName;
         this.apiUrl = apiUrl;
         this.privacyPolicyUrl = privacyPolicyUrl;
     }
 
-    public String getLabel() {
-        return label;
+    public String getDisplayName() {
+        return displayName;
     }
 
     public String getApiUrl() {
@@ -32,7 +34,7 @@ public enum AiProvider implements Serializable {
     }
 
     public String toString() {
-        return label;
+        return displayName;
     }
 }
 

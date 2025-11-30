@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.jabref.logic.ai.util.MVStoreBase;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.NotificationService;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 
 public class MVStoreSummariesRepository extends MVStoreBase implements SummariesRepository {
@@ -16,16 +17,16 @@ public class MVStoreSummariesRepository extends MVStoreBase implements Summaries
         super(path, dialogService);
     }
 
-    public void set(Path bibDatabasePath, String citationKey, BibEntrySummary bibEntrySummary) {
-        getMap(bibDatabasePath).put(citationKey, bibEntrySummary);
+    public void set(BibEntryAiIdentifier identifier, BibEntrySummary bibEntrySummary) {
+        getMap(identifier.databasePath()).put(identifier.citationKey(), bibEntrySummary);
     }
 
-    public Optional<BibEntrySummary> get(Path bibDatabasePath, String citationKey) {
-        return Optional.ofNullable(getMap(bibDatabasePath).get(citationKey));
+    public Optional<BibEntrySummary> get(BibEntryAiIdentifier identifier) {
+        return Optional.ofNullable(getMap(identifier.databasePath()).get(identifier.citationKey()));
     }
 
-    public void clear(Path bibDatabasePath, String citationKey) {
-        getMap(bibDatabasePath).remove(citationKey);
+    public void clear(BibEntryAiIdentifier identifier) {
+        getMap(identifier.databasePath()).remove(identifier.citationKey());
     }
 
     private Map<String, BibEntrySummary> getMap(Path bibDatabasePath) {

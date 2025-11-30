@@ -25,6 +25,7 @@ public record GenerateSummaryForSeveralTaskRequest(
         BibDatabaseContext bibDatabaseContext,
         StringProperty groupName,
         List<BibEntry> entries,
+        boolean regenerate,
         ReadOnlyBooleanProperty shutdownSignals
 ) {
     public GenerateSummaryTaskRequest toSingle(BibEntry entry) {
@@ -35,6 +36,7 @@ public record GenerateSummaryForSeveralTaskRequest(
                 summarizator,
                 bibDatabaseContext,
                 entry,
+                regenerate,
                 shutdownSignals
         );
     }
