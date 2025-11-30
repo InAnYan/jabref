@@ -5,7 +5,8 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-<BorderPane
+<fx:root
+        type="BorderPane"
         xmlns="http://javafx.com/javafx"
         xmlns:fx="http://javafx.com/fxml"
         fx:controller="org.jabref.gui.ai.statuspane.SimpleStatusPaneView">
@@ -26,4 +27,4 @@
             </Label>
         </VBox>
     </center>
-</BorderPane>
+</fx:root>

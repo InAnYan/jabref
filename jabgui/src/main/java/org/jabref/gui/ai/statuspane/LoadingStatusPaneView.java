@@ -18,6 +18,7 @@ public class LoadingStatusPaneView extends BorderPane {
 
     public LoadingStatusPaneView() {
         ViewLoader.view(this)
+                  .root(this)
                   .load();
     }
 

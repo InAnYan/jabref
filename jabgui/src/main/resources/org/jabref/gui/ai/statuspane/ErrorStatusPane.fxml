@@ -8,7 +8,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-<BorderPane
+<fx:root
+        type="BorderPane"
         xmlns="http://javafx.com/javafx"
         xmlns:fx="http://javafx.com/fxml"
         fx:controller="org.jabref.gui.ai.statuspane.ErrorStatusPaneView"
@@ -40,9 +41,11 @@
                     wrapText="true"/>
             <HBox spacing="10.0"
                   alignment="CENTER">
-                <Button fx:id="restartButton" onAction="#restart"/>
-                <Button fx:id="cancelButton" onAction="#cancel"/>
+                <Button fx:id="restartButton"
+                        onAction="#restart"/>
+                <Button fx:id="cancelButton"
+                        onAction="#cancel"/>
             </HBox>
         </VBox>
     </center>
-</BorderPane>
+</fx:root>

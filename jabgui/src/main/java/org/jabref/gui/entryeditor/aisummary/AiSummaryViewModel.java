@@ -1,7 +1,6 @@
 package org.jabref.gui.entryeditor.aisummary;
 
 import java.nio.file.Path;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import javafx.beans.property.BooleanProperty;
@@ -74,11 +73,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
     private final StringProperty processingLlmName = new SimpleStringProperty("");
 
     // Done state properties.
-    private final StringProperty summaryContent = new SimpleStringProperty("");
-    private final BooleanProperty summaryRenderMarkdown = new SimpleBooleanProperty(false);
-    private final ObjectProperty<LocalDateTime> summaryTimestamp = new SimpleObjectProperty<>();
-    private final ObjectProperty<AiProvider> summaryAiProvider = new SimpleObjectProperty<>();
-    private final StringProperty summaryModel = new SimpleStringProperty("");
+    private final ObjectProperty<BibEntrySummary> summary = new SimpleObjectProperty<>();
 
     private final ObjectProperty<Summarizator> summarizator = new SimpleObjectProperty<>();
     // Future proofing: in case it would be possible to change the chat model in the View, this property will be useful.
@@ -109,12 +104,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
         selectedSummarizatorKind.addListener((_, _, newValue) ->
                 summarizator.set(SummarizatorFactory.createSummarizator(aiService.getCurrentAiTemplates(), newValue)));
 
-        entry.addListener((_, _, newEntry) -> {
-                    if (aiPreferences.getEnableAi()) {
-                        generate(newEntry);
-                    }
-                }
-        );
+        entry.addListener(_ -> state.set(State.PENDING));
     }
 
     public void bindEntry(FullBibEntryAiIdentifier entry) {
@@ -164,14 +154,19 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
         if (bibDatabaseContext.getDatabasePath().isEmpty()) {
             state.set(State.NO_DATABASE_PATH);
+            return;
         } else if (entry.getCitationKey().isEmpty() || CitationKeyCheck.hasEmptyCitationKey(entry)) {
             state.set(State.NO_CITATION_KEY);
+            return;
         } else if (!CitationKeyCheck.citationKeyIsUnique(bibDatabaseContext, entry.getCitationKey().get())) {
             state.set(State.WRONG_CITATION_KEY);
+            return;
         } else if (entry.getFiles().isEmpty()) {
             state.set(State.NO_FILES);
+            return;
         } else if (entry.getFiles().stream().map(f -> Path.of(f.getLink())).noneMatch(UniversalContentParser::isSupportedFileType)) {
             state.set(State.NO_SUPPORTED_FILE_TYPES);
+            return;
         }
 
         GenerateSummaryTask task = aiService.getSummarizationTaskAggregator().start(
@@ -202,11 +197,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
                 case TrackedBackgroundTask.Status.SUCCESS -> {
                     state.set(State.DONE);
-                    BibEntrySummary summary = task.getResult();
-                    summaryContent.set(summary.content());
-                    summaryAiProvider.set(summary.aiProvider());
-                    summaryModel.set(summary.model());
-                    summaryTimestamp.set(summary.timestamp());
+                    summary.set(task.getResult());
                 }
             }
         });
@@ -232,24 +223,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
         return processingLlmName;
     }
 
-    public StringProperty summaryContentProperty() {
-        return summaryContent;
-    }
-
-    public BooleanProperty summaryRenderMarkdownProperty() {
-        return summaryRenderMarkdown;
-    }
-
-    public ObjectProperty<LocalDateTime> summaryTimestampProperty() {
-        return summaryTimestamp;
-    }
-
-    public ObjectProperty<AiProvider> summaryAiProviderProperty() {
-        return summaryAiProvider;
-    }
-
-    public StringProperty summaryModelProperty() {
-        return summaryModel;
+    public ObjectProperty<BibEntrySummary> summaryProperty() {
+        return summary;
     }
 
     public ListProperty<SummarizatorKind> summarizatorKindsProperty() {

@@ -1,6 +1,5 @@
 package org.jabref.gui.entryeditor.aisummary;
 
-import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -40,6 +39,8 @@ public class AiSummaryView extends StackPane {
     @FXML private SimpleStatusPaneView noFilesPane;
     @FXML private SimpleStatusPaneView noSupportedFileTypesPane;
 
+    @FXML private AiSummaryShowingView summaryShowing;
+
     @Inject private GuiPreferences preferences;
     @Inject private AiService aiService;
 
@@ -58,46 +59,83 @@ public class AiSummaryView extends StackPane {
                 aiService
         );
 
-        ObjectProperty<AiSummaryViewModel.State> state = viewModel.stateProperty();
-
         privacyNotice.visibleProperty().bind(viewModel.showAiPrivacyPolicyGuardProperty());
         privacyNotice.managedProperty().bind(viewModel.showAiPrivacyPolicyGuardProperty());
 
-        pendingPane.visibleProperty().bind(state.isEqualTo(AiSummaryViewModel.State.PENDING).and(viewModel.showAiPrivacyPolicyGuardProperty().not()));
-        pendingPane.managedProperty().bind(pendingPane.visibleProperty());
-        viewModel.processingAiProviderProperty().addListener(_ -> {
-            updateHints();
-        });
-        viewModel.processingLlmNameProperty().addListener(_ -> {
-            updateHints();
-        });
-
-        processingPane.visibleProperty().bind(state.isEqualTo(AiSummaryViewModel.State.PROCESSING));
-        processingPane.managedProperty().bind(processingPane.visibleProperty());
+        viewModel.processingAiProviderProperty().addListener(_ -> updateHints());
+        viewModel.processingLlmNameProperty().addListener(_ -> updateHints());
         viewModel.selectedSummarizatorKindProperty().addListener(_ -> updateHints());
-
-        errorPane.visibleProperty().bind(state.isEqualTo(AiSummaryViewModel.State.ERROR_WHILE_GENERATING));
-        errorPane.managedProperty().bind(errorPane.visibleProperty());
-
-        noDatabasePathPane.visibleProperty().bind(state.isEqualTo(AiSummaryViewModel.State.NO_DATABASE_PATH));
-        noDatabasePathPane.managedProperty().bind(noDatabasePathPane.visibleProperty());
-
-        noCitationKeyPane.visibleProperty().bind(state.isEqualTo(AiSummaryViewModel.State.NO_CITATION_KEY));
-        noCitationKeyPane.managedProperty().bind(noCitationKeyPane.visibleProperty());
-
-        wrongCitationKeyPane.visibleProperty().bind(state.isEqualTo(AiSummaryViewModel.State.WRONG_CITATION_KEY));
-        wrongCitationKeyPane.managedProperty().bind(wrongCitationKeyPane.visibleProperty());
-
-        noFilesPane.visibleProperty().bind(state.isEqualTo(AiSummaryViewModel.State.NO_FILES));
-        noFilesPane.managedProperty().bind(noFilesPane.visibleProperty());
-
-        noSupportedFileTypesPane.visibleProperty().bind(state.isEqualTo(AiSummaryViewModel.State.NO_SUPPORTED_FILE_TYPES));
-        noSupportedFileTypesPane.managedProperty().bind(noSupportedFileTypesPane.visibleProperty());
 
         summarizatorCombo.itemsProperty().bind(viewModel.summarizatorKindsProperty());
         summarizatorCombo.valueProperty().bindBidirectional(viewModel.selectedSummarizatorKindProperty());
 
         generateButton.setOnAction(_ -> viewModel.generate());
+
+        summaryShowing.bibEntrySummaryProperty().bind(viewModel.summaryProperty());
+
+        viewModel.stateProperty().addListener((_, _, newState) -> updateStateView(newState));
+        updateStateView(viewModel.stateProperty().get());
+    }
+
+    private void updateStateView(AiSummaryViewModel.State state) {
+        pendingPane.setVisible(false);
+        pendingPane.setManaged(false);
+        processingPane.setVisible(false);
+        processingPane.setManaged(false);
+        errorPane.setVisible(false);
+        errorPane.setManaged(false);
+        noDatabasePathPane.setVisible(false);
+        noDatabasePathPane.setManaged(false);
+        noCitationKeyPane.setVisible(false);
+        noCitationKeyPane.setManaged(false);
+        wrongCitationKeyPane.setVisible(false);
+        wrongCitationKeyPane.setManaged(false);
+        noFilesPane.setVisible(false);
+        noFilesPane.setManaged(false);
+        noSupportedFileTypesPane.setVisible(false);
+        noSupportedFileTypesPane.setManaged(false);
+        summaryShowing.setVisible(false);
+        summaryShowing.setManaged(false);
+
+        switch (state) {
+            case PENDING -> {
+                boolean show = !viewModel.showAiPrivacyPolicyGuardProperty().get();
+                pendingPane.setVisible(show);
+                pendingPane.setManaged(show);
+            }
+            case PROCESSING -> {
+                processingPane.setVisible(true);
+                processingPane.setManaged(true);
+            }
+            case ERROR_WHILE_GENERATING -> {
+                errorPane.setVisible(true);
+                errorPane.setManaged(true);
+            }
+            case NO_DATABASE_PATH -> {
+                noDatabasePathPane.setVisible(true);
+                noDatabasePathPane.setManaged(true);
+            }
+            case NO_CITATION_KEY -> {
+                noCitationKeyPane.setVisible(true);
+                noCitationKeyPane.setManaged(true);
+            }
+            case WRONG_CITATION_KEY -> {
+                wrongCitationKeyPane.setVisible(true);
+                wrongCitationKeyPane.setManaged(true);
+            }
+            case NO_FILES -> {
+                noFilesPane.setVisible(true);
+                noFilesPane.setManaged(true);
+            }
+            case NO_SUPPORTED_FILE_TYPES -> {
+                noSupportedFileTypesPane.setVisible(true);
+                noSupportedFileTypesPane.setManaged(true);
+            }
+            case DONE -> {
+                summaryShowing.setVisible(true);
+                summaryShowing.setManaged(true);
+            }
+        }
     }
 
     public void bind(BibDatabaseContext bibDatabaseContext, BibEntry entry) {

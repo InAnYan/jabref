@@ -11,6 +11,7 @@
 <?import org.jabref.gui.ai.statuspane.ErrorStatusPaneView?>
 <?import org.jabref.gui.ai.statuspane.LoadingStatusPaneView?>
 <?import org.jabref.gui.ai.statuspane.SimpleStatusPaneView?>
+<?import org.jabref.gui.entryeditor.aisummary.AiSummaryShowingView?>
 <fx:root
         type="StackPane"
         xmlns:fx="http://javafx.com/fxml"
@@ -72,5 +73,7 @@
             fx:id="noSupportedFileTypesPane"
             title="%Unable to generate summary"
             description="%Only PDF files are supported."/>
+
+    <AiSummaryShowingView fx:id="summaryShowing"/>
 
 </fx:root>

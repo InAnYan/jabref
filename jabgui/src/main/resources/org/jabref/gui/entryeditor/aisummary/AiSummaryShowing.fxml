@@ -6,7 +6,8 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
-<VBox
+<fx:root
+        type="VBox"
         xmlns="http://javafx.com/javafx"
         xmlns:fx="http://javafx.com/fxml"
         fx:controller="org.jabref.gui.entryeditor.aisummary.AiSummaryShowingView">
@@ -17,12 +18,11 @@
                 <CheckBox
                         fx:id="markdownCheckbox"
                         mnemonicParsing="false"
-                        onAction="#onMarkdownToggle"
                         text="Markdown"/>
             </left>
             <center>
-                <Button mnemonicParsing="false"
-                        onAction="#onRegenerateButtonClick"
+                <Button fx:id="regenerateButton"
+                        mnemonicParsing="false"
                         text="%Regenerate"
                         translateX="-40"/>
             </center>
@@ -38,4 +38,4 @@
                 right="8.0"
                 top="8.0"/>
     </padding>
-</VBox>
+</fx:root>
