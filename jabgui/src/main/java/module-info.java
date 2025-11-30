@@ -193,6 +193,5 @@ open module org.jabref {
     requires org.antlr.antlr4.runtime;
     requires org.libreoffice.uno;
     requires org.glassfish.grizzly;
-    requires org.jabref;
     // endregion
 }

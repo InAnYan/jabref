@@ -1,6 +1,5 @@
 package org.jabref.gui.entryeditor.aisummary;
 
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -62,22 +61,20 @@ public class AiSummaryView extends StackPane {
         ObjectProperty<AiSummaryViewModel.State> state = viewModel.stateProperty();
 
         privacyNotice.visibleProperty().bind(viewModel.showAiPrivacyPolicyGuardProperty());
-        privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
+        privacyNotice.managedProperty().bind(viewModel.showAiPrivacyPolicyGuardProperty());
 
         pendingPane.visibleProperty().bind(state.isEqualTo(AiSummaryViewModel.State.PENDING).and(viewModel.showAiPrivacyPolicyGuardProperty().not()));
         pendingPane.managedProperty().bind(pendingPane.visibleProperty());
         viewModel.processingAiProviderProperty().addListener(_ -> {
-            updatePendingHint();
-            updateProcessingLabel();
+            updateHints();
         });
         viewModel.processingLlmNameProperty().addListener(_ -> {
-            updatePendingHint();
-            updateProcessingLabel();
+            updateHints();
         });
 
         processingPane.visibleProperty().bind(state.isEqualTo(AiSummaryViewModel.State.PROCESSING));
         processingPane.managedProperty().bind(processingPane.visibleProperty());
-        viewModel.selectedSummarizatorKindProperty().addListener(_ -> updateProcessingLabel());
+        viewModel.selectedSummarizatorKindProperty().addListener(_ -> updateHints());
 
         errorPane.visibleProperty().bind(state.isEqualTo(AiSummaryViewModel.State.ERROR_WHILE_GENERATING));
         errorPane.managedProperty().bind(errorPane.visibleProperty());
@@ -100,41 +97,35 @@ public class AiSummaryView extends StackPane {
         summarizatorCombo.itemsProperty().bind(viewModel.summarizatorKindsProperty());
         summarizatorCombo.valueProperty().bindBidirectional(viewModel.selectedSummarizatorKindProperty());
 
-        errorSummarizatorCombo.itemsProperty().bind(viewModel.summarizatorKindsProperty());
-        errorSummarizatorCombo.valueProperty().bindBidirectional(viewModel.selectedSummarizatorKindProperty());
-
         generateButton.setOnAction(_ -> viewModel.generate());
-        regenerateButton.setOnAction(_ -> viewModel.regenerate());
-
-        processingLabel.textProperty().bind(Bindings.concat("Processing with ", viewModel.processingAiProviderProperty().asString(), " ", viewModel.processingLlmNameProperty()));
-
-        viewModel.errorProperty().addListener((_, _, value) -> {
-            if (value.isPresent()) {
-                errorText.setText(value.get().getLocalizedMessage());
-            } else {
-                errorText.setText("");
-            }
-        });
     }
 
     public void bind(BibDatabaseContext bibDatabaseContext, BibEntry entry) {
         viewModel.bindEntry(new FullBibEntryAiIdentifier(bibDatabaseContext, entry));
     }
 
-    private void updatePendingHint() {
+    private void updateHints() {
         pendingHint.setText(Localization.lang(
                 "Your entry will be processed by %0 %1",
                 viewModel.processingAiProviderProperty().get().getDisplayName(),
                 viewModel.processingLlmNameProperty().get())
         );
-    }
 
-    private void updateProcessingLabel() {
-        processingLabel.setText(Localization.lang(
+        processingPane.setDescription(Localization.lang(
                 "Your entry is being summarized by %0 %1 using algorithm %3",
                 viewModel.processingAiProviderProperty().get().getDisplayName(),
                 viewModel.processingLlmNameProperty().get(),
                 viewModel.selectedSummarizatorKindProperty().get().getDisplayName()
         ));
+    }
+
+    @FXML
+    private void regenerate() {
+        viewModel.regenerate();
+    }
+
+    @FXML
+    private void cancel() {
+        viewModel.cancel();
     }
 }

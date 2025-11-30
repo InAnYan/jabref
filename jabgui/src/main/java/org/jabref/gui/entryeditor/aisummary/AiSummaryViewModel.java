@@ -96,15 +96,18 @@ public class AiSummaryViewModel extends AbstractViewModel {
         AiPreferences aiPreferences = preferences.getAiPreferences();
 
         selectedSummarizatorKind.set(aiPreferences.getSummarizatorKind());
+        showAiPrivacyPolicyGuard.set(!aiPreferences.getEnableAi());
+        processingAiProvider.set(aiPreferences.getAiProvider());
+        processingLlmName.set(aiPreferences.getSelectedChatModel());
+        selectedSummarizatorKind.set(aiPreferences.getSummarizatorKind());
+        chatModel.set(aiService.getChatLanguageModel());
 
-        showAiPrivacyPolicyGuard.bind(aiPreferences.enableAiProperty());
-        aiPreferences.aiProviderProperty().bind(processingAiProvider);
+        showAiPrivacyPolicyGuard.bind(aiPreferences.enableAiProperty().not());
+        processingAiProvider.bind(aiPreferences.aiProviderProperty());
         aiPreferences.addListenerToChatModels(() -> processingLlmName.set(aiPreferences.getSelectedChatModel()));
 
         selectedSummarizatorKind.addListener((_, _, newValue) ->
                 summarizator.set(SummarizatorFactory.createSummarizator(aiService.getCurrentAiTemplates(), newValue)));
-
-        chatModel.set(aiService.getChatLanguageModel());
 
         entry.addListener((_, _, newEntry) -> {
                     if (aiPreferences.getEnableAi()) {
@@ -128,6 +131,10 @@ public class AiSummaryViewModel extends AbstractViewModel {
         if (entry.get() != null) {
             generate(entry.get());
         }
+    }
+
+    public void cancel() {
+        state.set(State.PENDING);
     }
 
     private void regenerate(FullBibEntryAiIdentifier identifier) {

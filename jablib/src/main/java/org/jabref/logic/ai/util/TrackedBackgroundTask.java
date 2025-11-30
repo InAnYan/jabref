@@ -35,12 +35,12 @@ public abstract class TrackedBackgroundTask<V> extends BackgroundTask<V> {
         try {
             status.set(Status.PROCESSING);
             V output = perform();
-            status.set(Status.SUCCESS);
             result.set(output);
+            status.set(Status.SUCCESS);
             return output;
         } catch (Exception e) {
-            status.set(Status.ERROR);
             exception.set(e);
+            status.set(Status.ERROR);
             throw e;
         }
     }

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<VBox
+        xmlns="http://javafx.com/javafx"
+        xmlns:fx="http://javafx.com/fxml"
+        fx:controller="org.jabref.gui.entryeditor.aisummary.AiSummaryShowingView">
+    <children>
+        <BorderPane
+                minHeight="30.0">
+            <left>
+                <CheckBox
+                        fx:id="markdownCheckbox"
+                        mnemonicParsing="false"
+                        onAction="#onMarkdownToggle"
+                        text="Markdown"/>
+            </left>
+            <center>
+                <Button mnemonicParsing="false"
+                        onAction="#onRegenerateButtonClick"
+                        text="%Regenerate"
+                        translateX="-40"/>
+            </center>
+        </BorderPane>
+        <Text fx:id="summaryInfoText"
+              strokeType="OUTSIDE"
+              strokeWidth="0.0"
+              text="%Generated at %0 by %1 (algorithm %2)"/>
+    </children>
+    <padding>
+        <Insets bottom="8.0"
+                left="8.0"
+                right="8.0"
+                top="8.0"/>
+    </padding>
+</VBox>

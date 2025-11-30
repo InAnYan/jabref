@@ -26,7 +26,6 @@ public class ErrorStatusPaneView extends BorderPane {
 
     public ErrorStatusPaneView() {
         ViewLoader.view(this)
-                  .root(this)
                   .load();
     }
 

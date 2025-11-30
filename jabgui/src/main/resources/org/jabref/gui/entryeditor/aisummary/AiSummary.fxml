@@ -44,7 +44,9 @@
     <ErrorStatusPaneView
             fx:id="errorPane"
             title="%Unable to generate summary"
-            description="%Got error while processing the file:"/>
+            description="%Got error while processing the file:"
+            onRestart="#regenerate"
+            onCancel="#cancel"/>
 
     <SimpleStatusPaneView
             fx:id="noDatabasePathPane"
@@ -56,12 +58,10 @@
             title="%Unable to generate summary"
             description="%Please provide a non-empty and unique citation key for this entry."/>
 
-
     <SimpleStatusPaneView
             fx:id="wrongCitationKeyPane"
             title="%Unable to generate summary"
             description="%Please provide a non-empty and unique citation key for this entry."/>
-
 
     <SimpleStatusPaneView
             fx:id="noFilesPane"

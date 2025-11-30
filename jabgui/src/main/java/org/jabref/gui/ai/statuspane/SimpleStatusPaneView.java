@@ -18,7 +18,6 @@ public class SimpleStatusPaneView extends BorderPane {
 
     public SimpleStatusPaneView() {
         ViewLoader.view(this)
-                  .root(this)
                   .load();
     }
 
