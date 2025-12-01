@@ -11,6 +11,7 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
@@ -25,7 +26,6 @@ import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTa
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.util.CitationKeyCheck;
-import org.jabref.logic.util.OptionalObjectProperty;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
 import org.jabref.model.ai.llm.AiProvider;
@@ -34,20 +34,27 @@ import org.jabref.model.ai.summarization.SummarizatorKind;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * State flow:
+ * 1. (external) Entry bound -> no database path, no citation key, wrong citation key, no files, no supported file types, pending.
+ * 2. Pending -> Processing.
+ * 3. Processing -> done, error while generating.
+ */
 public class AiSummaryViewModel extends AbstractViewModel {
     public enum State {
-        PENDING,
-        PROCESSING,
-        DONE,
-        ERROR_WHILE_GENERATING,
         NO_DATABASE_PATH,
         NO_CITATION_KEY,
         WRONG_CITATION_KEY,
         NO_FILES,
-        NO_SUPPORTED_FILE_TYPES
+        NO_SUPPORTED_FILE_TYPES,
+        PENDING,
+        PROCESSING,
+        DONE,
+        ERROR_WHILE_GENERATING,
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AiSummaryViewModel.class);
@@ -66,7 +73,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
     private final ObjectProperty<SummarizatorKind> selectedSummarizatorKind = new SimpleObjectProperty<>();
 
     // Error state properties.
-    private final OptionalObjectProperty<Exception> error = new OptionalObjectProperty<>(Optional.empty());
+    private final ObjectProperty<Exception> error = new SimpleObjectProperty<>(null);
 
     // Processing state properties.
     private final ObjectProperty<AiProvider> processingAiProvider = new SimpleObjectProperty<>();
@@ -80,6 +87,10 @@ public class AiSummaryViewModel extends AbstractViewModel {
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
 
     private final ObjectProperty<FullBibEntryAiIdentifier> entry = new SimpleObjectProperty<>();
+
+    @Nullable
+    private GenerateSummaryTask currentTask = null;
+    private final ChangeListener<TrackedBackgroundTask.Status> taskStateListener = (_, _, value) -> updateByTaskState(value);
 
     public AiSummaryViewModel(
             GuiPreferences guiPreferences,
@@ -103,8 +114,11 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
         selectedSummarizatorKind.addListener((_, _, newValue) ->
                 summarizator.set(SummarizatorFactory.createSummarizator(aiService.getCurrentAiTemplates(), newValue)));
+        summarizator.set(SummarizatorFactory.createSummarizator(aiService.getCurrentAiTemplates(), selectedSummarizatorKind.get()));
 
-        entry.addListener(_ -> state.set(State.PENDING));
+        entry.addListener((_, _, identifier) ->
+                updateState(identifier)
+        );
     }
 
     public void bindEntry(FullBibEntryAiIdentifier entry) {
@@ -127,13 +141,46 @@ public class AiSummaryViewModel extends AbstractViewModel {
         state.set(State.PENDING);
     }
 
+    private void updateState(FullBibEntryAiIdentifier identifier) {
+        BibDatabaseContext bibDatabaseContext = identifier.databaseContext();
+        BibEntry entry = identifier.entry();
+
+        if (bibDatabaseContext.getDatabasePath().isEmpty()) {
+            state.set(State.NO_DATABASE_PATH);
+        } else if (entry.getCitationKey().isEmpty() || CitationKeyCheck.hasEmptyCitationKey(entry)) {
+            state.set(State.NO_CITATION_KEY);
+        } else if (!CitationKeyCheck.citationKeyIsUnique(bibDatabaseContext, entry.getCitationKey().get())) {
+            state.set(State.WRONG_CITATION_KEY);
+        } else if (entry.getFiles().isEmpty()) {
+            state.set(State.NO_FILES);
+        } else if (entry.getFiles().stream().map(f -> Path.of(f.getLink())).noneMatch(UniversalContentParser::isSupportedFileType)) {
+            state.set(State.NO_SUPPORTED_FILE_TYPES);
+        } else {
+            BibEntryAiIdentifier identifier2 = new BibEntryAiIdentifier(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get());
+
+            Optional<BibEntrySummary> summary = aiService.getSummariesRepository().get(identifier2);
+            if (summary.isPresent()) {
+                this.summary.set(summary.get());
+                state.set(State.DONE);
+            } else {
+                Optional<GenerateSummaryTask> task = aiService.getSummarizationTaskAggregator().getTask(entry);
+                if (task.isPresent()) {
+                    updateCurrentTask(task.get());
+                    state.set(State.PROCESSING);
+                } else {
+                    state.set(State.PENDING);
+                }
+            }
+        }
+    }
+
     private void regenerate(FullBibEntryAiIdentifier identifier) {
         clearSummary(identifier);
-        startSummarization(identifier, true);
+        state.set(State.PENDING);
     }
 
     private void generate(FullBibEntryAiIdentifier identifier) {
-        startSummarization(identifier, false);
+        startSummarization(identifier);
     }
 
     public void clearSummary(FullBibEntryAiIdentifier identifier) {
@@ -148,26 +195,11 @@ public class AiSummaryViewModel extends AbstractViewModel {
         aiService.getSummariesRepository().clear(new BibEntryAiIdentifier(path.get(), citationKey.get()));
     }
 
-    private void startSummarization(FullBibEntryAiIdentifier identifier, boolean regenerate) {
+    private void startSummarization(FullBibEntryAiIdentifier identifier) {
         BibDatabaseContext bibDatabaseContext = identifier.databaseContext();
         BibEntry entry = identifier.entry();
 
-        if (bibDatabaseContext.getDatabasePath().isEmpty()) {
-            state.set(State.NO_DATABASE_PATH);
-            return;
-        } else if (entry.getCitationKey().isEmpty() || CitationKeyCheck.hasEmptyCitationKey(entry)) {
-            state.set(State.NO_CITATION_KEY);
-            return;
-        } else if (!CitationKeyCheck.citationKeyIsUnique(bibDatabaseContext, entry.getCitationKey().get())) {
-            state.set(State.WRONG_CITATION_KEY);
-            return;
-        } else if (entry.getFiles().isEmpty()) {
-            state.set(State.NO_FILES);
-            return;
-        } else if (entry.getFiles().stream().map(f -> Path.of(f.getLink())).noneMatch(UniversalContentParser::isSupportedFileType)) {
-            state.set(State.NO_SUPPORTED_FILE_TYPES);
-            return;
-        }
+        state.set(State.PROCESSING);
 
         GenerateSummaryTask task = aiService.getSummarizationTaskAggregator().start(
                 new GenerateSummaryTaskRequest(
@@ -177,30 +209,42 @@ public class AiSummaryViewModel extends AbstractViewModel {
                         summarizator.get(),
                         bibDatabaseContext,
                         entry,
-                        regenerate,
+                        false,
                         aiService.getShutdownSignal()
                 )
         );
 
-        task.statusProperty().addListener((_, _, value) -> {
-            switch (value) {
-                case TrackedBackgroundTask.Status.CANCELLED ->
-                        state.set(State.PENDING);
+        updateCurrentTask(task);
+    }
 
-                case TrackedBackgroundTask.Status.PENDING ->
-                        state.set(State.PROCESSING);
+    private void updateCurrentTask(GenerateSummaryTask task) {
+        if (currentTask != null) {
+            currentTask.statusProperty().removeListener(taskStateListener);
+        }
+        currentTask = task;
+        currentTask.statusProperty().addListener(taskStateListener);
+    }
 
-                case TrackedBackgroundTask.Status.ERROR -> {
-                    state.set(State.ERROR_WHILE_GENERATING);
-                    error.set(Optional.of(task.getException()));
-                }
+    private void updateByTaskState(TrackedBackgroundTask.Status value) {
+        assert currentTask != null;
 
-                case TrackedBackgroundTask.Status.SUCCESS -> {
-                    state.set(State.DONE);
-                    summary.set(task.getResult());
-                }
+        switch (value) {
+            case TrackedBackgroundTask.Status.CANCELLED ->
+                    state.set(State.PENDING);
+
+            case TrackedBackgroundTask.Status.PENDING ->
+                    state.set(State.PROCESSING);
+
+            case TrackedBackgroundTask.Status.ERROR -> {
+                state.set(State.ERROR_WHILE_GENERATING);
+                error.set(currentTask.getException());
             }
-        });
+
+            case TrackedBackgroundTask.Status.SUCCESS -> {
+                state.set(State.DONE);
+                summary.set(currentTask.getResult());
+            }
+        }
     }
 
     public BooleanProperty showAiPrivacyPolicyGuardProperty() {
@@ -211,7 +255,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
         return state;
     }
 
-    public OptionalObjectProperty<Exception> errorProperty() {
+    public ObjectProperty<Exception> errorProperty() {
         return error;
     }
 

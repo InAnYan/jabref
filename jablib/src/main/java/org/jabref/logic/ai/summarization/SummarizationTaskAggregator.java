@@ -2,6 +2,7 @@ package org.jabref.logic.ai.summarization;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.concurrent.Future;
 
@@ -51,6 +52,10 @@ public class SummarizationTaskAggregator {
 
     public synchronized GenerateSummaryTask start(GenerateSummaryTaskRequest request) {
         return startWithFuture(request).getValue();
+    }
+
+    public synchronized Optional<GenerateSummaryTask> getTask(BibEntry entry) {
+        return Optional.ofNullable(generateSummaryTasks.get(entry)).map(Pair::getValue);
     }
 
     public synchronized Pair<Future<Void>, GenerateSummaryForSeveralTask> start(GenerateSummaryForSeveralTaskRequest request) {

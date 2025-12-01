@@ -6,6 +6,8 @@ import java.time.format.FormatStyle;
 import java.util.Locale;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.layout.Priority;
@@ -13,6 +15,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 
+import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.gui.util.WebViewStore;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 
@@ -32,8 +35,8 @@ public class AiSummaryShowingView extends VBox {
                   .load();
     }
 
-    public ObjectProperty<BibEntrySummary> bibEntrySummaryProperty() {
-        return viewModel.bibEntrySummaryProperty();
+    public ObjectProperty<BibEntrySummary> summaryProperty() {
+        return viewModel.summaryProperty();
     }
 
     @FXML
@@ -43,10 +46,8 @@ public class AiSummaryShowingView extends VBox {
 
         viewModel.isMarkdownProperty().bindBidirectional(markdownCheckbox.selectedProperty());
         viewModel.webViewSourceProperty().addListener((_, _, value) ->
-                webView.getEngine().loadContent(value));
-        viewModel.summaryModelProperty().addListener(_ -> updateSummaryInfo());
-        viewModel.summaryTimestampProperty().addListener(_ -> updateSummaryInfo());
-        viewModel.summaryAiProviderProperty().addListener(_ -> updateSummaryInfo());
+                UiTaskExecutor.runInJavaFXThread(() -> webView.getEngine().loadContent(value)));
+        viewModel.summaryProperty().addListener(_ -> updateSummaryInfo());
     }
 
     private void initializeWebView() {
@@ -57,14 +58,36 @@ public class AiSummaryShowingView extends VBox {
     }
 
     private void updateSummaryInfo() {
+        if (viewModel.summaryProperty().get() == null) {
+            return;
+        }
+
         String newInfo = summaryInfoText
                 .getText()
-                .replaceAll("%0", formatTimestamp(viewModel.summaryTimestampProperty().get()))
-                .replaceAll("%1", viewModel.summaryAiProviderProperty().get().getDisplayName() + " " + viewModel.summaryModelProperty().get());
+                .replaceAll("%0", formatTimestamp(viewModel.summaryProperty().get().timestamp()))
+                .replaceAll("%1", viewModel.summaryProperty().get().aiProvider().getDisplayName() + " " + viewModel.summaryProperty().get().model())
+                .replaceAll("%2", viewModel.summaryProperty().get().summarizationAlgorithm().getDisplayName());
         summaryInfoText.setText(newInfo);
     }
 
     private static String formatTimestamp(LocalDateTime timestamp) {
         return timestamp.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(Locale.getDefault()));
+    }
+
+    public ObjectProperty<EventHandler<ActionEvent>> onRegenerateProperty() {
+        return viewModel.onRegenerateProperty();
+    }
+
+    public EventHandler<ActionEvent> getOnRegenerate() {
+        return viewModel.onRegenerateProperty().get();
+    }
+
+    public void setOnRegenerate(EventHandler<ActionEvent> onRegenerate) {
+        viewModel.onRegenerateProperty().set(onRegenerate);
+    }
+
+    @FXML
+    private void regenerate() {
+        viewModel.regenerate();
     }
 }

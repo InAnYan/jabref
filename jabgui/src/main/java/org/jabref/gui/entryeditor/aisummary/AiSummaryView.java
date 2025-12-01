@@ -12,6 +12,7 @@ import org.jabref.gui.ai.statuspane.ErrorStatusPaneView;
 import org.jabref.gui.ai.statuspane.LoadingStatusPaneView;
 import org.jabref.gui.ai.statuspane.SimpleStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
+import org.jabref.gui.util.ViewModelListCellFactory;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
@@ -62,16 +63,22 @@ public class AiSummaryView extends StackPane {
         privacyNotice.visibleProperty().bind(viewModel.showAiPrivacyPolicyGuardProperty());
         privacyNotice.managedProperty().bind(viewModel.showAiPrivacyPolicyGuardProperty());
 
+        errorPane.exceptionProperty().bind(viewModel.errorProperty());
+
         viewModel.processingAiProviderProperty().addListener(_ -> updateHints());
         viewModel.processingLlmNameProperty().addListener(_ -> updateHints());
         viewModel.selectedSummarizatorKindProperty().addListener(_ -> updateHints());
+        updateHints();
 
-        summarizatorCombo.itemsProperty().bind(viewModel.summarizatorKindsProperty());
+        new ViewModelListCellFactory<SummarizatorKind>()
+                .withText(SummarizatorKind::getDisplayName)
+                .install(summarizatorCombo);
+        summarizatorCombo.setItems(viewModel.summarizatorKindsProperty());
         summarizatorCombo.valueProperty().bindBidirectional(viewModel.selectedSummarizatorKindProperty());
 
         generateButton.setOnAction(_ -> viewModel.generate());
 
-        summaryShowing.bibEntrySummaryProperty().bind(viewModel.summaryProperty());
+        summaryShowing.summaryProperty().bind(viewModel.summaryProperty());
 
         viewModel.stateProperty().addListener((_, _, newState) -> updateStateView(newState));
         updateStateView(viewModel.stateProperty().get());
@@ -150,11 +157,16 @@ public class AiSummaryView extends StackPane {
         );
 
         processingPane.setDescription(Localization.lang(
-                "Your entry is being summarized by %0 %1 using algorithm %3",
+                "Your entry is being summarized by %0 %1 using algorithm %2",
                 viewModel.processingAiProviderProperty().get().getDisplayName(),
                 viewModel.processingLlmNameProperty().get(),
                 viewModel.selectedSummarizatorKindProperty().get().getDisplayName()
         ));
+    }
+
+    @FXML
+    private void generate() {
+        viewModel.generate();
     }
 
     @FXML

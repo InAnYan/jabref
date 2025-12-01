@@ -1,7 +1,5 @@
 package org.jabref.gui.entryeditor.aisummary;
 
-import java.time.LocalDateTime;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -12,16 +10,12 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
 import org.jabref.logic.layout.format.MarkdownFormatter;
-import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 
 public class AiSummaryShowingViewModel {
     private static final MarkdownFormatter MARKDOWN_FORMATTER = new MarkdownFormatter();
 
-    private final ObjectProperty<BibEntrySummary> bibEntrySummary = new SimpleObjectProperty<>();
-    private final ObjectProperty<AiProvider> summaryAiProvider = new SimpleObjectProperty<>();
-    private final StringProperty summaryModel = new SimpleStringProperty("");
-    private final ObjectProperty<LocalDateTime> summaryTimestamp = new SimpleObjectProperty<>();
+    private final ObjectProperty<BibEntrySummary> summary = new SimpleObjectProperty<>();
 
     private final BooleanProperty isMarkdown = new SimpleBooleanProperty(false);
 
@@ -30,8 +24,7 @@ public class AiSummaryShowingViewModel {
     private final ObjectProperty<EventHandler<ActionEvent>> onRegenerate = new SimpleObjectProperty<>();
 
     public AiSummaryShowingViewModel() {
-        bibEntrySummary.addListener(_ -> updateSummary());
-        bibEntrySummary.addListener(_ -> updateWebViewSource());
+        summary.addListener(_ -> updateWebViewSource());
         isMarkdown.addListener(_ -> updateWebViewSource());
     }
 
@@ -41,14 +34,12 @@ public class AiSummaryShowingViewModel {
         }
     }
 
-    private void updateSummary() {
-        summaryAiProvider.set(bibEntrySummary.get().aiProvider());
-        summaryModel.set(bibEntrySummary.get().model());
-        summaryTimestamp.set(bibEntrySummary.get().timestamp());
-    }
-
     private void updateWebViewSource() {
-        String content = bibEntrySummary.get().content();
+        if (summary.get() == null) {
+            return;
+        }
+
+        String content = summary.get().content();
         if (isMarkdown.get()) {
             webViewSource.set(MARKDOWN_FORMATTER.format(content));
         } else {
@@ -61,20 +52,8 @@ public class AiSummaryShowingViewModel {
         }
     }
 
-    public ObjectProperty<BibEntrySummary> bibEntrySummaryProperty() {
-        return bibEntrySummary;
-    }
-
-    public ObjectProperty<AiProvider> summaryAiProviderProperty() {
-        return summaryAiProvider;
-    }
-
-    public StringProperty summaryModelProperty() {
-        return summaryModel;
-    }
-
-    public ObjectProperty<LocalDateTime> summaryTimestampProperty() {
-        return summaryTimestamp;
+    public ObjectProperty<BibEntrySummary> summaryProperty() {
+        return summary;
     }
 
     public BooleanProperty isMarkdownProperty() {

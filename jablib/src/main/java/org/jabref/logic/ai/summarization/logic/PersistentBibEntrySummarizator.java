@@ -42,7 +42,7 @@ public class PersistentBibEntrySummarizator {
             BibDatabaseContext bibDatabaseContext,
             BibEntry entry,
             boolean regenerate
-    ) {
+    ) throws InterruptedException {
         Optional<BibEntrySummary> savedSummary = Optional.empty();
 
         if (bibDatabaseContext.getDatabasePath().isEmpty()) {
@@ -70,7 +70,7 @@ public class PersistentBibEntrySummarizator {
                 );
             } catch (InterruptedException e) {
                 LOGGER.debug("There was a summarization task for {}. It will be canceled, because user quits JabRef.", entry.getCitationKey().orElse("<no citation key>"));
-                return null;
+                throw e;
             }
         }
 

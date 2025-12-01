@@ -19,6 +19,7 @@ import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 
 public class BibEntrySummarizator {
@@ -31,8 +32,8 @@ public class BibEntrySummarizator {
     private final UniversalContentParser universalFileParser = new UniversalContentParser();
 
     public BibEntrySummarizator(
-            FilePreferences filePreferences,
-            Summarizator summarizator
+            @NonNull FilePreferences filePreferences,
+            @NonNull Summarizator summarizator
     ) {
         this.filePreferences = filePreferences;
         this.summarizator = summarizator;

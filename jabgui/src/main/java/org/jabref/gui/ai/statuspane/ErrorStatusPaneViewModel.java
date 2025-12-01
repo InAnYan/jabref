@@ -7,6 +7,8 @@ import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
+import org.jabref.gui.util.ExceptionsUtil;
+
 public class ErrorStatusPaneViewModel {
     private final StringProperty title = new SimpleStringProperty("");
     private final StringProperty description = new SimpleStringProperty("");
@@ -20,7 +22,7 @@ public class ErrorStatusPaneViewModel {
     private final ObjectProperty<EventHandler<ActionEvent>> onCancel = new SimpleObjectProperty<>();
 
     public ErrorStatusPaneViewModel() {
-        exception.addListener((_, _, value) -> exceptionString.set(value.getMessage()));
+        exception.addListener((_, _, value) -> exceptionString.set(ExceptionsUtil.generateExceptionMessage(value)));
     }
 
     public void restart() {

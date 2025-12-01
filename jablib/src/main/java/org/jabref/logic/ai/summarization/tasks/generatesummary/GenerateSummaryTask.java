@@ -44,7 +44,7 @@ public class GenerateSummaryTask extends TrackedBackgroundTask<BibEntrySummary> 
     }
 
     @Override
-    public BibEntrySummary perform() {
+    public BibEntrySummary perform() throws InterruptedException {
         LOGGER.debug("Starting summarization task for entry {}", citationKey);
 
         LongTaskInfo longTaskInfo = new LongTaskInfo(
