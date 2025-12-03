@@ -30,6 +30,7 @@ import org.jabref.gui.util.CustomLocalDragboard;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.util.ChatHistory;
 import org.jabref.logic.ai.chatting.util.GroupChatHistory;
+import org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral.GenerateSummaryForSeveralTaskRequest;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.identifiers.GroupAiIdentifier;
@@ -537,11 +538,20 @@ public class GroupTreeViewModel extends AbstractViewModel {
                 .filter(group::isMatch)
                 .toList();
 
-        aiService.getSummariesService().summarize(
-                aiService.getSummarizator(),
-                group.nameProperty(),
-                entries,
-                currentDatabase.get()
+        aiService.getSummarizationTaskAggregator().start(
+                new GenerateSummaryForSeveralTaskRequest(
+                        preferences.getFilePreferences(),
+                        aiService.getSummarizationTaskAggregator(),
+                        taskExecutor,
+                        aiService.getChatLanguageModel(),
+                        aiService.getSummariesRepository(),
+                        aiService.getSummarizator(),
+                        currentDatabase.get(),
+                        group.nameProperty(),
+                        entries,
+                        false,
+                        aiService.getShutdownSignal()
+                )
         );
 
         dialogService.notify(Localization.lang("Summarization started for group \"%0\".", group.getName()));

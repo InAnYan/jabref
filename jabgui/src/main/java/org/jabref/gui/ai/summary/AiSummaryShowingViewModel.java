@@ -1,4 +1,4 @@
-package org.jabref.gui.entryeditor.aisummary;
+package org.jabref.gui.ai.summary;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -16,12 +16,12 @@ public class AiSummaryShowingViewModel {
     private static final MarkdownFormatter MARKDOWN_FORMATTER = new MarkdownFormatter();
 
     private final ObjectProperty<BibEntrySummary> summary = new SimpleObjectProperty<>();
-
     private final BooleanProperty isMarkdown = new SimpleBooleanProperty(false);
 
     private final StringProperty webViewSource = new SimpleStringProperty("");
 
     private final ObjectProperty<EventHandler<ActionEvent>> onRegenerate = new SimpleObjectProperty<>();
+    private final ObjectProperty<EventHandler<ActionEvent>> onRegenerateCustom = new SimpleObjectProperty<>();
 
     public AiSummaryShowingViewModel() {
         summary.addListener(_ -> updateWebViewSource());
@@ -31,6 +31,12 @@ public class AiSummaryShowingViewModel {
     public void regenerate() {
         if (onRegenerate.get() != null) {
             onRegenerate.get().handle(new ActionEvent());
+        }
+    }
+
+    public void regenerateCustom() {
+        if (onRegenerateCustom.get() != null) {
+            onRegenerateCustom.get().handle(new ActionEvent());
         }
     }
 
@@ -66,5 +72,9 @@ public class AiSummaryShowingViewModel {
 
     public ObjectProperty<EventHandler<ActionEvent>> onRegenerateProperty() {
         return onRegenerate;
+    }
+
+    public ObjectProperty<EventHandler<ActionEvent>> onRegenerateCustomProperty() {
+        return onRegenerateCustom;
     }
 }

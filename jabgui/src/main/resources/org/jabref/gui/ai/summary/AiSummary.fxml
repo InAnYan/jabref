@@ -13,11 +13,11 @@
 <?import org.jabref.gui.ai.statuspane.ErrorStatusPaneView?>
 <?import org.jabref.gui.ai.statuspane.LoadingStatusPaneView?>
 <?import org.jabref.gui.ai.statuspane.SimpleStatusPaneView?>
-<?import org.jabref.gui.entryeditor.aisummary.AiSummaryShowingView?>
+<?import org.jabref.gui.ai.summary.AiSummaryShowingView?>
 <fx:root
         type="StackPane"
         xmlns:fx="http://javafx.com/fxml"
-        fx:controller="org.jabref.gui.entryeditor.aisummary.AiSummaryView">
+        fx:controller="org.jabref.gui.ai.summary.AiSummaryView">
     <AiPrivacyNoticeView
             fx:id="privacyNotice"/>
 
@@ -94,6 +94,7 @@
 
     <AiSummaryShowingView
             fx:id="summaryShowing"
-            onRegenerate="#regenerate"/>
+            onRegenerate="#regenerate"
+            onRegenerateCustom="#regenerateCustom"/>
 
 </fx:root>

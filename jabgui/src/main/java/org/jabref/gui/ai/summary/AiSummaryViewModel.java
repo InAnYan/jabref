@@ -1,26 +1,21 @@
-package org.jabref.gui.entryeditor.aisummary;
+package org.jabref.gui.ai.summary;
 
 import java.nio.file.Path;
 import java.util.Optional;
 
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
+import org.jabref.gui.DialogService;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.pipeline.logic.parsing.UniversalContentParser;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
@@ -28,9 +23,7 @@ import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
-import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.ai.summarization.BibEntrySummary;
-import org.jabref.model.ai.summarization.SummarizatorKind;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -40,20 +33,22 @@ import org.slf4j.LoggerFactory;
 
 /**
  * State flow:
- * 1. (external) Entry bound -> no database path, no citation key, wrong citation key, no files, no supported file types, pending.
- * 2. Pending -> Processing.
- * 3. Processing -> done, error while generating.
+ * 1. Bound to entry (external): a check is run.
+ * 2. Check (internal action): if there is a saved summary, then DONE. If there is some problem, then NO_* or WRONG_*. Otherwise if everything is good, then PROESSING with default settings.
+ * 3. PROCESSING -> CANELLED, ERROR_WHILE_GENERATING, DONE.
  */
 public class AiSummaryViewModel extends AbstractViewModel {
     public enum State {
+        DONE,
         NO_DATABASE_PATH,
         NO_CITATION_KEY,
         WRONG_CITATION_KEY,
         NO_FILES,
         NO_SUPPORTED_FILE_TYPES,
-        PENDING,
+
         PROCESSING,
-        DONE,
+        CANCELLED,
+
         ERROR_WHILE_GENERATING,
     }
 
@@ -61,32 +56,21 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
     private final GuiPreferences preferences;
     private final AiService aiService;
+    private final DialogService dialogService;
 
     // Global properties.
     private final BooleanProperty showAiPrivacyPolicyGuard = new SimpleBooleanProperty(true);
-    private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.PENDING);
-
-    // Pending state properties.
-    private final ListProperty<SummarizatorKind> summarizatorKinds = new SimpleListProperty<>(
-            FXCollections.observableArrayList(SummarizatorKind.values())
-    );
-    private final ObjectProperty<SummarizatorKind> selectedSummarizatorKind = new SimpleObjectProperty<>();
+    private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.PROCESSING);
 
     // Error state properties.
     private final ObjectProperty<Exception> error = new SimpleObjectProperty<>(null);
 
-    // Processing state properties.
-    private final ObjectProperty<AiProvider> processingAiProvider = new SimpleObjectProperty<>();
-    private final StringProperty processingLlmName = new SimpleStringProperty("");
-
     // Done state properties.
     private final ObjectProperty<BibEntrySummary> summary = new SimpleObjectProperty<>();
 
-    private final ObjectProperty<Summarizator> summarizator = new SimpleObjectProperty<>();
-    // Future proofing: in case it would be possible to change the chat model in the View, this property will be useful.
-    private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
-
     private final ObjectProperty<FullBibEntryAiIdentifier> entry = new SimpleObjectProperty<>();
+    private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
+    private final ObjectProperty<Summarizator> summarizator = new SimpleObjectProperty<>();
 
     @Nullable
     private GenerateSummaryTask currentTask = null;
@@ -94,40 +78,45 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
     public AiSummaryViewModel(
             GuiPreferences guiPreferences,
-            AiService aiService
+            AiService aiService,
+            DialogService dialogService
     ) {
         this.preferences = guiPreferences;
         this.aiService = aiService;
+        this.dialogService = dialogService;
 
         AiPreferences aiPreferences = preferences.getAiPreferences();
 
-        selectedSummarizatorKind.set(aiPreferences.getSummarizatorKind());
         showAiPrivacyPolicyGuard.set(!aiPreferences.getEnableAi());
-        processingAiProvider.set(aiPreferences.getAiProvider());
-        processingLlmName.set(aiPreferences.getSelectedChatModel());
-        selectedSummarizatorKind.set(aiPreferences.getSummarizatorKind());
-        chatModel.set(aiService.getChatLanguageModel());
-
         showAiPrivacyPolicyGuard.bind(aiPreferences.enableAiProperty().not());
-        processingAiProvider.bind(aiPreferences.aiProviderProperty());
-        aiPreferences.addListenerToChatModels(() -> processingLlmName.set(aiPreferences.getSelectedChatModel()));
 
-        selectedSummarizatorKind.addListener((_, _, newValue) ->
-                summarizator.set(SummarizatorFactory.createSummarizator(aiService.getCurrentAiTemplates(), newValue)));
-        summarizator.set(SummarizatorFactory.createSummarizator(aiService.getCurrentAiTemplates(), selectedSummarizatorKind.get()));
+        state.addListener((_, _, newValue) -> {
+            if (newValue != State.PROCESSING) {
+                setDefaultModels();
+            }
+        });
+    }
 
-        entry.addListener((_, _, identifier) ->
-                updateState(identifier)
-        );
+    private void setDefaultModels() {
+        chatModel.set(aiService.getChatLanguageModel());
+        summarizator.set(aiService.getSummarizator());
     }
 
     public void bindEntry(FullBibEntryAiIdentifier entry) {
+        removeTaskListener();
         this.entry.set(entry);
+        updateState(entry);
     }
 
     public void regenerate() {
         if (entry.get() != null) {
             regenerate(entry.get());
+        }
+    }
+
+    public void regenerateCustom() {
+        if (entry.get() != null) {
+            regenerateCustom(entry.get());
         }
     }
 
@@ -138,10 +127,16 @@ public class AiSummaryViewModel extends AbstractViewModel {
     }
 
     public void cancel() {
-        state.set(State.PENDING);
+        state.set(State.CANCELLED);
+
+        if (currentTask != null) {
+            currentTask.cancel();
+        }
     }
 
     private void updateState(FullBibEntryAiIdentifier identifier) {
+        setDefaultModels();
+
         BibDatabaseContext bibDatabaseContext = identifier.databaseContext();
         BibEntry entry = identifier.entry();
 
@@ -168,7 +163,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
                     updateCurrentTask(task.get());
                     state.set(State.PROCESSING);
                 } else {
-                    state.set(State.PENDING);
+                    generate();
                 }
             }
         }
@@ -176,11 +171,24 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
     private void regenerate(FullBibEntryAiIdentifier identifier) {
         clearSummary(identifier);
-        state.set(State.PENDING);
+        generate(identifier);
+    }
+
+    private void regenerateCustom(FullBibEntryAiIdentifier identifier) {
+        clearSummary(identifier);
+
+        AiSummaryParametersDialog parametersDialog = new AiSummaryParametersDialog();
+        Optional<Summarizator> customSummarizator = dialogService.showCustomDialogAndWait(parametersDialog);
+
+        startSummarization(
+                identifier,
+                aiService.getChatLanguageModel(),
+                customSummarizator.orElse(aiService.getSummarizator())
+        );
     }
 
     private void generate(FullBibEntryAiIdentifier identifier) {
-        startSummarization(identifier);
+        startSummarization(identifier, aiService.getChatLanguageModel(), aiService.getSummarizator());
     }
 
     public void clearSummary(FullBibEntryAiIdentifier identifier) {
@@ -195,7 +203,11 @@ public class AiSummaryViewModel extends AbstractViewModel {
         aiService.getSummariesRepository().clear(new BibEntryAiIdentifier(path.get(), citationKey.get()));
     }
 
-    private void startSummarization(FullBibEntryAiIdentifier identifier) {
+    private void startSummarization(
+            FullBibEntryAiIdentifier identifier,
+            ChatModel chatModel,
+            Summarizator summarizator
+    ) {
         BibDatabaseContext bibDatabaseContext = identifier.databaseContext();
         BibEntry entry = identifier.entry();
 
@@ -204,12 +216,11 @@ public class AiSummaryViewModel extends AbstractViewModel {
         GenerateSummaryTask task = aiService.getSummarizationTaskAggregator().start(
                 new GenerateSummaryTaskRequest(
                         preferences.getFilePreferences(),
-                        chatModel.get(),
+                        chatModel,
                         aiService.getSummariesRepository(),
-                        summarizator.get(),
+                        summarizator,
                         bibDatabaseContext,
                         entry,
-                        false,
                         aiService.getShutdownSignal()
                 )
         );
@@ -218,11 +229,15 @@ public class AiSummaryViewModel extends AbstractViewModel {
     }
 
     private void updateCurrentTask(GenerateSummaryTask task) {
+        removeTaskListener();
+        currentTask = task;
+        currentTask.statusProperty().addListener(taskStateListener);
+    }
+
+    private void removeTaskListener() {
         if (currentTask != null) {
             currentTask.statusProperty().removeListener(taskStateListener);
         }
-        currentTask = task;
-        currentTask.statusProperty().addListener(taskStateListener);
     }
 
     private void updateByTaskState(TrackedBackgroundTask.Status value) {
@@ -230,14 +245,14 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
         switch (value) {
             case TrackedBackgroundTask.Status.CANCELLED ->
-                    state.set(State.PENDING);
+                    state.set(State.CANCELLED);
 
             case TrackedBackgroundTask.Status.PENDING ->
                     state.set(State.PROCESSING);
 
             case TrackedBackgroundTask.Status.ERROR -> {
-                state.set(State.ERROR_WHILE_GENERATING);
                 error.set(currentTask.getException());
+                state.set(State.ERROR_WHILE_GENERATING);
             }
 
             case TrackedBackgroundTask.Status.SUCCESS -> {
@@ -259,23 +274,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
         return error;
     }
 
-    public ObjectProperty<AiProvider> processingAiProviderProperty() {
-        return processingAiProvider;
-    }
-
-    public StringProperty processingLlmNameProperty() {
-        return processingLlmName;
-    }
-
     public ObjectProperty<BibEntrySummary> summaryProperty() {
         return summary;
-    }
-
-    public ListProperty<SummarizatorKind> summarizatorKindsProperty() {
-        return summarizatorKinds;
-    }
-
-    public ObjectProperty<SummarizatorKind> selectedSummarizatorKindProperty() {
-        return selectedSummarizatorKind;
     }
 }

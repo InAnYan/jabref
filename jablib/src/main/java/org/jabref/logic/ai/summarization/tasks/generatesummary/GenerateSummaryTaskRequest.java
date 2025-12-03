@@ -16,7 +16,6 @@ public record GenerateSummaryTaskRequest(
         Summarizator summarizator,
         BibDatabaseContext bibDatabaseContext,
         BibEntry entry,
-        boolean regenerate,
         ReadOnlyBooleanProperty shutdownSignal
 ) {
 }

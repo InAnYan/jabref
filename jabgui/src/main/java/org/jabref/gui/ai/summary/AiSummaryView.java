@@ -1,4 +1,4 @@
-package org.jabref.gui.entryeditor.aisummary;
+package org.jabref.gui.ai.summary;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -7,6 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 
+import org.jabref.gui.DialogService;
 import org.jabref.gui.ai.AiPrivacyNoticeView;
 import org.jabref.gui.ai.statuspane.ErrorStatusPaneView;
 import org.jabref.gui.ai.statuspane.LoadingStatusPaneView;
@@ -44,6 +45,7 @@ public class AiSummaryView extends StackPane {
 
     @Inject private GuiPreferences preferences;
     @Inject private AiService aiService;
+    @Inject private DialogService dialogService;
 
     private AiSummaryViewModel viewModel;
 
@@ -57,7 +59,8 @@ public class AiSummaryView extends StackPane {
     private void initialize() {
         viewModel = new AiSummaryViewModel(
                 preferences,
-                aiService
+                aiService,
+                dialogService
         );
 
         privacyNotice.visibleProperty().bind(viewModel.showAiPrivacyPolicyGuardProperty());
@@ -172,6 +175,11 @@ public class AiSummaryView extends StackPane {
     @FXML
     private void regenerate() {
         viewModel.regenerate();
+    }
+
+    @FXML
+    private void regenerateCustom() {
+        viewModel.regenerateCustom();
     }
 
     @FXML

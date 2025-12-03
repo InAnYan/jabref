@@ -1,4 +1,4 @@
-package org.jabref.gui.entryeditor.aisummary;
+package org.jabref.gui.ai.summary;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -86,8 +86,25 @@ public class AiSummaryShowingView extends VBox {
         viewModel.onRegenerateProperty().set(onRegenerate);
     }
 
+    public ObjectProperty<EventHandler<ActionEvent>> onRegenerateCustomProperty() {
+        return viewModel.onRegenerateCustomProperty();
+    }
+
+    public EventHandler<ActionEvent> getOnRegenerateCustom() {
+        return viewModel.onRegenerateCustomProperty().get();
+    }
+
+    public void setOnRegenerateCustom(EventHandler<ActionEvent> onRegenerateCustom) {
+        viewModel.onRegenerateCustomProperty().set(onRegenerateCustom);
+    }
+
     @FXML
     private void regenerate() {
         viewModel.regenerate();
+    }
+
+    @FXML
+    private void regenerateCustom() {
+        viewModel.regenerateCustom();
     }
 }

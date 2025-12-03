@@ -1,7 +1,5 @@
 package org.jabref.logic.ai.summarization.logic;
 
-import java.util.Optional;
-
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
@@ -16,6 +14,9 @@ import org.jabref.model.entry.BibEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/// Will clear existing summary.
+///
+/// Other things check if summary already exists.
 public class PersistentBibEntrySummarizator {
     private static final Logger LOGGER = LoggerFactory.getLogger(PersistentBibEntrySummarizator.class);
 
@@ -40,38 +41,26 @@ public class PersistentBibEntrySummarizator {
             ChatModel chatModel,
             LongTaskInfo longTaskInfo,
             BibDatabaseContext bibDatabaseContext,
-            BibEntry entry,
-            boolean regenerate
+            BibEntry entry
     ) throws InterruptedException {
-        Optional<BibEntrySummary> savedSummary = Optional.empty();
-
         if (bibDatabaseContext.getDatabasePath().isEmpty()) {
             LOGGER.info("No database path is present. BibEntrySummary will not be stored in the next sessions");
         } else if (entry.getCitationKey().isEmpty()) {
             LOGGER.info("No citation key is present. BibEntrySummary will not be stored in the next sessions");
-        } else if (!regenerate) {
-            savedSummary = summariesRepository.get(new BibEntryAiIdentifier(
-                    bibDatabaseContext.getDatabasePath().get(),
-                    entry.getCitationKey().get()
-            ));
         }
 
         BibEntrySummary bibEntrySummary;
 
-        if (savedSummary.isPresent()) {
-            bibEntrySummary = savedSummary.get();
-        } else {
-            try {
-                bibEntrySummary = bibEntrySummarizator.summarize(
-                        chatModel,
-                        longTaskInfo,
-                        bibDatabaseContext,
-                        entry
-                );
-            } catch (InterruptedException e) {
-                LOGGER.debug("There was a summarization task for {}. It will be canceled, because user quits JabRef.", entry.getCitationKey().orElse("<no citation key>"));
-                throw e;
-            }
+        try {
+            bibEntrySummary = bibEntrySummarizator.summarize(
+                    chatModel,
+                    longTaskInfo,
+                    bibDatabaseContext,
+                    entry
+            );
+        } catch (InterruptedException e) {
+            LOGGER.debug("There was a summarization task for {}. It will be canceled, because user quits JabRef.", entry.getCitationKey().orElse("<no citation key>"));
+            throw e;
         }
 
         if (bibDatabaseContext.getDatabasePath().isEmpty()) {
