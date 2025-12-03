@@ -8,7 +8,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.util.ChatHistory;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
-import org.jabref.logic.ai.pipeline.logic.rag.AnswerEngine;
+import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
 
@@ -40,7 +40,7 @@ public class AiChatViewModel {
         chatMessages.clear();
         exception.set(null);
 
-        aiService.getEntryChatHistoryRepository();
+        // aiService.getEntryChatHistoryRepository();
 
         state.set(State.IDLE);
     }

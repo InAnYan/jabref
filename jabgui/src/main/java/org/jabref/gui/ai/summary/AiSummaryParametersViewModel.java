@@ -24,7 +24,7 @@ public class AiSummaryParametersViewModel {
     private final AiTemplatesFactory aiTemplatesFactory;
 
     public AiSummaryParametersViewModel(GuiPreferences preferences, AiService aiService) {
-        this.aiTemplatesFactory = aiService.getCurrentAiTemplates();
+        this.aiTemplatesFactory = aiService.getTemplatesFeature().getCurrentAiTemplates();
 
         this.summarizatorKind.set(preferences.getAiPreferences().getSummarizatorKind());
     }

@@ -36,6 +36,7 @@ public record GenerateSummaryForSeveralTaskRequest(
                 summarizator,
                 bibDatabaseContext,
                 entry,
+                false,
                 shutdownSignals
         );
     }

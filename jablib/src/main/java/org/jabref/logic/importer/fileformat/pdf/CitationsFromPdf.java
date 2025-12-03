@@ -34,7 +34,7 @@ public class CitationsFromPdf {
             LlmPlainCitationParser importer = new LlmPlainCitationParser(
                     aiService,
                     preferences.getImportFormatPreferences(),
-                    aiService.getChatLanguageModel()
+                    aiService.getChattingFeature().getCurrentChatModel()
             );
 
             return importer.importDatabase(path);

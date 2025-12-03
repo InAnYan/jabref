@@ -13,7 +13,7 @@ import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
-import org.jabref.logic.ai.pipeline.logic.parsing.UniversalContentParser;
+import org.jabref.logic.ai.ingestion.logic.parsing.UniversalContentParser;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
@@ -103,8 +103,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
     }
 
     private void setDefaultModels() {
-        chatModel.set(aiService.getChatLanguageModel());
-        summarizator.set(aiService.getSummarizator());
+        chatModel.set(aiService.getChattingFeature().getCurrentChatModel());
+        summarizator.set(aiService.getSummarizationFeature().getCurrentSummarizator());
     }
 
     public void bindEntry(FullBibEntryAiIdentifier entry) {
@@ -160,12 +160,12 @@ public class AiSummaryViewModel extends AbstractViewModel {
         } else {
             BibEntryAiIdentifier identifier2 = new BibEntryAiIdentifier(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get());
 
-            Optional<BibEntrySummary> summary = aiService.getSummariesRepository().get(identifier2);
+            Optional<BibEntrySummary> summary = aiService.getSummarizationFeature().getSummariesRepository().get(identifier2);
             if (summary.isPresent()) {
                 this.summary.set(summary.get());
                 state.set(State.DONE);
             } else {
-                Optional<GenerateSummaryTask> task = aiService.getSummarizationTaskAggregator().getTask(entry);
+                Optional<GenerateSummaryTask> task = aiService.getSummarizationFeature().getTaskAggregator().getTask(entry);
                 if (task.isPresent()) {
                     updateCurrentTask(task.get());
                     state.set(State.PROCESSING);
@@ -185,7 +185,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
         AiSummaryParametersDialog parametersDialog = new AiSummaryParametersDialog();
         Optional<Summarizator> customSummarizator = dialogService.showCustomDialogAndWait(parametersDialog);
 
-        chatModel.set(aiService.getChatLanguageModel());
+        chatModel.set(aiService.getChattingFeature().getCurrentChatModel());
         if (customSummarizator.isEmpty()) {
             return;
         }
@@ -210,7 +210,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
             return;
         }
 
-        aiService.getSummariesRepository().clear(new BibEntryAiIdentifier(path.get(), citationKey.get()));
+        aiService.getSummarizationFeature().getSummariesRepository().clear(new BibEntryAiIdentifier(path.get(), citationKey.get()));
     }
 
     private void startSummarization(FullBibEntryAiIdentifier identifier) {
@@ -219,14 +219,15 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
         state.set(State.PROCESSING);
 
-        GenerateSummaryTask task = aiService.getSummarizationTaskAggregator().start(
+        GenerateSummaryTask task = aiService.getSummarizationFeature().getTaskAggregator().start(
                 new GenerateSummaryTaskRequest(
                         preferences.getFilePreferences(),
                         chatModel.get(),
-                        aiService.getSummariesRepository(),
+                        aiService.getSummarizationFeature().getSummariesRepository(),
                         summarizator.get(),
                         bibDatabaseContext,
                         entry,
+                        true,
                         aiService.getShutdownSignal()
                 )
         );

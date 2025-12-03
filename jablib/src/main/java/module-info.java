@@ -122,20 +122,20 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.customimplementations.embeddingmodels;
     exports org.jabref.logic.ai.customimplementations.embeddingstores;
     exports org.jabref.logic.ai.customimplementations.llms;
-    exports org.jabref.logic.ai.pipeline;
-    exports org.jabref.logic.ai.pipeline.logic.documentsplitting;
-    exports org.jabref.logic.ai.pipeline.logic.ingestion;
-    exports org.jabref.logic.ai.pipeline.logic.parsing;
-    exports org.jabref.logic.ai.pipeline.logic.rag;
+    exports org.jabref.logic.ai.ingestion;
+    exports org.jabref.logic.ai.ingestion.logic.documentsplitting;
+    exports org.jabref.logic.ai.ingestion.logic.ingestion;
+    exports org.jabref.logic.ai.ingestion.logic.parsing;
+    exports org.jabref.logic.ai.rag;
     exports org.jabref.logic.ai.summarization.tasks.generatesummary;
     exports org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral;
     exports org.jabref.logic.ai.summarization.repositories;
     exports org.jabref.logic.ai.summarization.templates;
     exports org.jabref.logic.ai.summarization.logic;
     exports org.jabref.logic.ai.summarization.logic.summarizationalgorithms;
-    exports org.jabref.logic.ai.pipeline.tasks;
-    exports org.jabref.logic.ai.pipeline.repositories;
-    exports org.jabref.logic.ai.pipeline.logic;
+    exports org.jabref.logic.ai.ingestion.tasks;
+    exports org.jabref.logic.ai.ingestion.repositories;
+    exports org.jabref.logic.ai.ingestion.logic;
     exports org.jabref.logic.ai.chatting.logic;
     exports org.jabref.logic.ai.customimplementations.tokenization.algorithms;
     exports org.jabref.logic.ai.chatting.tasks;
@@ -151,11 +151,12 @@ open module org.jabref.jablib {
     exports org.jabref.model.ai.summarization;
     exports org.jabref.model.ai.identifiers;
     exports org.jabref.model.ai.tokenization;
-    exports org.jabref.logic.ai.current;
     exports org.jabref.model.ai.llm;
     exports org.jabref.model.ai.chatting.messages;
     exports org.jabref.logic.ai.chatting.listeners;
     exports org.jabref.logic.ai.chatting.util;
+    exports org.jabref.logic.ai.embedding;
+    exports org.jabref.logic.ai.rag.logic;
     // endregion
 
     requires java.base;

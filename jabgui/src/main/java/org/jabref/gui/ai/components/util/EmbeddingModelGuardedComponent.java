@@ -9,7 +9,7 @@ import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.current.CurrentEmbeddingModel;
+import org.jabref.logic.ai.embedding.CurrentEmbeddingModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
 
@@ -32,15 +32,15 @@ public abstract class EmbeddingModelGuardedComponent extends AiPrivacyNoticeGuar
 
         this.aiService = aiService;
 
-        aiService.getEmbeddingModel().registerListener(this);
+        aiService.getEmbeddingFeature().getCurrentEmbeddingModel().registerListener(this);
     }
 
     protected abstract Node showEmbeddingModelGuardedContent();
 
     @Override
     protected final Node showPrivacyPolicyGuardedContent() {
-        if (!aiService.getEmbeddingModel().isPresent()) {
-            if (aiService.getEmbeddingModel().hadErrorWhileBuildingModel()) {
+        if (!aiService.getEmbeddingFeature().getCurrentEmbeddingModel().isPresent()) {
+            if (aiService.getEmbeddingFeature().getCurrentEmbeddingModel().hadErrorWhileBuildingModel()) {
                 return showErrorWhileBuildingEmbeddingModel();
             } else {
                 return showBuildingEmbeddingModel();
@@ -54,9 +54,9 @@ public abstract class EmbeddingModelGuardedComponent extends AiPrivacyNoticeGuar
         return ErrorStateComponent.withTextAreaAndButton(
                 Localization.lang("Unable to chat"),
                 Localization.lang("An error occurred while building the embedding model"),
-                aiService.getEmbeddingModel().getErrorWhileBuildingModel(),
+                aiService.getEmbeddingFeature().getCurrentEmbeddingModel().getErrorWhileBuildingModel(),
                 Localization.lang("Rebuild"),
-                () -> aiService.getEmbeddingModel().startRebuildingTask()
+                () -> aiService.getEmbeddingFeature().getCurrentEmbeddingModel().startRebuildingTask()
         );
     }
 

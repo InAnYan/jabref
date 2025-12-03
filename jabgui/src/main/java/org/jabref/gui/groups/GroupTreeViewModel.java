@@ -470,7 +470,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
 
         // TODO: Unchecked get.
         ChatHistory chatHistory =
-                new GroupChatHistory(aiService.getGroupChatHistoryRepository(), new GroupAiIdentifier(currentDatabase.get().getDatabasePath().get(), group.getGroupNode().getGroup().nameProperty().get()));
+                new GroupChatHistory(aiService.getChattingFeature().getGroupChatHistoryRepository(), new GroupAiIdentifier(currentDatabase.get().getDatabasePath().get(), group.getGroupNode().getGroup().nameProperty().get()));
         ObservableList<BibEntry> bibEntries = FXCollections.observableArrayList(group.getGroupNode().findMatches(currentDatabase.get().getDatabase()));
 
         openAiChat(nameProperty, chatHistory, currentDatabase.get(), bibEntries);
@@ -516,7 +516,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
                 .flatMap(entry -> entry.getFiles().stream())
                 .toList();
 
-        aiService.getIngestionService().ingest(
+        aiService.getIngestionFeature().getIngestionService().ingest(
                 group.nameProperty(),
                 linkedFiles,
                 currentDatabase.get()
@@ -538,14 +538,14 @@ public class GroupTreeViewModel extends AbstractViewModel {
                 .filter(group::isMatch)
                 .toList();
 
-        aiService.getSummarizationTaskAggregator().start(
+        aiService.getSummarizationFeature().getTaskAggregator().start(
                 new GenerateSummaryForSeveralTaskRequest(
                         preferences.getFilePreferences(),
-                        aiService.getSummarizationTaskAggregator(),
+                        aiService.getSummarizationFeature().getTaskAggregator(),
                         taskExecutor,
-                        aiService.getChatLanguageModel(),
-                        aiService.getSummariesRepository(),
-                        aiService.getSummarizator(),
+                        aiService.getChattingFeature().getCurrentChatModel(),
+                        aiService.getSummarizationFeature().getSummariesRepository(),
+                        aiService.getSummarizationFeature().getCurrentSummarizator(),
                         currentDatabase.get(),
                         group.nameProperty(),
                         entries,

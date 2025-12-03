@@ -1,5 +1,7 @@
 package org.jabref.logic.ai.summarization.logic;
 
+import java.util.Optional;
+
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
@@ -41,12 +43,20 @@ public class PersistentBibEntrySummarizator {
             ChatModel chatModel,
             LongTaskInfo longTaskInfo,
             BibDatabaseContext bibDatabaseContext,
-            BibEntry entry
+            BibEntry entry,
+            boolean regenerate
     ) throws InterruptedException {
         if (bibDatabaseContext.getDatabasePath().isEmpty()) {
             LOGGER.info("No database path is present. BibEntrySummary will not be stored in the next sessions");
         } else if (entry.getCitationKey().isEmpty()) {
             LOGGER.info("No citation key is present. BibEntrySummary will not be stored in the next sessions");
+        }
+
+        BibEntryAiIdentifier identifier = new BibEntryAiIdentifier(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get());
+        Optional<BibEntrySummary> savedSummary = summariesRepository.get(identifier);
+
+        if (savedSummary.isPresent() && !regenerate) {
+            return savedSummary.get();
         }
 
         BibEntrySummary bibEntrySummary;

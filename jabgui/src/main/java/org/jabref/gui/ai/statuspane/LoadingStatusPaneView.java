@@ -1,6 +1,9 @@
 package org.jabref.gui.ai.statuspane;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
@@ -30,6 +33,11 @@ public class LoadingStatusPaneView extends BorderPane {
         descriptionLabel.textProperty().bind(viewModel.descriptionProperty());
     }
 
+    @FXML
+    private void cancel() {
+        viewModel.cancel();
+    }
+
     public StringProperty titleProperty() {
         return viewModel.titleProperty();
     }
@@ -52,5 +60,17 @@ public class LoadingStatusPaneView extends BorderPane {
 
     public void setDescription(String description) {
         viewModel.descriptionProperty().set(description);
+    }
+
+    public ObjectProperty<EventHandler<ActionEvent>> onCancelProperty() {
+        return viewModel.onCancelProperty();
+    }
+
+    public EventHandler<ActionEvent> getOnCancel() {
+        return viewModel.onCancelProperty().get();
+    }
+
+    public void setOnCancel(EventHandler<ActionEvent> onCancel) {
+        viewModel.onCancelProperty().set(onCancel);
     }
 }

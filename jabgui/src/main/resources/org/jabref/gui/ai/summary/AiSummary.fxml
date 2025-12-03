@@ -16,16 +16,15 @@
 
     <LoadingStatusPaneView
             fx:id="processingPane"
-            title="%Processing..."/>
+            title="%Processing..."
+            onCancel="#cancel"/>
 
     <ErrorStatusPaneView
             fx:id="errorPane"
             title="%Unable to generate summary"
             description="%Got error while processing the file:"
             restartButtonText="%Regenerate"
-            cancelButtonText="%Cancel"
-            onRestart="#regenerate"
-            onCancel="#cancel"/>
+            onRestart="#regenerate"/>
 
     <SimpleStatusPaneView
             fx:id="noDatabasePathPane"

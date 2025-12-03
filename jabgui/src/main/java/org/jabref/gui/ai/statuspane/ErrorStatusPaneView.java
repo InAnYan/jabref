@@ -20,7 +20,6 @@ public class ErrorStatusPaneView extends BorderPane {
     @FXML private Label descriptionLabel;
     @FXML private TextArea textArea;
     @FXML private Button restartButton;
-    @FXML private Button cancelButton;
 
     private ErrorStatusPaneViewModel viewModel;
 
@@ -38,7 +37,6 @@ public class ErrorStatusPaneView extends BorderPane {
         descriptionLabel.textProperty().bind(viewModel.descriptionProperty());
         textArea.textProperty().bind(viewModel.exceptionStringProperty());
         restartButton.textProperty().bind(viewModel.restartButtonTextProperty());
-        cancelButton.textProperty().bind(viewModel.cancelButtonTextProperty());
     }
 
     public StringProperty titleProperty() {
@@ -93,37 +91,8 @@ public class ErrorStatusPaneView extends BorderPane {
         viewModel.onRestartProperty().set(onRestart);
     }
 
-    public StringProperty cancelButtonTextProperty() {
-        return viewModel.cancelButtonTextProperty();
-    }
-
-    public String getCancelButtonText() {
-        return viewModel.cancelButtonTextProperty().get();
-    }
-
-    public void setCancelButtonText(String cancelButtonText) {
-        viewModel.cancelButtonTextProperty().set(cancelButtonText);
-    }
-
-    public ObjectProperty<EventHandler<ActionEvent>> onCancelProperty() {
-        return viewModel.onCancelProperty();
-    }
-
-    public EventHandler<ActionEvent> getOnCancel() {
-        return viewModel.onCancelProperty().get();
-    }
-
-    public void setOnCancel(EventHandler<ActionEvent> onCancel) {
-        viewModel.onCancelProperty().set(onCancel);
-    }
-
     @FXML
     private void restart() {
         viewModel.restart();
-    }
-
-    @FXML
-    private void cancel() {
-        viewModel.cancel();
     }
 }

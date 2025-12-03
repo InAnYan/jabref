@@ -55,7 +55,7 @@ public class ClearEmbeddingsAction extends SimpleCommand {
                 .flatMap(entry -> entry.getFiles().stream())
                 .toList();
 
-        BackgroundTask.wrap(() -> aiService.getIngestionService().clearEmbeddingsFor(linkedFiles))
+        BackgroundTask.wrap(() -> aiService.getIngestionFeature().getIngestionService().clearEmbeddingsFor(linkedFiles))
                       .executeWith(taskExecutor);
     }
 }

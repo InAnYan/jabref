@@ -106,17 +106,17 @@ public class AiChatComponent extends VBox {
 
         this.aiChatLogic = new AiChatLogic(
                 aiPreferences,
-                aiService.getChatLanguageModel(),
-                aiService.getCurrentAiTemplates().getChattingSystemMessageTemplate(),
-                aiService.getCurrentAiTemplates().getChattingUserMessageTemplate(),
+                aiService.getChattingFeature().getCurrentChatModel(),
+                aiService.getTemplatesFeature().getCurrentAiTemplates().getChattingSystemMessageTemplate(),
+                aiService.getTemplatesFeature().getCurrentAiTemplates().getChattingUserMessageTemplate(),
                 bibDatabaseContext,
                 chatHistory,
                 entries,
                 name,
-                aiService.getAnswerEngine()
+                aiService.getRagFeature().getCurrentAnswerEngine()
         );
 
-        aiService.getIngestionService().ingest(name, ListUtil.getLinkedFiles(entries).toList(), bibDatabaseContext);
+        aiService.getIngestionFeature().getIngestionService().ingest(name, ListUtil.getLinkedFiles(entries).toList(), bibDatabaseContext);
 
         ViewLoader.view(this)
                   .root(this)
@@ -135,7 +135,7 @@ public class AiChatComponent extends VBox {
 
     private void initializeNotifications() {
         ListUtil.getLinkedFiles(entries).forEach(file ->
-                aiService.getIngestionService().ingest(file, bibDatabaseContext).stateProperty().addListener(obs -> updateNotifications()));
+                aiService.getIngestionFeature().getIngestionService().ingest(file, bibDatabaseContext).stateProperty().addListener(obs -> updateNotifications()));
 
         updateNotifications();
     }
@@ -269,7 +269,7 @@ public class AiChatComponent extends VBox {
             }
         });
 
-        entry.getFiles().stream().map(file -> aiService.getIngestionService().ingest(file, bibDatabaseContext)).forEach(ingestionStatus -> {
+        entry.getFiles().stream().map(file -> aiService.getIngestionFeature().getIngestionService().ingest(file, bibDatabaseContext)).forEach(ingestionStatus -> {
             switch (ingestionStatus.getState()) {
                 case PROCESSING ->
                         notifications.add(new Notification(
