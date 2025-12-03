@@ -40,7 +40,7 @@ public class AiChatViewModel {
         chatMessages.clear();
         exception.set(null);
 
-        aiService.getEntryChatHistoryRepository().
+        aiService.getEntryChatHistoryRepository();
 
         state.set(State.IDLE);
     }

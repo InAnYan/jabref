@@ -4,7 +4,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<VBox
+<fx:root
+        type="VBox"
         xmlns="http://javafx.com/javafx"
         xmlns:fx="http://javafx.com/fxml"
         fx:controller="org.jabref.gui.ai.summary.AiSummaryParametersView"
@@ -16,4 +17,4 @@
                 fx:id="summarizatorCombo"
                 HBox.hgrow="ALWAYS"/>
     </HBox>
-</VBox>
+</fx:root>

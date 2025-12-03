@@ -1,10 +1,6 @@
 package org.jabref.gui.ai.summary;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 
 import org.jabref.gui.DialogService;
@@ -13,11 +9,9 @@ import org.jabref.gui.ai.statuspane.ErrorStatusPaneView;
 import org.jabref.gui.ai.statuspane.LoadingStatusPaneView;
 import org.jabref.gui.ai.statuspane.SimpleStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
-import org.jabref.gui.util.ViewModelListCellFactory;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
-import org.jabref.model.ai.summarization.SummarizatorKind;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -26,11 +20,6 @@ import jakarta.inject.Inject;
 
 public class AiSummaryView extends StackPane {
     @FXML private AiPrivacyNoticeView privacyNotice;
-
-    @FXML private BorderPane pendingPane;
-    @FXML private ComboBox<SummarizatorKind> summarizatorCombo;
-    @FXML private Button generateButton;
-    @FXML private Label pendingHint;
 
     @FXML private LoadingStatusPaneView processingPane;
     @FXML private ErrorStatusPaneView errorPane;
@@ -63,33 +52,22 @@ public class AiSummaryView extends StackPane {
                 dialogService
         );
 
-        privacyNotice.visibleProperty().bind(viewModel.showAiPrivacyPolicyGuardProperty());
-        privacyNotice.managedProperty().bind(viewModel.showAiPrivacyPolicyGuardProperty());
-
         errorPane.exceptionProperty().bind(viewModel.errorProperty());
-
-        viewModel.processingAiProviderProperty().addListener(_ -> updateHints());
-        viewModel.processingLlmNameProperty().addListener(_ -> updateHints());
-        viewModel.selectedSummarizatorKindProperty().addListener(_ -> updateHints());
-        updateHints();
-
-        new ViewModelListCellFactory<SummarizatorKind>()
-                .withText(SummarizatorKind::getDisplayName)
-                .install(summarizatorCombo);
-        summarizatorCombo.setItems(viewModel.summarizatorKindsProperty());
-        summarizatorCombo.valueProperty().bindBidirectional(viewModel.selectedSummarizatorKindProperty());
-
-        generateButton.setOnAction(_ -> viewModel.generate());
-
         summaryShowing.summaryProperty().bind(viewModel.summaryProperty());
 
-        viewModel.stateProperty().addListener((_, _, newState) -> updateStateView(newState));
-        updateStateView(viewModel.stateProperty().get());
+        viewModel.summarizatorProperty().addListener(_ -> updateHints());
+        viewModel.chatModelProperty().addListener(_ -> updateHints());
+        updateHints();
+
+        viewModel.stateProperty().addListener(_ -> updateStateView());
+        updateStateView();
     }
 
-    private void updateStateView(AiSummaryViewModel.State state) {
-        pendingPane.setVisible(false);
-        pendingPane.setManaged(false);
+    private void updateStateView() {
+        AiSummaryViewModel.State state = viewModel.stateProperty().get();
+
+        privacyNotice.setVisible(false);
+        privacyNotice.setManaged(false);
         processingPane.setVisible(false);
         processingPane.setManaged(false);
         errorPane.setVisible(false);
@@ -108,10 +86,9 @@ public class AiSummaryView extends StackPane {
         summaryShowing.setManaged(false);
 
         switch (state) {
-            case PENDING -> {
-                boolean show = !viewModel.showAiPrivacyPolicyGuardProperty().get();
-                pendingPane.setVisible(show);
-                pendingPane.setManaged(show);
+            case AI_TURNED_OFF -> {
+                privacyNotice.setVisible(true);
+                processingPane.setManaged(true);
             }
             case PROCESSING -> {
                 processingPane.setVisible(true);
@@ -153,23 +130,16 @@ public class AiSummaryView extends StackPane {
     }
 
     private void updateHints() {
-        pendingHint.setText(Localization.lang(
-                "Your entry will be processed by %0 %1",
-                viewModel.processingAiProviderProperty().get().getDisplayName(),
-                viewModel.processingLlmNameProperty().get())
-        );
+        if (viewModel.chatModelProperty().get() == null || viewModel.summarizatorProperty().get() == null) {
+            return;
+        }
 
         processingPane.setDescription(Localization.lang(
                 "Your entry is being summarized by %0 %1 using algorithm %2",
-                viewModel.processingAiProviderProperty().get().getDisplayName(),
-                viewModel.processingLlmNameProperty().get(),
-                viewModel.selectedSummarizatorKindProperty().get().getDisplayName()
+                viewModel.chatModelProperty().get().getAiProvider().getDisplayName(),
+                viewModel.chatModelProperty().get().getName(),
+                viewModel.summarizatorProperty().get().getKind().getDisplayName()
         ));
-    }
-
-    @FXML
-    private void generate() {
-        viewModel.generate();
     }
 
     @FXML

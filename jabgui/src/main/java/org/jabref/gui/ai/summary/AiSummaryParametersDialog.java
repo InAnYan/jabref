@@ -1,20 +1,25 @@
 package org.jabref.gui.ai.summary;
 
+import javafx.fxml.FXML;
+import javafx.scene.control.ButtonBar;
+
 import org.jabref.gui.util.BaseDialog;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.l10n.Localization;
 
+import com.airhacks.afterburner.views.ViewLoader;
+
 public class AiSummaryParametersDialog extends BaseDialog<Summarizator> {
-    private final AiSummaryParametersView aiSummaryParametersView;
+    @FXML private AiSummaryParametersView aiSummaryParametersView;
 
     public AiSummaryParametersDialog() {
         super();
         this.setTitle(Localization.lang("Summarization parameters"));
-        this.aiSummaryParametersView = new AiSummaryParametersView();
-        this.setResultConverter(_ -> aiSummaryParametersView.constructSummarizator());
-    }
+        this.setResultConverter(buttonType ->
+                aiSummaryParametersView.constructSummarizator(buttonType.getButtonData() == ButtonBar.ButtonData.CANCEL_CLOSE));
 
-    public Summarizator constructSummarizator() {
-        return aiSummaryParametersView.constructSummarizator();
+        ViewLoader.view(this)
+                  .load()
+                  .setAsDialogPane(this);
     }
 }

@@ -45,6 +45,7 @@ public class SummarizationTaskAggregator {
     public synchronized Pair<Future<BibEntrySummary>, GenerateSummaryTask> startWithFuture(GenerateSummaryTaskRequest request) {
         return generateSummaryTasks.computeIfAbsent(request.entry(), _ -> {
             GenerateSummaryTask task = new GenerateSummaryTask(request);
+            task.onFinished(() -> generateSummaryTasks.remove(request.entry()));
             Future<BibEntrySummary> future = taskExecutor.execute(task);
             return new Pair<>(future, task);
         });
@@ -61,6 +62,7 @@ public class SummarizationTaskAggregator {
     public synchronized Pair<Future<Void>, GenerateSummaryForSeveralTask> start(GenerateSummaryForSeveralTaskRequest request) {
         return generateSummaryForSeveralTasks.computeIfAbsent(request.entries(), _ -> {
             GenerateSummaryForSeveralTask task = new GenerateSummaryForSeveralTask(request);
+            task.onFinished(() -> generateSummaryTasks.remove(request.entries()));
             Future<Void> future = taskExecutor.execute(task);
             return new Pair<>(future, task);
         });

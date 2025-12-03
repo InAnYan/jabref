@@ -3,15 +3,14 @@ package org.jabref.gui.ai.summary;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.preferences.GuiPreferences;
+import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.pipeline.logic.parsing.UniversalContentParser;
@@ -35,10 +34,14 @@ import org.slf4j.LoggerFactory;
  * State flow:
  * 1. Bound to entry (external): a check is run.
  * 2. Check (internal action): if there is a saved summary, then DONE. If there is some problem, then NO_* or WRONG_*. Otherwise if everything is good, then PROESSING with default settings.
- * 3. PROCESSING -> CANELLED, ERROR_WHILE_GENERATING, DONE.
+ * 3. PROCESSING -> CANCELLED, ERROR_WHILE_GENERATING, DONE.
+ * <p>
+ * Also, if AI is turned off, then it will be AI_TURNED_OFF.
  */
 public class AiSummaryViewModel extends AbstractViewModel {
     public enum State {
+        AI_TURNED_OFF,
+
         DONE,
         NO_DATABASE_PATH,
         NO_CITATION_KEY,
@@ -59,8 +62,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
     private final DialogService dialogService;
 
     // Global properties.
-    private final BooleanProperty showAiPrivacyPolicyGuard = new SimpleBooleanProperty(true);
-    private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.PROCESSING);
+    private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.AI_TURNED_OFF);
 
     // Error state properties.
     private final ObjectProperty<Exception> error = new SimpleObjectProperty<>(null);
@@ -87,8 +89,11 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
         AiPreferences aiPreferences = preferences.getAiPreferences();
 
-        showAiPrivacyPolicyGuard.set(!aiPreferences.getEnableAi());
-        showAiPrivacyPolicyGuard.bind(aiPreferences.enableAiProperty().not());
+        aiPreferences.enableAiProperty().addListener((_, _, value) -> {
+            if (!value) {
+                state.set(State.AI_TURNED_OFF);
+            }
+        });
 
         state.addListener((_, _, newValue) -> {
             if (newValue != State.PROCESSING) {
@@ -140,7 +145,9 @@ public class AiSummaryViewModel extends AbstractViewModel {
         BibDatabaseContext bibDatabaseContext = identifier.databaseContext();
         BibEntry entry = identifier.entry();
 
-        if (bibDatabaseContext.getDatabasePath().isEmpty()) {
+        if (!preferences.getAiPreferences().getEnableAi()) {
+            state.set(State.AI_TURNED_OFF);
+        } else if (bibDatabaseContext.getDatabasePath().isEmpty()) {
             state.set(State.NO_DATABASE_PATH);
         } else if (entry.getCitationKey().isEmpty() || CitationKeyCheck.hasEmptyCitationKey(entry)) {
             state.set(State.NO_CITATION_KEY);
@@ -175,20 +182,23 @@ public class AiSummaryViewModel extends AbstractViewModel {
     }
 
     private void regenerateCustom(FullBibEntryAiIdentifier identifier) {
-        clearSummary(identifier);
-
         AiSummaryParametersDialog parametersDialog = new AiSummaryParametersDialog();
         Optional<Summarizator> customSummarizator = dialogService.showCustomDialogAndWait(parametersDialog);
 
-        startSummarization(
-                identifier,
-                aiService.getChatLanguageModel(),
-                customSummarizator.orElse(aiService.getSummarizator())
-        );
+        chatModel.set(aiService.getChatLanguageModel());
+        if (customSummarizator.isEmpty()) {
+            return;
+        }
+
+        summarizator.set(customSummarizator.get());
+
+        clearSummary(identifier);
+        startSummarization(identifier);
     }
 
     private void generate(FullBibEntryAiIdentifier identifier) {
-        startSummarization(identifier, aiService.getChatLanguageModel(), aiService.getSummarizator());
+        setDefaultModels();
+        startSummarization(identifier);
     }
 
     public void clearSummary(FullBibEntryAiIdentifier identifier) {
@@ -203,11 +213,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
         aiService.getSummariesRepository().clear(new BibEntryAiIdentifier(path.get(), citationKey.get()));
     }
 
-    private void startSummarization(
-            FullBibEntryAiIdentifier identifier,
-            ChatModel chatModel,
-            Summarizator summarizator
-    ) {
+    private void startSummarization(FullBibEntryAiIdentifier identifier) {
         BibDatabaseContext bibDatabaseContext = identifier.databaseContext();
         BibEntry entry = identifier.entry();
 
@@ -216,15 +222,14 @@ public class AiSummaryViewModel extends AbstractViewModel {
         GenerateSummaryTask task = aiService.getSummarizationTaskAggregator().start(
                 new GenerateSummaryTaskRequest(
                         preferences.getFilePreferences(),
-                        chatModel,
+                        chatModel.get(),
                         aiService.getSummariesRepository(),
-                        summarizator,
+                        summarizator.get(),
                         bibDatabaseContext,
                         entry,
                         aiService.getShutdownSignal()
                 )
         );
-
         updateCurrentTask(task);
     }
 
@@ -243,27 +248,25 @@ public class AiSummaryViewModel extends AbstractViewModel {
     private void updateByTaskState(TrackedBackgroundTask.Status value) {
         assert currentTask != null;
 
-        switch (value) {
-            case TrackedBackgroundTask.Status.CANCELLED ->
-                    state.set(State.CANCELLED);
+        UiTaskExecutor.runInJavaFXThread(() -> {
+            switch (value) {
+                case TrackedBackgroundTask.Status.CANCELLED ->
+                        state.set(State.CANCELLED);
 
-            case TrackedBackgroundTask.Status.PENDING ->
-                    state.set(State.PROCESSING);
+                case TrackedBackgroundTask.Status.PENDING ->
+                        state.set(State.PROCESSING);
 
-            case TrackedBackgroundTask.Status.ERROR -> {
-                error.set(currentTask.getException());
-                state.set(State.ERROR_WHILE_GENERATING);
+                case TrackedBackgroundTask.Status.ERROR -> {
+                    error.set(currentTask.getException());
+                    state.set(State.ERROR_WHILE_GENERATING);
+                }
+
+                case TrackedBackgroundTask.Status.SUCCESS -> {
+                    summary.set(currentTask.getResult());
+                    state.set(State.DONE);
+                }
             }
-
-            case TrackedBackgroundTask.Status.SUCCESS -> {
-                state.set(State.DONE);
-                summary.set(currentTask.getResult());
-            }
-        }
-    }
-
-    public BooleanProperty showAiPrivacyPolicyGuardProperty() {
-        return showAiPrivacyPolicyGuard;
+        });
     }
 
     public ObjectProperty<State> stateProperty() {
@@ -276,5 +279,13 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
     public ObjectProperty<BibEntrySummary> summaryProperty() {
         return summary;
+    }
+
+    public ObjectProperty<Summarizator> summarizatorProperty() {
+        return summarizator;
+    }
+
+    public ObjectProperty<ChatModel> chatModelProperty() {
+        return chatModel;
     }
 }
