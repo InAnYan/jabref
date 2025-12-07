@@ -3,21 +3,17 @@ package org.jabref.logic.ai.chatting;
 import org.jabref.logic.ai.AiFeature;
 import org.jabref.logic.ai.chatting.listeners.EntryChattingDatabaseListener;
 import org.jabref.logic.ai.chatting.listeners.GroupChattingDatabaseListener;
-import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepository;
-import org.jabref.logic.ai.chatting.repositories.GroupChatHistoryRepository;
-import org.jabref.logic.ai.chatting.repositories.MVStoreEntryChatHistoryRepository;
-import org.jabref.logic.ai.chatting.repositories.MVStoreGroupChatHistoryRepository;
+import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
+import org.jabref.logic.ai.chatting.repositories.MVStoreChatHistoryRepository;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.model.database.BibDatabaseContext;
 
 public class ChattingAiFeature implements AiFeature {
-    private static final String ENTRY_CHAT_HISTORY_FILE_NAME = "entries-chat-histories.mv"; // v2
-    private static final String GROUP_CHAT_HISTORY_FILE_NAME = "groups-chat-histories.mv"; // v2
+    private static final String CHAT_HISTORY_FILE_NAME = "chat-histories.mv"; // v2
 
-    private final MVStoreEntryChatHistoryRepository mvStoreEntryChatHistoryStorage;
-    private final MVStoreGroupChatHistoryRepository mvStoreGroupChatHistoryStorage;
+    private final MVStoreChatHistoryRepository mvStoreChatHistoryRepository;
 
     private final CurrentChatLanguageModel currentChatLanguageModel;
 
@@ -28,12 +24,8 @@ public class ChattingAiFeature implements AiFeature {
             AiPreferences aiPreferences,
             NotificationService notificationService
     ) {
-        this.mvStoreEntryChatHistoryStorage = new MVStoreEntryChatHistoryRepository(
-                Directories.getAiFilesDirectory().resolve(ENTRY_CHAT_HISTORY_FILE_NAME),
-                notificationService
-        );
-        this.mvStoreGroupChatHistoryStorage = new MVStoreGroupChatHistoryRepository(
-                Directories.getAiFilesDirectory().resolve(GROUP_CHAT_HISTORY_FILE_NAME),
+        this.mvStoreChatHistoryRepository = new MVStoreChatHistoryRepository(
+                Directories.getAiFilesDirectory().resolve(CHAT_HISTORY_FILE_NAME),
                 notificationService
         );
 
@@ -43,10 +35,10 @@ public class ChattingAiFeature implements AiFeature {
         );
 
         this.entryChattingDatabaseListener = new EntryChattingDatabaseListener(
-                mvStoreEntryChatHistoryStorage
+                mvStoreChatHistoryRepository
         );
         this.groupChattingDatabaseListener = new GroupChattingDatabaseListener(
-                mvStoreGroupChatHistoryStorage
+                mvStoreChatHistoryRepository
         );
     }
 
@@ -59,17 +51,12 @@ public class ChattingAiFeature implements AiFeature {
         return currentChatLanguageModel;
     }
 
-    public EntryChatHistoryRepository getEntryChatHistoryRepository() {
-        return mvStoreEntryChatHistoryStorage;
-    }
-
-    public GroupChatHistoryRepository getGroupChatHistoryRepository() {
-        return mvStoreGroupChatHistoryStorage;
+    public ChatHistoryRepository getChatHistoryRepository() {
+        return mvStoreChatHistoryRepository;
     }
 
     @Override
     public void close() throws Exception {
-        mvStoreEntryChatHistoryStorage.close();
-        mvStoreGroupChatHistoryStorage.close();
+        mvStoreChatHistoryRepository.close();
     }
 }

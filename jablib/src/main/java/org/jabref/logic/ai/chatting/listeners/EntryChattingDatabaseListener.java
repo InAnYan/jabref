@@ -4,9 +4,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepository;
+import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.chatting.EntryChatHistoryIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.event.FieldChangedEvent;
@@ -17,10 +17,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EntryChattingDatabaseListener {
-    private final EntryChatHistoryRepository entryChatHistoryRepository;
+    private final ChatHistoryRepository chatHistoryRepository;
 
-    public EntryChattingDatabaseListener(EntryChatHistoryRepository entryChatHistoryRepository) {
-        this.entryChatHistoryRepository = entryChatHistoryRepository;
+    public EntryChattingDatabaseListener(ChatHistoryRepository chatHistoryRepository) {
+        this.chatHistoryRepository = chatHistoryRepository;
     }
 
     public void setupDatabase(BibDatabaseContext databaseContext) {
@@ -28,18 +28,18 @@ public class EntryChattingDatabaseListener {
                 .getDatabase()
                 .getEntries()
                 .forEach(entry ->
-                        entry.registerListener(new CitationKeyChangeListener(entryChatHistoryRepository, databaseContext))
+                        entry.registerListener(new CitationKeyChangeListener(databaseContext))
                 );
     }
 
-    static class CitationKeyChangeListener {
+    private class CitationKeyChangeListener {
         private static final Logger LOGGER = LoggerFactory.getLogger(CitationKeyChangeListener.class);
 
-        private final EntryChatHistoryRepository entryChatHistoryRepository;
         private final BibDatabaseContext bibDatabaseContext;
 
-        public CitationKeyChangeListener(EntryChatHistoryRepository entryChatHistoryRepository, BibDatabaseContext bibDatabaseContext) {
-            this.entryChatHistoryRepository = entryChatHistoryRepository;
+        public CitationKeyChangeListener(
+                BibDatabaseContext bibDatabaseContext
+        ) {
             this.bibDatabaseContext = bibDatabaseContext;
         }
 
@@ -54,6 +54,7 @@ public class EntryChattingDatabaseListener {
 
         private void transferHistory(BibDatabaseContext bibDatabaseContext, BibEntry entry, String oldCitationKey, String newCitationKey) {
             // TODO: This method does not check if the citation key is valid.
+            // TODO: I think transferHistory methods could be generalized somehow.
 
             Optional<Path> databasePath = bibDatabaseContext.getDatabasePath();
 
@@ -62,15 +63,15 @@ public class EntryChattingDatabaseListener {
                 return;
             }
 
-            BibEntryAiIdentifier oldIdentifier = new BibEntryAiIdentifier(databasePath.get(), oldCitationKey);
-            BibEntryAiIdentifier newIdentifier = new BibEntryAiIdentifier(databasePath.get(), newCitationKey);
+            EntryChatHistoryIdentifier oldIdentifier = new EntryChatHistoryIdentifier(databasePath.get(), oldCitationKey);
+            EntryChatHistoryIdentifier newIdentifier = new EntryChatHistoryIdentifier(databasePath.get(), newCitationKey);
 
-            List<ChatHistoryRecordV2> chatHistory = entryChatHistoryRepository.getAllMessages(oldIdentifier);
+            List<ChatHistoryRecordV2> chatHistory = chatHistoryRepository.getAllMessages(oldIdentifier);
 
-            entryChatHistoryRepository.clear(oldIdentifier);
-            entryChatHistoryRepository.clear(newIdentifier);
+            chatHistoryRepository.clear(oldIdentifier);
+            chatHistoryRepository.clear(newIdentifier);
 
-            chatHistory.forEach(record -> entryChatHistoryRepository.addMessage(newIdentifier, record));
+            chatHistory.forEach(record -> chatHistoryRepository.addMessage(newIdentifier, record));
         }
     }
 }

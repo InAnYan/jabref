@@ -29,11 +29,11 @@ import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.CustomLocalDragboard;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.util.ChatHistory;
-import org.jabref.logic.ai.chatting.util.GroupChatHistory;
+import org.jabref.logic.ai.chatting.util.WrappedChatHistory;
 import org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral.GenerateSummaryForSeveralTaskRequest;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.ai.identifiers.GroupAiIdentifier;
+import org.jabref.model.ai.chatting.GroupChatHistoryIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
@@ -191,7 +191,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
         }
 
         String grpName = preferences.getLibraryPreferences().getAddImportedEntriesGroupName();
-        AbstractGroup importEntriesGroup = new SmartGroup(grpName, GroupHierarchyType.INDEPENDENT, ',');
+        AbstractGroup importEntriesGroup = new SmartGroup(grpName, GroupHierarchyType.INDEPENDENT, ',' );
         boolean isGrpExist = parent.getGroupNode()
                                    .getChildren()
                                    .stream()
@@ -469,8 +469,13 @@ public class GroupTreeViewModel extends AbstractViewModel {
         groupNameProperty.addListener((obs, oldValue, newValue) -> nameProperty.setValue(Localization.lang("Group %0", groupNameProperty.get())));
 
         // TODO: Unchecked get.
-        ChatHistory chatHistory =
-                new GroupChatHistory(aiService.getChattingFeature().getGroupChatHistoryRepository(), new GroupAiIdentifier(currentDatabase.get().getDatabasePath().get(), group.getGroupNode().getGroup().nameProperty().get()));
+        ChatHistory chatHistory = new WrappedChatHistory(
+                aiService.getChattingFeature().getChatHistoryRepository(),
+                new GroupChatHistoryIdentifier(
+                        currentDatabase.get().getDatabasePath().get(),
+                        group.getGroupNode().getGroup().nameProperty().get()
+                )
+        );
         ObservableList<BibEntry> bibEntries = FXCollections.observableArrayList(group.getGroupNode().findMatches(currentDatabase.get().getDatabase()));
 
         openAiChat(nameProperty, chatHistory, currentDatabase.get(), bibEntries);

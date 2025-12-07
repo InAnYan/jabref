@@ -6,6 +6,7 @@ import org.jabref.logic.ai.chatting.repositories.EntryChatHistoryRepository;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
+@Deprecated
 public class EntryChatHistory implements ChatHistory {
     private final EntryChatHistoryRepository entryChatHistoryRepository;
     private final BibEntryAiIdentifier identifier;

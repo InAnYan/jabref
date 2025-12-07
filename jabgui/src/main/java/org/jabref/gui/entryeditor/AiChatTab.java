@@ -18,7 +18,7 @@ import org.jabref.gui.ai.components.util.errorstate.ErrorStateComponent;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.util.EntryChatHistory;
+import org.jabref.logic.ai.chatting.util.WrappedChatHistory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.citationkeypattern.CitationKeyGenerator;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
@@ -26,7 +26,7 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.io.FileUtil;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.chatting.EntryChatHistoryIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
@@ -138,7 +138,13 @@ public class AiChatTab extends EntryEditorTab {
 
         setContent(new AiChatGuardedComponent(
                 chatName,
-                new EntryChatHistory(aiService.getChattingFeature().getEntryChatHistoryRepository(), new BibEntryAiIdentifier(databasePath.get(), citationKey.get())),
+                new WrappedChatHistory(
+                        aiService.getChattingFeature().getChatHistoryRepository(),
+                        new EntryChatHistoryIdentifier(
+                                databasePath.get(),
+                                citationKey.get()
+                        )
+                ),
                 bibDatabaseContext,
                 FXCollections.observableArrayList(new ArrayList<>(List.of(entry))),
                 aiService,

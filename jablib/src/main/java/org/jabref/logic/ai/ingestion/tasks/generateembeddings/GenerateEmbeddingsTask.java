@@ -57,7 +57,7 @@ public class GenerateEmbeddingsTask extends TrackedBackgroundTask<Void> {
                     request.linkedFile()
             );
         } catch (InterruptedException e) {
-            LOGGER.debug("There is a embeddings generation task for file \"{}\". It will be cancelled, because user quits JabRef.", linkedFile.getLink());
+            LOGGER.debug("There is a embeddings generation task for file \"{}\". It will be cancelled, because user quits JabRef.", request.linkedFile.getLink());
         }
 
         LOGGER.debug("Finished embeddings generation task for file \"{}\"", request.linkedFile().getLink());

@@ -5,6 +5,7 @@ import java.util.List;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
+@Deprecated
 public interface EntryChatHistoryRepository {
     void addMessage(BibEntryAiIdentifier identifier, ChatHistoryRecordV2 chatHistoryRecord);
 

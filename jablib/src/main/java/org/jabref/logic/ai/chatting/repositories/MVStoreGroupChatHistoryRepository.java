@@ -12,6 +12,7 @@ import org.jabref.model.ai.identifiers.GroupAiIdentifier;
 
 import org.jspecify.annotations.NonNull;
 
+@Deprecated
 public class MVStoreGroupChatHistoryRepository extends MVStoreBase implements GroupChatHistoryRepository {
     public MVStoreGroupChatHistoryRepository(@NonNull Path path, NotificationService dialogService) {
         super(path, dialogService);

@@ -17,6 +17,7 @@ Messages/Chunks should be distinct/separate/atomic. E.g. we don't store a List o
 
 I would like a forth layer: to distrinct database and entry, but it is what it is.
 
+try to group repositories for one type of data. No: entry and group chat history repostiory, yes: single chat history repository.
 
 
 explain how messages are stored (v1 and v2).

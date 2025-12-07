@@ -6,6 +6,7 @@ import org.jabref.logic.ai.chatting.repositories.GroupChatHistoryRepository;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.identifiers.GroupAiIdentifier;
 
+@Deprecated
 public class GroupChatHistory implements ChatHistory {
     private final GroupChatHistoryRepository groupChatHistoryRepository;
     private final GroupAiIdentifier identifier;
