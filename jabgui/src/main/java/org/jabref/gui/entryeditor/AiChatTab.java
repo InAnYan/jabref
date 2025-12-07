@@ -18,7 +18,7 @@ import org.jabref.gui.ai.components.util.errorstate.ErrorStateComponent;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.util.WrappedChatHistory;
+import org.jabref.logic.ai.chatting.util.ChatHistoryFactory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.citationkeypattern.CitationKeyGenerator;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
@@ -138,12 +138,12 @@ public class AiChatTab extends EntryEditorTab {
 
         setContent(new AiChatGuardedComponent(
                 chatName,
-                new WrappedChatHistory(
-                        aiService.getChattingFeature().getChatHistoryRepository(),
+                ChatHistoryFactory.makeChatHistoryProperty(
                         new EntryChatHistoryIdentifier(
                                 databasePath.get(),
                                 citationKey.get()
-                        )
+                        ),
+                        aiService.getChattingFeature().getChatHistoryRepository()
                 ),
                 bibDatabaseContext,
                 FXCollections.observableArrayList(new ArrayList<>(List.of(entry))),

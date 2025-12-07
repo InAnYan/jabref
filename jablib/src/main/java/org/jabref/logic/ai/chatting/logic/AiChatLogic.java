@@ -12,7 +12,6 @@ import javafx.collections.ObservableList;
 
 import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageAiTemplate;
 import org.jabref.logic.ai.chatting.templates.ChattingUserMessageAiTemplate;
-import org.jabref.logic.ai.chatting.util.ChatHistory;
 import org.jabref.logic.ai.chatting.util.ChatHistoryRecordUtils;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
@@ -42,7 +41,7 @@ public class AiChatLogic {
     private final ChattingSystemMessageAiTemplate chattingSystemMessageTemplate;
     private final ChattingUserMessageAiTemplate chattingUserMessageTemplate;
 
-    private final ChatHistory chatHistory;
+    private final ObservableList<ChatHistoryRecordV2> chatHistory;
     private final ObservableList<BibEntry> entries;
     private final StringProperty name;
     private final BibDatabaseContext bibDatabaseContext;
@@ -57,7 +56,7 @@ public class AiChatLogic {
             ChattingSystemMessageAiTemplate chattingSystemMessageTemplate,
             ChattingUserMessageAiTemplate chattingUserMessageTemplate,
             BibDatabaseContext bibDatabaseContext,
-            ChatHistory chatHistory,
+            ObservableList<ChatHistoryRecordV2> chatHistory,
             ObservableList<BibEntry> entries,
             StringProperty name,
             AnswerEngine answerEngine
@@ -74,7 +73,6 @@ public class AiChatLogic {
 
         this.chatMemory = new ArrayList<>();
         chatHistory
-                .getAllMessages()
                 .stream()
                 .filter(chatMessage -> !Objects.equals(chatMessage.messageTypeClassName(), ErrorMessage.class.getName()))
                 .forEach(record -> chatMemory.add(ChatHistoryRecordUtils.toLangchainMessage(record)));
@@ -99,7 +97,7 @@ public class AiChatLogic {
     }
 
     public AiMessage execute(UserMessage message) {
-        chatHistory.addMessage(new ChatHistoryRecordV2(
+        chatHistory.add(new ChatHistoryRecordV2(
                 UUID.randomUUID().toString(),
                 message.getClass().getName(),
                 message.singleText(),
@@ -126,7 +124,7 @@ public class AiChatLogic {
 
         chatMemory.set(chatMemory.size() - 1, message); // Removing excerpts from the chat history.
         chatMemory.add(aiMessage);
-        chatHistory.addMessage(new ChatHistoryRecordV2(
+        chatHistory.add(new ChatHistoryRecordV2(
                 UUID.randomUUID().toString(),
                 aiMessage.getClass().getName(),
                 aiMessage.text(),

@@ -6,12 +6,14 @@ import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.util.ChatHistory;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
 
 public class AiChatViewModel {
@@ -24,7 +26,7 @@ public class AiChatViewModel {
     private final AiService aiService;
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.IDLE);
-    private final ObjectProperty<ChatHistory> chatHistory = new SimpleObjectProperty<>();
+    private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     // IDLE properties.
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
@@ -43,7 +45,7 @@ public class AiChatViewModel {
         // start ingestion
     }
 
-    public void setChatHistory(ChatHistory chatHistory) {
+    public void setChatHistory(ObservableList<ChatHistoryRecordV2> chatHistory) {
         // clear exception
         // clear chat history
         // set chat history

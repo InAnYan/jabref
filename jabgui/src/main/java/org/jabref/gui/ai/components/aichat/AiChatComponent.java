@@ -33,7 +33,6 @@ import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.logic.AiChatLogic;
 import org.jabref.logic.ai.chatting.tasks.GenerateAiResponseTask;
-import org.jabref.logic.ai.chatting.util.ChatHistory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
@@ -64,7 +63,7 @@ public class AiChatComponent extends VBox {
 
     private final AiService aiService;
     private final ObservableList<BibEntry> entries;
-    private final ChatHistory chatHistory;
+    private final ObservableList<ChatHistoryRecordV2> chatHistory;
     private final BibDatabaseContext bibDatabaseContext;
     private final AiPreferences aiPreferences;
     private final DialogService dialogService;
@@ -89,7 +88,7 @@ public class AiChatComponent extends VBox {
     public AiChatComponent(
             AiService aiService,
             StringProperty name,
-            ChatHistory chatHistory,
+            ObservableList<ChatHistoryRecordV2> chatHistory,
             ObservableList<BibEntry> entries,
             BibDatabaseContext bibDatabaseContext,
             AiPreferences aiPreferences,
@@ -217,7 +216,7 @@ public class AiChatComponent extends VBox {
                 lastUserPrompt = getLastUserMessage();
             }
             if (lastUserPrompt.isPresent()) {
-                while (!Objects.equals(chatHistory.getAllMessages().getLast().messageTypeClassName(), UserMessage.class.getName())) {
+                while (!Objects.equals(chatHistory.getLast().messageTypeClassName(), UserMessage.class.getName())) {
                     deleteLastMessage();
                 }
                 deleteLastMessage();
@@ -327,7 +326,7 @@ public class AiChatComponent extends VBox {
     private void addError(String error) {
         ErrorMessage chatMessage = new ErrorMessage(error);
 
-        chatHistory.addMessage(new ChatHistoryRecordV2(
+        chatHistory.add(new ChatHistoryRecordV2(
                 UUID.randomUUID().toString(),
                 chatMessage.getClass().getName(),
                 chatMessage.getText(),
@@ -343,7 +342,6 @@ public class AiChatComponent extends VBox {
 
     private Stream<UserMessage> getReversedUserMessagesStream() {
         return chatHistory
-                .getAllMessages()
                 .reversed()
                 .stream()
                 .filter(message -> Objects.equals(message.messageTypeClassName(), UserMessage.class.getName()))
@@ -371,7 +369,7 @@ public class AiChatComponent extends VBox {
         if (!chatHistory.isEmpty()) {
             int index = chatHistory.size() - 1;
             uiChatHistory.getMessage(index).map(component -> component.getChatMessage().id()).ifPresent(id -> {
-                chatHistory.deleteMessage(id);
+                chatHistory.removeIf(message -> Objects.equals(message.id(), id));
                 uiChatHistory.updateMessages(chatHistory);
             });
         }
@@ -380,7 +378,7 @@ public class AiChatComponent extends VBox {
     private Optional<ChatHistoryRecordV2> getLastUserMessage() {
         int messageIndex = chatHistory.size() - 1;
         while (messageIndex >= 0) {
-            ChatHistoryRecordV2 chat = chatHistory.getAllMessages().get(messageIndex);
+            ChatHistoryRecordV2 chat = chatHistory.get(messageIndex);
             if (Objects.equals(chat.messageTypeClassName(), UserMessage.class.getName())) {
                 return Optional.of(chat);
             }

@@ -9,10 +9,10 @@ import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.util.BaseWindow;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.util.ChatHistory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -45,7 +45,7 @@ public class AiChatWindow extends BaseWindow {
 
     public void setChat(
             StringProperty name,
-            ChatHistory chatHistory,
+            ObservableList<ChatHistoryRecordV2> chatHistory,
             BibDatabaseContext bibDatabaseContext,
             ObservableList<BibEntry> entries
     ) {

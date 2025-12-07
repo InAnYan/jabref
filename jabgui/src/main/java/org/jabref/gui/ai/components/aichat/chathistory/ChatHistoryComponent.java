@@ -1,14 +1,16 @@
 package org.jabref.gui.ai.components.aichat.chathistory;
 
+import java.util.Objects;
 import java.util.Optional;
 
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 
 import org.jabref.gui.ai.components.aichat.chatmessage.ChatMessageComponent;
 import org.jabref.gui.util.UiTaskExecutor;
-import org.jabref.logic.ai.chatting.util.ChatHistory;
+import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 
 import com.airhacks.afterburner.views.ViewLoader;
 
@@ -27,18 +29,17 @@ public class ChatHistoryComponent extends ScrollPane {
         });
     }
 
-    public void updateMessages(ChatHistory chatHistory) {
+    public void updateMessages(ObservableList<ChatHistoryRecordV2> chatHistory) {
         UiTaskExecutor.runInJavaFXThread(() -> {
             vBox.getChildren().clear();
             // TODO: Inefficient.
             chatHistory
-                    .getAllMessages()
                     .forEach(chatMessage ->
                             vBox.getChildren().add(new ChatMessageComponent(
                                     chatMessage,
                                     chatMessageComponent -> {
                                         // TODO: Mix of logic.
-                                        chatHistory.deleteMessage(chatMessageComponent.getChatMessage().id());
+                                        chatHistory.removeIf(message -> Objects.equals(message.id(), chatMessageComponent.getChatMessage().id()));
                                         updateMessages(chatHistory);
                                     })
                             )

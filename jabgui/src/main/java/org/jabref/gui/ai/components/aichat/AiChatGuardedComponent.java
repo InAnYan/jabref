@@ -9,9 +9,9 @@ import org.jabref.gui.ai.components.util.EmbeddingModelGuardedComponent;
 import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.util.ChatHistory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -26,7 +26,7 @@ public class AiChatGuardedComponent extends EmbeddingModelGuardedComponent {
     /// this parameter. However, for group chat window, you should.
     private final StringProperty name;
 
-    private final ChatHistory chatHistory;
+    private final ObservableList<ChatHistoryRecordV2> chatHistory;
     private final BibDatabaseContext bibDatabaseContext;
     private final ObservableList<BibEntry> entries;
     private final AiService aiService;
@@ -36,7 +36,7 @@ public class AiChatGuardedComponent extends EmbeddingModelGuardedComponent {
 
     public AiChatGuardedComponent(
             StringProperty name,
-            ChatHistory chatHistory,
+            ObservableList<ChatHistoryRecordV2> chatHistory,
             BibDatabaseContext bibDatabaseContext,
             ObservableList<BibEntry> entries,
             AiService aiService,
