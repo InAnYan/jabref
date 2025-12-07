@@ -157,6 +157,8 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.chatting.util;
     exports org.jabref.logic.ai.embedding;
     exports org.jabref.logic.ai.rag.logic;
+    exports org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral;
+    exports org.jabref.logic.ai.ingestion.tasks.generateembeddings;
     // endregion
 
     requires java.base;
@@ -305,5 +307,6 @@ open module org.jabref.jablib {
     requires org.libreoffice.uno;
     requires transitive org.jspecify;
     requires org.jetbrains.annotations;
+    requires org.jabref.jablib;
     // endregion
 }

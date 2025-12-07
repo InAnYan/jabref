@@ -1,4 +1,6 @@
-package org.jabref.gui.ai.components.newaichat;
+package org.jabref.gui.ai.chat;
+
+import java.util.List;
 
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -36,13 +38,16 @@ public class AiChatViewModel {
         this.aiService = aiService;
     }
 
-    public void bind(FullBibEntryAiIdentifier identifier) {
-        chatMessages.clear();
-        exception.set(null);
+    public void setEntries(List<FullBibEntryAiIdentifier> entries) {
+        // remove old ones?
+        // start ingestion
+    }
 
-        // aiService.getEntryChatHistoryRepository();
-
-        state.set(State.IDLE);
+    public void setChatHistory(ChatHistory chatHistory) {
+        // clear exception
+        // clear chat history
+        // set chat history
+        // set state
     }
 
     public void sendMessage(String message) {

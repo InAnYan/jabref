@@ -28,6 +28,7 @@ public class IngestionAiFeature implements AiFeature {
     private final CurrentDocumentSplitter currentDocumentSplitter;
 
     private final IngestionService ingestionService;
+    private final IngestionTaskAggregator ingestionTaskAggregator;
 
     public IngestionAiFeature(
             AiPreferences aiPreferences,
@@ -58,6 +59,10 @@ public class IngestionAiFeature implements AiFeature {
                 mvStoreIngestedDocumentsRepository,
                 shutdownSignal
         );
+
+        this.ingestionTaskAggregator = new IngestionTaskAggregator(
+                taskExecutor
+        );
     }
 
     @Override
@@ -67,6 +72,10 @@ public class IngestionAiFeature implements AiFeature {
 
     public IngestionService getIngestionService() {
         return ingestionService;
+    }
+
+    public IngestionTaskAggregator getIngestionTaskAggregator() {
+        return ingestionTaskAggregator;
     }
 
     public EmbeddingStore<TextSegment> getEmbeddingsStore() {
@@ -83,6 +92,6 @@ public class IngestionAiFeature implements AiFeature {
 
     @Override
     public void close() throws Exception {
-
+        // Nothing to close.
     }
 }
