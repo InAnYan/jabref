@@ -2,7 +2,6 @@ package org.jabref.logic.ai.ingestion;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.TreeMap;
 import java.util.concurrent.Future;
 
@@ -53,10 +52,6 @@ public class IngestionTaskAggregator {
 
     public synchronized GenerateEmbeddingsTask start(GenerateEmbeddingsTaskRequest request) {
         return startWithFuture(request).getValue();
-    }
-
-    public synchronized Optional<GenerateEmbeddingsTask> getTask(LinkedFile linkedFile) {
-        return Optional.ofNullable(generateEmbeddingsTasks.get(linkedFile)).map(Pair::getValue);
     }
 
     public synchronized Pair<Future<Void>, GenerateEmbeddingsForSeveralTask> start(GenerateEmbeddingsForSeveralTaskRequest request) {

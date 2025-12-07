@@ -2,6 +2,7 @@ package org.jabref.gui.ai.chat;
 
 import java.util.List;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
@@ -9,8 +10,13 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import org.jabref.gui.DialogService;
+import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.chatting.tasks.GenerateAiResponseTask;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
+import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
+import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTaskRequest;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
@@ -23,10 +29,13 @@ public class AiChatViewModel {
         ERROR
     }
 
+    private final GuiPreferences preferences;
     private final AiService aiService;
+    private final DialogService dialogService;
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.IDLE);
     private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     // IDLE properties.
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
@@ -36,8 +45,37 @@ public class AiChatViewModel {
     // ERROR properties.
     private final ObjectProperty<Exception> exception = new SimpleObjectProperty<>();
 
-    public AiChatViewModel(AiService aiService) {
+    // WAITING_FOR_MESSAGE properties.
+    private final ObjectProperty<GenerateAiResponseTask> generateAiResponseTask = new SimpleObjectProperty<>();
+
+    public AiChatViewModel(
+            GuiPreferences preferences,
+            AiService aiService,
+            DialogService dialogService
+    ) {
+        this.preferences = preferences;
         this.aiService = aiService;
+        this.dialogService = dialogService;
+
+        this.entries.addListener((InvalidationListener) _ -> changeEmbeddingTasks());
+    }
+
+    private void changeEmbeddingTasks() {
+        generateEmbeddingsTasks.clear();
+
+        entries.forEach(identifier ->
+                generateEmbeddingsTasks.add(
+                        aiService.getIngestionFeature().getIngestionTaskAggregator().start(
+                                new GenerateEmbeddingsTaskRequest(
+                                    preferences.getFilePreferences(),
+                                        aiService.getIngestionFeature().getIngestedDocumentsRepository(),
+                                        aiService.getIngestionFeature().getEmbeddingsStore(),
+                                        aiService.getEmbeddingFeature().getCurrentEmbeddingModel(),
+                                        aiService.getIngestionFeature().getCurrentDocumentSplitter(),
+                                        aiService.
+                                )
+                        )
+                ));
     }
 
     public void setEntries(List<FullBibEntryAiIdentifier> entries) {
@@ -83,5 +121,10 @@ public class AiChatViewModel {
         assert state.get() == State.ERROR;
         // Delete error message.
         state.set(State.IDLE);
+    }
+
+    public void showIngestionStatus() {
+        AiIngestionWindow window = new AiIngestionWindow(generateEmbeddingsTasks);
+        dialogService.showCustomDialog(window);
     }
 }
