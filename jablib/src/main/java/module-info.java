@@ -307,5 +307,6 @@ open module org.jabref.jablib {
     requires org.libreoffice.uno;
     requires transitive org.jspecify;
     requires org.jetbrains.annotations;
+    requires org.jabref.jablib;
     // endregion
 }

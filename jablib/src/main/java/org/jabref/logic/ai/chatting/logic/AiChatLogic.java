@@ -75,7 +75,7 @@ public class AiChatLogic {
         chatHistory
                 .stream()
                 .filter(chatMessage -> !Objects.equals(chatMessage.messageTypeClassName(), ErrorMessage.class.getName()))
-                .forEach(record -> chatMemory.add(ChatHistoryRecordUtils.toLangchainMessage(record)));
+                .forEach(record -> chatMemory.add(ChatHistoryRecordUtils.convertRecordToLangchain(record)));
         setSystemMessage(chattingSystemMessageTemplate.render(entries));
 
         setupListeningToPreferencesChanges();
