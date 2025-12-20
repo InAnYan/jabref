@@ -2,6 +2,7 @@ package org.jabref.logic.ai.chatting.util;
 
 import java.util.List;
 
+import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.chatting.messages.ErrorMessage;
 
@@ -29,6 +30,19 @@ public class ChatHistoryRecordUtils {
                 LOGGER.warn("ChatHistoryRecordV2 supports only AI and user messages, but retrieved message has other type: {}. Will treat as an AI message.", record.messageTypeClassName());
                 return new AiMessage(record.content());
             }
+    }
+
+    public static String getMessageAuthorDisplayName(String className) {
+        if (className.equals(AiMessage.class.getName())) {
+            return Localization.lang("AI");
+        } else if (className.equals(UserMessage.class.getName())) {
+            return Localization.lang("User");
+        } else if (className.equals(ErrorMessage.class.getName())) {
+            return Localization.lang("Error");
+        } else {
+            LOGGER.warn("ChatHistoryRecordV2 supports only AI and user messages, but retrieved message has other type: {}. Will treat as an AI message.", className);
+            return Localization.lang("AI");
+        }
     }
 
     public static List<ChatMessage> convertRecordsToLangchain(List<ChatHistoryRecordV2> chatHistoryRecords) {
