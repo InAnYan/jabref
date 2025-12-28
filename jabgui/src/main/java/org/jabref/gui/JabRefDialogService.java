@@ -44,7 +44,6 @@ import org.jabref.gui.help.ErrorConsoleAction;
 import org.jabref.gui.icon.IconTheme;
 import org.jabref.gui.theme.ThemeManager;
 import org.jabref.gui.util.BaseDialog;
-import org.jabref.gui.util.BaseWindow;
 import org.jabref.gui.util.DirectoryDialogConfiguration;
 import org.jabref.gui.util.FileDialogConfiguration;
 import org.jabref.gui.util.UiTaskExecutor;
@@ -531,15 +530,6 @@ public class JabRefDialogService implements DialogService {
             dialogView.initOwner(mainWindow);
         }
         dialogView.show();
-    }
-
-    @Override
-    public void showCustomWindow(BaseWindow window) {
-        if (window.getOwner() == null) {
-            window.initOwner(mainWindow);
-        }
-        window.applyStylesheets(mainWindow.getScene().getStylesheets());
-        window.show();
     }
 
     private String getContentByCode(int statusCode) {

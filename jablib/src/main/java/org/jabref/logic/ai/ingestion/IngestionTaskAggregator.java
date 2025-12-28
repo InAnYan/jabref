@@ -56,7 +56,7 @@ public class IngestionTaskAggregator {
 
     public synchronized Pair<Future<Void>, GenerateEmbeddingsForSeveralTask> start(GenerateEmbeddingsForSeveralTaskRequest request) {
         return generateEmbeddingsForSeveralTasks.computeIfAbsent(request.linkedFiles(), _ -> {
-            GenerateEmbeddingsForSeveralTask task = new GenerateEmbeddingsForSeveralTask(request);
+            GenerateEmbeddingsForSeveralTask task = new GenerateEmbeddingsForSeveralTask(this, request);
             task.onFinished(() -> generateEmbeddingsForSeveralTasks.remove(request.linkedFiles()));
             Future<Void> future = taskExecutor.execute(task);
             return new Pair<>(future, task);

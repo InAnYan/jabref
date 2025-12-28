@@ -19,6 +19,9 @@ public class ErrorStatusPaneViewModel {
     private final StringProperty restartButtonText = new SimpleStringProperty("");
     private final ObjectProperty<EventHandler<ActionEvent>> onRestart = new SimpleObjectProperty<>();
 
+    private final StringProperty cancelButtonText = new SimpleStringProperty("");
+    private final ObjectProperty<EventHandler<ActionEvent>> onCancel = new SimpleObjectProperty<>();
+
     public ErrorStatusPaneViewModel() {
         exception.addListener((_, _, value) -> exceptionString.set(ExceptionsUtil.generateExceptionMessage(value)));
     }
@@ -26,6 +29,12 @@ public class ErrorStatusPaneViewModel {
     public void restart() {
         if (onRestart.get() != null) {
             onRestart.get().handle(new ActionEvent());
+        }
+    }
+
+    public void cancel() {
+        if (onCancel.get() != null) {
+            onCancel.get().handle(new ActionEvent());
         }
     }
 
@@ -49,7 +58,15 @@ public class ErrorStatusPaneViewModel {
         return restartButtonText;
     }
 
+    public StringProperty cancelButtonTextProperty() {
+        return cancelButtonText;
+    }
+
     public ObjectProperty<EventHandler<ActionEvent>> onRestartProperty() {
         return onRestart;
+    }
+
+    public ObjectProperty<EventHandler<ActionEvent>> onCancelProperty() {
+        return onCancel;
     }
 }

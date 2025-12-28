@@ -80,8 +80,14 @@ public class CurrentEmbeddingModel implements EmbeddingModel, AutoCloseable {
         predictorProperty.set(Optional.empty());
 
         new UpdateEmbeddingModelTask(aiPreferences, predictorProperty)
-                .onSuccess(_ -> {
-                    LOGGER.info("Embedding model was successfully updated");
+                .onSuccess(isDownloaded -> {
+                    if (isDownloaded != null) {
+                        if (isDownloaded) {
+                            LOGGER.info("Embedding model is already downloaded");
+                        } else {
+                            LOGGER.info("Embedding model was successfully updated");
+                        }
+                    }
                     errorWhileBuildingModel = "";
                     eventBus.post(new EmbeddingModelBuiltEvent());
                 })

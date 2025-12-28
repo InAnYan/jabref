@@ -4,4 +4,5 @@ import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
 public record FullBibEntryAiIdentifier(BibDatabaseContext databaseContext, BibEntry entry) {
+    // TODO: Add helper constructors
 }

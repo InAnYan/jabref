@@ -12,7 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.Node;
 
-import org.jabref.gui.ai.components.aichat.AiChatWindow;
+import org.jabref.gui.ai.chat.AiChatWindow;
 import org.jabref.gui.edit.automaticfiededitor.LastAutomaticFieldEditorEdit;
 import org.jabref.gui.search.SearchType;
 import org.jabref.gui.sidepane.SidePaneType;
@@ -23,6 +23,7 @@ import org.jabref.http.SrvStateManager;
 import org.jabref.logic.search.IndexManager;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.OptionalObjectProperty;
+import org.jabref.model.ai.identifiers.GroupAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.groups.GroupTreeNode;
@@ -40,7 +41,6 @@ import com.tobiasdiez.easybind.EasyBinding;
  *   <li>active number of search results</li>
  *   <li>focus owner</li>
  *   <li>dialog window sizes/positions</li>
- *   <li>opened AI chat window (controlled by {@link org.jabref.logic.ai.AiService})</li>
  * </ul>
  */
 public interface StateManager extends SrvStateManager {
@@ -101,7 +101,9 @@ public interface StateManager extends SrvStateManager {
 
     void clearSearchHistory();
 
-    List<AiChatWindow> getAiChatWindows();
+    Optional<AiChatWindow> getAiChatWindowForGroup(GroupAiIdentifier groupIdentifier);
+    void setAiChatWindowForGroup(GroupAiIdentifier groupIdentifier, AiChatWindow aiChatWindow);
+    void removeAiChatWindowForGroup(GroupAiIdentifier groupIdentifier);
 
     BooleanProperty getEditorShowing();
 

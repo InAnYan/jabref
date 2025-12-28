@@ -22,6 +22,7 @@ public class AiIngestionWindow extends BaseDialog<Void> {
         this.tasks = tasks;
 
         this.setTitle(Localization.lang("AI ingestion status"));
+        this.getDialogPane().getScene().getWindow().setOnCloseRequest(_ -> this.hide());
 
         ViewLoader.view(this)
                   .load()

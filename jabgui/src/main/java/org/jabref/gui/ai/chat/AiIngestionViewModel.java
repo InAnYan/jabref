@@ -2,6 +2,7 @@ package org.jabref.gui.ai.chat;
 
 import javafx.beans.property.MapProperty;
 import javafx.beans.property.SimpleMapProperty;
+import javafx.collections.FXCollections;
 
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.model.entry.LinkedFile;
@@ -21,7 +22,7 @@ public class AiIngestionViewModel {
     ) {
     }
 
-    private final MapProperty<LinkedFile, IngestionState> ingestionStateMap = new SimpleMapProperty<>();
+    private final MapProperty<LinkedFile, IngestionState> ingestionStateMap = new SimpleMapProperty<>(FXCollections.observableHashMap());
 
     public void addTask(GenerateEmbeddingsTask task) {
         task.statusProperty().addListener(_ -> processTask(task));

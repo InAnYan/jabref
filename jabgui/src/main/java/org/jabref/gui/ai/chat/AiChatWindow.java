@@ -1,8 +1,6 @@
 package org.jabref.gui.ai.chat;
 
-import java.util.List;
-
-import javafx.collections.ObservableList;
+import javafx.beans.property.ListProperty;
 import javafx.fxml.FXML;
 
 import org.jabref.gui.util.BaseDialog;
@@ -22,11 +20,11 @@ public class AiChatWindow extends BaseDialog<Void> {
                   .setAsDialogPane(this);
     }
 
-    public void setEntries(List<FullBibEntryAiIdentifier> entries) {
-        chatView.setEntries(entries);
+    public ListProperty<ChatHistoryRecordV2> chatHistoryProperty() {
+        return chatView.chatHistoryProperty();
     }
 
-    public void setChatHistory(ObservableList<ChatHistoryRecordV2> chatHistory) {
-        chatView.setChatHistory(chatHistory);
+    public ListProperty<FullBibEntryAiIdentifier> entriesProperty() {
+        return chatView.entriesProperty();
     }
 }

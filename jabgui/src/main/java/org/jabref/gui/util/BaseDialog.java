@@ -8,6 +8,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 import org.jabref.gui.icon.IconTheme;
 import org.jabref.gui.keyboard.KeyBinding;
@@ -53,5 +54,15 @@ public class BaseDialog<T> extends Dialog<T> {
     private void setDialogIcon(Image image) {
         Stage dialogWindow = (Stage) getDialogPane().getScene().getWindow();
         dialogWindow.getIcons().add(image);
+    }
+
+    public static void bringToFront(Dialog<?> dialog) {
+        // Using answers from: <https://stackoverflow.com/a/43007782> and <https://stackoverflow.com/a/48798192>.
+
+        Window window = dialog.getDialogPane().getScene().getWindow();
+        if (window instanceof Stage stage) {
+            stage.setAlwaysOnTop(true);
+            stage.setAlwaysOnTop(false);
+        }
     }
 }

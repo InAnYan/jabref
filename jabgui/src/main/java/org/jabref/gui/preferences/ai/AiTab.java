@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -80,6 +81,9 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private Button expertSettingsHelp;
     @FXML private Button templatesHelp;
 
+    @FXML private Button resetCurrentTemplateButton;
+    @FXML private Button resetTemplatesButton;
+
     private final ControlsFxVisualizer visualizer = new ControlsFxVisualizer();
 
     public AiTab() {
@@ -119,6 +123,20 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         citationParsingUserMessageTextArea.textProperty().bindBidirectional(viewModel.getTemplateSources().get(AiTemplateKind.CITATION_PARSING_USER_MESSAGE));
 
         templatesTabPane.getSelectionModel().selectedItemProperty().addListener(_ -> viewModel.selectedTemplateProperty().set(getAiTemplate()));
+
+        BooleanBinding aiDisabled = enableAi.selectedProperty().not();
+
+        systemMessageTextArea.disableProperty().bind(aiDisabled);
+        userMessageTextArea.disableProperty().bind(aiDisabled);
+        summarizationChunkSystemMessageTextArea.disableProperty().bind(aiDisabled);
+        summarizationChunkUserMessageTextArea.disableProperty().bind(aiDisabled);
+        summarizationCombineSystemMessageTextArea.disableProperty().bind(aiDisabled);
+        summarizationCombineUserMessageTextArea.disableProperty().bind(aiDisabled);
+        citationParsingSystemMessageTextArea.disableProperty().bind(aiDisabled);
+        citationParsingUserMessageTextArea.disableProperty().bind(aiDisabled);
+
+        resetCurrentTemplateButton.disableProperty().bind(aiDisabled);
+        resetTemplatesButton.disableProperty().bind(aiDisabled);
     }
 
     private void initializeValidations() {
@@ -162,9 +180,6 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
                 apiBaseUrlTextField.setDisable(newValue || viewModel.disableExpertSettingsProperty().get())
         );
 
-        // bindBidirectional doesn't work well with number input fields ({@link IntegerInputField}, {@link DoubleInputField}),
-        // so they are expanded into `addListener` calls.
-
         contextWindowSizeTextField.valueProperty().addListener((observable, oldValue, newValue) ->
                 viewModel.contextWindowSizeProperty().set(newValue == null ? 0 : newValue));
 
@@ -206,7 +221,6 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
 
     private void initializeApiKey() {
         apiKeyTextField.textProperty().bindBidirectional(viewModel.apiKeyProperty());
-        // Disable if GPT4ALL is selected
         apiKeyTextField.disableProperty().bind(
                 Bindings.or(
                         viewModel.disableBasicSettingsProperty(),
@@ -245,9 +259,19 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     private void initializeEnableAi() {
         enableAi.selectedProperty().bindBidirectional(viewModel.enableAi());
         autoGenerateSummaries.selectedProperty().bindBidirectional(viewModel.autoGenerateSummaries());
-        autoGenerateSummaries.disableProperty().bind(viewModel.disableAutoGenerateSummaries());
+        autoGenerateSummaries.disableProperty().bind(
+                Bindings.or(
+                        enableAi.selectedProperty().not(),
+                        viewModel.disableAutoGenerateSummaries()
+                )
+        );
         autoGenerateEmbeddings.selectedProperty().bindBidirectional(viewModel.autoGenerateEmbeddings());
-        autoGenerateEmbeddings.disableProperty().bind(viewModel.disableAutoGenerateEmbeddings());
+        autoGenerateEmbeddings.disableProperty().bind(
+                Bindings.or(
+                        enableAi.selectedProperty().not(),
+                        viewModel.disableAutoGenerateEmbeddings()
+                )
+        );
     }
 
     @Override

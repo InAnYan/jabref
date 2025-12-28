@@ -28,15 +28,17 @@
                 vgap="4"/>
         <Text fx:id="embeddingModelText"
               text="%Additionally, we use Deep Java Library (DJL) embedding models for both chatting and summarization. The embedding model will be downloaded in background (size %0) from Deep Java Library servers anonymously."/>
+
         <Hyperlink
-                fx:id="djlLink"
+                onAction="#onDjlLinkClick"
                 wrapText="true"
                 styleClass="embeddedHyperlink"
                 text="%You can find information about DJL privacy policy here."/>
+
         <HBox spacing="10.0">
-            <Button fx:id="agreeButton"
+            <Button onAction="#onPrivacyAgree"
                     text="%I agree"/>
-            <Button fx:id="hideAiTabsButton"
+            <Button onAction="#onHideAiTabs"
                     text="%Hide 'AI' tabs"/>
         </HBox>
     </VBox>

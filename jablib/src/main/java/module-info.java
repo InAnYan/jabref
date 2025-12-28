@@ -59,7 +59,6 @@ open module org.jabref.jablib {
     exports org.jabref.model.metadata.event;
     exports org.jabref.logic.ai.chatting;
     exports org.jabref.logic.ai.util;
-    exports org.jabref.model.ai.processingstatus;
     exports org.jabref.logic.ai.summarization;
     exports org.jabref.logic.layout.format;
     exports org.jabref.logic.auxparser;
@@ -308,6 +307,5 @@ open module org.jabref.jablib {
     requires org.libreoffice.uno;
     requires transitive org.jspecify;
     requires org.jetbrains.annotations;
-    requires org.jabref.jablib;
     // endregion
 }

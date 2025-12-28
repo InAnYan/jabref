@@ -10,6 +10,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
 import org.jabref.gui.DialogService;
+import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.entry.LinkedFile;
@@ -34,9 +35,11 @@ public class AiIngestionView extends VBox {
     private void initialize() {
         viewModel = new AiIngestionViewModel();
 
-        viewModel.ingestionStateMapProperty().addListener((InvalidationListener) _ -> updateTasks());
+        viewModel.ingestionStateMapProperty().addListener((InvalidationListener) _ ->
+                UiTaskExecutor.runInJavaFXThread(this::updateTasks));
     }
 
+    /// Run in the JavaFX thread.
     private void updateTasks() {
         // It's easier to just clear the grid and repopulate it. But inefficient.
 

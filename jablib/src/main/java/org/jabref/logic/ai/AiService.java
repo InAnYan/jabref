@@ -68,11 +68,8 @@ public class AiService implements AutoCloseable {
 
         this.ingestionFeature = new IngestionAiFeature(
                 aiPreferences,
-                filePreferences,
                 taskExecutor,
-                notificationService,
-                embeddingFeature.getCurrentEmbeddingModel(),
-                shutdownSignal
+                notificationService
         );
 
         this.ragFeature = new RagAiFeature(

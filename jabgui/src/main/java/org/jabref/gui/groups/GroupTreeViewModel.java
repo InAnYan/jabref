@@ -23,17 +23,21 @@ import javafx.scene.control.ButtonType;
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.StateManager;
-import org.jabref.gui.ai.components.aichat.AiChatWindow;
+import org.jabref.gui.ai.chat.AiChatWindow;
 import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.preferences.GuiPreferences;
+import org.jabref.gui.util.BaseDialog;
 import org.jabref.gui.util.CustomLocalDragboard;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.util.ChatHistoryFactory;
+import org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral.GenerateEmbeddingsForSeveralTaskRequest;
 import org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral.GenerateSummaryForSeveralTaskRequest;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.chatting.GroupChatHistoryIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.GroupAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
@@ -191,7 +195,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
         }
 
         String grpName = preferences.getLibraryPreferences().getAddImportedEntriesGroupName();
-        AbstractGroup importEntriesGroup = new SmartGroup(grpName, GroupHierarchyType.INDEPENDENT, ',' );
+        AbstractGroup importEntriesGroup = new SmartGroup(grpName, GroupHierarchyType.INDEPENDENT, ',');
         boolean isGrpExist = parent.getGroupNode()
                                    .getChildren()
                                    .stream()
@@ -459,16 +463,15 @@ public class GroupTreeViewModel extends AbstractViewModel {
     }
 
     public void chatWithGroup(GroupNodeViewModel group) {
-        assert currentDatabase.isPresent();
+        assert currentDatabase.isPresent(); // TODO: This is not good.
+        assert currentDatabase.get().getDatabasePath().isPresent(); // TODO: This is not good.
 
         StringProperty groupNameProperty = group.getGroupNode().getGroup().nameProperty();
 
         // We localize the name here, because it is used as the title of the window.
-        // See documentation for {@link AiChatGuardedComponent#name}.
         StringProperty nameProperty = new SimpleStringProperty(Localization.lang("Group %0", groupNameProperty.get()));
         groupNameProperty.addListener((obs, oldValue, newValue) -> nameProperty.setValue(Localization.lang("Group %0", groupNameProperty.get())));
 
-        // TODO: Unchecked get.
         ObservableList<ChatHistoryRecordV2> chatHistory = ChatHistoryFactory.makeChatHistoryProperty(
                 new GroupChatHistoryIdentifier(
                         currentDatabase.get().getDatabasePath().get(),
@@ -482,29 +485,30 @@ public class GroupTreeViewModel extends AbstractViewModel {
     }
 
     private void openAiChat(StringProperty name, ObservableList<ChatHistoryRecordV2> chatHistory, BibDatabaseContext bibDatabaseContext, ObservableList<BibEntry> entries) {
-        Optional<AiChatWindow> existingWindow = stateManager.getAiChatWindows().stream().filter(window -> window.getChatName().equals(name.get())).findFirst();
+        assert currentDatabase.isPresent(); // TODO: This is not good.
+        assert currentDatabase.get().getDatabasePath().isPresent(); // TODO: This is not good.
+
+        GroupAiIdentifier groupIdentifier = new GroupAiIdentifier(currentDatabase.get().getDatabasePath().get(), name.get());
+
+        Optional<AiChatWindow> existingWindow = stateManager.getAiChatWindowForGroup(groupIdentifier);
 
         if (existingWindow.isPresent()) {
-            existingWindow.get().requestFocus();
-        } else {
-            AiChatWindow aiChatWindow = new AiChatWindow(
-                    aiService,
-                    dialogService,
-                    preferences.getAiPreferences(),
-                    preferences.getExternalApplicationsPreferences(),
-                    adaptVisibleTabs,
-                    taskExecutor
-            );
-
-            aiChatWindow.setOnCloseRequest(event ->
-                    stateManager.getAiChatWindows().remove(aiChatWindow)
-            );
-
-            stateManager.getAiChatWindows().add(aiChatWindow);
-            dialogService.showCustomWindow(aiChatWindow);
-            aiChatWindow.setChat(name, chatHistory, bibDatabaseContext, entries);
-            aiChatWindow.requestFocus();
+            BaseDialog.bringToFront(existingWindow.get());
+            return;
         }
+
+        AiChatWindow aiChatWindow = new AiChatWindow();
+        aiChatWindow.titleProperty().bind(name);
+        aiChatWindow.chatHistoryProperty().set(chatHistory);
+        aiChatWindow.entriesProperty().set(FXCollections.observableArrayList(entries.stream().map(e -> new FullBibEntryAiIdentifier(bibDatabaseContext, e)).toList()));
+        aiChatWindow.setOnCloseRequest(_ ->
+                stateManager.removeAiChatWindowForGroup(groupIdentifier)
+        );
+
+        stateManager.setAiChatWindowForGroup(groupIdentifier, aiChatWindow);
+
+        dialogService.showCustomDialog(aiChatWindow);
+        BaseDialog.bringToFront(aiChatWindow);
     }
 
     public void generateEmbeddings(GroupNodeViewModel groupNode) {
@@ -521,11 +525,21 @@ public class GroupTreeViewModel extends AbstractViewModel {
                 .flatMap(entry -> entry.getFiles().stream())
                 .toList();
 
-        aiService.getIngestionFeature().getIngestionService().ingest(
-                group.nameProperty(),
-                linkedFiles,
-                currentDatabase.get()
-        );
+        aiService
+                .getIngestionFeature()
+                .getIngestionTaskAggregator()
+                .start(new GenerateEmbeddingsForSeveralTaskRequest(
+                        preferences.getFilePreferences(),
+                        aiService.getIngestionFeature().getIngestedDocumentsRepository(),
+                        aiService.getIngestionFeature().getEmbeddingsStore(),
+                        aiService.getEmbeddingFeature().getCurrentEmbeddingModel(),
+                        aiService.getIngestionFeature().getCurrentDocumentSplitter(),
+                        currentDatabase.get(),
+                        group.nameProperty(),
+                        linkedFiles,
+                        aiService.getShutdownSignal(),
+                        taskExecutor
+                ));
 
         dialogService.notify(Localization.lang("Ingestion started for group \"%0\".", group.getName()));
     }

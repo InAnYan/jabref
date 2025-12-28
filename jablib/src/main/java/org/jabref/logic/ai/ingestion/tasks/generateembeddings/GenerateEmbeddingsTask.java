@@ -43,7 +43,7 @@ public class GenerateEmbeddingsTask extends TrackedBackgroundTask<Void> {
 
     @Override
     public Void perform() {
-        LOGGER.debug("Starting embeddings generation task for file \"{}\"", request.linkedFile().getLink());
+        LOGGER.debug("Starting embeddings generation task");
 
         try {
             LongTaskInfo longTaskInfo = new LongTaskInfo(
@@ -57,10 +57,10 @@ public class GenerateEmbeddingsTask extends TrackedBackgroundTask<Void> {
                     request.linkedFile()
             );
         } catch (InterruptedException e) {
-            LOGGER.debug("There is a embeddings generation task for file \"{}\". It will be cancelled, because user quits JabRef.", request.linkedFile.getLink());
+            LOGGER.debug("There is a embeddings generation task. It will be cancelled, because user quits JabRef");
         }
 
-        LOGGER.debug("Finished embeddings generation task for file \"{}\"", request.linkedFile().getLink());
+        LOGGER.debug("Finished embeddings generation task");
         progressCounter.stop();
         return null;
     }

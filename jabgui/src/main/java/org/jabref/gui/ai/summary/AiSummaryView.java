@@ -88,7 +88,7 @@ public class AiSummaryView extends StackPane {
         switch (state) {
             case AI_TURNED_OFF -> {
                 privacyNotice.setVisible(true);
-                processingPane.setManaged(true);
+                privacyNotice.setManaged(true);
             }
             case PROCESSING -> {
                 processingPane.setVisible(true);
@@ -126,7 +126,7 @@ public class AiSummaryView extends StackPane {
     }
 
     public void bind(BibDatabaseContext bibDatabaseContext, BibEntry entry) {
-        viewModel.bindEntry(new FullBibEntryAiIdentifier(bibDatabaseContext, entry));
+        viewModel.entryProperty().set(new FullBibEntryAiIdentifier(bibDatabaseContext, entry));
     }
 
     private void updateHints() {

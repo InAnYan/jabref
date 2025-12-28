@@ -1,16 +1,14 @@
 package org.jabref.gui.ai.chat;
 
-import java.util.List;
-
-import javafx.collections.ObservableList;
+import javafx.beans.property.ListProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 
 import org.jabref.gui.DialogService;
 import org.jabref.gui.ai.AiPrivacyNoticeView;
@@ -21,6 +19,7 @@ import org.jabref.gui.util.ViewModelListCellFactory;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
@@ -33,7 +32,7 @@ public class AiChatView extends StackPane {
 
     @FXML private AiPrivacyNoticeView privacyNotice;
     @FXML private SimpleStatusPaneView noEntriesErrorPane;
-    @FXML private VBox mainContainer;
+    @FXML private BorderPane mainContainer;
 
     @FXML private ProgressIndicator loadingIndicator;
     @FXML private ListScrollPane<ChatHistoryRecordV2> chatHistoryScrollPane;
@@ -52,6 +51,7 @@ public class AiChatView extends StackPane {
     @Inject private GuiPreferences preferences;
     @Inject private AiService aiService;
     @Inject private DialogService dialogService;
+    @Inject private TaskExecutor taskExecutor;
 
     public AiChatView() {
         ViewLoader.view(this)
@@ -64,7 +64,8 @@ public class AiChatView extends StackPane {
         viewModel = new AiChatViewModel(
                 preferences,
                 aiService,
-                dialogService
+                dialogService,
+                taskExecutor
         );
 
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
@@ -78,12 +79,12 @@ public class AiChatView extends StackPane {
         cancelButton.managedProperty().bind(cancelButton.visibleProperty());
         clearButton.managedProperty().bind(clearButton.visibleProperty());
 
-        chatHistoryScrollPane.setItems(viewModel.getChatHistory());
         chatHistoryScrollPane.setRenderer(chatHistoryRecordV2 -> {
             AiChatMessageView aiChatMessageView = new AiChatMessageView();
             aiChatMessageView.setChatMessage(chatHistoryRecordV2);
             return aiChatMessageView;
         });
+        chatHistoryScrollPane.itemsProperty().bind(viewModel.chatHistoryProperty());
 
         answerEngineCombo.itemsProperty().bind(viewModel.answerEngineKindsProperty());
         answerEngineCombo.valueProperty().bindBidirectional(viewModel.selectedAnswerEngineKindProperty());
@@ -96,14 +97,6 @@ public class AiChatView extends StackPane {
 
         viewModel.chatModelProperty().addListener(_ -> updateChatLabel());
         updateChatLabel();
-    }
-
-    public void setEntries(List<FullBibEntryAiIdentifier> entries) {
-        viewModel.setEntries(entries);
-    }
-
-    public void setChatHistory(ObservableList<ChatHistoryRecordV2> chatHistory) {
-        viewModel.setChatHistory(chatHistory);
     }
 
     private void updateByState() {
@@ -128,10 +121,11 @@ public class AiChatView extends StackPane {
                 loadingIndicator.setVisible(true);
 
                 infoButton.setVisible(true);
-                userMessageTextField.setVisible(true);
+                infoButton.setDisable(false);
+                userMessageTextField.setVisible(false);
                 userMessageTextField.setDisable(false);
-                sendButton.setVisible(true);
 
+                sendButton.setVisible(false);
                 retryButton.setVisible(false);
                 cancelButton.setVisible(true);
 
@@ -183,9 +177,9 @@ public class AiChatView extends StackPane {
     private void updateChatLabel() {
         ChatModel chatModel = viewModel.chatModelProperty().get();
         aiModelLabel.setText(Localization.lang(
-                "Current chat model: %0 (%1)",
-                chatModel.getName(),
-                chatModel.getAiProvider().getDisplayName()
+                "Current chat model: %0 %1",
+                chatModel.getAiProvider().getDisplayName(),
+                chatModel.getName()
         ));
     }
 
@@ -205,7 +199,20 @@ public class AiChatView extends StackPane {
     }
 
     @FXML
+    private void cancel() {
+        viewModel.cancel();
+    }
+
+    @FXML
     private void clearChatHistory() {
-        viewModel.clearChatHistory();
+        viewModel.chatHistoryProperty().get().clear();
+    }
+
+    public ListProperty<ChatHistoryRecordV2> chatHistoryProperty() {
+        return viewModel.chatHistoryProperty();
+    }
+
+    public ListProperty<FullBibEntryAiIdentifier> entriesProperty() {
+        return viewModel.entriesProperty();
     }
 }

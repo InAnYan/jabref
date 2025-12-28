@@ -3,7 +3,6 @@ package org.jabref.gui.ai;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -22,9 +21,6 @@ public class AiPrivacyNoticeView extends ScrollPane {
     @FXML private VBox text;
     @FXML private GridPane aiPolicies;
     @FXML private Text embeddingModelText;
-    @FXML private Button agreeButton;
-    @FXML private Hyperlink djlLink;
-    @FXML private Button hideAiTabsButton;
 
     @Inject private GuiPreferences preferences;
     @Inject private DialogService dialogService;
@@ -55,14 +51,10 @@ public class AiPrivacyNoticeView extends ScrollPane {
         addPrivacyHyperlink(aiPolicies, AiProvider.HUGGING_FACE);
         addPrivacyHyperlink(aiPolicies, AiProvider.GPT4ALL);
 
+        // Note: Ideally, this should be bound to update automatically if the size changes but keeping the original logic for text replacement here.
         String embeddingTemplate = embeddingModelText.getText();
         String replaced = embeddingTemplate.replaceAll("%0", viewModel.embeddingModelSizeProperty().get());
         embeddingModelText.setText(replaced);
-
-        djlLink.setOnAction(_ -> viewModel.openBrowser("https://github.com/deepjavalibrary/djl/discussions/3370#discussioncomment-10233632"));
-
-        agreeButton.setOnAction(_ -> viewModel.onPrivacyAgree());
-        hideAiTabsButton.setOnAction(_ -> viewModel.hideAITabs());
     }
 
     private void initializeBindings() {
@@ -85,5 +77,20 @@ public class AiPrivacyNoticeView extends ScrollPane {
         hyperlink.setWrapText(true);
         hyperlink.setOnAction(_ -> viewModel.openBrowser(aiProvider.getApiUrl()));
         gridPane.add(hyperlink, 1, row);
+    }
+
+    @FXML
+    private void onDjlLinkClick() {
+        viewModel.openBrowser("https://github.com/deepjavalibrary/djl/discussions/3370#discussioncomment-10233632");
+    }
+
+    @FXML
+    private void onPrivacyAgree() {
+        viewModel.onPrivacyAgree();
+    }
+
+    @FXML
+    private void onHideAiTabs() {
+        viewModel.hideAITabs();
     }
 }

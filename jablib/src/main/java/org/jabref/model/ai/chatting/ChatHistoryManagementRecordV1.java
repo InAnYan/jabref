@@ -11,7 +11,6 @@ import dev.langchain4j.data.message.ChatMessage;
 // Note about `Optional<BibDatabaseContext>`: it was necessary in a previous version, but currently we never save an `Optional.empty()`.
 // However, we decided to leave it here: to reduce migrations and to make it possible to chat with a {@link BibEntry} without {@link BibDatabaseContext}
 // ({@link BibDatabaseContext} is required only for load/store of the chat).
-@Deprecated
 public record ChatHistoryManagementRecordV1(
         Optional<BibDatabaseContext> bibDatabaseContext,
         ObservableList<ChatMessage> chatHistory

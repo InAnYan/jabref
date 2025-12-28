@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.StackPane?>
+<?import org.jabref.gui.ai.chat.AiChatView?>
+<?import org.jabref.gui.ai.statuspane.SimpleStatusPaneView?>
+<fx:root
+        type="StackPane"
+        xmlns="http://javafx.com/javafx"
+        xmlns:fx="http://javafx.com/fxml"
+        fx:controller="org.jabref.gui.ai.chat.AiEntryChatView">
+
+    <SimpleStatusPaneView
+            fx:id="emptyDatabasePathPane"
+            title="Unable to chat"
+            description="Please save the library in order to chat."/>
+
+    <SimpleStatusPaneView
+            fx:id="emptyCitationKeyPane"
+            title="Unable to chat"
+            description="Please provide a non-empty citation key for this entry."/>
+
+    <SimpleStatusPaneView
+            fx:id="nonUniqueCitationKeyPane"
+            title="Unable to chat"
+            description="Please provide a unique citation key for this entry."/>
+
+    <AiChatView
+            fx:id="aiChatView"/>
+
+</fx:root>

@@ -18,7 +18,8 @@ import ai.djl.repository.zoo.ModelNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UpdateEmbeddingModelTask extends BackgroundTask<Void> {
+/// Returns true if the embedding model is already downloaded. The return might be null in case AI settings are turned off.
+public class UpdateEmbeddingModelTask extends BackgroundTask<Boolean> {
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateEmbeddingModelTask.class);
 
     private static final String DJL_EMBEDDING_MODEL_URL_PREFIX = "djl://ai.djl.huggingface.pytorch/";
@@ -46,13 +47,13 @@ public class UpdateEmbeddingModelTask extends BackgroundTask<Void> {
     }
 
     @Override
-    public Void call() {
+    public Boolean call() {
         if (!aiPreferences.getEnableAi()) {
             predictorProperty.set(Optional.empty());
             return null;
         }
 
-        LOGGER.info("Downloading embedding model...");
+        LOGGER.info("Downloading (or checking that is was already downloaded) embedding model...");
 
         String modelUrl = DJL_EMBEDDING_MODEL_URL_PREFIX + aiPreferences.getEmbeddingModel().getName();
 
@@ -67,6 +68,7 @@ public class UpdateEmbeddingModelTask extends BackgroundTask<Void> {
 
         try {
             predictorProperty.set(Optional.of(new DeepJavaEmbeddingModel(criteria)));
+            return criteria.isDownloaded();
         } catch (ModelNotFoundException e) {
             predictorProperty.set(Optional.empty());
             throw new RuntimeException(Localization.lang("Unable to find the embedding model by the URL %0", modelUrl), e);
@@ -76,11 +78,9 @@ public class UpdateEmbeddingModelTask extends BackgroundTask<Void> {
         } catch (IOException e) {
             predictorProperty.set(Optional.empty());
             throw new RuntimeException(Localization.lang("An I/O error occurred while opening the embedding model by URL %0", modelUrl), e);
+        } finally {
+            progressCounter.stop();
         }
-
-        progressCounter.stop();
-
-        return null;
     }
 
     private void updateProgress() {

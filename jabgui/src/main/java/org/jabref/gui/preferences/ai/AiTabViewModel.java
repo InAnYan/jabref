@@ -87,12 +87,18 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     private final Map<AiTemplateKind, StringProperty> templateSources = Map.of(
             AiTemplateKind.CHATTING_SYSTEM_MESSAGE, new SimpleStringProperty(),
             AiTemplateKind.CHATTING_USER_MESSAGE, new SimpleStringProperty(),
+
             AiTemplateKind.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE, new SimpleStringProperty(),
             AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE, new SimpleStringProperty(),
+
             AiTemplateKind.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE, new SimpleStringProperty(),
             AiTemplateKind.SUMMARIZATION_COMBINE_USER_MESSAGE, new SimpleStringProperty(),
+
             AiTemplateKind.CITATION_PARSING_SYSTEM_MESSAGE, new SimpleStringProperty(),
-            AiTemplateKind.CITATION_PARSING_USER_MESSAGE, new SimpleStringProperty()
+            AiTemplateKind.CITATION_PARSING_USER_MESSAGE, new SimpleStringProperty(),
+
+            AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE, new SimpleStringProperty(),
+            AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE, new SimpleStringProperty()
     );
 
     private final OptionalObjectProperty<AiTemplateKind> selectedTemplate = OptionalObjectProperty.empty();

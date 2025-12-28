@@ -30,28 +30,17 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * State flow:
- * 1. Bound to entry (external): a check is run.
- * 2. Check (internal action): if there is a saved summary, then DONE. If there is some problem, then NO_* or WRONG_*. Otherwise if everything is good, then PROESSING with default settings.
- * 3. PROCESSING -> CANCELLED, ERROR_WHILE_GENERATING, DONE.
- * <p>
- * Also, if AI is turned off, then it will be AI_TURNED_OFF.
- */
 public class AiSummaryViewModel extends AbstractViewModel {
     public enum State {
         AI_TURNED_OFF,
-
         DONE,
         NO_DATABASE_PATH,
         NO_CITATION_KEY,
         WRONG_CITATION_KEY,
         NO_FILES,
         NO_SUPPORTED_FILE_TYPES,
-
         PROCESSING,
         CANCELLED,
-
         ERROR_WHILE_GENERATING,
     }
 
@@ -61,13 +50,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
     private final AiService aiService;
     private final DialogService dialogService;
 
-    // Global properties.
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.AI_TURNED_OFF);
-
-    // Error state properties.
     private final ObjectProperty<Exception> error = new SimpleObjectProperty<>(null);
-
-    // Done state properties.
     private final ObjectProperty<BibEntrySummary> summary = new SimpleObjectProperty<>();
 
     private final ObjectProperty<FullBibEntryAiIdentifier> entry = new SimpleObjectProperty<>();
@@ -90,14 +74,29 @@ public class AiSummaryViewModel extends AbstractViewModel {
         AiPreferences aiPreferences = preferences.getAiPreferences();
 
         aiPreferences.enableAiProperty().addListener((_, _, value) -> {
-            if (!value) {
+            if (value) {
+                if (getEntry() != null) {
+                    updateState(getEntry());
+                }
+            } else {
                 state.set(State.AI_TURNED_OFF);
             }
         });
 
-        state.addListener((_, _, newValue) -> {
-            if (newValue != State.PROCESSING) {
+        entry.addListener((_, _, newEntry) -> {
+            if (currentTask != null) {
+                currentTask.cancel();
+                removeTaskListener();
+                currentTask = null;
+            }
+
+            if (newEntry != null) {
                 setDefaultModels();
+                updateState(newEntry);
+            } else {
+                state.set(State.AI_TURNED_OFF);
+                summary.set(null);
+                error.set(null);
             }
         });
     }
@@ -107,41 +106,32 @@ public class AiSummaryViewModel extends AbstractViewModel {
         summarizator.set(aiService.getSummarizationFeature().getCurrentSummarizator());
     }
 
-    public void bindEntry(FullBibEntryAiIdentifier entry) {
-        removeTaskListener();
-        this.entry.set(entry);
-        updateState(entry);
-    }
-
     public void regenerate() {
-        if (entry.get() != null) {
-            regenerate(entry.get());
+        if (getEntry() != null) {
+            regenerate(getEntry());
         }
     }
 
     public void regenerateCustom() {
-        if (entry.get() != null) {
-            regenerateCustom(entry.get());
+        if (getEntry() != null) {
+            regenerateCustom(getEntry());
         }
     }
 
     public void generate() {
-        if (entry.get() != null) {
-            generate(entry.get());
+        if (getEntry() != null) {
+            generate(getEntry());
         }
     }
 
     public void cancel() {
         state.set(State.CANCELLED);
-
         if (currentTask != null) {
             currentTask.cancel();
         }
     }
 
     private void updateState(FullBibEntryAiIdentifier identifier) {
-        setDefaultModels();
-
         BibDatabaseContext bibDatabaseContext = identifier.databaseContext();
         BibEntry entry = identifier.entry();
 
@@ -185,7 +175,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
         AiSummaryParametersDialog parametersDialog = new AiSummaryParametersDialog();
         Optional<Summarizator> customSummarizator = dialogService.showCustomDialogAndWait(parametersDialog);
 
-        chatModel.set(aiService.getChattingFeature().getCurrentChatModel());
         if (customSummarizator.isEmpty()) {
             return;
         }
@@ -268,6 +257,18 @@ public class AiSummaryViewModel extends AbstractViewModel {
                 }
             }
         });
+    }
+
+    public ObjectProperty<FullBibEntryAiIdentifier> entryProperty() {
+        return entry;
+    }
+
+    public FullBibEntryAiIdentifier getEntry() {
+        return entry.get();
+    }
+
+    public void setEntry(FullBibEntryAiIdentifier entry) {
+        this.entry.set(entry);
     }
 
     public ObjectProperty<State> stateProperty() {
