@@ -5,7 +5,6 @@ import java.util.Optional;
 import javafx.beans.property.ListProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
@@ -17,7 +16,6 @@ import org.jabref.gui.ai.statuspane.SimpleStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.HistoryTextArea;
 import org.jabref.gui.util.ListScrollPane;
-import org.jabref.gui.util.ViewModelListCellFactory;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.util.ChatHistoryRecordUtils;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
@@ -26,7 +24,6 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
-import org.jabref.model.ai.pipeline.AnswerEngineKind;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
@@ -49,8 +46,6 @@ public class AiChatView extends StackPane {
 
     @FXML private Button clearButton;
     @FXML private Label aiModelLabel;
-
-    @FXML private ComboBox<AnswerEngineKind> answerEngineCombo;
 
     @Inject private GuiPreferences preferences;
     @Inject private AiService aiService;
@@ -108,12 +103,6 @@ public class AiChatView extends StackPane {
         });
         chatHistoryScrollPane.itemsProperty().bind(viewModel.chatHistoryProperty());
 
-        answerEngineCombo.itemsProperty().bind(aiChatStatusWindow.answerEngineKindsProperty());
-        answerEngineCombo.valueProperty().bindBidirectional(aiChatStatusWindow.selectedAnswerEngineKindProperty());
-        new ViewModelListCellFactory<AnswerEngineKind>()
-                .withText(AnswerEngineKind::getDisplayName)
-                .install(answerEngineCombo);
-
         viewModel.stateProperty().addListener((_, _, value) -> updateByState(value));
         updateByState(viewModel.stateProperty().get());
 
@@ -152,7 +141,6 @@ public class AiChatView extends StackPane {
                 cancelButton.setVisible(true);
 
                 clearButton.setDisable(false);
-                answerEngineCombo.setDisable(false);
             }
 
             case ERROR -> {
@@ -170,7 +158,6 @@ public class AiChatView extends StackPane {
                 cancelButton.setVisible(true);
 
                 clearButton.setDisable(false);
-                answerEngineCombo.setDisable(false);
             }
 
             case IDLE -> {
@@ -191,7 +178,6 @@ public class AiChatView extends StackPane {
                 cancelButton.setVisible(false);
 
                 clearButton.setDisable(false);
-                answerEngineCombo.setDisable(false);
             }
         }
     }

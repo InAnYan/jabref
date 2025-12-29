@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.Tooltip?>
@@ -116,13 +117,13 @@
                     </center>
                 </BorderPane>
 
-                <HBox spacing="10"
-                      alignment="CENTER">
+                <StackPane>
                     <Button fx:id="clearButton"
                             alignment="CENTER"
                             onAction="#clearChatHistory"
                             styleClass="icon-button,narrow"
-                            textAlignment="CENTER">
+                            textAlignment="CENTER"
+                            StackPane.alignment="CENTER_LEFT">
                         <graphic>
                             <JabRefIconView
                                     glyph="DELETE_ENTRY"/>
@@ -135,9 +136,8 @@
 
                     <Label fx:id="aiModelLabel"
                            text="%Current chat model: %0 %1"
-                           HBox.hgrow="ALWAYS"
-                           maxWidth="Infinity"/>
-                </HBox>
+                           StackPane.alignment="CENTER"/>
+                </StackPane>
             </VBox>
         </bottom>
     </BorderPane>

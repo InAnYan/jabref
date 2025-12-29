@@ -3,11 +3,15 @@
 <?import javafx.scene.layout.StackPane?>
 <?import org.jabref.gui.ai.chat.AiChatView?>
 <?import org.jabref.gui.ai.statuspane.SimpleStatusPaneView?>
+<?import org.jabref.gui.ai.AiPrivacyNoticeView?>
 <fx:root
         type="StackPane"
         xmlns="http://javafx.com/javafx"
         xmlns:fx="http://javafx.com/fxml"
         fx:controller="org.jabref.gui.ai.chat.AiEntryChatView">
+
+    <AiPrivacyNoticeView
+            fx:id="privacyNotice"/>
 
     <SimpleStatusPaneView
             fx:id="emptyDatabasePathPane"
