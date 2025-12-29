@@ -197,7 +197,7 @@ public class UiTaskExecutor implements TaskExecutor {
             // Set to 100% completed on completion
             task.updateProgress(1, 1);
 
-            if (onSuccess != null) {
+            if (onSuccess != null && !javaTask.isCancelled()){
                 onSuccess.accept(javaTask.getValue());
             }
         });

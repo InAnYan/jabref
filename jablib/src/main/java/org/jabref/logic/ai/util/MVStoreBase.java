@@ -30,20 +30,14 @@ public abstract class MVStoreBase implements AutoCloseable {
 
         try {
             this.mvStore = new MVStore.Builder()
-                    .autoCommitDisabled()
                     .fileName(mvStorePath == null ? null : mvStorePath.toString())
                     .open();
         } catch (MVStoreException e) {
             this.mvStore = new MVStore.Builder()
-                    .autoCommitDisabled()
                     .fileName(null) // creates an in memory store
                     .open();
             LOGGER.error(errorMessageForOpening(), e);
         }
-    }
-
-    public void commit() {
-        mvStore.commit();
     }
 
     public void close() {

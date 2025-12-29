@@ -1,5 +1,8 @@
 package org.jabref.logic.ai.chatting.util;
 
+import java.util.Comparator;
+import java.util.List;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -18,8 +21,13 @@ public class ChatHistoryFactory {
             ChatHistoryIdentifier identifier,
             ChatHistoryRepository repository
     ) {
-        ObservableList<ChatHistoryRecordV2> list =
-                FXCollections.observableArrayList(repository.getAllMessages(identifier));
+        List<ChatHistoryRecordV2> allMessages = repository
+                .getAllMessages(identifier)
+                .stream()
+                .sorted(Comparator.comparing(ChatHistoryRecordV2::createdAt))
+                .toList();
+
+        ObservableList<ChatHistoryRecordV2> list = FXCollections.observableArrayList(allMessages);
 
         list.addListener((ListChangeListener<ChatHistoryRecordV2>) change -> {
             while (change.next()) {

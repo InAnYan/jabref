@@ -2,6 +2,9 @@ package org.jabref.gui.ai.chat;
 
 import java.util.Objects;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -44,42 +47,36 @@ public class AiChatMessageView extends HBox {
         HBox.setHgrow(this, Priority.ALWAYS);
 
         sourceLabel.textProperty().bind(viewModel.sourceProperty());
-        viewModel.messageProperty().addListener((_, _, newValue) -> {
+        viewModel.messageContentProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 markdownTextFlow.setMarkdown(newValue);
             }
         });
-    }
 
-    public void setChatMessage(ChatHistoryRecordV2 chatMessage) {
-        viewModel.set(chatMessage);
+        viewModel.chatMessageProperty().addListener((_, _, newValue) -> {
+            String type = newValue.messageTypeClassName();
 
-        String type = chatMessage.messageTypeClassName();
+            this.getChildren().clear();
 
-        this.getChildren().clear();
-
-        if (Objects.equals(type, UserMessage.class.getName())) {
-            this.getChildren().addAll(buttonsVBox, vBox);
-            this.setAlignment(Pos.TOP_RIGHT);
-            setColor("-jr-ai-message-user", "-jr-ai-message-user-border");
-        } else {
-            this.getChildren().addAll(vBox, buttonsVBox);
-            this.setAlignment(Pos.TOP_LEFT);
-
-            if (Objects.equals(type, ErrorMessage.class.getName())) {
-                setColor("-jr-ai-message-error", "-jr-ai-message-error-border");
+            if (Objects.equals(type, UserMessage.class.getName())) {
+                this.getChildren().addAll(buttonsVBox, vBox);
+                this.setAlignment(Pos.TOP_RIGHT);
+                setColor("-jr-ai-message-user", "-jr-ai-message-user-border");
             } else {
-                setColor("-jr-ai-message-ai", "-jr-ai-message-ai-border");
+                this.getChildren().addAll(vBox, buttonsVBox);
+                this.setAlignment(Pos.TOP_LEFT);
+
+                if (Objects.equals(type, ErrorMessage.class.getName())) {
+                    setColor("-jr-ai-message-error", "-jr-ai-message-error-border");
+                } else {
+                    setColor("-jr-ai-message-ai", "-jr-ai-message-ai-border");
+                }
             }
-        }
+        });
     }
 
     private void setColor(String fillColor, String borderColor) {
         vBox.setStyle("-fx-background-color: " + fillColor + "; -fx-border-radius: 10; -fx-background-radius: 10; -fx-border-color: " + borderColor + "; -fx-border-width: 1; -fx-padding: 10; -fx-max-width: 600;");
-    }
-
-    public AiChatMessageViewModel getViewModel() {
-        return viewModel;
     }
 
     @FXML
@@ -90,5 +87,41 @@ public class AiChatMessageView extends HBox {
     @FXML
     private void onRegenerateClick() {
         viewModel.regenerate();
+    }
+
+    public ObjectProperty<ChatHistoryRecordV2> chatMessageProperty() {
+        return viewModel.chatMessageProperty();
+    }
+
+    public ChatHistoryRecordV2 getChatMessage() {
+        return viewModel.chatMessageProperty().get();
+    }
+
+    public void setChatMessage(ChatHistoryRecordV2 chatMessage) {
+        viewModel.chatMessageProperty().set(chatMessage);
+    }
+
+    public ObjectProperty<EventHandler<ActionEvent>> onDeleteProperty() {
+        return viewModel.onDeleteProperty();
+    }
+
+    public EventHandler<ActionEvent> getOnDelete() {
+        return viewModel.onDeleteProperty().get();
+    }
+
+    public void setOnDelete(EventHandler<ActionEvent> onDelete) {
+        viewModel.onDeleteProperty().set(onDelete);
+    }
+
+    public ObjectProperty<EventHandler<ActionEvent>> onRegenerateProperty() {
+        return viewModel.onRegenerateProperty();
+    }
+
+    public EventHandler<ActionEvent> getOnRegenerate() {
+        return viewModel.onRegenerateProperty().get();
+    }
+
+    public void setOnRegenerate(EventHandler<ActionEvent> onRegenerate) {
+        viewModel.onRegenerateProperty().set(onRegenerate);
     }
 }

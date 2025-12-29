@@ -32,8 +32,10 @@ public class GenerateLlmResponseTask extends BackgroundTask<ChatHistoryRecordV2>
     @Override
     public ChatHistoryRecordV2 call() throws Exception {
         List<ChatMessage> chatMessages = ChatHistoryRecordUtils.convertRecordsToLangchain(chatHistory);
+
         ChatResponse response = chatModel.chat(chatMessages);
         String context = response.aiMessage().text();
+
         return new ChatHistoryRecordV2(
                 UUID.randomUUID().toString(),
                 AiMessage.class.getName(),

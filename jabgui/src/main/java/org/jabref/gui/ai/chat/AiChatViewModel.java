@@ -10,7 +10,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
@@ -35,7 +34,7 @@ import dev.langchain4j.data.message.UserMessage;
 public class AiChatViewModel extends AbstractViewModel {
     public enum State {
         AI_TURNED_OFF,
-        NO_ENTRIES,
+        NO_FILES,
         IDLE,
         WAITING_FOR_MESSAGE,
         ERROR
@@ -92,21 +91,11 @@ public class AiChatViewModel extends AbstractViewModel {
         this.entries.addListener((_, _, _) -> {
             if (!preferences.getAiPreferences().getEnableAi()) {
                 state.set(State.AI_TURNED_OFF);
-            } else if (entries.get() == null || entries.isEmpty()) {
-                state.set(State.NO_ENTRIES);
+            } else if (entries.get() == null || entries.isEmpty() || entries.get().stream().flatMap(identifier -> identifier.entry().getFiles().stream()).toList().isEmpty()) {
+                state.set(State.NO_FILES);
             } else {
                 changeEmbeddingTasks();
                 state.set(State.IDLE);
-            }
-        });
-
-        // Fixed: Use ListChangeListener to detect when items are added
-        this.chatHistory.addListener((ListChangeListener<ChatHistoryRecordV2>) change -> {
-            while (change.next()) {
-                if (change.wasAdded()) {
-                    clearGenerateLlmResponseTask();
-                    state.set(State.IDLE);
-                }
             }
         });
     }
@@ -172,6 +161,7 @@ public class AiChatViewModel extends AbstractViewModel {
                 .onSuccess(message -> {
                     chatHistory.add(message);
                     state.set(State.IDLE);
+                    clearGenerateLlmResponseTask();
                 })
                 .onFailure(ex -> {
                     chatHistory.add(new ChatHistoryRecordV2(
@@ -190,7 +180,10 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private void clearGenerateLlmResponseTask() {
         if (generateLlmResponseTask.get() != null) {
-            generateLlmResponseTask.get().cancel();
+            if (!generateLlmResponseTask.get().isCancelled()) {
+                generateLlmResponseTask.get().cancel();
+            }
+
             generateLlmResponseTask.set(null);
         }
     }
@@ -220,21 +213,39 @@ public class AiChatViewModel extends AbstractViewModel {
     public void regenerate(String id) {
         assert state.get() == State.ERROR || state.get() == State.IDLE;
 
-        state.set(State.WAITING_FOR_MESSAGE);
-
-        Optional<ChatHistoryRecordV2> record = chatHistory
+        Optional<ChatHistoryRecordV2> recordOpt = chatHistory
                 .stream()
                 .filter(message ->
                         Objects.equals(message.id(), id))
                 .findFirst();
 
-        record.ifPresent(message -> {
-            chatHistory.removeIf(message2 ->
-                    !message2.createdAt().isBefore(message.createdAt())
-            );
+        if (recordOpt.isEmpty()) {
+            return;
+        }
 
-            sendMessage(message.content());
-        });
+        ChatHistoryRecordV2 message = recordOpt.get();
+        String contentToRegenerate = message.content();
+        Instant cutoffTime = message.createdAt();
+
+        if (!Objects.equals(message.messageTypeClassName(), UserMessage.class.getName())) {
+            int index = chatHistory.indexOf(message);
+            if (index > 0) {
+                ChatHistoryRecordV2 prev = chatHistory.get(index - 1);
+                if (Objects.equals(prev.messageTypeClassName(), UserMessage.class.getName())) {
+                    contentToRegenerate = prev.content();
+                    cutoffTime = prev.createdAt();
+                }
+            }
+        }
+
+        state.set(State.IDLE);
+
+        final Instant finalCutoffTime = cutoffTime;
+        chatHistory.removeIf(message2 ->
+                !message2.createdAt().isBefore(finalCutoffTime)
+        );
+
+        sendMessage(contentToRegenerate);
     }
 
     public void regenerate() {

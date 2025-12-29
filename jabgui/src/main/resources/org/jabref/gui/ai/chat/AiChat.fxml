@@ -25,9 +25,9 @@
             fx:id="privacyNotice"/>
 
     <SimpleStatusPaneView
-            fx:id="noEntriesErrorPane"
+            fx:id="noFilesErrorPane"
             title="%Unable to chat"
-            description="%No entries attached."/>
+            description="%No files attached."/>
 
     <BorderPane
             fx:id="mainContainer"
@@ -58,7 +58,9 @@
                 </ListScrollPane>
 
                 <ProgressIndicator
-                        fx:id="loadingIndicator"/>
+                        fx:id="loadingIndicator"
+                        maxWidth="50"
+                        maxHeight="50"/>
             </StackPane>
         </center>
 

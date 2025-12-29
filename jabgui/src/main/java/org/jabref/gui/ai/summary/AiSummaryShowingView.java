@@ -17,6 +17,7 @@ import javafx.scene.web.WebView;
 
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.gui.util.WebViewStore;
+import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 
 import com.airhacks.afterburner.views.ViewLoader;
@@ -62,8 +63,7 @@ public class AiSummaryShowingView extends VBox {
             return;
         }
 
-        String newInfo = summaryInfoText
-                .getText()
+        String newInfo = Localization.lang("Generated at %0 by %1 (algorithm %2)")
                 .replaceAll("%0", formatTimestamp(viewModel.summaryProperty().get().timestamp()))
                 .replaceAll("%1", viewModel.summaryProperty().get().aiProvider().getDisplayName() + " " + viewModel.summaryProperty().get().model())
                 .replaceAll("%2", viewModel.summaryProperty().get().summarizationAlgorithm().getDisplayName());

@@ -64,6 +64,6 @@ public class MVStoreChatHistoryRepository extends MVStoreBase implements ChatHis
     }
 
     private Map<String, ChatHistoryRecordV2> openMap(ChatHistoryIdentifier identifier) {
-        return mvStore.openMap(identifier.toString());
+        return mvStore.openMap(identifier.toStringRepresentation());
     }
 }

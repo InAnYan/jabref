@@ -35,7 +35,7 @@ public class AiChatView extends StackPane {
     private AiChatViewModel viewModel;
 
     @FXML private AiPrivacyNoticeView privacyNotice;
-    @FXML private SimpleStatusPaneView noEntriesErrorPane;
+    @FXML private SimpleStatusPaneView noFilesErrorPane;
     @FXML private BorderPane mainContainer;
 
     @FXML private ProgressIndicator loadingIndicator;
@@ -73,7 +73,7 @@ public class AiChatView extends StackPane {
         );
 
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
-        noEntriesErrorPane.managedProperty().bind(noEntriesErrorPane.visibleProperty());
+        noFilesErrorPane.managedProperty().bind(noFilesErrorPane.visibleProperty());
         mainContainer.managedProperty().bind(mainContainer.visibleProperty());
         loadingIndicator.managedProperty().bind(loadingIndicator.visibleProperty());
         infoButton.managedProperty().bind(infoButton.visibleProperty());
@@ -97,6 +97,8 @@ public class AiChatView extends StackPane {
         chatHistoryScrollPane.setRenderer(chatHistoryRecordV2 -> {
             AiChatMessageView aiChatMessageView = new AiChatMessageView();
             aiChatMessageView.setChatMessage(chatHistoryRecordV2);
+            aiChatMessageView.setOnDelete(_ -> viewModel.delete(chatHistoryRecordV2.id()));
+            aiChatMessageView.setOnRegenerate(_ -> viewModel.regenerate(chatHistoryRecordV2.id()));
             return aiChatMessageView;
         });
         chatHistoryScrollPane.itemsProperty().bind(viewModel.chatHistoryProperty());
@@ -118,19 +120,19 @@ public class AiChatView extends StackPane {
         switch (state) {
             case AI_TURNED_OFF -> {
                 privacyNotice.setVisible(true);
-                noEntriesErrorPane.setVisible(false);
+                noFilesErrorPane.setVisible(false);
                 mainContainer.setVisible(false);
             }
 
-            case NO_ENTRIES -> {
+            case NO_FILES -> {
                 privacyNotice.setVisible(false);
-                noEntriesErrorPane.setVisible(true);
+                noFilesErrorPane.setVisible(true);
                 mainContainer.setVisible(false);
             }
 
             case WAITING_FOR_MESSAGE -> {
                 privacyNotice.setVisible(false);
-                noEntriesErrorPane.setVisible(false);
+                noFilesErrorPane.setVisible(false);
                 mainContainer.setVisible(true);
 
                 loadingIndicator.setVisible(true);
@@ -150,7 +152,7 @@ public class AiChatView extends StackPane {
 
             case ERROR -> {
                 privacyNotice.setVisible(false);
-                noEntriesErrorPane.setVisible(false);
+                noFilesErrorPane.setVisible(false);
                 mainContainer.setVisible(true);
 
                 loadingIndicator.setVisible(false);
@@ -168,7 +170,7 @@ public class AiChatView extends StackPane {
 
             case IDLE -> {
                 privacyNotice.setVisible(false);
-                noEntriesErrorPane.setVisible(false);
+                noFilesErrorPane.setVisible(false);
                 mainContainer.setVisible(true);
 
                 loadingIndicator.setVisible(false);
