@@ -12,7 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.Node;
 
-import org.jabref.gui.ai.chat.AiChatWindow;
+import org.jabref.gui.ai.chat.AiGroupChatWindow;
 import org.jabref.gui.edit.automaticfiededitor.LastAutomaticFieldEditorEdit;
 import org.jabref.gui.search.SearchType;
 import org.jabref.gui.sidepane.SidePaneType;
@@ -101,8 +101,8 @@ public interface StateManager extends SrvStateManager {
 
     void clearSearchHistory();
 
-    Optional<AiChatWindow> getAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier);
-    void setAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier, AiChatWindow aiChatWindow);
+    Optional<AiGroupChatWindow> getAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier);
+    void setAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier, AiGroupChatWindow aiGroupChatWindow);
     void removeAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier);
 
     BooleanProperty getEditorShowing();

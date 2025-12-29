@@ -27,7 +27,7 @@ import javafx.concurrent.Task;
 import javafx.scene.Node;
 import javafx.util.Pair;
 
-import org.jabref.gui.ai.chat.AiChatWindow;
+import org.jabref.gui.ai.chat.AiGroupChatWindow;
 import org.jabref.gui.edit.automaticfiededitor.LastAutomaticFieldEditorEdit;
 import org.jabref.gui.search.SearchType;
 import org.jabref.gui.sidepane.SidePaneType;
@@ -90,7 +90,7 @@ public class JabRefGuiStateManager implements StateManager {
     private final ObservableList<SidePaneType> visibleSidePanes = FXCollections.observableArrayList();
     private final ObjectProperty<LastAutomaticFieldEditorEdit> lastAutomaticFieldEditorEdit = new SimpleObjectProperty<>();
     private final ObservableList<String> searchHistory = FXCollections.observableArrayList();
-    private final Map<ResolvedGroupAiIdentifier, AiChatWindow> groupAiChatWindows = new HashMap<>();
+    private final Map<ResolvedGroupAiIdentifier, AiGroupChatWindow> groupAiChatWindows = new HashMap<>();
     private final BooleanProperty editorShowing = new SimpleBooleanProperty(false);
     private final OptionalObjectProperty<Walkthrough> activeWalkthrough = OptionalObjectProperty.empty();
     private final BooleanProperty canGoBack = new SimpleBooleanProperty(false);
@@ -293,13 +293,13 @@ public class JabRefGuiStateManager implements StateManager {
     }
 
     @Override
-    public Optional<AiChatWindow> getAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier) {
+    public Optional<AiGroupChatWindow> getAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier) {
         return Optional.ofNullable(groupAiChatWindows.get(groupIdentifier));
     }
 
     @Override
-    public void setAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier, AiChatWindow aiChatWindow) {
-        groupAiChatWindows.put(groupIdentifier, aiChatWindow);
+    public void setAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier, AiGroupChatWindow aiGroupChatWindow) {
+        groupAiChatWindows.put(groupIdentifier, aiGroupChatWindow);
     }
 
     @Override

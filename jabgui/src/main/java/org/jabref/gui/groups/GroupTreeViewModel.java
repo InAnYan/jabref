@@ -23,20 +23,16 @@ import javafx.scene.control.ButtonType;
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.StateManager;
-import org.jabref.gui.ai.chat.AiChatWindow;
+import org.jabref.gui.ai.chat.AiGroupChatWindow;
 import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.BaseDialog;
 import org.jabref.gui.util.CustomLocalDragboard;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.util.ChatHistoryFactory;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral.GenerateEmbeddingsForSeveralTaskRequest;
 import org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral.GenerateSummaryForSeveralTaskRequest;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
-import org.jabref.model.ai.chatting.GroupChatHistoryIdentifier;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.identifiers.ResolvedGroupAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
@@ -463,44 +459,26 @@ public class GroupTreeViewModel extends AbstractViewModel {
     }
 
     public void chatWithGroup(GroupNodeViewModel group) {
-        assert currentDatabase.isPresent(); // TODO: This is not good.
-        assert currentDatabase.get().getDatabasePath().isPresent(); // TODO: This is not good.
+        assert currentDatabase.isPresent();
 
-        StringProperty groupNameProperty = group.getGroupNode().getGroup().nameProperty();
+        BibDatabaseContext context = currentDatabase.get();
 
-        // We localize the name here, because it is used as the title of the window.
-        StringProperty nameProperty = new SimpleStringProperty(Localization.lang("Group %0", groupNameProperty.get()));
-        groupNameProperty.addListener((obs, oldValue, newValue) -> nameProperty.setValue(Localization.lang("Group %0", groupNameProperty.get())));
-
-        ObservableList<ChatHistoryRecordV2> chatHistory = ChatHistoryFactory.makeChatHistoryProperty(
-                new GroupChatHistoryIdentifier(
-                        currentDatabase.get().getDatabasePath().get(),
-                        group.getGroupNode().getGroup().nameProperty().get()
-                ),
-                aiService.getChattingFeature().getChatHistoryRepository()
+        ResolvedGroupAiIdentifier groupIdentifier = new ResolvedGroupAiIdentifier(
+                context.getDatabasePath().orElse(null),
+                group.getGroupNode().getGroup().getName()
         );
-        ObservableList<BibEntry> bibEntries = FXCollections.observableArrayList(group.getGroupNode().findMatches(currentDatabase.get().getDatabase()));
 
-        openAiChat(nameProperty, chatHistory, currentDatabase.get(), bibEntries);
-    }
-
-    private void openAiChat(StringProperty name, ObservableList<ChatHistoryRecordV2> chatHistory, BibDatabaseContext bibDatabaseContext, ObservableList<BibEntry> entries) {
-        assert currentDatabase.isPresent(); // TODO: This is not good.
-        assert currentDatabase.get().getDatabasePath().isPresent(); // TODO: This is not good.
-
-        ResolvedGroupAiIdentifier groupIdentifier = new ResolvedGroupAiIdentifier(currentDatabase.get().getDatabasePath().get(), name.get());
-
-        Optional<AiChatWindow> existingWindow = stateManager.getAiChatWindowForGroup(groupIdentifier);
+        Optional<AiGroupChatWindow> existingWindow = stateManager.getAiChatWindowForGroup(groupIdentifier);
 
         if (existingWindow.isPresent()) {
             BaseDialog.bringToFront(existingWindow.get());
             return;
         }
 
-        AiChatWindow aiChatWindow = new AiChatWindow();
-        aiChatWindow.titleProperty().bind(name);
-        aiChatWindow.chatHistoryProperty().set(chatHistory);
-        aiChatWindow.entriesProperty().set(FXCollections.observableArrayList(BibEntryAiIdentifier.fromSeveral(bibDatabaseContext, entries)));
+        AiGroupChatWindow aiChatWindow = new AiGroupChatWindow();
+        aiChatWindow.databaseContextProperty().set(context);
+        aiChatWindow.groupNodeProperty().set(group);
+
         aiChatWindow.setOnCloseRequest(_ ->
                 stateManager.removeAiChatWindowForGroup(groupIdentifier)
         );
