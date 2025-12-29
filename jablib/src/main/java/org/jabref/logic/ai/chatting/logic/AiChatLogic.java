@@ -1,139 +1,85 @@
 package org.jabref.logic.ai.chatting.logic;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.StringProperty;
-import javafx.collections.ObservableList;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
-import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageAiTemplate;
+import org.jabref.logic.ai.chatting.tasks.GenerateLlmResponseTask;
 import org.jabref.logic.ai.chatting.templates.ChattingUserMessageAiTemplate;
-import org.jabref.logic.ai.chatting.util.ChatHistoryRecordUtils;
-import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.ai.util.LongTaskInfo;
-import org.jabref.logic.util.ProgressCounter;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
-import org.jabref.model.ai.chatting.messages.ErrorMessage;
 import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.RelevantInformation;
-import org.jabref.model.ai.templating.AiTemplateKind;
-import org.jabref.model.database.BibDatabaseContext;
-import org.jabref.model.entry.BibEntry;
 
-import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.data.message.ChatMessage;
-import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
-import dev.langchain4j.model.chat.ChatModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-@Deprecated
 public class AiChatLogic {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatLogic.class);
+    private final ChattingUserMessageAiTemplate template;
 
-    private final AiPreferences aiPreferences;
-    private final ChatModel chatLanguageModel;
-    private final ChattingSystemMessageAiTemplate chattingSystemMessageTemplate;
-    private final ChattingUserMessageAiTemplate chattingUserMessageTemplate;
+    private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
+    private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
 
-    private final ObservableList<ChatHistoryRecordV2> chatHistory;
-    private final ObservableList<BibEntry> entries;
-    private final StringProperty name;
-    private final BibDatabaseContext bibDatabaseContext;
+    public AiChatLogic(ChattingUserMessageAiTemplate template) {
+        this.template = template;
+    }
 
-    private final List<ChatMessage> chatMemory;
-
-    private final AnswerEngine answerEngine;
-
-    public AiChatLogic(
-            AiPreferences aiPreferences,
-            ChatModel chatLanguageModel,
-            ChattingSystemMessageAiTemplate chattingSystemMessageTemplate,
-            ChattingUserMessageAiTemplate chattingUserMessageTemplate,
-            BibDatabaseContext bibDatabaseContext,
-            ObservableList<ChatHistoryRecordV2> chatHistory,
-            ObservableList<BibEntry> entries,
-            StringProperty name,
-            AnswerEngine answerEngine
+    public GenerateLlmResponseTask call(
+            ChatHistoryRecordV2 userMessage,
+            List<FullBibEntryAiIdentifier> entries,
+            List<ChatHistoryRecordV2> chatHistory
     ) {
-        this.aiPreferences = aiPreferences;
-        this.chatLanguageModel = chatLanguageModel;
-        this.chattingSystemMessageTemplate = chattingSystemMessageTemplate;
-        this.chattingUserMessageTemplate = chattingUserMessageTemplate;
-        this.chatHistory = chatHistory;
-        this.entries = entries;
-        this.name = name;
-        this.bibDatabaseContext = bibDatabaseContext;
-        this.answerEngine = answerEngine;
+        // In the app chat history, only raw AI response and user messages are saved.
+        // However, to the AI, the latest user message is processed by the answer engine.
+        // The processed message is sent to AI but not saved in the app chat history.
+        // But:
+        // The other code should add a raw user message to the chat history (this will allow
+        // displaying the user message while we are waiting for the AI response). This
+        // code will create AI chat history by deleting the last message (which is expected to
+        // be a user message) and then adding the injected message. App chat history is left
+        // intact.
+        // Then add yourself the generated AI message to the app chat history.
 
-        this.chatMemory = new ArrayList<>();
-        chatHistory
-                .stream()
-                .filter(chatMessage -> !Objects.equals(chatMessage.messageTypeClassName(), ErrorMessage.class.getName()))
-                .forEach(record -> chatMemory.add(ChatHistoryRecordUtils.convertRecordToLangchain(record)));
-        setSystemMessage(chattingSystemMessageTemplate.render(entries));
+        Objects.requireNonNull(chatModel.get());
+        Objects.requireNonNull(answerEngine.get());
+        Objects.requireNonNull(chatHistory);
 
-        setupListeningToPreferencesChanges();
-    }
-
-    private void setupListeningToPreferencesChanges() {
-        aiPreferences
-                .templateProperty(AiTemplateKind.CHATTING_SYSTEM_MESSAGE)
-                .addListener(obs ->
-                        setSystemMessage(chattingSystemMessageTemplate.render(entries)));
-    }
-
-    private void setSystemMessage(String systemMessage) {
-        if (chatMemory.isEmpty()) {
-            chatMemory.add(new SystemMessage(systemMessage));
-        } else {
-            chatMemory.set(0, new SystemMessage(systemMessage));
-        }
-    }
-
-    public AiMessage execute(UserMessage message) {
-        chatHistory.add(new ChatHistoryRecordV2(
-                UUID.randomUUID().toString(),
-                message.getClass().getName(),
-                message.singleText(),
-                Instant.now()
-        ));
-
-        LOGGER.info(
-                "Sending message to AI provider ({}) for answering in {}: {}",
-                aiPreferences.getAiProvider().getApiUrl(),
-                name.get(),
-                message.singleText()
+        List<RelevantInformation> relevantInformation = answerEngine.get().process(
+                LongTaskInfo.empty(),
+                userMessage.content(),
+                entries
         );
 
-        List<RelevantInformation> excerpts = answerEngine.process(
-                // TODO: think about this.
-                new LongTaskInfo(new ProgressCounter(), new SimpleBooleanProperty(false)),
-                message.singleText(),
-                entries.stream().map(entry -> new FullBibEntryAiIdentifier(bibDatabaseContext, entry)).toList()
+        String injected = template.render(
+                entries.stream().map(FullBibEntryAiIdentifier::entry).toList(),
+                userMessage.content(),
+                relevantInformation
         );
 
-        chatMemory.add(new UserMessage(chattingUserMessageTemplate.render(entries, message.singleText(), excerpts)));
-
-        AiMessage aiMessage = chatLanguageModel.chat(chatMemory).aiMessage();
-
-        chatMemory.set(chatMemory.size() - 1, message); // Removing excerpts from the chat history.
-        chatMemory.add(aiMessage);
-        chatHistory.add(new ChatHistoryRecordV2(
+        ChatHistoryRecordV2 injectedMessage = new ChatHistoryRecordV2(
                 UUID.randomUUID().toString(),
-                aiMessage.getClass().getName(),
-                aiMessage.text(),
-                Instant.now()
-        ));
+                UserMessage.class.getName(),
+                injected,
+                userMessage.createdAt()
+        );
 
-        LOGGER.debug("Message was answered by the AI provider for {}: {}", name.get(), aiMessage.text());
+        ArrayList<ChatHistoryRecordV2> chatHistoryWithInjectedMessage = new ArrayList<>(chatHistory);
+        chatHistoryWithInjectedMessage.removeLast();
+        chatHistoryWithInjectedMessage.add(injectedMessage);
 
-        return aiMessage;
+        return new GenerateLlmResponseTask(chatModel.get(), chatHistoryWithInjectedMessage);
+    }
+
+    public ObjectProperty<ChatModel> chatModelProperty() {
+        return chatModel;
+    }
+
+    public ObjectProperty<AnswerEngine> answerEngineProperty() {
+        return answerEngine;
     }
 }

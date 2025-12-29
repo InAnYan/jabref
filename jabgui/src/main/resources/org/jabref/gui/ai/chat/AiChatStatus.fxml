@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<fx:root type="VBox"
+         xmlns="http://javafx.com/javafx"
+         xmlns:fx="http://javafx.com/fxml"
+         fx:controller="org.jabref.gui.ai.chat.AiChatStatusView"
+         spacing="15">
+
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <Label text="%Chat Status" style="-fx-font-size: 1.2em; -fx-font-weight: bold;"/>
+
+    <VBox spacing="5" VBox.vgrow="ALWAYS">
+        <Label text="%Chatting with entries:" style="-fx-font-weight: bold;"/>
+        <TableView fx:id="entriesTable" VBox.vgrow="ALWAYS" prefHeight="150">
+            <columns>
+                <TableColumn fx:id="libraryColumn" text="%Library"/>
+                <TableColumn fx:id="citationKeyColumn" text="%Citation Key"/>
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+        </TableView>
+    </VBox>
+
+    <VBox spacing="5" VBox.vgrow="ALWAYS">
+        <Label text="%Ingestion status:" style="-fx-font-weight: bold;"/>
+        <TableView fx:id="ingestionTable" VBox.vgrow="ALWAYS" prefHeight="200">
+            <columns>
+                <TableColumn fx:id="fileColumn" text="%File"/>
+                <TableColumn fx:id="statusColumn" text="%Status" maxWidth="150" minWidth="100"/>
+                <TableColumn fx:id="actionColumn" text="%Action" maxWidth="120" minWidth="100"/>
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+        </TableView>
+    </VBox>
+
+    <VBox spacing="5">
+        <Label text="%Chatting parameters:" style="-fx-font-weight: bold;"/>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="%Answer Engine:"/>
+            <ComboBox fx:id="answerEngineComboBox" prefWidth="200"/>
+        </HBox>
+    </VBox>
+
+</fx:root>

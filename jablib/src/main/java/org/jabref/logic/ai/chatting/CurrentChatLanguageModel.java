@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.jabref.logic.ai.chatting.logic.AiChatLogic;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.customimplementations.llms.Gpt4AllModel;
 import org.jabref.logic.ai.customimplementations.llms.JvmOpenAiChatLanguageModel;
@@ -17,7 +16,6 @@ import org.jabref.model.ai.llm.AiProvider;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import dev.langchain4j.data.message.ChatMessage;
-import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import dev.langchain4j.model.huggingface.HuggingFaceChatModel;
@@ -58,12 +56,6 @@ public class CurrentChatLanguageModel implements ChatModel, AutoCloseable {
         setupListeningToPreferencesChanges();
     }
 
-    /**
-     * Update the underlying {@link dev.langchain4j.model.chat.ChatModel} by current {@link AiPreferences} parameters.
-     * When the model is updated, the chat messages are not lost.
-     * See {@link AiChatLogic}, where messages are stored in {@link ChatMemory},
-     * and see {@link EntryChatHistoryRepositoryV1}.
-     */
     private void rebuild() {
         String apiKey = aiPreferences.getApiKeyForAiProvider(aiPreferences.getAiProvider());
         if (!aiPreferences.getEnableAi() || (apiKey.isEmpty() && aiPreferences.getAiProvider() != AiProvider.GPT4ALL)) {

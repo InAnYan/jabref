@@ -12,22 +12,19 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
-import org.jabref.gui.DialogService;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.logic.AiChatLogicV2;
+import org.jabref.logic.ai.chatting.logic.AiChatLogic;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTaskRequest;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
-import org.jabref.logic.ai.rag.util.AnswerEngineFactory;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.chatting.messages.ErrorMessage;
 import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
-import org.jabref.model.ai.pipeline.AnswerEngineKind;
 
 import dev.langchain4j.data.message.UserMessage;
 
@@ -42,41 +39,34 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private final GuiPreferences preferences;
     private final AiService aiService;
-    private final DialogService dialogService;
     private final TaskExecutor taskExecutor;
 
-    private final AnswerEngineFactory answerEngineFactory;
-    private final AiChatLogicV2 aiChatLogic;
+    private final AiChatLogic aiChatLogic;
 
+    private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
     private final ListProperty<FullBibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatHistoryRecordV2> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.IDLE);
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
 
-    private final ListProperty<AnswerEngineKind> answerEngineKinds =
-            new SimpleListProperty<>(FXCollections.observableArrayList(AnswerEngineKind.values()));
-    private final ObjectProperty<AnswerEngineKind> selectedAnswerEngineKind = new SimpleObjectProperty<>();
-
     private final ObjectProperty<BackgroundTask<ChatHistoryRecordV2>> generateLlmResponseTask = new SimpleObjectProperty<>();
 
     public AiChatViewModel(
             GuiPreferences preferences,
             AiService aiService,
-            DialogService dialogService,
             TaskExecutor taskExecutor
     ) {
         this.preferences = preferences;
         this.aiService = aiService;
-        this.dialogService = dialogService;
         this.taskExecutor = taskExecutor;
 
-        this.answerEngineFactory = new AnswerEngineFactory(preferences.getAiPreferences(), preferences.getFilePreferences(), aiService);
-        this.aiChatLogic = new AiChatLogicV2(aiService.getTemplatesFeature().getCurrentAiTemplates().getChattingUserMessageTemplate());
+        this.aiChatLogic = new AiChatLogic(
+                aiService.getTemplatesFeature().getCurrentAiTemplates().getChattingUserMessageTemplate()
+        );
         this.aiChatLogic.chatModelProperty().set(aiService.getChattingFeature().getCurrentChatModel());
-        this.selectedAnswerEngineKind.set(preferences.getAiPreferences().getAnswerEngineKind());
-        this.selectedAnswerEngineKind.addListener(_ -> updateAnswerEngine());
-        updateAnswerEngine();
+        this.aiChatLogic.answerEngineProperty().bind(answerEngine);
+
 
         if (!preferences.getAiPreferences().getEnableAi()) {
             state.set(State.AI_TURNED_OFF);
@@ -98,11 +88,6 @@ public class AiChatViewModel extends AbstractViewModel {
                 state.set(State.IDLE);
             }
         });
-    }
-
-    private void updateAnswerEngine() {
-        AnswerEngine answerEngine = answerEngineFactory.create(selectedAnswerEngineKind.get());
-        aiChatLogic.answerEngineProperty().set(answerEngine);
     }
 
     private void changeEmbeddingTasks() {
@@ -254,11 +239,6 @@ public class AiChatViewModel extends AbstractViewModel {
         }
     }
 
-    public void showIngestionStatus() {
-        AiIngestionWindow window = new AiIngestionWindow(generateEmbeddingsTasks);
-        dialogService.showCustomDialogAndWait(window);
-    }
-
     public ListProperty<FullBibEntryAiIdentifier> entriesProperty() {
         return entries;
     }
@@ -271,15 +251,15 @@ public class AiChatViewModel extends AbstractViewModel {
         return state;
     }
 
-    public ListProperty<AnswerEngineKind> answerEngineKindsProperty() {
-        return answerEngineKinds;
-    }
-
-    public ObjectProperty<AnswerEngineKind> selectedAnswerEngineKindProperty() {
-        return selectedAnswerEngineKind;
-    }
-
     public ObjectProperty<ChatModel> chatModelProperty() {
         return aiChatLogic.chatModelProperty();
+    }
+
+    public ObjectProperty<AnswerEngine> answerEngineProperty() {
+        return answerEngine;
+    }
+
+    public ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasksProperty() {
+        return generateEmbeddingsTasks;
     }
 }

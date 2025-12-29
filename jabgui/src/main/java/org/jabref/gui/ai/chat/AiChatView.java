@@ -32,7 +32,7 @@ import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
 public class AiChatView extends StackPane {
-    private AiChatViewModel viewModel;
+    private final AiChatStatusWindow aiChatStatusWindow = new AiChatStatusWindow();
 
     @FXML private AiPrivacyNoticeView privacyNotice;
     @FXML private SimpleStatusPaneView noFilesErrorPane;
@@ -57,6 +57,8 @@ public class AiChatView extends StackPane {
     @Inject private DialogService dialogService;
     @Inject private TaskExecutor taskExecutor;
 
+    private AiChatViewModel viewModel;
+
     public AiChatView() {
         ViewLoader.view(this)
                   .root(this)
@@ -68,9 +70,12 @@ public class AiChatView extends StackPane {
         viewModel = new AiChatViewModel(
                 preferences,
                 aiService,
-                dialogService,
                 taskExecutor
         );
+
+        viewModel.answerEngineProperty().bind(aiChatStatusWindow.answerEngineProperty());
+        aiChatStatusWindow.entriesProperty().bind(viewModel.entriesProperty());
+        aiChatStatusWindow.generateEmbeddingsTasksProperty().bind(viewModel.generateEmbeddingsTasksProperty());
 
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
         noFilesErrorPane.managedProperty().bind(noFilesErrorPane.visibleProperty());
@@ -103,8 +108,8 @@ public class AiChatView extends StackPane {
         });
         chatHistoryScrollPane.itemsProperty().bind(viewModel.chatHistoryProperty());
 
-        answerEngineCombo.itemsProperty().bind(viewModel.answerEngineKindsProperty());
-        answerEngineCombo.valueProperty().bindBidirectional(viewModel.selectedAnswerEngineKindProperty());
+        answerEngineCombo.itemsProperty().bind(aiChatStatusWindow.answerEngineKindsProperty());
+        answerEngineCombo.valueProperty().bindBidirectional(aiChatStatusWindow.selectedAnswerEngineKindProperty());
         new ViewModelListCellFactory<AnswerEngineKind>()
                 .withText(AnswerEngineKind::getDisplayName)
                 .install(answerEngineCombo);
@@ -202,7 +207,7 @@ public class AiChatView extends StackPane {
 
     @FXML
     private void showInfo() {
-        viewModel.showIngestionStatus();
+        dialogService.showCustomDialogAndWait(aiChatStatusWindow);
     }
 
     @FXML
