@@ -14,7 +14,7 @@ import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
-import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 
 import dev.langchain4j.data.message.UserMessage;
@@ -31,7 +31,7 @@ public class AiChatLogic {
 
     public GenerateLlmResponseTask call(
             ChatHistoryRecordV2 userMessage,
-            List<FullBibEntryAiIdentifier> entries,
+            List<BibEntryAiIdentifier> entries,
             List<ChatHistoryRecordV2> chatHistory
     ) {
         // In the app chat history, only raw AI response and user messages are saved.
@@ -56,7 +56,7 @@ public class AiChatLogic {
         );
 
         String injected = template.render(
-                entries.stream().map(FullBibEntryAiIdentifier::entry).toList(),
+                entries.stream().map(BibEntryAiIdentifier::entry).toList(),
                 userMessage.content(),
                 relevantInformation
         );

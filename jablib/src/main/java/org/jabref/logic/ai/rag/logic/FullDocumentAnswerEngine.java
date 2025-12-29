@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.ingestion.logic.parsing.UniversalContentParser;
 import org.jabref.logic.ai.util.LongTaskInfo;
-import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 
@@ -24,7 +24,7 @@ public class FullDocumentAnswerEngine implements AnswerEngine {
     public List<RelevantInformation> process(
             LongTaskInfo longTaskInfo,
             String query,
-            List<FullBibEntryAiIdentifier> entriesFilter
+            List<BibEntryAiIdentifier> entriesFilter
     ) {
         // Look at this!
         return entriesFilter

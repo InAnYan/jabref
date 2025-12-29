@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 import org.jetbrains.annotations.NotNull;
 
-public record GroupAiIdentifier(Path databasePath, String groupName) {
+public record ResolvedGroupAiIdentifier(Path databasePath, String groupName) {
     @Override
     public @NotNull String toString() {
         return databasePath.toString() + "/" + groupName;

@@ -22,7 +22,7 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddings
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.ai.rag.util.AnswerEngineFactory;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
-import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.entry.LinkedFile;
 
@@ -61,7 +61,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final Map<GenerateEmbeddingsTask, ChangeListener<? super TrackedBackgroundTask.Status>> taskListeners = new HashMap<>();
 
-    private final ListProperty<FullBibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ObservableList<IngestionStatusRow> ingestionStatuses = FXCollections.observableArrayList(row ->
             new Observable[] {row.statusProperty(), row.errorProperty()}
     );
@@ -160,7 +160,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         return generateEmbeddingsTasks;
     }
 
-    public ListProperty<FullBibEntryAiIdentifier> entriesProperty() {
+    public ListProperty<BibEntryAiIdentifier> entriesProperty() {
         return entries;
     }
 

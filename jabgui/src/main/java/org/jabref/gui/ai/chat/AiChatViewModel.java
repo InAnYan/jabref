@@ -24,7 +24,7 @@ import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.chatting.messages.ErrorMessage;
-import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
 import dev.langchain4j.data.message.UserMessage;
 
@@ -44,7 +44,7 @@ public class AiChatViewModel extends AbstractViewModel {
     private final AiChatLogic aiChatLogic;
 
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
-    private final ListProperty<FullBibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatHistoryRecordV2> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.IDLE);
@@ -239,7 +239,7 @@ public class AiChatViewModel extends AbstractViewModel {
         }
     }
 
-    public ListProperty<FullBibEntryAiIdentifier> entriesProperty() {
+    public ListProperty<BibEntryAiIdentifier> entriesProperty() {
         return entries;
     }
 

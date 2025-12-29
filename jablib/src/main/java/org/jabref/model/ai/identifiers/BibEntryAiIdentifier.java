@@ -1,12 +1,19 @@
 package org.jabref.model.ai.identifiers;
 
-import java.nio.file.Path;
+import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
+import org.jabref.model.database.BibDatabaseContext;
+import org.jabref.model.entry.BibEntry;
 
-public record BibEntryAiIdentifier(Path databasePath, String citationKey) {
-    @Override
-    public @NotNull String toString() {
-        return databasePath.toString() + "/" + citationKey;
+public record BibEntryAiIdentifier(BibDatabaseContext databaseContext, BibEntry entry) {
+    public static List<BibEntryAiIdentifier> fromSeveral(
+            BibDatabaseContext databaseContext,
+            List<BibEntry> entries
+    ) {
+        return entries
+                .stream()
+                .map(entry ->
+                        new BibEntryAiIdentifier(databaseContext, entry))
+                .toList();
     }
 }

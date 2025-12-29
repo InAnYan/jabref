@@ -21,7 +21,7 @@ import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 
 import com.airhacks.afterburner.views.ViewLoader;
@@ -29,9 +29,9 @@ import jakarta.inject.Inject;
 
 public class AiChatStatusView extends VBox {
 
-    @FXML private TableView<FullBibEntryAiIdentifier> entriesTable;
-    @FXML private TableColumn<FullBibEntryAiIdentifier, String> libraryColumn;
-    @FXML private TableColumn<FullBibEntryAiIdentifier, String> citationKeyColumn;
+    @FXML private TableView<BibEntryAiIdentifier> entriesTable;
+    @FXML private TableColumn<BibEntryAiIdentifier, String> libraryColumn;
+    @FXML private TableColumn<BibEntryAiIdentifier, String> citationKeyColumn;
 
     @FXML private TableView<AiChatStatusViewModel.IngestionStatusRow> ingestionTable;
     @FXML private TableColumn<AiChatStatusViewModel.IngestionStatusRow, String> fileColumn;
@@ -152,7 +152,7 @@ public class AiChatStatusView extends VBox {
         return viewModel.answerEngineProperty();
     }
 
-    public ListProperty<FullBibEntryAiIdentifier> entriesProperty() {
+    public ListProperty<BibEntryAiIdentifier> entriesProperty() {
         return viewModel.entriesProperty();
     }
 

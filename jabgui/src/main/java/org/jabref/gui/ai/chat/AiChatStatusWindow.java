@@ -8,7 +8,7 @@ import org.jabref.gui.util.BaseDialog;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 
 import com.airhacks.afterburner.views.ViewLoader;
@@ -39,7 +39,7 @@ public class AiChatStatusWindow extends BaseDialog<Void> {
         return aiChatStatusView.answerEngineProperty();
     }
 
-    public ListProperty<FullBibEntryAiIdentifier> entriesProperty() {
+    public ListProperty<BibEntryAiIdentifier> entriesProperty() {
         return aiChatStatusView.entriesProperty();
     }
 

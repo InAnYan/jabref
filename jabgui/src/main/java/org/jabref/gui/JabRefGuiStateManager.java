@@ -38,7 +38,7 @@ import org.jabref.logic.command.CommandSelectionTab;
 import org.jabref.logic.search.IndexManager;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.OptionalObjectProperty;
-import org.jabref.model.ai.identifiers.GroupAiIdentifier;
+import org.jabref.model.ai.identifiers.ResolvedGroupAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.groups.GroupTreeNode;
@@ -90,7 +90,7 @@ public class JabRefGuiStateManager implements StateManager {
     private final ObservableList<SidePaneType> visibleSidePanes = FXCollections.observableArrayList();
     private final ObjectProperty<LastAutomaticFieldEditorEdit> lastAutomaticFieldEditorEdit = new SimpleObjectProperty<>();
     private final ObservableList<String> searchHistory = FXCollections.observableArrayList();
-    private final Map<GroupAiIdentifier, AiChatWindow> groupAiChatWindows = new HashMap<>();
+    private final Map<ResolvedGroupAiIdentifier, AiChatWindow> groupAiChatWindows = new HashMap<>();
     private final BooleanProperty editorShowing = new SimpleBooleanProperty(false);
     private final OptionalObjectProperty<Walkthrough> activeWalkthrough = OptionalObjectProperty.empty();
     private final BooleanProperty canGoBack = new SimpleBooleanProperty(false);
@@ -293,17 +293,17 @@ public class JabRefGuiStateManager implements StateManager {
     }
 
     @Override
-    public Optional<AiChatWindow> getAiChatWindowForGroup(GroupAiIdentifier groupIdentifier) {
+    public Optional<AiChatWindow> getAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier) {
         return Optional.ofNullable(groupAiChatWindows.get(groupIdentifier));
     }
 
     @Override
-    public void setAiChatWindowForGroup(GroupAiIdentifier groupIdentifier, AiChatWindow aiChatWindow) {
+    public void setAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier, AiChatWindow aiChatWindow) {
         groupAiChatWindows.put(groupIdentifier, aiChatWindow);
     }
 
     @Override
-    public void removeAiChatWindowForGroup(GroupAiIdentifier groupIdentifier) {
+    public void removeAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier) {
         groupAiChatWindows.remove(groupIdentifier);
     }
 

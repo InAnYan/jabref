@@ -16,7 +16,7 @@ import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.chatting.EntryChatHistoryIdentifier;
-import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -32,9 +32,9 @@ public class AiEntryChatViewModel extends AbstractViewModel {
     private final AiPreferences aiPreferences;
     private final ChatHistoryRepository chatHistoryRepository;
 
-    private final ObjectProperty<FullBibEntryAiIdentifier> selectedEntry = new SimpleObjectProperty<>();
+    private final ObjectProperty<BibEntryAiIdentifier> selectedEntry = new SimpleObjectProperty<>();
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.NO_DATABASE_PATH);
-    private final ListProperty<FullBibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatHistoryRecordV2> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     public AiEntryChatViewModel(
@@ -66,7 +66,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         } else if (!CitationKeyCheck.citationKeyIsUnique(context, entry.getCitationKey().get())) {
             state.set(State.CITATION_KEY_NOT_UNIQUE);
         } else {
-            entries.set(FXCollections.observableArrayList(new FullBibEntryAiIdentifier(context, entry)));
+            entries.set(FXCollections.observableArrayList(new BibEntryAiIdentifier(context, entry)));
             chatHistory.set(ChatHistoryFactory.makeChatHistoryProperty(
                     new EntryChatHistoryIdentifier(
                             context.getDatabasePath().get(),
@@ -78,7 +78,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         }
     }
 
-    public ObjectProperty<FullBibEntryAiIdentifier> selectedEntryProperty() {
+    public ObjectProperty<BibEntryAiIdentifier> selectedEntryProperty() {
         return selectedEntry;
     }
 
@@ -86,7 +86,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         return state;
     }
 
-    public ListProperty<FullBibEntryAiIdentifier> entriesProperty() {
+    public ListProperty<BibEntryAiIdentifier> entriesProperty() {
         return entries;
     }
 

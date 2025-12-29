@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.jabref.logic.ai.ingestion.logic.EmbeddingsCleaner;
 import org.jabref.logic.ai.util.LongTaskInfo;
-import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 import org.jabref.model.entry.BibEntry;
@@ -47,13 +47,13 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
     public List<RelevantInformation> process(
             LongTaskInfo longTaskInfo,
             String query,
-            List<FullBibEntryAiIdentifier> entriesFilter
+            List<BibEntryAiIdentifier> entriesFilter
     ) {
         // TODO: Simplify.
 
         List<BibEntry> entries = entriesFilter
                 .stream()
-                .map(FullBibEntryAiIdentifier::entry)
+                .map(BibEntryAiIdentifier::entry)
                 .toList();
 
         List<LinkedFile> linkedFiles = ListUtil.getLinkedFiles(entries).toList();
@@ -101,7 +101,7 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
         return excerpts;
     }
 
-    private Optional<BibEntry> findEntryByLink(List<FullBibEntryAiIdentifier> entries, String link) {
+    private Optional<BibEntry> findEntryByLink(List<BibEntryAiIdentifier> entries, String link) {
         // TODO: Simplify??
         return entries
                 .stream()

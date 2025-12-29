@@ -5,7 +5,7 @@ import javafx.fxml.FXML;
 
 import org.jabref.gui.util.BaseDialog;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
-import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
 import com.airhacks.afterburner.views.ViewLoader;
 
@@ -24,7 +24,7 @@ public class AiChatWindow extends BaseDialog<Void> {
         return chatView.chatHistoryProperty();
     }
 
-    public ListProperty<FullBibEntryAiIdentifier> entriesProperty() {
+    public ListProperty<BibEntryAiIdentifier> entriesProperty() {
         return chatView.entriesProperty();
     }
 }

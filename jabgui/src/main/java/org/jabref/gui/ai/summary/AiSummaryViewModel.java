@@ -21,7 +21,7 @@ import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTa
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
-import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.ResolvedBibEntryAiIdentifier;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
@@ -54,7 +54,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
     private final ObjectProperty<Exception> error = new SimpleObjectProperty<>(null);
     private final ObjectProperty<BibEntrySummary> summary = new SimpleObjectProperty<>();
 
-    private final ObjectProperty<FullBibEntryAiIdentifier> entry = new SimpleObjectProperty<>();
+    private final ObjectProperty<BibEntryAiIdentifier> entry = new SimpleObjectProperty<>();
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
     private final ObjectProperty<Summarizator> summarizator = new SimpleObjectProperty<>();
 
@@ -131,7 +131,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
         }
     }
 
-    private void updateState(FullBibEntryAiIdentifier identifier) {
+    private void updateState(BibEntryAiIdentifier identifier) {
         BibDatabaseContext bibDatabaseContext = identifier.databaseContext();
         BibEntry entry = identifier.entry();
 
@@ -148,7 +148,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
         } else if (entry.getFiles().stream().map(f -> Path.of(f.getLink())).noneMatch(UniversalContentParser::isSupportedFileType)) {
             state.set(State.NO_SUPPORTED_FILE_TYPES);
         } else {
-            BibEntryAiIdentifier identifier2 = new BibEntryAiIdentifier(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get());
+            ResolvedBibEntryAiIdentifier identifier2 = new ResolvedBibEntryAiIdentifier(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get());
 
             Optional<BibEntrySummary> summary = aiService.getSummarizationFeature().getSummariesRepository().get(identifier2);
             if (summary.isPresent()) {
@@ -166,12 +166,12 @@ public class AiSummaryViewModel extends AbstractViewModel {
         }
     }
 
-    private void regenerate(FullBibEntryAiIdentifier identifier) {
+    private void regenerate(BibEntryAiIdentifier identifier) {
         clearSummary(identifier);
         generate(identifier);
     }
 
-    private void regenerateCustom(FullBibEntryAiIdentifier identifier) {
+    private void regenerateCustom(BibEntryAiIdentifier identifier) {
         AiSummaryParametersDialog parametersDialog = new AiSummaryParametersDialog();
         Optional<Summarizator> customSummarizator = dialogService.showCustomDialogAndWait(parametersDialog);
 
@@ -185,12 +185,12 @@ public class AiSummaryViewModel extends AbstractViewModel {
         startSummarization(identifier);
     }
 
-    private void generate(FullBibEntryAiIdentifier identifier) {
+    private void generate(BibEntryAiIdentifier identifier) {
         setDefaultModels();
         startSummarization(identifier);
     }
 
-    public void clearSummary(FullBibEntryAiIdentifier identifier) {
+    public void clearSummary(BibEntryAiIdentifier identifier) {
         Optional<Path> path = identifier.databaseContext().getDatabasePath();
         Optional<String> citationKey = identifier.entry().getCitationKey();
 
@@ -199,10 +199,10 @@ public class AiSummaryViewModel extends AbstractViewModel {
             return;
         }
 
-        aiService.getSummarizationFeature().getSummariesRepository().clear(new BibEntryAiIdentifier(path.get(), citationKey.get()));
+        aiService.getSummarizationFeature().getSummariesRepository().clear(new ResolvedBibEntryAiIdentifier(path.get(), citationKey.get()));
     }
 
-    private void startSummarization(FullBibEntryAiIdentifier identifier) {
+    private void startSummarization(BibEntryAiIdentifier identifier) {
         BibDatabaseContext bibDatabaseContext = identifier.databaseContext();
         BibEntry entry = identifier.entry();
 
@@ -259,15 +259,15 @@ public class AiSummaryViewModel extends AbstractViewModel {
         });
     }
 
-    public ObjectProperty<FullBibEntryAiIdentifier> entryProperty() {
+    public ObjectProperty<BibEntryAiIdentifier> entryProperty() {
         return entry;
     }
 
-    public FullBibEntryAiIdentifier getEntry() {
+    public BibEntryAiIdentifier getEntry() {
         return entry.get();
     }
 
-    public void setEntry(FullBibEntryAiIdentifier entry) {
+    public void setEntry(BibEntryAiIdentifier entry) {
         this.entry.set(entry);
     }
 

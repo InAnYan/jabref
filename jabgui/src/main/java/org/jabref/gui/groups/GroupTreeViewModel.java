@@ -36,8 +36,8 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.chatting.GroupChatHistoryIdentifier;
-import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
-import org.jabref.model.ai.identifiers.GroupAiIdentifier;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.ResolvedGroupAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
@@ -488,7 +488,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
         assert currentDatabase.isPresent(); // TODO: This is not good.
         assert currentDatabase.get().getDatabasePath().isPresent(); // TODO: This is not good.
 
-        GroupAiIdentifier groupIdentifier = new GroupAiIdentifier(currentDatabase.get().getDatabasePath().get(), name.get());
+        ResolvedGroupAiIdentifier groupIdentifier = new ResolvedGroupAiIdentifier(currentDatabase.get().getDatabasePath().get(), name.get());
 
         Optional<AiChatWindow> existingWindow = stateManager.getAiChatWindowForGroup(groupIdentifier);
 
@@ -500,7 +500,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
         AiChatWindow aiChatWindow = new AiChatWindow();
         aiChatWindow.titleProperty().bind(name);
         aiChatWindow.chatHistoryProperty().set(chatHistory);
-        aiChatWindow.entriesProperty().set(FXCollections.observableArrayList(entries.stream().map(e -> new FullBibEntryAiIdentifier(bibDatabaseContext, e)).toList()));
+        aiChatWindow.entriesProperty().set(FXCollections.observableArrayList(BibEntryAiIdentifier.fromSeveral(bibDatabaseContext, entries)));
         aiChatWindow.setOnCloseRequest(_ ->
                 stateManager.removeAiChatWindowForGroup(groupIdentifier)
         );

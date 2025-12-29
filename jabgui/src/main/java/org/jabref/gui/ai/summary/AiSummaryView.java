@@ -1,5 +1,6 @@
 package org.jabref.gui.ai.summary;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.layout.StackPane;
 
@@ -11,9 +12,7 @@ import org.jabref.gui.ai.statuspane.SimpleStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
-import org.jabref.model.database.BibDatabaseContext;
-import org.jabref.model.entry.BibEntry;
+import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
@@ -123,8 +122,8 @@ public class AiSummaryView extends StackPane {
         }
     }
 
-    public void bind(BibDatabaseContext bibDatabaseContext, BibEntry entry) {
-        viewModel.entryProperty().set(new FullBibEntryAiIdentifier(bibDatabaseContext, entry));
+    public ObjectProperty<BibEntryAiIdentifier> entryProperty() {
+        return viewModel.entryProperty();
     }
 
     private void updateHints() {

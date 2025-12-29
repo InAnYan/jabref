@@ -2,13 +2,13 @@ package org.jabref.logic.ai.summarization.repositories;
 
 import java.util.Optional;
 
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.ResolvedBibEntryAiIdentifier;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 
 public interface SummariesRepository {
-    void set(BibEntryAiIdentifier identifier, BibEntrySummary bibEntrySummary);
+    void set(ResolvedBibEntryAiIdentifier identifier, BibEntrySummary bibEntrySummary);
 
-    Optional<BibEntrySummary> get(BibEntryAiIdentifier identifier);
+    Optional<BibEntrySummary> get(ResolvedBibEntryAiIdentifier identifier);
 
-    void clear(BibEntryAiIdentifier identifier);
+    void clear(ResolvedBibEntryAiIdentifier identifier);
 }

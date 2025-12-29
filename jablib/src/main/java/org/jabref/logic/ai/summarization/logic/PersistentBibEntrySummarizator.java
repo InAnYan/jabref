@@ -8,7 +8,7 @@ import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summariza
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.util.CitationKeyCheck;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.ResolvedBibEntryAiIdentifier;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
@@ -52,7 +52,7 @@ public class PersistentBibEntrySummarizator {
             LOGGER.info("No citation key is present. BibEntrySummary will not be stored in the next sessions");
         }
 
-        BibEntryAiIdentifier identifier = new BibEntryAiIdentifier(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get());
+        ResolvedBibEntryAiIdentifier identifier = new ResolvedBibEntryAiIdentifier(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get());
         Optional<BibEntrySummary> savedSummary = summariesRepository.get(identifier);
 
         if (savedSummary.isPresent() && !regenerate) {
@@ -79,7 +79,7 @@ public class PersistentBibEntrySummarizator {
             LOGGER.info("No valid citation key is present. Summary will not be stored in the next sessions");
         } else {
             summariesRepository.set(
-                    new BibEntryAiIdentifier(
+                    new ResolvedBibEntryAiIdentifier(
                             bibDatabaseContext.getDatabasePath().get(),
                             entry.getCitationKey().get()
                     ),
