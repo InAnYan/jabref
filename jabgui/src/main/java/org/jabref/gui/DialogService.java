@@ -189,6 +189,13 @@ public interface DialogService extends NotificationService {
     void showCustomDialog(BaseDialog<?> dialog);
 
     /**
+     * Shows a custom dialog as a window: does not block the main window.
+     *
+     * @param dialog dialog to show
+     */
+    void showCustomDialogModal(BaseDialog<?> dialog);
+
+    /**
      * This will create and display a new dialog of the specified
      * {@link Alert.AlertType} but with user defined buttons as optional
      * {@link ButtonType}s.

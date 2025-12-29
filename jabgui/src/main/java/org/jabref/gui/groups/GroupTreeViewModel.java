@@ -19,6 +19,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.stage.WindowEvent;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
@@ -479,13 +480,14 @@ public class GroupTreeViewModel extends AbstractViewModel {
         aiChatWindow.databaseContextProperty().set(context);
         aiChatWindow.groupNodeProperty().set(group);
 
-        aiChatWindow.setOnCloseRequest(_ ->
-                stateManager.removeAiChatWindowForGroup(groupIdentifier)
+        aiChatWindow.getDialogPane().getScene().getWindow().addEventHandler(
+                WindowEvent.WINDOW_CLOSE_REQUEST,
+                _ -> stateManager.removeAiChatWindowForGroup(groupIdentifier)
         );
 
         stateManager.setAiChatWindowForGroup(groupIdentifier, aiChatWindow);
 
-        dialogService.showCustomDialog(aiChatWindow);
+        dialogService.showCustomDialogModal(aiChatWindow);
         BaseDialog.bringToFront(aiChatWindow);
     }
 
