@@ -7,9 +7,10 @@ import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
+import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.ExceptionsUtil;
 
-public class ErrorStatusPaneViewModel {
+public class ErrorStatusPaneViewModel extends AbstractViewModel {
     private final StringProperty title = new SimpleStringProperty("");
     private final StringProperty description = new SimpleStringProperty("");
 

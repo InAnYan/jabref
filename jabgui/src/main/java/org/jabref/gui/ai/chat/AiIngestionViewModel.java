@@ -4,10 +4,11 @@ import javafx.beans.property.MapProperty;
 import javafx.beans.property.SimpleMapProperty;
 import javafx.collections.FXCollections;
 
+import org.jabref.gui.AbstractViewModel;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.model.entry.LinkedFile;
 
-public class AiIngestionViewModel {
+public class AiIngestionViewModel extends AbstractViewModel {
     public enum Status {
         PENDING,
         PROCESSING,

@@ -4,15 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
@@ -24,19 +28,22 @@ public class ListScrollPane<T> extends ScrollPane {
     private final ListProperty<T> itemsProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ObjectProperty<Function<T, Node>> rendererProperty = new SimpleObjectProperty<>();
     private final BooleanProperty autoScrollToBottomProperty = new SimpleBooleanProperty(false);
+    private final DoubleProperty spacing = new SimpleDoubleProperty(0.0);
+    private final ObjectProperty<Insets> contentPadding = new SimpleObjectProperty<>(Insets.EMPTY);
 
     private final ListChangeListener<T> listContentListener = this::handleListContentChange;
 
     public ListScrollPane() {
         this.contentContainer = new VBox();
         this.contentContainer.setFillWidth(true);
+        this.contentContainer.spacingProperty().bind(spacing);
+        this.contentContainer.paddingProperty().bind(contentPadding);
 
         setContent(this.contentContainer);
         setFitToWidth(true);
         setFitToHeight(true);
 
         setupItemReferenceListener();
-        setupAutoScroll();
     }
 
     private void setupItemReferenceListener() {
@@ -62,14 +69,6 @@ public class ListScrollPane<T> extends ScrollPane {
         });
     }
 
-    private void setupAutoScroll() {
-        contentContainer.heightProperty().addListener((obs, oldVal, newVal) -> {
-            if (isAutoScrollToBottom()) {
-                this.setVvalue(1.0);
-            }
-        });
-    }
-
     private void handleListContentChange(ListChangeListener.Change<? extends T> change) {
         final Function<T, Node> renderer = getRenderer();
         if (renderer == null) return;
@@ -77,6 +76,7 @@ public class ListScrollPane<T> extends ScrollPane {
         while (change.next()) {
             if (change.wasPermutated()) {
                 rebuildView();
+                return;
             } else if (change.wasUpdated()) {
                 for (int i = change.getFrom(); i < change.getTo(); i++) {
                     T item = change.getList().get(i);
@@ -102,6 +102,10 @@ public class ListScrollPane<T> extends ScrollPane {
                 }
             }
         }
+
+        if (isAutoScrollToBottom()) {
+            scrollToBottom();
+        }
     }
 
     private void rebuildView() {
@@ -115,7 +119,15 @@ public class ListScrollPane<T> extends ScrollPane {
                 nodes.add(renderer.apply(item));
             }
             contentContainer.getChildren().setAll(nodes);
+
+            if (isAutoScrollToBottom()) {
+                scrollToBottom();
+            }
         }
+    }
+
+    public void scrollToBottom() {
+        Platform.runLater(() -> setVvalue(1.0));
     }
 
     public final ObservableList<T> getItems() {
@@ -149,10 +161,34 @@ public class ListScrollPane<T> extends ScrollPane {
 
     public final void setAutoScrollToBottom(boolean value) {
         autoScrollToBottomProperty.set(value);
-        if (value) setVvalue(1.0);
+        if (value) scrollToBottom();
     }
 
     public final BooleanProperty autoScrollToBottomProperty() {
         return autoScrollToBottomProperty;
+    }
+
+    public final DoubleProperty spacingProperty() {
+        return spacing;
+    }
+
+    public final double getSpacing() {
+        return spacing.get();
+    }
+
+    public final void setSpacing(double value) {
+        spacing.set(value);
+    }
+
+    public final ObjectProperty<Insets> contentPaddingProperty() {
+        return contentPadding;
+    }
+
+    public final Insets getContentPadding() {
+        return contentPadding.get();
+    }
+
+    public final void setContentPadding(Insets value) {
+        contentPadding.set(value);
     }
 }

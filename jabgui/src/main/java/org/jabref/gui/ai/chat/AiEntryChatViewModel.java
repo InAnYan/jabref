@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 
+import org.jabref.gui.AbstractViewModel;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.chatting.util.ChatHistoryFactory;
@@ -17,7 +18,7 @@ import org.jabref.model.ai.identifiers.FullBibEntryAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
-public class AiEntryChatViewModel {
+public class AiEntryChatViewModel extends AbstractViewModel {
     public enum State {
         NO_DATABASE_PATH,
         NO_CITATION_KEY,

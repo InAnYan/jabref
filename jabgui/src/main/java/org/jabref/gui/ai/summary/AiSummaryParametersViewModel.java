@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 
+import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
@@ -13,7 +14,7 @@ import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summariza
 import org.jabref.logic.ai.templates.AiTemplatesFactory;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
-public class AiSummaryParametersViewModel {
+public class AiSummaryParametersViewModel extends AbstractViewModel {
     private final ListProperty<SummarizatorKind> summarizatorKinds = new SimpleListProperty<>(
             FXCollections.observableArrayList(SummarizatorKind.values())
     );

@@ -5,7 +5,6 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressIndicator?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -14,37 +13,52 @@
 <?import org.jabref.gui.ai.AiPrivacyNoticeView?>
 <?import org.jabref.gui.ai.statuspane.SimpleStatusPaneView?>
 <?import org.jabref.gui.icon.JabRefIconView?>
+<?import org.jabref.gui.util.HistoryTextArea?>
 <?import org.jabref.gui.util.ListScrollPane?>
+<fx:root
+        type="StackPane"
+        xmlns="http://javafx.com/javafx"
+        xmlns:fx="http://javafx.com/fxml"
+        fx:controller="org.jabref.gui.ai.chat.AiChatView">
 
-<fx:root type="StackPane"
-         xmlns="http://javafx.com/javafx"
-         xmlns:fx="http://javafx.com/fxml"
-         fx:controller="org.jabref.gui.ai.chat.AiChatView">
+    <AiPrivacyNoticeView
+            fx:id="privacyNotice"/>
 
-    <AiPrivacyNoticeView fx:id="privacyNotice"/>
+    <SimpleStatusPaneView
+            fx:id="noEntriesErrorPane"
+            title="%Unable to chat"
+            description="%No entries attached."/>
 
-    <SimpleStatusPaneView fx:id="noEntriesErrorPane"
-                          title="%Unable to chat"
-                          description="%No entries attached."/>
-
-    <BorderPane fx:id="mainContainer"
-                maxHeight="Infinity"
-                maxWidth="Infinity">
+    <BorderPane
+            fx:id="mainContainer"
+            maxHeight="Infinity"
+            maxWidth="Infinity">
 
         <padding>
-            <Insets top="10" right="10" bottom="10" left="10"/>
+            <Insets top="10"
+                    right="10"
+                    bottom="10"
+                    left="10"/>
         </padding>
 
         <center>
             <StackPane>
-                <ListScrollPane fx:id="chatHistoryScrollPane"
-                                fitToWidth="true"
-                                fitToHeight="true"/>
+                <ListScrollPane
+                        fx:id="chatHistoryScrollPane"
+                        fitToWidth="true"
+                        fitToHeight="true"
+                        spacing="10"
+                        style="-fx-border-width: 2; -fx-border-color: black">
+                    <contentPadding>
+                        <Insets top="10"
+                                right="10"
+                                bottom="10"
+                                left="10"/>
+                    </contentPadding>
+                </ListScrollPane>
 
-                <ProgressIndicator fx:id="loadingIndicator"
-                                   visible="false"
-                                   maxWidth="50"
-                                   maxHeight="50"/>
+                <ProgressIndicator
+                        fx:id="loadingIndicator"/>
             </StackPane>
         </center>
 
@@ -68,10 +82,12 @@
                                 textAlignment="CENTER"
                                 BorderPane.alignment="CENTER">
                             <graphic>
-                                <JabRefIconView glyph="INTEGRITY_INFO"/>
+                                <JabRefIconView
+                                        glyph="INTEGRITY_INFO"/>
                             </graphic>
                             <tooltip>
-                                <Tooltip text="%View ingestion status"/>
+                                <Tooltip
+                                        text="%View ingestion status"/>
                             </tooltip>
                             <BorderPane.margin>
                                 <Insets right="10"/>
@@ -80,26 +96,39 @@
                     </left>
 
                     <center>
-                        <HBox spacing="10" alignment="CENTER">
-                            <TextField fx:id="userMessageTextField" HBox.hgrow="ALWAYS"/>
-                            <Button fx:id="sendButton" text="%Send" onAction="#send"/>
-                            <Button fx:id="retryButton" text="%Retry" onAction="#retry"/>
-                            <Button fx:id="cancelButton" text="%Cancel" onAction="#cancel"/>
+                        <HBox spacing="10"
+                              alignment="CENTER">
+                            <HistoryTextArea
+                                    fx:id="userMessageTextArea"
+                                    onSubmit="#send"
+                                    HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="sendButton"
+                                    text="%Send"
+                                    onAction="#send"/>
+                            <Button fx:id="retryButton"
+                                    text="%Retry"
+                                    onAction="#retry"/>
+                            <Button fx:id="cancelButton"
+                                    text="%Cancel"
+                                    onAction="#cancel"/>
                         </HBox>
                     </center>
                 </BorderPane>
 
-                <HBox spacing="10" alignment="CENTER">
+                <HBox spacing="10"
+                      alignment="CENTER">
                     <Button fx:id="clearButton"
                             alignment="CENTER"
                             onAction="#clearChatHistory"
                             styleClass="icon-button,narrow"
                             textAlignment="CENTER">
                         <graphic>
-                            <JabRefIconView glyph="DELETE_ENTRY"/>
+                            <JabRefIconView
+                                    glyph="DELETE_ENTRY"/>
                         </graphic>
                         <tooltip>
-                            <Tooltip text="%Clear chat history"/>
+                            <Tooltip
+                                    text="%Clear chat history"/>
                         </tooltip>
                     </Button>
 
@@ -108,9 +137,11 @@
                            HBox.hgrow="ALWAYS"
                            maxWidth="Infinity"/>
 
-                    <HBox spacing="10" alignment="CENTER_RIGHT">
+                    <HBox spacing="10"
+                          alignment="CENTER_RIGHT">
                         <Label text="%Answer engine:"/>
-                        <ComboBox fx:id="answerEngineCombo"/>
+                        <ComboBox
+                                fx:id="answerEngineCombo"/>
                     </HBox>
                 </HBox>
             </VBox>

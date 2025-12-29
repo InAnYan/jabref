@@ -1,12 +1,13 @@
 package org.jabref.gui.ai.chat;
 
+import java.util.Optional;
+
 import javafx.beans.property.ListProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 
@@ -14,10 +15,13 @@ import org.jabref.gui.DialogService;
 import org.jabref.gui.ai.AiPrivacyNoticeView;
 import org.jabref.gui.ai.statuspane.SimpleStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
+import org.jabref.gui.util.HistoryTextArea;
 import org.jabref.gui.util.ListScrollPane;
 import org.jabref.gui.util.ViewModelListCellFactory;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.chatting.util.ChatHistoryRecordUtils;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
+import org.jabref.logic.ai.util.ChatMessagesUtil;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
@@ -38,7 +42,7 @@ public class AiChatView extends StackPane {
     @FXML private ListScrollPane<ChatHistoryRecordV2> chatHistoryScrollPane;
 
     @FXML private Button infoButton;
-    @FXML private TextField userMessageTextField;
+    @FXML private HistoryTextArea userMessageTextArea;
     @FXML private Button sendButton;
     @FXML private Button retryButton;
     @FXML private Button cancelButton;
@@ -73,11 +77,22 @@ public class AiChatView extends StackPane {
         mainContainer.managedProperty().bind(mainContainer.visibleProperty());
         loadingIndicator.managedProperty().bind(loadingIndicator.visibleProperty());
         infoButton.managedProperty().bind(infoButton.visibleProperty());
-        userMessageTextField.managedProperty().bind(userMessageTextField.visibleProperty());
+        userMessageTextArea.managedProperty().bind(userMessageTextArea.visibleProperty());
         sendButton.managedProperty().bind(sendButton.visibleProperty());
         retryButton.managedProperty().bind(retryButton.visibleProperty());
         cancelButton.managedProperty().bind(cancelButton.visibleProperty());
         clearButton.managedProperty().bind(clearButton.visibleProperty());
+
+        userMessageTextArea.getHistory().addAll(
+                viewModel
+                        .chatHistoryProperty()
+                        .stream()
+                        .map(ChatHistoryRecordUtils::convertRecordToLangchain)
+                        .map(ChatMessagesUtil::getContent)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .toList()
+        );
 
         chatHistoryScrollPane.setRenderer(chatHistoryRecordV2 -> {
             AiChatMessageView aiChatMessageView = new AiChatMessageView();
@@ -92,15 +107,15 @@ public class AiChatView extends StackPane {
                 .withText(AnswerEngineKind::getDisplayName)
                 .install(answerEngineCombo);
 
-        viewModel.stateProperty().addListener(_ -> updateByState());
-        updateByState();
+        viewModel.stateProperty().addListener((_, _, value) -> updateByState(value));
+        updateByState(viewModel.stateProperty().get());
 
         viewModel.chatModelProperty().addListener(_ -> updateChatLabel());
         updateChatLabel();
     }
 
-    private void updateByState() {
-        switch (viewModel.stateProperty().get()) {
+    private void updateByState(AiChatViewModel.State state) {
+        switch (state) {
             case AI_TURNED_OFF -> {
                 privacyNotice.setVisible(true);
                 noEntriesErrorPane.setVisible(false);
@@ -122,8 +137,8 @@ public class AiChatView extends StackPane {
 
                 infoButton.setVisible(true);
                 infoButton.setDisable(false);
-                userMessageTextField.setVisible(false);
-                userMessageTextField.setDisable(false);
+                userMessageTextArea.setVisible(false);
+                userMessageTextArea.setDisable(false);
 
                 sendButton.setVisible(false);
                 retryButton.setVisible(false);
@@ -140,7 +155,7 @@ public class AiChatView extends StackPane {
 
                 loadingIndicator.setVisible(false);
 
-                userMessageTextField.setVisible(false);
+                userMessageTextArea.setVisible(false);
 
                 sendButton.setVisible(false);
 
@@ -158,9 +173,9 @@ public class AiChatView extends StackPane {
 
                 loadingIndicator.setVisible(false);
 
-                userMessageTextField.setVisible(true);
-                userMessageTextField.setEditable(true);
-                userMessageTextField.setDisable(false);
+                userMessageTextArea.setVisible(true);
+                userMessageTextArea.setEditable(true);
+                userMessageTextArea.setDisable(false);
 
                 sendButton.setVisible(true);
                 sendButton.setDisable(false);
@@ -190,7 +205,8 @@ public class AiChatView extends StackPane {
 
     @FXML
     private void send() {
-        viewModel.sendMessage(userMessageTextField.getText());
+        viewModel.sendMessage(userMessageTextArea.getText());
+        userMessageTextArea.clear();
     }
 
     @FXML

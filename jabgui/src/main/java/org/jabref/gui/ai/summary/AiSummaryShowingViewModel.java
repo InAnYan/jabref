@@ -9,10 +9,11 @@ import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
+import org.jabref.gui.AbstractViewModel;
 import org.jabref.logic.layout.format.MarkdownFormatter;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 
-public class AiSummaryShowingViewModel {
+public class AiSummaryShowingViewModel extends AbstractViewModel {
     private static final MarkdownFormatter MARKDOWN_FORMATTER = new MarkdownFormatter();
 
     private final ObjectProperty<BibEntrySummary> summary = new SimpleObjectProperty<>();

@@ -59,13 +59,11 @@ public class AiSummaryView extends StackPane {
         viewModel.chatModelProperty().addListener(_ -> updateHints());
         updateHints();
 
-        viewModel.stateProperty().addListener(_ -> updateStateView());
-        updateStateView();
+        viewModel.stateProperty().addListener((_, _, value) -> updateStateView(value));
+        updateStateView(viewModel.stateProperty().get());
     }
 
-    private void updateStateView() {
-        AiSummaryViewModel.State state = viewModel.stateProperty().get();
-
+    private void updateStateView(AiSummaryViewModel.State state) {
         privacyNotice.setVisible(false);
         privacyNotice.setManaged(false);
         processingPane.setVisible(false);

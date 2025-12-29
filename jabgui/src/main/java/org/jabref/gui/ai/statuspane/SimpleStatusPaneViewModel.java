@@ -3,7 +3,9 @@ package org.jabref.gui.ai.statuspane;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class SimpleStatusPaneViewModel {
+import org.jabref.gui.AbstractViewModel;
+
+public class SimpleStatusPaneViewModel extends AbstractViewModel {
     private final StringProperty title = new SimpleStringProperty("");
     private final StringProperty description = new SimpleStringProperty("");
 

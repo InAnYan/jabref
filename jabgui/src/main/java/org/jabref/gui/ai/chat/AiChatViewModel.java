@@ -12,6 +12,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 
+import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
@@ -31,7 +32,7 @@ import org.jabref.model.ai.pipeline.AnswerEngineKind;
 
 import dev.langchain4j.data.message.UserMessage;
 
-public class AiChatViewModel {
+public class AiChatViewModel extends AbstractViewModel {
     public enum State {
         AI_TURNED_OFF,
         NO_ENTRIES,

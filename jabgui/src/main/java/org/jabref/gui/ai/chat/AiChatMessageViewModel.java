@@ -9,10 +9,11 @@ import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
+import org.jabref.gui.AbstractViewModel;
 import org.jabref.logic.ai.chatting.util.ChatHistoryRecordUtils;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 
-public class AiChatMessageViewModel {
+public class AiChatMessageViewModel extends AbstractViewModel {
     private final StringProperty id = new SimpleStringProperty("");
     private final StringProperty source = new SimpleStringProperty("");
     private final StringProperty message = new SimpleStringProperty("");

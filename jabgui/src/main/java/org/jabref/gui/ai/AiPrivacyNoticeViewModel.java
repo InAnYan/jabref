@@ -5,6 +5,7 @@ import java.io.IOException;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.desktop.os.NativeDesktop;
 import org.jabref.gui.preferences.GuiPreferences;
@@ -12,7 +13,7 @@ import org.jabref.gui.preferences.GuiPreferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AiPrivacyNoticeViewModel {
+public class AiPrivacyNoticeViewModel extends AbstractViewModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiPrivacyNoticeViewModel.class);
 
     private final StringProperty embeddingModelSize = new SimpleStringProperty("");

@@ -7,7 +7,9 @@ import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
-public class LoadingStatusPaneViewModel {
+import org.jabref.gui.AbstractViewModel;
+
+public class LoadingStatusPaneViewModel extends AbstractViewModel {
     private final StringProperty title = new SimpleStringProperty("");
     private final StringProperty description = new SimpleStringProperty("");
 

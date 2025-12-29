@@ -6,25 +6,37 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import org.jabref.gui.icon.JabRefIconView?>
-<fx:root type="javafx.scene.layout.HBox"
-         xmlns="http://javafx.com/javafx"
-         xmlns:fx="http://javafx.com/fxml"
-         spacing="10"
-         fx:controller="org.jabref.gui.ai.chat.AiChatMessageView">
+<fx:root
+        type="javafx.scene.layout.HBox"
+        xmlns="http://javafx.com/javafx"
+        xmlns:fx="http://javafx.com/fxml"
+        spacing="10"
+        fx:controller="org.jabref.gui.ai.chat.AiChatMessageView">
 
     <VBox fx:id="vBox">
         <Label fx:id="sourceLabel"
                style="-fx-font-weight: bold;"/>
 
-        <StackPane fx:id="markdownContentPane" />
+        <StackPane
+                fx:id="markdownContentPane"/>
     </VBox>
 
-    <VBox fx:id="buttonsVBox" alignment="CENTER" spacing="5">
-        <Button onAction="#onRegenerateClick" styleClass="icon-button,narrow">
-            <graphic><JabRefIconView glyph="REFRESH"/></graphic>
+    <VBox fx:id="buttonsVBox"
+          alignment="TOP_CENTER"
+          spacing="5">
+        <Button onAction="#onRegenerateClick"
+                styleClass="icon-button,narrow">
+            <graphic>
+                <JabRefIconView
+                        glyph="REFRESH"/>
+            </graphic>
         </Button>
-        <Button onAction="#onDeleteClick" styleClass="icon-button,narrow">
-            <graphic><JabRefIconView glyph="DELETE_ENTRY"/></graphic>
+        <Button onAction="#onDeleteClick"
+                styleClass="icon-button,narrow">
+            <graphic>
+                <JabRefIconView
+                        glyph="DELETE_ENTRY"/>
+            </graphic>
         </Button>
     </VBox>
 
