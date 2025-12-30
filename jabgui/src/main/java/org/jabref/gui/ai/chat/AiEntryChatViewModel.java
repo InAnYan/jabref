@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
+import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.chatting.util.ChatHistoryFactory;
 import org.jabref.logic.ai.preferences.AiPreferences;
@@ -60,14 +61,14 @@ public class AiEntryChatViewModel extends AbstractViewModel {
             }
         });
 
-        selectedEntry.addListener(_ -> {
-            if (selectedEntry.get() != null) {
-                setEntry(selectedEntry.get());
-            }
-        });
+        ListenersHelper.onChangeNonNull(selectedEntry, this::setEntry);
     }
 
     private void setEntry(BibEntryAiIdentifier identifier) {
+        if (identifier == null) {
+            return;
+        }
+
         BibDatabaseContext context = identifier.databaseContext();
         BibEntry entry = identifier.entry();
 

@@ -38,6 +38,10 @@ public class AiEntryChatView extends StackPane {
                 aiService.getChattingFeature().getChatHistoryRepository()
         );
 
+        setupBindings();
+    }
+
+    private void setupBindings() {
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
         emptyDatabasePathPane.managedProperty().bind(emptyDatabasePathPane.visibleProperty());
         emptyCitationKeyPane.managedProperty().bind(emptyCitationKeyPane.visibleProperty());

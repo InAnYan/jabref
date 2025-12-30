@@ -4,18 +4,18 @@ import java.nio.file.Path;
 
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 
 import org.jabref.gui.DialogService;
 import org.jabref.gui.preferences.GuiPreferences;
+import org.jabref.gui.util.ValueTableCellFactory;
 import org.jabref.gui.util.ViewModelListCellFactory;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
@@ -28,7 +28,6 @@ import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
 public class AiChatStatusView extends VBox {
-
     @FXML private TableView<BibEntryAiIdentifier> entriesTable;
     @FXML private TableColumn<BibEntryAiIdentifier, String> libraryColumn;
     @FXML private TableColumn<BibEntryAiIdentifier, String> citationKeyColumn;
@@ -54,7 +53,11 @@ public class AiChatStatusView extends VBox {
 
     @FXML
     private void initialize() {
-        viewModel = new AiChatStatusViewModel(preferences, aiService);
+        viewModel = new AiChatStatusViewModel(
+                preferences.getAiPreferences(),
+                preferences.getFilePreferences(),
+                aiService
+        );
 
         setupEntriesTable();
         setupIngestionTable();
@@ -65,71 +68,61 @@ public class AiChatStatusView extends VBox {
         entriesTable.itemsProperty().bind(viewModel.entriesProperty());
 
         citationKeyColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(
+                new ReadOnlyStringWrapper(
                         cellData.getValue().entry().getCitationKey().orElse("")
                 )
         );
+        new ValueTableCellFactory<BibEntryAiIdentifier, String>()
+                .withText(text -> text)
+                .install(citationKeyColumn);
 
         libraryColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(
+                new ReadOnlyStringWrapper(
                         cellData.getValue().databaseContext()
                                 .getDatabasePath()
                                 .map(Path::toString)
                                 .orElse("")
                 )
         );
+        new ValueTableCellFactory<BibEntryAiIdentifier, String>()
+                .withText(text -> text)
+                .install(libraryColumn);
     }
 
     private void setupIngestionTable() {
         ingestionTable.setItems(viewModel.getIngestionStatuses());
 
         fileColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
+        new ValueTableCellFactory<AiChatStatusViewModel.IngestionStatusRow, String>()
+                .withText(text -> text)
+                .install(fileColumn);
+
         statusColumn.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
+        new ValueTableCellFactory<AiChatStatusViewModel.IngestionStatusRow, AiChatStatusViewModel.FileStatus>()
+                .withText(AiChatStatusViewModel.FileStatus::getDisplayName)
+                .install(statusColumn);
 
-        actionColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue()));
+        actionColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue()));
+        new ValueTableCellFactory<AiChatStatusViewModel.IngestionStatusRow, AiChatStatusViewModel.IngestionStatusRow>()
+                .withGraphic(row -> {
+                    if (row.getStatus() == AiChatStatusViewModel.FileStatus.ERROR_WHILE_PROCESSING) {
+                        return constructErrorButton(row);
+                    }
+                    return null;
+                })
+                .install(actionColumn);
+    }
 
-        statusColumn.setCellFactory(_ -> new TableCell<>() {
-            @Override
-            protected void updateItem(AiChatStatusViewModel.FileStatus status, boolean empty) {
-                super.updateItem(status, empty);
-                if (empty || status == null) {
-                    setText(null);
-                } else {
-                    setText(switch (status) {
-                        case PENDING -> Localization.lang("Pending");
-                        case PROCESSING -> Localization.lang("Processing");
-                        case ERROR_WHILE_PROCESSING -> Localization.lang("Error");
-                        case INGESTED -> Localization.lang("Ingested");
-                        case CANCELLED -> Localization.lang("Cancelled");
-                    });
-                }
-            }
-        });
-
-        actionColumn.setCellFactory(_ -> new TableCell<>() {
-            final Button errorButton = new Button(Localization.lang("Show Error"));
-
-            {
-                errorButton.getStyleClass().add("text-button");
-            }
-
-            @Override
-            protected void updateItem(AiChatStatusViewModel.IngestionStatusRow row, boolean empty) {
-                super.updateItem(row, empty);
-
-                if (empty || row == null || row.getStatus() != AiChatStatusViewModel.FileStatus.ERROR_WHILE_PROCESSING) {
-                    setGraphic(null);
-                } else {
-                    errorButton.setOnAction(_ ->
-                            dialogService.showErrorDialogAndWait(
-                                    Localization.lang("Ingestion Error"),
-                                    row.getError()
-                            )
-                    );
-                    setGraphic(errorButton);
-                }
-            }
-        });
+    private Button constructErrorButton(AiChatStatusViewModel.IngestionStatusRow row) {
+        Button errorButton = new Button(Localization.lang("Show Error"));
+        errorButton.getStyleClass().add("text-button");
+        errorButton.setOnAction(event ->
+                dialogService.showErrorDialogAndWait(
+                        Localization.lang("Ingestion Error"),
+                        row.getError()
+                )
+        );
+        return errorButton;
     }
 
     private void setupParameters() {

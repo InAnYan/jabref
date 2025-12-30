@@ -1,6 +1,7 @@
 package org.jabref.gui.ai.chat;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,13 +13,14 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
-import org.jabref.gui.entryeditor.EntryEditorPreferences;
-import org.jabref.gui.preferences.GuiPreferences;
+import org.jabref.gui.util.ListenersHelper;
+import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.logic.AiChatLogic;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTaskRequest;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.TaskExecutor;
@@ -38,63 +40,74 @@ public class AiChatViewModel extends AbstractViewModel {
         ERROR
     }
 
-    private final GuiPreferences preferences;
-    private final AiService aiService;
-    private final TaskExecutor taskExecutor;
-
-    private final AiChatLogic aiChatLogic;
+    private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.IDLE);
 
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
     private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatHistoryRecordV2> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
-    private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.IDLE);
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
-
     private final ObjectProperty<BackgroundTask<ChatHistoryRecordV2>> generateLlmResponseTask = new SimpleObjectProperty<>();
 
+    private final AiPreferences aiPreferences;
+    private final FilePreferences filePreferences;
+    private final AiService aiService;
+    private final TaskExecutor taskExecutor;
+
+    private final AiChatLogic aiChatLogic;
+
     public AiChatViewModel(
-            GuiPreferences preferences,
+            AiPreferences aiPreferences,
+            FilePreferences filePreferences,
             AiService aiService,
             TaskExecutor taskExecutor
     ) {
-        this.preferences = preferences;
+        this.aiPreferences = aiPreferences;
+        this.filePreferences = filePreferences;
         this.aiService = aiService;
         this.taskExecutor = taskExecutor;
 
         this.aiChatLogic = new AiChatLogic(
                 aiService.getTemplatesFeature().getCurrentAiTemplates().getChattingUserMessageTemplate()
         );
-        this.aiChatLogic.chatModelProperty().set(aiService.getChattingFeature().getCurrentChatModel());
-        this.aiChatLogic.answerEngineProperty().bind(answerEngine);
 
+        setupBindings();
+        setupListeners();
+        setupValues();
+    }
 
-        if (!preferences.getAiPreferences().getEnableAi()) {
+    private void setupBindings() {
+        aiChatLogic.answerEngineProperty().bind(answerEngine);
+    }
+
+    private void setupListeners() {
+        ListenersHelper.runWhenTrue(
+                aiPreferences.enableAiProperty().and(generateEmbeddingsTasks.emptyProperty()),
+                this::changeEmbeddingTasks
+        );
+
+        ListenersHelper.onChangeNonNull(entries, this::processEntries);
+    }
+
+    private void processEntries(List<BibEntryAiIdentifier> entries) {
+        if (!aiPreferences.getEnableAi()) {
             state.set(State.AI_TURNED_OFF);
+        } else if (entries == null || entries.isEmpty() || entries.stream().flatMap(identifier -> identifier.entry().getFiles().stream()).toList().isEmpty()) {
+            state.set(State.NO_FILES);
+        } else {
+            changeEmbeddingTasks();
+            state.set(State.IDLE);
         }
+    }
 
-        preferences.getAiPreferences().enableAiProperty().addListener((_, _, value) -> {
-            if (value && generateEmbeddingsTasks.isEmpty()) {
-                changeEmbeddingTasks();
-            }
-        });
-
-        this.entries.addListener((_, _, _) -> {
-            if (!preferences.getAiPreferences().getEnableAi()) {
-                state.set(State.AI_TURNED_OFF);
-            } else if (entries.get() == null || entries.isEmpty() || entries.get().stream().flatMap(identifier -> identifier.entry().getFiles().stream()).toList().isEmpty()) {
-                state.set(State.NO_FILES);
-            } else {
-                changeEmbeddingTasks();
-                state.set(State.IDLE);
-            }
-        });
+    private void setupValues() {
+        aiChatLogic.chatModelProperty().set(aiService.getChattingFeature().getCurrentChatModel());
     }
 
     private void changeEmbeddingTasks() {
         generateEmbeddingsTasks.clear();
 
-        if (!preferences.getAiPreferences().getEnableAi()) {
+        if (!aiPreferences.getEnableAi()) {
             return;
         }
 
@@ -102,7 +115,7 @@ public class AiChatViewModel extends AbstractViewModel {
                 identifier.entry().getFiles().forEach(file -> {
                             GenerateEmbeddingsTask task = aiService.getIngestionFeature().getIngestionTaskAggregator().start(
                                     new GenerateEmbeddingsTaskRequest(
-                                            preferences.getFilePreferences(),
+                                            filePreferences,
                                             aiService.getIngestionFeature().getIngestedDocumentsRepository(),
                                             aiService.getIngestionFeature().getEmbeddingsStore(),
                                             aiService.getEmbeddingFeature().getCurrentEmbeddingModel(),
@@ -234,16 +247,11 @@ public class AiChatViewModel extends AbstractViewModel {
         sendMessage(contentToRegenerate);
     }
 
+    /// Regenerate last message.
     public void regenerate() {
         if (!chatHistory.isEmpty()) {
             regenerate(chatHistory.getLast().id());
         }
-    }
-
-    public void privacyDisagree() {
-        EntryEditorPreferences entryEditorPreferences = preferences.getEntryEditorPreferences();
-        entryEditorPreferences.setShouldShowAiChatTab(false);
-        entryEditorPreferences.setShouldShowAiSummaryTab(false);
     }
 
     public ListProperty<BibEntryAiIdentifier> entriesProperty() {

@@ -3,7 +3,6 @@ package org.jabref.gui.ai.chat;
 import java.util.HashMap;
 import java.util.Map;
 
-import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -12,13 +11,15 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 import org.jabref.gui.AbstractViewModel;
-import org.jabref.gui.preferences.GuiPreferences;
+import org.jabref.gui.util.ListenersHelper;
+import org.jabref.gui.util.UiTaskExecutor;
+import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.ai.rag.util.AnswerEngineFactory;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
@@ -32,7 +33,22 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         PROCESSING,
         ERROR_WHILE_PROCESSING,
         INGESTED,
-        CANCELLED
+        CANCELLED;
+
+        public String getDisplayName() {
+            return switch (this) {
+                case PENDING ->
+                        "Pending";
+                case PROCESSING ->
+                        "Processing";
+                case ERROR_WHILE_PROCESSING ->
+                        "Error";
+                case INGESTED ->
+                        "Ingested";
+                case CANCELLED ->
+                        "Cancelled";
+            };
+        }
     }
 
     public static class IngestionStatusRow {
@@ -48,15 +64,30 @@ public class AiChatStatusViewModel extends AbstractViewModel {
             this.error = new SimpleObjectProperty<>();
         }
 
-        public ReadOnlyStringWrapper nameProperty() { return name; }
-        public ObjectProperty<FileStatus> statusProperty() { return status; }
-        public FileStatus getStatus() { return status.get(); }
-        public ObjectProperty<Exception> errorProperty() { return error; }
-        public Exception getError() { return error.get(); }
-        public LinkedFile getLinkedFile() { return linkedFile; }
-    }
+        public ReadOnlyStringWrapper nameProperty() {
+            return name;
+        }
 
-    private final AnswerEngineFactory answerEngineFactory;
+        public ObjectProperty<FileStatus> statusProperty() {
+            return status;
+        }
+
+        public FileStatus getStatus() {
+            return status.get();
+        }
+
+        public ObjectProperty<Exception> errorProperty() {
+            return error;
+        }
+
+        public Exception getError() {
+            return error.get();
+        }
+
+        public LinkedFile getLinkedFile() {
+            return linkedFile;
+        }
+    }
 
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final Map<GenerateEmbeddingsTask, ChangeListener<? super TrackedBackgroundTask.Status>> taskListeners = new HashMap<>();
@@ -70,37 +101,39 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     private final ObjectProperty<AnswerEngineKind> selectedAnswerEngineKind = new SimpleObjectProperty<>();
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
 
-    public AiChatStatusViewModel(GuiPreferences preferences, AiService aiService) {
+    private final AiPreferences aiPreferences;
+    private final AnswerEngineFactory answerEngineFactory;
+
+    public AiChatStatusViewModel(
+            AiPreferences aiPreferences,
+            FilePreferences filePreferences,
+            AiService aiService
+    ) {
+        this.aiPreferences = aiPreferences;
         this.answerEngineFactory = new AnswerEngineFactory(
-                preferences.getAiPreferences(),
-                preferences.getFilePreferences(),
+                aiPreferences,
+                filePreferences,
                 aiService
         );
 
-        this.selectedAnswerEngineKind.set(preferences.getAiPreferences().getAnswerEngineKind());
-        this.selectedAnswerEngineKind.addListener((_, _, value) -> updateAnswerEngine(value));
-        updateAnswerEngine(selectedAnswerEngineKind.get());
-
-        setupTasksListeners();
+        setupListeners();
+        setupValues();
     }
 
-    private void setupTasksListeners() {
-        generateEmbeddingsTasks.addListener((ListChangeListener<GenerateEmbeddingsTask>) c -> {
-            while (c.next()) {
-                if (c.wasRemoved()) {
-                    c.getRemoved().forEach(this::unwireTask);
-                }
-                if (c.wasAdded()) {
-                    c.getAddedSubList().forEach(this::wireTask);
-                }
-            }
-        });
+    private void setupListeners() {
+        ListenersHelper.onChangeNonNull(aiPreferences.answerEngineKindProperty(), this::updateAnswerEngine);
+        ListenersHelper.onListContentsChange(generateEmbeddingsTasks, this::wireTask, this::unwireTask);
+    }
+
+    private void setupValues() {
+        selectedAnswerEngineKind.set(aiPreferences.getAnswerEngineKind());
     }
 
     private void wireTask(GenerateEmbeddingsTask task) {
-        if (taskListeners.containsKey(task)) return;
+        if (taskListeners.containsKey(task))
+            return;
 
-        Platform.runLater(() -> getOrCreateRow(task.getLinkedFile()));
+        UiTaskExecutor.runInJavaFXThread(() -> getOrCreateRow(task.getLinkedFile()));
 
         ChangeListener<Object> statusListener = (_, _, _) -> processTask(task);
         taskListeners.put(task, statusListener);
@@ -114,6 +147,10 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         if (listener != null) {
             task.statusProperty().removeListener(listener);
         }
+
+        UiTaskExecutor.runInJavaFXThread(() ->
+                ingestionStatuses.removeIf(row -> row.getLinkedFile().equals(task.getLinkedFile()))
+        );
     }
 
     private IngestionStatusRow getOrCreateRow(LinkedFile file) {
@@ -128,21 +165,24 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     }
 
     private void processTask(GenerateEmbeddingsTask task) {
-        Platform.runLater(() -> {
+        UiTaskExecutor.runInJavaFXThread(() -> {
             IngestionStatusRow row = getOrCreateRow(task.getLinkedFile());
 
             switch (task.getStatus()) {
                 case SUCCESS -> {
-                    row.statusProperty().set(FileStatus.INGESTED);
                     row.errorProperty().set(null);
+                    row.statusProperty().set(FileStatus.INGESTED);
                 }
                 case ERROR -> {
-                    row.statusProperty().set(FileStatus.ERROR_WHILE_PROCESSING);
                     row.errorProperty().set(task.getException());
+                    row.statusProperty().set(FileStatus.ERROR_WHILE_PROCESSING);
                 }
-                case PENDING -> row.statusProperty().set(FileStatus.PENDING);
-                case PROCESSING -> row.statusProperty().set(FileStatus.PROCESSING);
-                case CANCELLED -> row.statusProperty().set(FileStatus.CANCELLED);
+                case PENDING ->
+                        row.statusProperty().set(FileStatus.PENDING);
+                case PROCESSING ->
+                        row.statusProperty().set(FileStatus.PROCESSING);
+                case CANCELLED ->
+                        row.statusProperty().set(FileStatus.CANCELLED);
             }
         });
     }

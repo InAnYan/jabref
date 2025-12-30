@@ -4,7 +4,6 @@ import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
 public final class CitationKeyCheck {
-
     private CitationKeyCheck() {
         throw new UnsupportedOperationException("Cannot instantiate a utility class");
     }

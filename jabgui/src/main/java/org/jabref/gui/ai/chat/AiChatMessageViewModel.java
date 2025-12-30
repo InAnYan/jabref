@@ -12,6 +12,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
 import org.jabref.gui.AbstractViewModel;
+import org.jabref.gui.util.PropertiesHelper;
 import org.jabref.logic.ai.chatting.util.ChatHistoryRecordUtils;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 
@@ -30,10 +31,10 @@ public class AiChatMessageViewModel extends AbstractViewModel {
     private final ObjectProperty<EventHandler<ActionEvent>> onRegenerate = new SimpleObjectProperty<>();
 
     public AiChatMessageViewModel() {
-        setupListeners();
+        setupBindings();
     }
 
-    private void setupListeners() {
+    private void setupBindings() {
         id.bind(chatMessage.map(ChatHistoryRecordV2::id));
         source.bind(chatMessage
                 .map(ChatHistoryRecordV2::messageTypeClassName)
@@ -43,15 +44,11 @@ public class AiChatMessageViewModel extends AbstractViewModel {
     }
 
     public void delete() {
-        if (onDelete.get() != null) {
-            onDelete.get().handle(new ActionEvent());
-        }
+        PropertiesHelper.handle(onDelete);
     }
 
     public void regenerate() {
-        if (onRegenerate.get() != null) {
-            onRegenerate.get().handle(new ActionEvent());
-        }
+        PropertiesHelper.handle(onRegenerate);
     }
 
     public ObjectProperty<ChatHistoryRecordV2> chatMessageProperty() {

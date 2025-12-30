@@ -2,6 +2,7 @@ package org.jabref.gui.ai.chat;
 
 import java.util.Objects;
 
+import javafx.beans.binding.StringExpression;
 import javafx.beans.property.ObjectProperty;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -13,11 +14,14 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import org.jabref.gui.util.BindingsHelper;
+import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.MarkdownTextFlow;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.chatting.messages.ErrorMessage;
 
 import com.airhacks.afterburner.views.ViewLoader;
+import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.UserMessage;
 
 public class AiChatMessageView extends HBox {
@@ -52,22 +56,26 @@ public class AiChatMessageView extends HBox {
 
     private void setupBindings() {
         sourceLabel.textProperty().bind(viewModel.sourceProperty());
-        this.alignmentProperty().bind(viewModel.chatMessageProperty().map(AiChatMessageView::determineAlignment));
 
+        this.alignmentProperty().bind(viewModel.chatMessageProperty().map(AiChatMessageView::determineAlignment));
         buttonsVBox.visibleProperty().bind(this.hoverProperty());
+
+        setupPseudoClasses();
+    }
+
+    private void setupPseudoClasses() {
+        StringExpression messageType = StringExpression.stringExpression(
+                chatMessageProperty().map(ChatHistoryRecordV2::messageTypeClassName)
+        );
+
+        BindingsHelper.includePseudoClassWhen(vBox, USER_PSEUDO_CLASS, messageType.isEqualTo(UserMessage.class.getName()));
+        BindingsHelper.includePseudoClassWhen(vBox, AI_PSEUDO_CLASS, messageType.isEqualTo(AiMessage.class.getName()));
+        BindingsHelper.includePseudoClassWhen(vBox, ERROR_PSEUDO_CLASS, messageType.isEqualTo(ErrorMessage.class.getName()));
     }
 
     private void setupListeners() {
-        viewModel.messageContentProperty().addListener((_, _, newValue) -> {
-            if (newValue != null) {
-                markdownTextFlow.setMarkdown(newValue);
-            }
-        });
-
-        viewModel.chatMessageProperty().addListener((_, _, newValue) -> {
-            updateOrder(newValue);
-            updateStyle(newValue);
-        });
+        ListenersHelper.onChangeNonNull(viewModel.chatMessageProperty(), this::updateOrder);
+        ListenersHelper.onChangeNonNull(viewModel.chatMessageProperty(), this::updateContent);
     }
 
     private void updateOrder(ChatHistoryRecordV2 chatMessage) {
@@ -82,14 +90,8 @@ public class AiChatMessageView extends HBox {
         }
     }
 
-    private void updateStyle(ChatHistoryRecordV2 chatMessage) {
-        String type = chatMessage.messageTypeClassName();
-        boolean isUser = Objects.equals(type, UserMessage.class.getName());
-        boolean isError = Objects.equals(type, ErrorMessage.class.getName());
-
-        vBox.pseudoClassStateChanged(USER_PSEUDO_CLASS, isUser);
-        vBox.pseudoClassStateChanged(AI_PSEUDO_CLASS, !isUser && !isError);
-        vBox.pseudoClassStateChanged(ERROR_PSEUDO_CLASS, isError);
+    private void updateContent(ChatHistoryRecordV2 chatMessage) {
+        markdownTextFlow.setMarkdown(chatMessage.content());
     }
 
     private static Pos determineAlignment(ChatHistoryRecordV2 chatMessage) {

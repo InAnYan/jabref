@@ -2,8 +2,10 @@ package org.jabref.gui.ai.chat;
 
 import java.util.Optional;
 
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ListProperty;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
@@ -63,14 +65,23 @@ public class AiChatView extends StackPane {
     @FXML
     private void initialize() {
         viewModel = new AiChatViewModel(
-                preferences,
+                preferences.getAiPreferences(),
+                preferences.getFilePreferences(),
                 aiService,
                 taskExecutor
         );
 
+        setupBindings();
+        setupValues();
+    }
+
+    private void setupBindings() {
         viewModel.answerEngineProperty().bind(aiChatStatusWindow.answerEngineProperty());
         aiChatStatusWindow.entriesProperty().bind(viewModel.entriesProperty());
         aiChatStatusWindow.generateEmbeddingsTasksProperty().bind(viewModel.generateEmbeddingsTasksProperty());
+
+        chatHistoryScrollPane.itemsProperty().bind(viewModel.chatHistoryProperty());
+        chatHistoryScrollPane.setRenderer(this::renderChatHistoryRecord);
 
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
         noFilesErrorPane.managedProperty().bind(noFilesErrorPane.visibleProperty());
@@ -83,6 +94,26 @@ public class AiChatView extends StackPane {
         cancelButton.managedProperty().bind(cancelButton.visibleProperty());
         clearButton.managedProperty().bind(clearButton.visibleProperty());
 
+        BooleanBinding isAiTurnedOff = viewModel.stateProperty().isEqualTo(AiChatViewModel.State.AI_TURNED_OFF);
+        BooleanBinding isNoFiles = viewModel.stateProperty().isEqualTo(AiChatViewModel.State.NO_FILES);
+        BooleanBinding isWaiting = viewModel.stateProperty().isEqualTo(AiChatViewModel.State.WAITING_FOR_MESSAGE);
+        BooleanBinding isError = viewModel.stateProperty().isEqualTo(AiChatViewModel.State.ERROR);
+        BooleanBinding isIdle = viewModel.stateProperty().isEqualTo(AiChatViewModel.State.IDLE);
+
+        privacyNotice.visibleProperty().bind(isAiTurnedOff);
+        noFilesErrorPane.visibleProperty().bind(isNoFiles);
+        mainContainer.visibleProperty().bind(isAiTurnedOff.not().and(isNoFiles.not()));
+
+        loadingIndicator.visibleProperty().bind(isWaiting);
+        userMessageTextArea.visibleProperty().bind(isIdle);
+        sendButton.visibleProperty().bind(isIdle);
+        retryButton.visibleProperty().bind(isError);
+        cancelButton.visibleProperty().bind(isWaiting.or(isError));
+
+        aiModelLabel.textProperty().bind(viewModel.chatModelProperty().map(AiChatView::formatChatModelLabel));
+    }
+
+    private void setupValues() {
         userMessageTextArea.getHistory().addAll(
                 viewModel
                         .chatHistoryProperty()
@@ -93,102 +124,28 @@ public class AiChatView extends StackPane {
                         .map(Optional::get)
                         .toList()
         );
-
-        chatHistoryScrollPane.setRenderer(chatHistoryRecordV2 -> {
-            AiChatMessageView aiChatMessageView = new AiChatMessageView();
-            aiChatMessageView.setChatMessage(chatHistoryRecordV2);
-            aiChatMessageView.setOnDelete(_ -> viewModel.delete(chatHistoryRecordV2.id()));
-            aiChatMessageView.setOnRegenerate(_ -> viewModel.regenerate(chatHistoryRecordV2.id()));
-            return aiChatMessageView;
-        });
-        chatHistoryScrollPane.itemsProperty().bind(viewModel.chatHistoryProperty());
-
-        viewModel.stateProperty().addListener((_, _, value) -> updateByState(value));
-        updateByState(viewModel.stateProperty().get());
-
-        viewModel.chatModelProperty().addListener(_ -> updateChatLabel());
-        updateChatLabel();
     }
 
-    private void updateByState(AiChatViewModel.State state) {
-        switch (state) {
-            case AI_TURNED_OFF -> {
-                privacyNotice.setVisible(true);
-                noFilesErrorPane.setVisible(false);
-                mainContainer.setVisible(false);
-            }
-
-            case NO_FILES -> {
-                privacyNotice.setVisible(false);
-                noFilesErrorPane.setVisible(true);
-                mainContainer.setVisible(false);
-            }
-
-            case WAITING_FOR_MESSAGE -> {
-                privacyNotice.setVisible(false);
-                noFilesErrorPane.setVisible(false);
-                mainContainer.setVisible(true);
-
-                loadingIndicator.setVisible(true);
-
-                infoButton.setVisible(true);
-                infoButton.setDisable(false);
-                userMessageTextArea.setVisible(false);
-                userMessageTextArea.setDisable(false);
-
-                sendButton.setVisible(false);
-                retryButton.setVisible(false);
-                cancelButton.setVisible(true);
-
-                clearButton.setDisable(false);
-            }
-
-            case ERROR -> {
-                privacyNotice.setVisible(false);
-                noFilesErrorPane.setVisible(false);
-                mainContainer.setVisible(true);
-
-                loadingIndicator.setVisible(false);
-
-                userMessageTextArea.setVisible(false);
-
-                sendButton.setVisible(false);
-
-                retryButton.setVisible(true);
-                cancelButton.setVisible(true);
-
-                clearButton.setDisable(false);
-            }
-
-            case IDLE -> {
-                privacyNotice.setVisible(false);
-                noFilesErrorPane.setVisible(false);
-                mainContainer.setVisible(true);
-
-                loadingIndicator.setVisible(false);
-
-                userMessageTextArea.setVisible(true);
-                userMessageTextArea.setEditable(true);
-                userMessageTextArea.setDisable(false);
-
-                sendButton.setVisible(true);
-                sendButton.setDisable(false);
-
-                retryButton.setVisible(false);
-                cancelButton.setVisible(false);
-
-                clearButton.setDisable(false);
-            }
+    private static String formatChatModelLabel(ChatModel chatModel) {
+        if (chatModel == null) {
+            return "";
         }
-    }
 
-    private void updateChatLabel() {
-        ChatModel chatModel = viewModel.chatModelProperty().get();
-        aiModelLabel.setText(Localization.lang(
+        return Localization.lang(
                 "Current chat model: %0 %1",
                 chatModel.getAiProvider().getDisplayName(),
                 chatModel.getName()
-        ));
+        );
+    }
+
+    private Node renderChatHistoryRecord(ChatHistoryRecordV2 chatHistoryRecordV2) {
+        AiChatMessageView aiChatMessageView = new AiChatMessageView();
+
+        aiChatMessageView.setChatMessage(chatHistoryRecordV2);
+        aiChatMessageView.setOnDelete(_ -> viewModel.delete(chatHistoryRecordV2.id()));
+        aiChatMessageView.setOnRegenerate(_ -> viewModel.regenerate(chatHistoryRecordV2.id()));
+
+        return aiChatMessageView;
     }
 
     @FXML
