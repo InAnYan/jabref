@@ -3,7 +3,7 @@ package org.jabref.gui.ai.chat;
 import java.util.Objects;
 
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -21,11 +21,14 @@ import com.airhacks.afterburner.views.ViewLoader;
 import dev.langchain4j.data.message.UserMessage;
 
 public class AiChatMessageView extends HBox {
+    private static final PseudoClass USER_PSEUDO_CLASS = PseudoClass.getPseudoClass("user");
+    private static final PseudoClass AI_PSEUDO_CLASS = PseudoClass.getPseudoClass("ai");
+    private static final PseudoClass ERROR_PSEUDO_CLASS = PseudoClass.getPseudoClass("error");
+
     @FXML private VBox vBox;
     @FXML private Label sourceLabel;
     @FXML private StackPane markdownContentPane;
     @FXML private VBox buttonsVBox;
-
     private MarkdownTextFlow markdownTextFlow;
 
     private AiChatMessageViewModel viewModel;
@@ -48,45 +51,53 @@ public class AiChatMessageView extends HBox {
     }
 
     private void setupBindings() {
-        buttonsVBox.visibleProperty().bind(this.hoverProperty());
-
         sourceLabel.textProperty().bind(viewModel.sourceProperty());
-        // Other properties of a chat message are bound in the listeners.
+        this.alignmentProperty().bind(viewModel.chatMessageProperty().map(AiChatMessageView::determineAlignment));
+
+        buttonsVBox.visibleProperty().bind(this.hoverProperty());
     }
 
     private void setupListeners() {
-        // We can't bind the content easily, as the content should be rendered as Markdown.
         viewModel.messageContentProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 markdownTextFlow.setMarkdown(newValue);
             }
         });
 
-        // Also, we need to change the alignment and colors based on the message type.
         viewModel.chatMessageProperty().addListener((_, _, newValue) -> {
-            String type = newValue.messageTypeClassName();
-
-            this.getChildren().clear();
-
-            if (Objects.equals(type, UserMessage.class.getName())) {
-                this.getChildren().addAll(buttonsVBox, vBox);
-                this.setAlignment(Pos.TOP_RIGHT);
-                setColor("-jr-ai-message-user", "-jr-ai-message-user-border");
-            } else {
-                this.getChildren().addAll(vBox, buttonsVBox);
-                this.setAlignment(Pos.TOP_LEFT);
-
-                if (Objects.equals(type, ErrorMessage.class.getName())) {
-                    setColor("-jr-ai-message-error", "-jr-ai-message-error-border");
-                } else {
-                    setColor("-jr-ai-message-ai", "-jr-ai-message-ai-border");
-                }
-            }
+            updateOrder(newValue);
+            updateStyle(newValue);
         });
     }
 
-    private void setColor(String fillColor, String borderColor) {
-        vBox.setStyle("-fx-background-color: " + fillColor + "; -fx-border-radius: 10; -fx-background-radius: 10; -fx-border-color: " + borderColor + "; -fx-border-width: 1; -fx-padding: 10; -fx-max-width: 600;");
+    private void updateOrder(ChatHistoryRecordV2 chatMessage) {
+        String type = chatMessage.messageTypeClassName();
+        boolean isUser = Objects.equals(type, UserMessage.class.getName());
+
+        this.getChildren().clear();
+        if (isUser) {
+            this.getChildren().addAll(buttonsVBox, vBox);
+        } else {
+            this.getChildren().addAll(vBox, buttonsVBox);
+        }
+    }
+
+    private void updateStyle(ChatHistoryRecordV2 chatMessage) {
+        String type = chatMessage.messageTypeClassName();
+        boolean isUser = Objects.equals(type, UserMessage.class.getName());
+        boolean isError = Objects.equals(type, ErrorMessage.class.getName());
+
+        vBox.pseudoClassStateChanged(USER_PSEUDO_CLASS, isUser);
+        vBox.pseudoClassStateChanged(AI_PSEUDO_CLASS, !isUser && !isError);
+        vBox.pseudoClassStateChanged(ERROR_PSEUDO_CLASS, isError);
+    }
+
+    private static Pos determineAlignment(ChatHistoryRecordV2 chatMessage) {
+        if (Objects.equals(chatMessage.messageTypeClassName(), UserMessage.class.getName())) {
+            return Pos.TOP_RIGHT;
+        } else {
+            return Pos.TOP_LEFT;
+        }
     }
 
     @FXML
@@ -133,13 +144,5 @@ public class AiChatMessageView extends HBox {
 
     public void setOnRegenerate(EventHandler<ActionEvent> onRegenerate) {
         viewModel.onRegenerateProperty().set(onRegenerate);
-    }
-
-    public ReadOnlyStringProperty messageIdProperty() {
-        return viewModel.idProperty();
-    }
-
-    public String getMessageIdProperty() {
-        return viewModel.idProperty().get();
     }
 }

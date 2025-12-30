@@ -33,7 +33,10 @@ public class AiEntryChatView extends StackPane {
 
     @FXML
     private void initialize() {
-        viewModel = new AiEntryChatViewModel(preferences, aiService);
+        viewModel = new AiEntryChatViewModel(
+                preferences.getAiPreferences(),
+                aiService.getChattingFeature().getChatHistoryRepository()
+        );
 
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
         emptyDatabasePathPane.managedProperty().bind(emptyDatabasePathPane.visibleProperty());

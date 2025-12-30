@@ -29,10 +29,10 @@ public class AiEntryChatViewModel extends AbstractViewModel {
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.NO_DATABASE_PATH);
 
-    // This is the property that is changed by class users.
+    // This is the property that class users should change.
     private final ObjectProperty<BibEntryAiIdentifier> selectedEntry = new SimpleObjectProperty<>();
 
-    // These properties are set by this class when a selected entry is changed.
+    // This class sets these properties when a selected entry is changed.
     private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatHistoryRecordV2> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
@@ -45,20 +45,23 @@ public class AiEntryChatViewModel extends AbstractViewModel {
     ) {
         this.aiPreferences = aiPreferences;
         this.chatHistoryRepository = chatHistoryRepository;
+
+        setupListeners();
     }
 
     private void setupListeners() {
-        aiPreferences.enableAiProperty().addListener((_, _, value) -> {
-            if (!value) {
-                state.set(State.AI_TURNED_OFF);
-            } else {
+        // If the AI is disabled, `setEntry` will set the respective state.
+        // But if the AI is enabled, `setEntry` will process the selected entry.
+        // Thus, it is safe to call it anytime.
+
+        aiPreferences.enableAiProperty().addListener(_ -> {
+            if (selectedEntry.get() != null) {
                 setEntry(selectedEntry.get());
             }
         });
 
-
         selectedEntry.addListener(_ -> {
-            if (aiPreferences.getEnableAi() && selectedEntry.get() != null) {
+            if (selectedEntry.get() != null) {
                 setEntry(selectedEntry.get());
             }
         });
@@ -77,7 +80,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         } else if (!CitationKeyCheck.citationKeyIsUnique(context, entry.getCitationKey().get())) {
             state.set(State.CITATION_KEY_NOT_UNIQUE);
         } else {
-            entries.set(FXCollections.observableArrayList(identifierye));
+            entries.set(FXCollections.observableArrayList(identifier));
             chatHistory.set(ChatHistoryFactory.makeChatHistoryProperty(
                     new EntryChatHistoryIdentifier(
                             context.getDatabasePath().get(),

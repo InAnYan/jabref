@@ -62,7 +62,8 @@ class GroupTreeViewModelTest {
                 EnumSet.noneOf(GroupViewMode.class),
                 true,
                 true,
-                GroupHierarchyType.INDEPENDENT));
+                GroupHierarchyType.INDEPENDENT,
+                false));
         groupTree = new GroupTreeViewModel(stateManager, mock(DialogService.class), mock(AiService.class), preferences, mock(AdaptVisibleTabs.class), taskExecutor, new CustomLocalDragboard());
     }
 

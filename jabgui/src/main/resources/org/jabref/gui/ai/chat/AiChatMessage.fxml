@@ -14,7 +14,7 @@
         HBox.hgrow="ALWAYS"
         fx:controller="org.jabref.gui.ai.chat.AiChatMessageView">
 
-    <VBox fx:id="vBox">
+    <VBox fx:id="vBox" styleClass="chat-bubble">
         <Label fx:id="sourceLabel"
                style="-fx-font-weight: bold;"/>
 

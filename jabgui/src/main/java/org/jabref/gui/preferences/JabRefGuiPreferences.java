@@ -193,6 +193,7 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
     private static final String GROUP_VIEW_FILTER = "groupFilter";
     private static final String GROUP_VIEW_INVERT = "groupInvert";
     private static final String DEFAULT_HIERARCHICAL_CONTEXT = "defaultHierarchicalContext";
+    private static final String GROUP_SHOW_AI_CHAT = "groupShowAiChat";
     // endregion
 
     // region specialFieldsPreferences
@@ -313,6 +314,7 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
         defaults.put(GROUP_VIEW_FILTER, Boolean.TRUE);
         defaults.put(GROUP_VIEW_INVERT, Boolean.FALSE);
         defaults.put(DEFAULT_HIERARCHICAL_CONTEXT, GroupHierarchyType.INDEPENDENT.name());
+        defaults.put(GROUP_SHOW_AI_CHAT, Boolean.TRUE);
         // endregion
 
         defaults.put(SPECIALFIELDSENABLED, Boolean.TRUE);
@@ -836,7 +838,8 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
                 getBoolean(GROUP_VIEW_INVERT),
                 getBoolean(AUTO_ASSIGN_GROUP),
                 getBoolean(DISPLAY_GROUP_COUNT),
-                GroupHierarchyType.valueOf(get(DEFAULT_HIERARCHICAL_CONTEXT))
+                GroupHierarchyType.valueOf(get(DEFAULT_HIERARCHICAL_CONTEXT)),
+                getBoolean(GROUP_SHOW_AI_CHAT)
         );
 
         groupsPreferences.groupViewModeProperty().addListener((SetChangeListener<GroupViewMode>) change -> {
@@ -847,6 +850,7 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
         EasyBind.listen(groupsPreferences.autoAssignGroupProperty(), (obs, oldValue, newValue) -> putBoolean(AUTO_ASSIGN_GROUP, newValue));
         EasyBind.listen(groupsPreferences.displayGroupCountProperty(), (obs, oldValue, newValue) -> putBoolean(DISPLAY_GROUP_COUNT, newValue));
         EasyBind.listen(groupsPreferences.defaultHierarchicalContextProperty(), (obs, oldValue, newValue) -> put(DEFAULT_HIERARCHICAL_CONTEXT, newValue.name()));
+        EasyBind.listen(groupsPreferences.showAiChatButtonProperty(), (obs, oldValue, newValue) -> putBoolean(GROUP_SHOW_AI_CHAT, newValue));
 
         return groupsPreferences;
     }

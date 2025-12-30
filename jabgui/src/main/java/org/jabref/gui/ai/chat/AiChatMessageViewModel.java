@@ -19,29 +19,27 @@ public class AiChatMessageViewModel extends AbstractViewModel {
     // The chat message that is assigned by other code.
     private final ObjectProperty<ChatHistoryRecordV2> chatMessage = new SimpleObjectProperty<>();
 
-    // Dissected properties of a chat message. This is useful for the UI, but must not be changed.
+    // Dissected properties of a chat message. This is useful for the UI but must not be changed.
     private final StringProperty id = new SimpleStringProperty("");
     private final StringProperty source = new SimpleStringProperty("");
     private final StringProperty messageContent = new SimpleStringProperty("");
     private final ObjectProperty<Instant> timestamp = new SimpleObjectProperty<>(Instant.now());
 
     // Actions on the chat message.
-    private final ObjectProperty<EventHandler<ActionEvent>> onDelete = new SimpleObjectProperty<>(_ -> {
-    });
-    private final ObjectProperty<EventHandler<ActionEvent>> onRegenerate = new SimpleObjectProperty<>(_ -> {
-    });
+    private final ObjectProperty<EventHandler<ActionEvent>> onDelete = new SimpleObjectProperty<>();
+    private final ObjectProperty<EventHandler<ActionEvent>> onRegenerate = new SimpleObjectProperty<>();
 
     public AiChatMessageViewModel() {
         setupListeners();
     }
 
     private void setupListeners() {
-        this.chatMessage.addListener((_, _, value) -> {
-            id.set(value.id());
-            source.set(ChatHistoryRecordUtils.getMessageAuthorDisplayName(value.messageTypeClassName()));
-            messageContent.set(value.content());
-            timestamp.set(value.createdAt());
-        });
+        id.bind(chatMessage.map(ChatHistoryRecordV2::id));
+        source.bind(chatMessage
+                .map(ChatHistoryRecordV2::messageTypeClassName)
+                .map(ChatHistoryRecordUtils::getMessageAuthorDisplayName));
+        messageContent.bind(chatMessage.map(ChatHistoryRecordV2::content));
+        timestamp.bind(chatMessage.map(ChatHistoryRecordV2::createdAt));
     }
 
     public void delete() {

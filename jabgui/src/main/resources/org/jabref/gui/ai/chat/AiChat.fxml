@@ -21,9 +21,7 @@
         fx:controller="org.jabref.gui.ai.chat.AiChatView">
 
     <AiPrivacyNoticeView
-            fx:id="privacyNotice"
-            privacyDisagreeButtonText="%Hide 'AI' tabs"
-            onPrivacyDisagree="#privacyDisagree"/>
+            fx:id="privacyNotice"/>
 
     <SimpleStatusPaneView
             fx:id="noFilesErrorPane"
