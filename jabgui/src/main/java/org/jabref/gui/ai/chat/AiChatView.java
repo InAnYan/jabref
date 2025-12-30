@@ -192,6 +192,11 @@ public class AiChatView extends StackPane {
     }
 
     @FXML
+    private void privacyDisagree() {
+        viewModel.privacyDisagree();
+    }
+
+    @FXML
     private void showInfo() {
         dialogService.showCustomDialogAndWait(aiChatStatusWindow);
     }

@@ -2,8 +2,12 @@ package org.jabref.gui.ai;
 
 import java.io.IOException;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
@@ -17,6 +21,9 @@ public class AiPrivacyNoticeViewModel extends AbstractViewModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiPrivacyNoticeViewModel.class);
 
     private final StringProperty embeddingModelSize = new SimpleStringProperty("");
+
+    private final StringProperty privacyDisagreeButtonText = new SimpleStringProperty("");
+    private final ObjectProperty<EventHandler<ActionEvent>> onPrivacyDisagree = new SimpleObjectProperty<>();
 
     private final GuiPreferences preferences;
     private final DialogService dialogService;
@@ -51,9 +58,17 @@ public class AiPrivacyNoticeViewModel extends AbstractViewModel {
         }
     }
 
-    public void hideAITabs() {
-        var entryEditorPreferences = preferences.getEntryEditorPreferences();
-        entryEditorPreferences.setShouldShowAiSummaryTab(false);
-        entryEditorPreferences.setShouldShowAiChatTab(false);
+    public void privacyDisagree() {
+        if (onPrivacyDisagree.get() != null) {
+            onPrivacyDisagree.get().handle(new ActionEvent());
+        }
+    }
+
+    public ObjectProperty<EventHandler<ActionEvent>> onPrivacyDisagreeProperty() {
+        return onPrivacyDisagree;
+    }
+
+    public StringProperty privacyDisagreeButtonTextProperty() {
+        return privacyDisagreeButtonText;
     }
 }

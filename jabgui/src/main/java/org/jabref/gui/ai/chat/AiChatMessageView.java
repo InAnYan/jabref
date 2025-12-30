@@ -3,13 +3,13 @@ package org.jabref.gui.ai.chat;
 import java.util.Objects;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
@@ -27,6 +27,7 @@ public class AiChatMessageView extends HBox {
     @FXML private VBox buttonsVBox;
 
     private MarkdownTextFlow markdownTextFlow;
+
     private AiChatMessageViewModel viewModel;
 
     public AiChatMessageView() {
@@ -42,17 +43,26 @@ public class AiChatMessageView extends HBox {
         markdownTextFlow = new MarkdownTextFlow(markdownContentPane);
         markdownContentPane.getChildren().add(markdownTextFlow);
 
+        setupBindings();
+        setupListeners();
+    }
+
+    private void setupBindings() {
         buttonsVBox.visibleProperty().bind(this.hoverProperty());
 
-        HBox.setHgrow(this, Priority.ALWAYS);
-
         sourceLabel.textProperty().bind(viewModel.sourceProperty());
+        // Other properties of a chat message are bound in the listeners.
+    }
+
+    private void setupListeners() {
+        // We can't bind the content easily, as the content should be rendered as Markdown.
         viewModel.messageContentProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 markdownTextFlow.setMarkdown(newValue);
             }
         });
 
+        // Also, we need to change the alignment and colors based on the message type.
         viewModel.chatMessageProperty().addListener((_, _, newValue) -> {
             String type = newValue.messageTypeClassName();
 
@@ -123,5 +133,13 @@ public class AiChatMessageView extends HBox {
 
     public void setOnRegenerate(EventHandler<ActionEvent> onRegenerate) {
         viewModel.onRegenerateProperty().set(onRegenerate);
+    }
+
+    public ReadOnlyStringProperty messageIdProperty() {
+        return viewModel.idProperty();
+    }
+
+    public String getMessageIdProperty() {
+        return viewModel.idProperty().get();
     }
 }

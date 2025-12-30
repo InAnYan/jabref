@@ -38,8 +38,8 @@
         <HBox spacing="10.0">
             <Button onAction="#onPrivacyAgree"
                     text="%I agree"/>
-            <Button onAction="#onHideAiTabs"
-                    text="%Hide 'AI' tabs"/>
+            <Button onAction="#onPrivacyDisagree"
+                    fx:id="privacyDisagreeButton"/>
         </HBox>
     </VBox>
 </fx:root>

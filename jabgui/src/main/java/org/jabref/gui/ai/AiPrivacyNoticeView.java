@@ -2,7 +2,12 @@ package org.jabref.gui.ai;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.StringProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -21,6 +26,7 @@ public class AiPrivacyNoticeView extends ScrollPane {
     @FXML private VBox text;
     @FXML private GridPane aiPolicies;
     @FXML private Text embeddingModelText;
+    @FXML private Button privacyDisagreeButton;
 
     @Inject private GuiPreferences preferences;
     @Inject private DialogService dialogService;
@@ -66,6 +72,7 @@ public class AiPrivacyNoticeView extends ScrollPane {
         });
         aiPolicies.prefWidthProperty().bind(textWidth);
         embeddingModelText.wrappingWidthProperty().bind(textWidth);
+        privacyDisagreeButton.textProperty().bind(viewModel.privacyDisagreeButtonTextProperty());
     }
 
     private void addPrivacyHyperlink(GridPane gridPane, AiProvider aiProvider) {
@@ -90,7 +97,31 @@ public class AiPrivacyNoticeView extends ScrollPane {
     }
 
     @FXML
-    private void onHideAiTabs() {
-        viewModel.hideAITabs();
+    private void onPrivacyDisagree() {
+        viewModel.privacyDisagree();
+    }
+
+    public ObjectProperty<EventHandler<ActionEvent>> onPrivacyDisagreeProperty() {
+        return viewModel.onPrivacyDisagreeProperty();
+    }
+
+    public EventHandler<ActionEvent> getOnPrivacyDisagree() {
+        return viewModel.onPrivacyDisagreeProperty().get();
+    }
+
+    public void setOnPrivacyDisagree(EventHandler<ActionEvent> onPrivacyDisagree) {
+        viewModel.onPrivacyDisagreeProperty().set(onPrivacyDisagree);
+    }
+
+    public StringProperty privacyDisagreeButtonTextProperty() {
+        return viewModel.privacyDisagreeButtonTextProperty();
+    }
+
+    public String getPrivacyDisagreeButtonText() {
+        return viewModel.privacyDisagreeButtonTextProperty().get();
+    }
+
+    public void setPrivacyDisagreeButtonText(String privacyDisagreeButtonText) {
+        viewModel.privacyDisagreeButtonTextProperty().set(privacyDisagreeButtonText);
     }
 }

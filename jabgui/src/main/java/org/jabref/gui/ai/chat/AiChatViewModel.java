@@ -12,6 +12,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
+import org.jabref.gui.entryeditor.EntryEditorPreferences;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.logic.AiChatLogic;
@@ -237,6 +238,12 @@ public class AiChatViewModel extends AbstractViewModel {
         if (!chatHistory.isEmpty()) {
             regenerate(chatHistory.getLast().id());
         }
+    }
+
+    public void privacyDisagree() {
+        EntryEditorPreferences entryEditorPreferences = preferences.getEntryEditorPreferences();
+        entryEditorPreferences.setShouldShowAiChatTab(false);
+        entryEditorPreferences.setShouldShowAiSummaryTab(false);
     }
 
     public ListProperty<BibEntryAiIdentifier> entriesProperty() {

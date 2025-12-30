@@ -7,8 +7,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
-import org.jabref.gui.preferences.GuiPreferences;
-import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.chatting.util.ChatHistoryFactory;
 import org.jabref.logic.ai.preferences.AiPreferences;
@@ -29,34 +27,47 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         CHATTING
     }
 
-    private final AiPreferences aiPreferences;
-    private final ChatHistoryRepository chatHistoryRepository;
-
-    private final ObjectProperty<BibEntryAiIdentifier> selectedEntry = new SimpleObjectProperty<>();
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.NO_DATABASE_PATH);
+
+    // This is the property that is changed by class users.
+    private final ObjectProperty<BibEntryAiIdentifier> selectedEntry = new SimpleObjectProperty<>();
+
+    // These properties are set by this class when a selected entry is changed.
     private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatHistoryRecordV2> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
-    public AiEntryChatViewModel(
-            GuiPreferences preferences,
-            AiService aiService
-    ) {
-        this.aiPreferences = preferences.getAiPreferences();
+    private final AiPreferences aiPreferences;
+    private final ChatHistoryRepository chatHistoryRepository;
 
+    public AiEntryChatViewModel(
+            AiPreferences aiPreferences,
+            ChatHistoryRepository chatHistoryRepository
+    ) {
+        this.aiPreferences = aiPreferences;
+        this.chatHistoryRepository = chatHistoryRepository;
+    }
+
+    private void setupListeners() {
         aiPreferences.enableAiProperty().addListener((_, _, value) -> {
             if (!value) {
                 state.set(State.AI_TURNED_OFF);
+            } else {
+                setEntry(selectedEntry.get());
             }
         });
 
-        this.chatHistoryRepository = aiService.getChattingFeature().getChatHistoryRepository();
 
-        this.selectedEntry.addListener(_ -> {
-            setEntry(selectedEntry.get().databaseContext(), selectedEntry.get().entry());
+        selectedEntry.addListener(_ -> {
+            if (aiPreferences.getEnableAi() && selectedEntry.get() != null) {
+                setEntry(selectedEntry.get());
+            }
         });
     }
 
-    private void setEntry(BibDatabaseContext context, BibEntry entry) {
+    private void setEntry(BibEntryAiIdentifier identifier) {
+        BibDatabaseContext context = identifier.databaseContext();
+        BibEntry entry = identifier.entry();
+
         if (!aiPreferences.getEnableAi()) {
             state.set(State.AI_TURNED_OFF);
         } else if (context.getDatabasePath().isEmpty()) {
@@ -66,7 +77,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         } else if (!CitationKeyCheck.citationKeyIsUnique(context, entry.getCitationKey().get())) {
             state.set(State.CITATION_KEY_NOT_UNIQUE);
         } else {
-            entries.set(FXCollections.observableArrayList(new BibEntryAiIdentifier(context, entry)));
+            entries.set(FXCollections.observableArrayList(identifierye));
             chatHistory.set(ChatHistoryFactory.makeChatHistoryProperty(
                     new EntryChatHistoryIdentifier(
                             context.getDatabasePath().get(),

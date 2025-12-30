@@ -2,7 +2,6 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.Tooltip?>
@@ -22,7 +21,9 @@
         fx:controller="org.jabref.gui.ai.chat.AiChatView">
 
     <AiPrivacyNoticeView
-            fx:id="privacyNotice"/>
+            fx:id="privacyNotice"
+            privacyDisagreeButtonText="%Hide 'AI' tabs"
+            onPrivacyDisagree="#privacyDisagree"/>
 
     <SimpleStatusPaneView
             fx:id="noFilesErrorPane"
