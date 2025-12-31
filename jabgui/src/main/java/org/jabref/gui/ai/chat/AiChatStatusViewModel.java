@@ -17,7 +17,6 @@ import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
@@ -26,6 +25,10 @@ import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.entry.LinkedFile;
+
+import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.store.embedding.EmbeddingStore;
 
 public class AiChatStatusViewModel extends AbstractViewModel {
     public enum FileStatus {
@@ -107,13 +110,15 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     public AiChatStatusViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            AiService aiService
+            EmbeddingModel embeddingModel,
+            EmbeddingStore<TextSegment> embeddingStore
     ) {
         this.aiPreferences = aiPreferences;
         this.answerEngineFactory = new AnswerEngineFactory(
                 aiPreferences,
                 filePreferences,
-                aiService
+                embeddingModel,
+                embeddingStore
         );
 
         setupListeners();
@@ -121,7 +126,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     }
 
     private void setupListeners() {
-        ListenersHelper.onChangeNonNull(aiPreferences.answerEngineKindProperty(), this::updateAnswerEngine);
+        ListenersHelper.onChangeNonNull(selectedAnswerEngineKind, this::updateAnswerEngine);
         ListenersHelper.onListContentsChange(generateEmbeddingsTasks, this::wireTask, this::unwireTask);
     }
 

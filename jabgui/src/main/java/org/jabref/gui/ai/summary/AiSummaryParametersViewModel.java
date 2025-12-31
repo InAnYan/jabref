@@ -7,8 +7,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
-import org.jabref.gui.preferences.GuiPreferences;
-import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.templates.AiTemplatesFactory;
@@ -20,14 +19,21 @@ public class AiSummaryParametersViewModel extends AbstractViewModel {
     );
     private final ObjectProperty<SummarizatorKind> summarizatorKind = new SimpleObjectProperty<>();
 
-    // In the future: various parameters for summarizators.
+    private final AiPreferences aiPreferences;
+    private final SummarizatorFactory summarizatorFactory;
 
-    private final AiTemplatesFactory aiTemplatesFactory;
+    public AiSummaryParametersViewModel(
+            AiPreferences aiPreferences,
+            AiTemplatesFactory aiTemplatesFactory
+    ) {
+        this.aiPreferences = aiPreferences;
+        this.summarizatorFactory = new SummarizatorFactory(aiTemplatesFactory);
 
-    public AiSummaryParametersViewModel(GuiPreferences preferences, AiService aiService) {
-        this.aiTemplatesFactory = aiService.getTemplatesFeature().getCurrentAiTemplates();
+        setupValues();
+    }
 
-        this.summarizatorKind.set(preferences.getAiPreferences().getSummarizatorKind());
+    private void setupValues() {
+        this.summarizatorKind.set(aiPreferences.getSummarizatorKind());
     }
 
     public ListProperty<SummarizatorKind> summarizatorKindsProperty() {
@@ -39,6 +45,6 @@ public class AiSummaryParametersViewModel extends AbstractViewModel {
     }
 
     public Summarizator constructSummarizator() {
-        return SummarizatorFactory.createSummarizator(aiTemplatesFactory, summarizatorKind.get());
+        return summarizatorFactory.create(summarizatorKind.get());
     }
 }

@@ -1,7 +1,6 @@
 package org.jabref.gui.ai.chat;
 
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.layout.StackPane;
 
@@ -33,8 +32,12 @@ public class AiGroupChatView extends StackPane {
 
     @FXML
     private void initialize() {
-        viewModel = new AiGroupChatViewModel(preferences, aiService);
+        viewModel = new AiGroupChatViewModel(preferences.getAiPreferences(), aiService);
 
+        setupBindings();
+    }
+
+    private void setupBindings() {
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
         emptyDatabasePathPane.managedProperty().bind(emptyDatabasePathPane.visibleProperty());
         aiChatView.managedProperty().bind(aiChatView.visibleProperty());
@@ -53,9 +56,5 @@ public class AiGroupChatView extends StackPane {
 
     public ObjectProperty<BibDatabaseContext> databaseContextProperty() {
         return viewModel.databaseContextProperty();
-    }
-
-    public StringProperty windowTitleProperty() {
-        return viewModel.windowTitleProperty();
     }
 }

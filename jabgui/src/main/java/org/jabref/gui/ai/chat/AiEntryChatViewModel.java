@@ -1,12 +1,16 @@
 package org.jabref.gui.ai.chat;
 
+import java.util.Optional;
+
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
+import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.chatting.util.ChatHistoryFactory;
@@ -29,11 +33,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
     }
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.NO_DATABASE_PATH);
-
-    // This is the property that class users should change.
     private final ObjectProperty<BibEntryAiIdentifier> selectedEntry = new SimpleObjectProperty<>();
-
-    // This class sets these properties when a selected entry is changed.
     private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatHistoryRecordV2> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
@@ -47,50 +47,61 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         this.aiPreferences = aiPreferences;
         this.chatHistoryRepository = chatHistoryRepository;
 
+        setupBindings();
         setupListeners();
     }
 
-    private void setupListeners() {
-        // If the AI is disabled, `setEntry` will set the respective state.
-        // But if the AI is enabled, `setEntry` will process the selected entry.
-        // Thus, it is safe to call it anytime.
+    private void setupBindings() {
+        ObservableValue<Boolean> isAiTurnedOff = aiPreferences.enableAiProperty().not();
 
-        aiPreferences.enableAiProperty().addListener(_ -> {
-            if (selectedEntry.get() != null) {
-                setEntry(selectedEntry.get());
-            }
-        });
+        ObservableValue<Boolean> isNoDatabasePath = selectedEntry
+                .map(BibEntryAiIdentifier::databaseContext)
+                .map(BibDatabaseContext::getDatabasePath)
+                .map(Optional::isEmpty)
+                .orElse(false);
 
-        ListenersHelper.onChangeNonNull(selectedEntry, this::setEntry);
+        ObservableValue<Boolean> isNoCitationKey = selectedEntry
+                .map(BibEntryAiIdentifier::entry)
+                .map(BibEntry::getCitationKey)
+                .map(opt -> opt.isEmpty() || StringUtil.isBlank(opt.get()))
+                .orElse(false);
+
+        ObservableValue<Boolean> isCitationKeyNotUnique = selectedEntry
+                .map(CitationKeyCheck::citationKeyIsUnique)
+                .map(unique -> !unique)
+                .orElse(false);
+
+        BindingsHelper.bindEnum(
+                state,
+                State.AI_TURNED_OFF, isAiTurnedOff,
+                State.NO_DATABASE_PATH, isNoDatabasePath,
+                State.NO_CITATION_KEY, isNoCitationKey,
+                State.CITATION_KEY_NOT_UNIQUE, isCitationKeyNotUnique,
+                State.CHATTING
+        );
     }
 
-    private void setEntry(BibEntryAiIdentifier identifier) {
-        if (identifier == null) {
-            return;
-        }
+    private void setupListeners() {
+        ListenersHelper.onChangeNonNullWhen(
+                selectedEntry,
+                selectedEntry.isNotNull().and(state.isEqualTo(State.CHATTING)),
+                this::load
+        );
+    }
 
-        BibDatabaseContext context = identifier.databaseContext();
-        BibEntry entry = identifier.entry();
+    private void load(BibEntryAiIdentifier identifier) {
+        assert identifier.databaseContext().getDatabasePath().isPresent();
+        assert identifier.entry().getCitationKey().isPresent();
 
-        if (!aiPreferences.getEnableAi()) {
-            state.set(State.AI_TURNED_OFF);
-        } else if (context.getDatabasePath().isEmpty()) {
-            state.set(State.NO_DATABASE_PATH);
-        } else if (entry.getCitationKey().isEmpty() || StringUtil.isBlank(entry.getCitationKey().get())) {
-            state.set(State.NO_CITATION_KEY);
-        } else if (!CitationKeyCheck.citationKeyIsUnique(context, entry.getCitationKey().get())) {
-            state.set(State.CITATION_KEY_NOT_UNIQUE);
-        } else {
-            entries.set(FXCollections.observableArrayList(identifier));
-            chatHistory.set(ChatHistoryFactory.makeChatHistoryProperty(
-                    new EntryChatHistoryIdentifier(
-                            context.getDatabasePath().get(),
-                            entry.getCitationKey().get()
-                    ),
-                    chatHistoryRepository
-            ));
-            state.set(State.CHATTING);
-        }
+        entries.set(FXCollections.observableArrayList(identifier));
+
+        chatHistory.set(ChatHistoryFactory.makeChatHistoryProperty(
+                new EntryChatHistoryIdentifier(
+                        identifier.databaseContext().getDatabasePath().get(),
+                        identifier.entry().getCitationKey().get()
+                ),
+                chatHistoryRepository
+        ));
     }
 
     public ObjectProperty<BibEntryAiIdentifier> selectedEntryProperty() {

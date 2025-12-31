@@ -10,7 +10,10 @@ import org.jabref.gui.ai.statuspane.ErrorStatusPaneView;
 import org.jabref.gui.ai.statuspane.LoadingStatusPaneView;
 import org.jabref.gui.ai.statuspane.SimpleStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
+import org.jabref.gui.util.BindingsHelper;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.customimplementations.llms.ChatModel;
+import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
@@ -46,97 +49,64 @@ public class AiSummaryView extends StackPane {
     @FXML
     private void initialize() {
         viewModel = new AiSummaryViewModel(
-                preferences,
-                aiService,
+                preferences.getAiPreferences(),
+                preferences.getFilePreferences(),
+                aiService.getChattingFeature().getCurrentChatModel(),
+                aiService.getSummarizationFeature().getCurrentSummarizator(),
+                aiService.getSummarizationFeature().getSummariesRepository(),
+                aiService.getSummarizationFeature().getTaskAggregator(),
+                aiService.getShutdownSignal(),
                 dialogService
         );
 
+        setupBindings();
+    }
+
+    private void setupBindings() {
         errorPane.exceptionProperty().bind(viewModel.errorProperty());
         summaryShowing.summaryProperty().bind(viewModel.summaryProperty());
 
-        viewModel.summarizatorProperty().addListener(_ -> updateHints());
-        viewModel.chatModelProperty().addListener(_ -> updateHints());
-        updateHints();
+        processingPane.descriptionProperty().bind(BindingsHelper.map(
+                viewModel.summarizatorProperty(), viewModel.chatModelProperty(),
+                AiSummaryView::generateDescription
+        ));
 
-        viewModel.stateProperty().addListener((_, _, value) -> updateStateView(value));
-        updateStateView(viewModel.stateProperty().get());
-    }
+        privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
+        processingPane.managedProperty().bind(processingPane.visibleProperty());
+        errorPane.managedProperty().bind(errorPane.visibleProperty());
+        noDatabasePathPane.managedProperty().bind(noDatabasePathPane.visibleProperty());
+        noCitationKeyPane.managedProperty().bind(noCitationKeyPane.visibleProperty());
+        wrongCitationKeyPane.managedProperty().bind(wrongCitationKeyPane.visibleProperty());
+        noFilesPane.managedProperty().bind(noFilesPane.visibleProperty());
+        noSupportedFileTypesPane.managedProperty().bind(noSupportedFileTypesPane.visibleProperty());
+        summaryShowing.managedProperty().bind(summaryShowing.visibleProperty());
 
-    private void updateStateView(AiSummaryViewModel.State state) {
-        privacyNotice.setVisible(false);
-        privacyNotice.setManaged(false);
-        processingPane.setVisible(false);
-        processingPane.setManaged(false);
-        errorPane.setVisible(false);
-        errorPane.setManaged(false);
-        noDatabasePathPane.setVisible(false);
-        noDatabasePathPane.setManaged(false);
-        noCitationKeyPane.setVisible(false);
-        noCitationKeyPane.setManaged(false);
-        wrongCitationKeyPane.setVisible(false);
-        wrongCitationKeyPane.setManaged(false);
-        noFilesPane.setVisible(false);
-        noFilesPane.setManaged(false);
-        noSupportedFileTypesPane.setVisible(false);
-        noSupportedFileTypesPane.setManaged(false);
-        summaryShowing.setVisible(false);
-        summaryShowing.setManaged(false);
-
-        switch (state) {
-            case AI_TURNED_OFF -> {
-                privacyNotice.setVisible(true);
-                privacyNotice.setManaged(true);
-            }
-            case PROCESSING -> {
-                processingPane.setVisible(true);
-                processingPane.setManaged(true);
-            }
-            case ERROR_WHILE_GENERATING -> {
-                errorPane.setVisible(true);
-                errorPane.setManaged(true);
-            }
-            case NO_DATABASE_PATH -> {
-                noDatabasePathPane.setVisible(true);
-                noDatabasePathPane.setManaged(true);
-            }
-            case NO_CITATION_KEY -> {
-                noCitationKeyPane.setVisible(true);
-                noCitationKeyPane.setManaged(true);
-            }
-            case WRONG_CITATION_KEY -> {
-                wrongCitationKeyPane.setVisible(true);
-                wrongCitationKeyPane.setManaged(true);
-            }
-            case NO_FILES -> {
-                noFilesPane.setVisible(true);
-                noFilesPane.setManaged(true);
-            }
-            case NO_SUPPORTED_FILE_TYPES -> {
-                noSupportedFileTypesPane.setVisible(true);
-                noSupportedFileTypesPane.setManaged(true);
-            }
-            case DONE -> {
-                summaryShowing.setVisible(true);
-                summaryShowing.setManaged(true);
-            }
-        }
+        privacyNotice.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.AI_TURNED_OFF));
+        processingPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.PROCESSING));
+        errorPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.ERROR_WHILE_GENERATING));
+        noDatabasePathPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.NO_DATABASE_PATH));
+        noCitationKeyPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.NO_CITATION_KEY));
+        wrongCitationKeyPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.WRONG_CITATION_KEY));
+        noFilesPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.NO_FILES));
+        noSupportedFileTypesPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.NO_SUPPORTED_FILE_TYPES));
+        summaryShowing.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.DONE));
     }
 
     public ObjectProperty<BibEntryAiIdentifier> entryProperty() {
         return viewModel.entryProperty();
     }
 
-    private void updateHints() {
-        if (viewModel.chatModelProperty().get() == null || viewModel.summarizatorProperty().get() == null) {
-            return;
+    private static String generateDescription(Summarizator summarizator, ChatModel chatModel) {
+        if (summarizator == null || chatModel == null) {
+            return "";
         }
 
-        processingPane.setDescription(Localization.lang(
+        return Localization.lang(
                 "Your entry is being summarized by %0 %1 using algorithm %2",
-                viewModel.chatModelProperty().get().getAiProvider().getDisplayName(),
-                viewModel.chatModelProperty().get().getName(),
-                viewModel.summarizatorProperty().get().getKind().getDisplayName()
-        ));
+                chatModel.getAiProvider().getDisplayName(),
+                chatModel.getName(),
+                summarizator.getKind().getDisplayName()
+        );
     }
 
     @FXML

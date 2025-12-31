@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
 
 public class CurrentSummarizator implements Summarizator {
     private final AiPreferences aiPreferences;
-    private final AiTemplatesFactory aiTemplatesFactory;
+    private final SummarizatorFactory summarizatorFactory;
 
     @Nullable
     private Summarizator summarizator = null;
@@ -23,7 +23,7 @@ public class CurrentSummarizator implements Summarizator {
             AiTemplatesFactory aiTemplatesFactory
     ) {
         this.aiPreferences = aiPreferences;
-        this.aiTemplatesFactory = aiTemplatesFactory;
+        this.summarizatorFactory = new SummarizatorFactory(aiTemplatesFactory);
 
         updateAlgorithm();
         setupListeningToPreferences();
@@ -42,7 +42,7 @@ public class CurrentSummarizator implements Summarizator {
     }
 
     private void updateAlgorithm() {
-        summarizator = SummarizatorFactory.createSummarizator(aiTemplatesFactory, aiPreferences.getSummarizatorKind());
+        summarizator = summarizatorFactory.create(aiPreferences.getSummarizatorKind());
     }
 
     @Override

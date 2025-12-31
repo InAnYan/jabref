@@ -15,6 +15,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 
+import org.jabref.gui.util.BindingsHelper;
+import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.gui.util.WebViewStore;
 import org.jabref.logic.l10n.Localization;
@@ -45,10 +47,8 @@ public class AiSummaryShowingView extends VBox {
         viewModel = new AiSummaryShowingViewModel();
         initializeWebView();
 
-        viewModel.isMarkdownProperty().bindBidirectional(markdownCheckbox.selectedProperty());
-        viewModel.webViewSourceProperty().addListener((_, _, value) ->
-                UiTaskExecutor.runInJavaFXThread(() -> webView.getEngine().loadContent(value)));
-        viewModel.summaryProperty().addListener(_ -> updateSummaryInfo());
+        setupBindings();
+        setupListeners();
     }
 
     private void initializeWebView() {
@@ -58,16 +58,31 @@ public class AiSummaryShowingView extends VBox {
         getChildren().addFirst(webView);
     }
 
-    private void updateSummaryInfo() {
-        if (viewModel.summaryProperty().get() == null) {
-            return;
+    private void setupBindings() {
+        viewModel.isMarkdownProperty().bindBidirectional(markdownCheckbox.selectedProperty());
+
+        summaryInfoText.textProperty().bind(BindingsHelper.mapChange(
+                viewModel.summaryProperty(),
+                AiSummaryShowingView::formatSummaryInfo
+        ));
+    }
+
+    private void setupListeners() {
+        ListenersHelper.onChangeNonNull(
+                viewModel.webViewSourceProperty(),
+                value -> UiTaskExecutor.runInJavaFXThread(() -> webView.getEngine().loadContent(value))
+        );
+    }
+
+    private static String formatSummaryInfo(BibEntrySummary summary) {
+        if (summary == null) {
+            return "";
         }
 
-        String newInfo = Localization.lang("Generated at %0 by %1 (algorithm %2)")
-                .replaceAll("%0", formatTimestamp(viewModel.summaryProperty().get().timestamp()))
-                .replaceAll("%1", viewModel.summaryProperty().get().aiProvider().getDisplayName() + " " + viewModel.summaryProperty().get().model())
-                .replaceAll("%2", viewModel.summaryProperty().get().summarizationAlgorithm().getDisplayName());
-        summaryInfoText.setText(newInfo);
+        return Localization.lang("Generated at %0 by %1 (algorithm %2)")
+                           .replaceAll("%0", formatTimestamp(summary.timestamp()))
+                           .replaceAll("%1", summary.aiProvider().getDisplayName() + " " + summary.model())
+                           .replaceAll("%2", summary.summarizationAlgorithm().getDisplayName());
     }
 
     private static String formatTimestamp(LocalDateTime timestamp) {

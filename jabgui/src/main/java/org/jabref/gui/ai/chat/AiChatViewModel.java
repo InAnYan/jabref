@@ -1,27 +1,31 @@
 package org.jabref.gui.ai.chat;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
+import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.logic.AiChatLogic;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
+import org.jabref.logic.ai.ingestion.IngestionTaskAggregator;
+import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
+import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTaskRequest;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
+import org.jabref.logic.ai.templates.AiTemplatesFactory;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
@@ -29,7 +33,9 @@ import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.chatting.messages.ErrorMessage;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
-import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.store.embedding.EmbeddingStore;
 
 public class AiChatViewModel extends AbstractViewModel {
     public enum State {
@@ -41,17 +47,20 @@ public class AiChatViewModel extends AbstractViewModel {
     }
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.IDLE);
-
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
     private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
-    private final ListProperty<ChatHistoryRecordV2> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
-
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ObjectProperty<BackgroundTask<ChatHistoryRecordV2>> generateLlmResponseTask = new SimpleObjectProperty<>();
 
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
-    private final AiService aiService;
+    private final ChatModel chatModel;
+    private final IngestionTaskAggregator ingestionTaskAggregator;
+    private final IngestedDocumentsRepository ingestedDocumentsRepository;
+    private final EmbeddingModel embeddingModel;
+    private final EmbeddingStore<TextSegment> embeddingStore;
+    private final DocumentSplitter documentSplitter;
+    private final ReadOnlyBooleanProperty shutdownSignal;
     private final TaskExecutor taskExecutor;
 
     private final AiChatLogic aiChatLogic;
@@ -59,16 +68,29 @@ public class AiChatViewModel extends AbstractViewModel {
     public AiChatViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            AiService aiService,
+            ChatModel chatModel,
+            AiTemplatesFactory aiTemplatesFactory,
+            IngestionTaskAggregator ingestionTaskAggregator,
+            IngestedDocumentsRepository ingestedDocumentsRepository,
+            EmbeddingModel embeddingModel,
+            EmbeddingStore<TextSegment> embeddingStore,
+            DocumentSplitter documentSplitter,
+            ReadOnlyBooleanProperty shutdownSignal,
             TaskExecutor taskExecutor
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
-        this.aiService = aiService;
+        this.chatModel = chatModel;
+        this.ingestionTaskAggregator = ingestionTaskAggregator;
+        this.ingestedDocumentsRepository = ingestedDocumentsRepository;
+        this.embeddingModel = embeddingModel;
+        this.embeddingStore = embeddingStore;
+        this.documentSplitter = documentSplitter;
+        this.shutdownSignal = shutdownSignal;
         this.taskExecutor = taskExecutor;
 
         this.aiChatLogic = new AiChatLogic(
-                aiService.getTemplatesFeature().getCurrentAiTemplates().getChattingUserMessageTemplate()
+                aiTemplatesFactory.getChattingUserMessageTemplate()
         );
 
         setupBindings();
@@ -78,51 +100,62 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private void setupBindings() {
         aiChatLogic.answerEngineProperty().bind(answerEngine);
+
+        BooleanBinding isAiTurnedOff = aiPreferences.enableAiProperty().not();
+        BooleanBinding isWaiting = generateLlmResponseTask.isNotNull();
+        BooleanBinding hasNoFiles = Bindings.createBooleanBinding(() ->
+                        entries.get() == null ||
+                                entries.isEmpty() ||
+                                entries.stream().flatMap(identifier -> identifier.entry().getFiles().stream()).findAny().isEmpty(),
+                entries
+        );
+
+        BooleanBinding isError = Bindings.createBooleanBinding(() -> {
+            if (aiChatLogic.chatHistoryProperty().isEmpty()) {
+                return false;
+            }
+            return ErrorMessage.class.getName().equals(aiChatLogic.chatHistoryProperty().getLast().messageTypeClassName());
+        }, aiChatLogic.chatHistoryProperty());
+
+        BindingsHelper.bindEnum(
+                state,
+                State.AI_TURNED_OFF, isAiTurnedOff,
+                State.WAITING_FOR_MESSAGE, isWaiting,
+                State.NO_FILES, hasNoFiles,
+                State.ERROR, isError,
+                State.IDLE
+        );
     }
 
     private void setupListeners() {
-        ListenersHelper.runWhenTrue(
-                aiPreferences.enableAiProperty().and(generateEmbeddingsTasks.emptyProperty()),
+        BooleanBinding entriesPresent = entries.isNotNull().and(entries.emptyProperty().not());
+
+        ListenersHelper.runWhenListChangesWithPrecondition(
+                entries,
+                aiPreferences.enableAiProperty().and(entriesPresent),
                 this::changeEmbeddingTasks
         );
-
-        ListenersHelper.onChangeNonNull(entries, this::processEntries);
-    }
-
-    private void processEntries(List<BibEntryAiIdentifier> entries) {
-        if (!aiPreferences.getEnableAi()) {
-            state.set(State.AI_TURNED_OFF);
-        } else if (entries == null || entries.isEmpty() || entries.stream().flatMap(identifier -> identifier.entry().getFiles().stream()).toList().isEmpty()) {
-            state.set(State.NO_FILES);
-        } else {
-            changeEmbeddingTasks();
-            state.set(State.IDLE);
-        }
     }
 
     private void setupValues() {
-        aiChatLogic.chatModelProperty().set(aiService.getChattingFeature().getCurrentChatModel());
+        aiChatLogic.chatModelProperty().set(chatModel);
     }
 
     private void changeEmbeddingTasks() {
         generateEmbeddingsTasks.clear();
 
-        if (!aiPreferences.getEnableAi()) {
-            return;
-        }
-
         entries.forEach(identifier ->
                 identifier.entry().getFiles().forEach(file -> {
-                            GenerateEmbeddingsTask task = aiService.getIngestionFeature().getIngestionTaskAggregator().start(
+                            GenerateEmbeddingsTask task = ingestionTaskAggregator.start(
                                     new GenerateEmbeddingsTaskRequest(
                                             filePreferences,
-                                            aiService.getIngestionFeature().getIngestedDocumentsRepository(),
-                                            aiService.getIngestionFeature().getEmbeddingsStore(),
-                                            aiService.getEmbeddingFeature().getCurrentEmbeddingModel(),
-                                            aiService.getIngestionFeature().getCurrentDocumentSplitter(),
+                                            ingestedDocumentsRepository,
+                                            embeddingStore,
+                                            embeddingModel,
+                                            documentSplitter,
                                             identifier.databaseContext(),
                                             file,
-                                            aiService.getShutdownSignal()
+                                            shutdownSignal
                                     )
                             );
 
@@ -139,37 +172,25 @@ public class AiChatViewModel extends AbstractViewModel {
             return;
         }
 
-        state.set(State.WAITING_FOR_MESSAGE);
-
         clearGenerateLlmResponseTask();
-
-        ChatHistoryRecordV2 userMessageRecord = new ChatHistoryRecordV2(
-                UUID.randomUUID().toString(),
-                UserMessage.class.getName(),
-                userMessage,
-                Instant.now()
-        );
-        chatHistory.add(userMessageRecord);
 
         BackgroundTask<ChatHistoryRecordV2> task = aiChatLogic
                 .call(
-                        userMessageRecord,
-                        entries,
-                        chatHistory
+                        userMessage,
+                        entries
                 )
                 .onSuccess(message -> {
-                    chatHistory.add(message);
-                    state.set(State.IDLE);
+                    aiChatLogic.chatHistoryProperty().add(message);
                     clearGenerateLlmResponseTask();
                 })
                 .onFailure(ex -> {
-                    chatHistory.add(new ChatHistoryRecordV2(
+                    aiChatLogic.chatHistoryProperty().add(new ChatHistoryRecordV2(
                             UUID.randomUUID().toString(),
                             ErrorMessage.class.getName(),
                             ex.getMessage(),
                             Instant.now())
                     );
-                    state.set(State.ERROR);
+                    clearGenerateLlmResponseTask();
                 });
 
         task.executeWith(taskExecutor);
@@ -182,75 +203,40 @@ public class AiChatViewModel extends AbstractViewModel {
             if (!generateLlmResponseTask.get().isCancelled()) {
                 generateLlmResponseTask.get().cancel();
             }
-
             generateLlmResponseTask.set(null);
         }
     }
 
     public void cancel() {
         assert state.get() == State.WAITING_FOR_MESSAGE || state.get() == State.ERROR;
-        state.set(State.IDLE);
 
         if (state.get() == State.WAITING_FOR_MESSAGE) {
             clearGenerateLlmResponseTask();
-        }
-
-        if (state.get() == State.ERROR) {
-            if (!chatHistory.isEmpty()) {
-                chatHistory.removeLast();
+        } else if (state.get() == State.ERROR) {
+            if (!aiChatLogic.chatHistoryProperty().isEmpty()) {
+                aiChatLogic.chatHistoryProperty().removeLast();
             }
-            state.set(State.IDLE);
         }
     }
 
     public void delete(String id) {
         assert state.get() == State.IDLE;
-
-        chatHistory.removeIf(message -> Objects.equals(message.id(), id));
+        aiChatLogic.delete(id);
     }
 
     public void regenerate(String id) {
         assert state.get() == State.ERROR || state.get() == State.IDLE;
 
-        Optional<ChatHistoryRecordV2> recordOpt = chatHistory
-                .stream()
-                .filter(message ->
-                        Objects.equals(message.id(), id))
-                .findFirst();
+        String contentToRegenerate = aiChatLogic.regenerate(id);
 
-        if (recordOpt.isEmpty()) {
-            return;
+        if (contentToRegenerate != null) {
+            sendMessage(contentToRegenerate);
         }
-
-        ChatHistoryRecordV2 message = recordOpt.get();
-        String contentToRegenerate = message.content();
-        Instant cutoffTime = message.createdAt();
-
-        if (!Objects.equals(message.messageTypeClassName(), UserMessage.class.getName())) {
-            int index = chatHistory.indexOf(message);
-            if (index > 0) {
-                ChatHistoryRecordV2 prev = chatHistory.get(index - 1);
-                if (Objects.equals(prev.messageTypeClassName(), UserMessage.class.getName())) {
-                    contentToRegenerate = prev.content();
-                    cutoffTime = prev.createdAt();
-                }
-            }
-        }
-
-        state.set(State.IDLE);
-
-        final Instant finalCutoffTime = cutoffTime;
-        chatHistory.removeIf(message2 ->
-                !message2.createdAt().isBefore(finalCutoffTime)
-        );
-
-        sendMessage(contentToRegenerate);
     }
 
-    /// Regenerate last message.
     public void regenerate() {
-        if (!chatHistory.isEmpty()) {
-            regenerate(chatHistory.getLast().id());
+        if (!aiChatLogic.chatHistoryProperty().isEmpty()) {
+            regenerate(aiChatLogic.chatHistoryProperty().getLast().id());
         }
     }
 
@@ -259,7 +245,7 @@ public class AiChatViewModel extends AbstractViewModel {
     }
 
     public ListProperty<ChatHistoryRecordV2> chatHistoryProperty() {
-        return chatHistory;
+        return aiChatLogic.chatHistoryProperty();
     }
 
     public ObjectProperty<State> stateProperty() {

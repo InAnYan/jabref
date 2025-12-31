@@ -7,36 +7,29 @@ import org.jabref.logic.ai.templates.AiTemplatesFactory;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
 public class SummarizatorFactory {
-    public static Summarizator createSummarizator(
-            AiTemplatesFactory templatesFactory,
+    private final AiTemplatesFactory templatesFactory;
+
+    public SummarizatorFactory(AiTemplatesFactory templatesFactory) {
+        this.templatesFactory = templatesFactory;
+    }
+
+    public Summarizator create(
             SummarizatorKind summarizatorKind
     ) {
         return switch (summarizatorKind) {
             case SummarizatorKind.CHUNKED ->
-                    createChunkedSummarizationAlgorithm(templatesFactory);
+                    new ChunkedSummarizator(
+                            templatesFactory.getSummarizationChunkSystemMessageTemplate(),
+                            templatesFactory.getSummarizationChunkUserMessageTemplate(),
+                            templatesFactory.getSummarizationCombineSystemMessageTemplate(),
+                            templatesFactory.getSummarizationCombineUserMessageTemplate()
+                    );
 
             case SummarizatorKind.FULL_DOCUMENT ->
-                    createFullDocumentSummarizationAlgorithm(templatesFactory);
+                    new FullDocumentSummarizator(
+                            templatesFactory.getSummarizationFullDocumentSystemMessageTemplate(),
+                            templatesFactory.getSummarizationFullDocumentUserMessageTemplate()
+                    );
         };
-    }
-
-    private static ChunkedSummarizator createChunkedSummarizationAlgorithm(
-            AiTemplatesFactory templatesFactory
-    ) {
-        return new ChunkedSummarizator(
-                templatesFactory.getSummarizationChunkSystemMessageTemplate(),
-                templatesFactory.getSummarizationChunkUserMessageTemplate(),
-                templatesFactory.getSummarizationCombineSystemMessageTemplate(),
-                templatesFactory.getSummarizationCombineUserMessageTemplate()
-        );
-    }
-
-    private static FullDocumentSummarizator createFullDocumentSummarizationAlgorithm(
-            AiTemplatesFactory templatesFactory
-    ) {
-        return new FullDocumentSummarizator(
-                templatesFactory.getSummarizationFullDocumentSystemMessageTemplate(),
-                templatesFactory.getSummarizationFullDocumentUserMessageTemplate()
-        );
     }
 }

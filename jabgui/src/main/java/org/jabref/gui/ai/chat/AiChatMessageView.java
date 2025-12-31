@@ -9,6 +9,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -33,8 +34,10 @@ public class AiChatMessageView extends HBox {
     @FXML private Label sourceLabel;
     @FXML private StackPane markdownContentPane;
     @FXML private VBox buttonsVBox;
-    private MarkdownTextFlow markdownTextFlow;
+    @FXML private Button regenerateButton;
+    @FXML private Button deleteButton;
 
+    private MarkdownTextFlow markdownTextFlow;
     private AiChatMessageViewModel viewModel;
 
     public AiChatMessageView() {
@@ -55,10 +58,16 @@ public class AiChatMessageView extends HBox {
     }
 
     private void setupBindings() {
+        regenerateButton.managedProperty().bind(regenerateButton.visibleProperty());
+        deleteButton.managedProperty().bind(deleteButton.visibleProperty());
+
         sourceLabel.textProperty().bind(viewModel.sourceProperty());
 
         this.alignmentProperty().bind(viewModel.chatMessageProperty().map(AiChatMessageView::determineAlignment));
         buttonsVBox.visibleProperty().bind(this.hoverProperty());
+
+        regenerateButton.visibleProperty().bind(viewModel.showRegenerateProperty());
+        deleteButton.visibleProperty().bind(viewModel.showDeleteProperty());
 
         setupPseudoClasses();
     }

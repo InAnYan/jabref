@@ -15,12 +15,12 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.output.Response;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,15 +42,6 @@ public class CurrentEmbeddingModel implements EmbeddingModel, AutoCloseable {
 
     private final ObjectProperty<Optional<DeepJavaEmbeddingModel>> predictorProperty = new SimpleObjectProperty<>(Optional.empty());
 
-    // Used to update the tab content after the data is available
-    private final EventBus eventBus = new EventBus();
-
-    public static class EmbeddingModelBuiltEvent {
-    }
-
-    public static class EmbeddingModelBuildingErrorEvent {
-    }
-
     // Empty if there is no error.
     private String errorWhileBuildingModel = "";
 
@@ -66,10 +57,6 @@ public class CurrentEmbeddingModel implements EmbeddingModel, AutoCloseable {
         startRebuildingTask();
 
         setupListeningToPreferencesChanges();
-    }
-
-    public void registerListener(Object object) {
-        eventBus.register(object);
     }
 
     public void startRebuildingTask() {
@@ -89,13 +76,11 @@ public class CurrentEmbeddingModel implements EmbeddingModel, AutoCloseable {
                         }
                     }
                     errorWhileBuildingModel = "";
-                    eventBus.post(new EmbeddingModelBuiltEvent());
                 })
                 .onFailure(e -> {
                     LOGGER.error("An error occurred while building the embedding model", e);
                     notificationService.notify(Localization.lang("An error occurred while building the embedding model"));
                     errorWhileBuildingModel = e.getMessage() == null ? "" : e.getMessage();
-                    eventBus.post(new EmbeddingModelBuildingErrorEvent());
                 })
                 .executeWith(taskExecutor);
     }
@@ -129,14 +114,14 @@ public class CurrentEmbeddingModel implements EmbeddingModel, AutoCloseable {
     }
 
     @Override
-    public Response<List<Embedding>> embedAll(List<TextSegment> list) {
+    public Response<@NotNull List<Embedding>> embedAll(List<TextSegment> list) {
         if (predictorProperty.get().isEmpty()) {
             // The rationale for RuntimeException here:
             // 1. langchain4j error handling is a mess, and it uses RuntimeExceptions
             //    everywhere. Because this method implements a langchain4j interface,
             //    we follow the same "practice".
-            // 2. There is no way to encode error information from type system: nor
-            //    in the result type, nor "throws" in method signature. Actually,
+            // 2. There is no way to encode error information from the type system: nor
+            //    in the result type, nor "throws" in the method signature. Actually,
             //    it's possible, but langchain4j doesn't do it.
 
             throw new RuntimeException(Localization.lang("Embedding model is not set up"));

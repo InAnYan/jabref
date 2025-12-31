@@ -29,6 +29,10 @@ public class LoadingStatusPaneView extends BorderPane {
     private void initialize() {
         viewModel = new LoadingStatusPaneViewModel();
 
+        setupBindings();
+    }
+
+    private void setupBindings() {
         titleLabel.textProperty().bind(viewModel.titleProperty());
         descriptionLabel.textProperty().bind(viewModel.descriptionProperty());
     }

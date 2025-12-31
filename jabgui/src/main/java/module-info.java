@@ -194,5 +194,6 @@ open module org.jabref {
     requires org.libreoffice.uno;
     requires org.glassfish.grizzly;
     requires jakarta.annotation;
+    requires jakarta.ws.rs;
     // endregion
 }

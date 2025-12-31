@@ -1,12 +1,17 @@
 package org.jabref.logic.ai.chatting.logic;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
+import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
 
 import org.jabref.logic.ai.chatting.tasks.GenerateLlmResponseTask;
 import org.jabref.logic.ai.chatting.templates.ChattingUserMessageAiTemplate;
@@ -20,44 +25,44 @@ import org.jabref.model.ai.pipeline.RelevantInformation;
 import dev.langchain4j.data.message.UserMessage;
 
 public class AiChatLogic {
-    private final ChattingUserMessageAiTemplate template;
+    private final ObjectProperty<ChattingUserMessageAiTemplate> template;
 
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
+    private final ListProperty<ChatHistoryRecordV2> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     public AiChatLogic(ChattingUserMessageAiTemplate template) {
-        this.template = template;
+        this.template = new SimpleObjectProperty<>(template);
     }
 
+    /**
+     * Adds the user message to history, processes RAG, constructs the LLM context, and returns the generation task.
+     */
     public GenerateLlmResponseTask call(
-            ChatHistoryRecordV2 userMessage,
-            List<BibEntryAiIdentifier> entries,
-            List<ChatHistoryRecordV2> chatHistory
+            String userMessageContent,
+            List<BibEntryAiIdentifier> entries
     ) {
-        // In the app chat history, only raw AI response and user messages are saved.
-        // However, to the AI, the latest user message is processed by the answer engine.
-        // The processed message is sent to AI but not saved in the app chat history.
-        // But:
-        // The other code should add a raw user message to the chat history (this will allow
-        // displaying the user message while we are waiting for the AI response). This
-        // code will create AI chat history by deleting the last message (which is expected to
-        // be a user message) and then adding the injected message. App chat history is left
-        // intact.
-        // Then add yourself the generated AI message to the app chat history.
-
         Objects.requireNonNull(chatModel.get());
         Objects.requireNonNull(answerEngine.get());
-        Objects.requireNonNull(chatHistory);
+
+        ChatHistoryRecordV2 userMessageRecord = new ChatHistoryRecordV2(
+                UUID.randomUUID().toString(),
+                UserMessage.class.getName(),
+                userMessageContent,
+                Instant.now()
+        );
+
+        chatHistory.add(userMessageRecord);
 
         List<RelevantInformation> relevantInformation = answerEngine.get().process(
                 LongTaskInfo.empty(),
-                userMessage.content(),
+                userMessageRecord.content(),
                 entries
         );
 
-        String injected = template.render(
+        String injected = template.get().render(
                 entries.stream().map(BibEntryAiIdentifier::entry).toList(),
-                userMessage.content(),
+                userMessageRecord.content(),
                 relevantInformation
         );
 
@@ -65,14 +70,65 @@ public class AiChatLogic {
                 UUID.randomUUID().toString(),
                 UserMessage.class.getName(),
                 injected,
-                userMessage.createdAt()
+                userMessageRecord.createdAt()
         );
 
-        ArrayList<ChatHistoryRecordV2> chatHistoryWithInjectedMessage = new ArrayList<>(chatHistory);
-        chatHistoryWithInjectedMessage.removeLast();
-        chatHistoryWithInjectedMessage.add(injectedMessage);
+        ArrayList<ChatHistoryRecordV2> chatHistoryForLlm = new ArrayList<>(chatHistory);
+        if (!chatHistoryForLlm.isEmpty()) {
+            chatHistoryForLlm.removeLast();
+        }
+        chatHistoryForLlm.add(injectedMessage);
 
-        return new GenerateLlmResponseTask(chatModel.get(), chatHistoryWithInjectedMessage);
+        return new GenerateLlmResponseTask(chatModel.get(), chatHistoryForLlm);
+    }
+
+    /**
+     * Removes the message with the specified ID from history.
+     * <p>
+     * Leaves a "hole" in context, but this is intended.
+     */
+    public void delete(String id) {
+        chatHistory.removeIf(message -> Objects.equals(message.id(), id));
+    }
+
+    /**
+     * Rewinds history to the point before the specified message and returns the user content to be re-sent.
+     */
+    public String regenerate(String id) {
+        Optional<ChatHistoryRecordV2> recordOpt = chatHistory
+                .stream()
+                .filter(message -> Objects.equals(message.id(), id))
+                .findFirst();
+
+        if (recordOpt.isEmpty()) {
+            return null;
+        }
+
+        ChatHistoryRecordV2 message = recordOpt.get();
+        String contentToRegenerate = message.content();
+        Instant cutoffTime = message.createdAt();
+
+        if (!Objects.equals(message.messageTypeClassName(), UserMessage.class.getName())) {
+            int index = chatHistory.indexOf(message);
+            if (index > 0) {
+                ChatHistoryRecordV2 prev = chatHistory.get(index - 1);
+                if (Objects.equals(prev.messageTypeClassName(), UserMessage.class.getName())) {
+                    contentToRegenerate = prev.content();
+                    cutoffTime = prev.createdAt();
+                }
+            }
+        }
+
+        final Instant finalCutoffTime = cutoffTime;
+        chatHistory.removeIf(historyMessage ->
+                !historyMessage.createdAt().isBefore(finalCutoffTime)
+        );
+
+        return contentToRegenerate;
+    }
+
+    public ObjectProperty<ChattingUserMessageAiTemplate> templateProperty() {
+        return template;
     }
 
     public ObjectProperty<ChatModel> chatModelProperty() {
@@ -81,5 +137,9 @@ public class AiChatLogic {
 
     public ObjectProperty<AnswerEngine> answerEngineProperty() {
         return answerEngine;
+    }
+
+    public ListProperty<ChatHistoryRecordV2> chatHistoryProperty() {
+        return chatHistory;
     }
 }

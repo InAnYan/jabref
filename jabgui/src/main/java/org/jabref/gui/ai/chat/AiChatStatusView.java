@@ -56,7 +56,8 @@ public class AiChatStatusView extends VBox {
         viewModel = new AiChatStatusViewModel(
                 preferences.getAiPreferences(),
                 preferences.getFilePreferences(),
-                aiService
+                aiService.getEmbeddingFeature().getCurrentEmbeddingModel(),
+                aiService.getIngestionFeature().getEmbeddingsStore()
         );
 
         setupEntriesTable();

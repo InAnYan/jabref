@@ -15,8 +15,13 @@ public class AiSummaryParametersDialog extends BaseDialog<Summarizator> {
     public AiSummaryParametersDialog() {
         super();
         this.setTitle(Localization.lang("Summarization parameters"));
-        this.setResultConverter(buttonType ->
-                aiSummaryParametersView.constructSummarizator(buttonType.getButtonData() == ButtonBar.ButtonData.CANCEL_CLOSE));
+        this.setResultConverter(buttonType -> {
+            if (buttonType.getButtonData() == ButtonBar.ButtonData.CANCEL_CLOSE) {
+                return null;
+            } else {
+                return aiSummaryParametersView.constructSummarizator();
+            }
+        });
 
         ViewLoader.view(this)
                   .load()

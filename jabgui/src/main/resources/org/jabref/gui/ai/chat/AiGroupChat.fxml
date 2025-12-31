@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.layout.StackPane?>
+<?import org.jabref.gui.ai.AiPrivacyNoticeView?>
 <?import org.jabref.gui.ai.chat.AiChatView?>
 <?import org.jabref.gui.ai.statuspane.SimpleStatusPaneView?>
-<?import org.jabref.gui.ai.AiPrivacyNoticeView?>
-
 <fx:root
         type="StackPane"
         xmlns="http://javafx.com/javafx"
@@ -12,7 +11,8 @@
         fx:controller="org.jabref.gui.ai.chat.AiGroupChatView">
 
     <AiPrivacyNoticeView
-            fx:id="privacyNotice"/>
+            fx:id="privacyNotice"
+            disagreeBehaviour="HIDE_CHAT_WITH_GROUP_BUTTON"/>
 
     <SimpleStatusPaneView
             fx:id="emptyDatabasePathPane"

@@ -10,6 +10,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
 import org.jabref.gui.AbstractViewModel;
+import org.jabref.gui.util.BindingsHelper;
+import org.jabref.gui.util.PropertiesHelper;
 import org.jabref.logic.layout.format.MarkdownFormatter;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 
@@ -25,37 +27,38 @@ public class AiSummaryShowingViewModel extends AbstractViewModel {
     private final ObjectProperty<EventHandler<ActionEvent>> onRegenerateCustom = new SimpleObjectProperty<>();
 
     public AiSummaryShowingViewModel() {
-        summary.addListener(_ -> updateWebViewSource());
-        isMarkdown.addListener(_ -> updateWebViewSource());
+        setupBindings();
+    }
+
+    private void setupBindings() {
+        webViewSource.bind(BindingsHelper.map(
+                summary, isMarkdown,
+                AiSummaryShowingViewModel::generateWebSource
+        ));
     }
 
     public void regenerate() {
-        if (onRegenerate.get() != null) {
-            onRegenerate.get().handle(new ActionEvent());
-        }
+        PropertiesHelper.handle(onRegenerate);
     }
 
     public void regenerateCustom() {
-        if (onRegenerateCustom.get() != null) {
-            onRegenerateCustom.get().handle(new ActionEvent());
-        }
+        PropertiesHelper.handle(onRegenerateCustom);
     }
 
-    private void updateWebViewSource() {
-        if (summary.get() == null) {
-            return;
+    private static String generateWebSource(BibEntrySummary summary, Boolean isMarkdown) {
+        if (summary == null || isMarkdown == null) {
+            return "";
         }
 
-        String content = summary.get().content();
-        if (isMarkdown.get()) {
-            webViewSource.set(MARKDOWN_FORMATTER.format(content));
+        String content = summary.content();
+
+        if (isMarkdown) {
+            return MARKDOWN_FORMATTER.format(content);
         } else {
-            webViewSource.set(
-                    "<body style='margin: 0; padding: 5px; width: 100vw'>" +
-                            "<div style='white-space: pre-wrap; word-wrap: break-word; width: 100vw'>" +
-                            content +
-                            "</div></body>"
-            );
+            return "<body style='margin: 0; padding: 5px; width: 100vw'>" +
+                    "<div style='white-space: pre-wrap; word-wrap: break-word; width: 100vw'>" +
+                    content +
+                    "</div></body>";
         }
     }
 

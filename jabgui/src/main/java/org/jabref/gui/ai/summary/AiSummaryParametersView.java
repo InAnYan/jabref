@@ -11,17 +11,15 @@ import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summariza
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
 import com.airhacks.afterburner.views.ViewLoader;
-import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 
 public class AiSummaryParametersView extends VBox {
-    private AiSummaryParametersViewModel viewModel;
-
-    @FXML
-    private ComboBox<SummarizatorKind> summarizatorCombo;
+    @FXML private ComboBox<SummarizatorKind> summarizatorCombo;
 
     @Inject private GuiPreferences preferences;
     @Inject private AiService aiService;
+
+    private AiSummaryParametersViewModel viewModel;
 
     public AiSummaryParametersView() {
         ViewLoader.view(this)
@@ -31,20 +29,28 @@ public class AiSummaryParametersView extends VBox {
 
     @FXML
     private void initialize() {
-        this.viewModel = new AiSummaryParametersViewModel(preferences, aiService);
+        this.viewModel = new AiSummaryParametersViewModel(
+                preferences.getAiPreferences(),
+                aiService.getTemplatesFeature().getCurrentAiTemplates()
+        );
 
+        setupBindings();
+        setupValues();
+    }
+
+    private void setupBindings() {
         new ViewModelListCellFactory<SummarizatorKind>()
                 .withText(SummarizatorKind::getDisplayName)
                 .install(summarizatorCombo);
-        summarizatorCombo.setItems(viewModel.summarizatorKindsProperty());
+
         summarizatorCombo.valueProperty().bindBidirectional(viewModel.summarizatorKindProperty());
     }
 
-    public @Nullable Summarizator constructSummarizator(boolean isCancelled) {
-        if (isCancelled) {
-            return null;
-        } else {
-            return viewModel.constructSummarizator();
-        }
+    private void setupValues() {
+        summarizatorCombo.setItems(viewModel.summarizatorKindsProperty());
+    }
+
+    public Summarizator constructSummarizator() {
+        return viewModel.constructSummarizator();
     }
 }

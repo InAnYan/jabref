@@ -25,14 +25,16 @@
     <VBox fx:id="buttonsVBox"
           alignment="TOP_CENTER"
           spacing="5">
-        <Button onAction="#onRegenerateClick"
+        <Button fx:id="regenerateButton"
+                onAction="#onRegenerateClick"
                 styleClass="icon-button,narrow">
             <graphic>
                 <JabRefIconView
                         glyph="REFRESH"/>
             </graphic>
         </Button>
-        <Button onAction="#onDeleteClick"
+        <Button fx:id="deleteButton"
+                onAction="#onDeleteClick"
                 styleClass="icon-button,narrow">
             <graphic>
                 <JabRefIconView

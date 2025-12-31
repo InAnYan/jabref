@@ -2,10 +2,12 @@ package org.jabref.gui.util;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.binding.StringBinding;
@@ -247,6 +249,130 @@ public class BindingsHelper {
                         }
                     }
                 }
+            }
+        });
+    }
+
+    public static <A, B, R> ObjectBinding<R> map(
+            ObservableValue<A> a,
+            ObservableValue<B> b,
+            BiFunction<? super A, ? super B, ? extends R> f
+    ) {
+        return Bindings.createObjectBinding(
+                () -> f.apply(a.getValue(), b.getValue()),
+                a, b
+        );
+    }
+
+    /// Please check for nulls in f.
+    public static <A, R> ObjectBinding<R> mapChange(
+            ObservableValue<A> a,
+            Function<? super A, ? extends R> f
+    ) {
+        return Bindings.createObjectBinding(
+                () -> f.apply(a.getValue()),
+                a
+        );
+    }
+
+    public static <E extends Enum<E>> void bindEnum(
+            Property<E> target,
+            E value1, ObservableValue<Boolean> cond1,
+            E value2, ObservableValue<Boolean> cond2,
+            E otherwise
+    ) {
+        target.bind(
+                Bindings.createObjectBinding(
+                        () -> {
+                            if (cond1.getValue()) {
+                                return value1;
+                            }
+                            if (cond2.getValue()) {
+                                return value2;
+                            }
+                            return otherwise;
+                        },
+                        cond1, cond2
+                )
+        );
+    }
+
+    public static <E extends Enum<E>> void bindEnum(
+            Property<E> target,
+            E val1, ObservableValue<Boolean> cond1,
+            E val2, ObservableValue<Boolean> cond2,
+            E val3, ObservableValue<Boolean> cond3,
+            E val4, ObservableValue<Boolean> cond4,
+            E otherwise
+    ) {
+        ObjectBinding<E> binding = Bindings.createObjectBinding(() -> {
+            if (cond1.getValue())
+                return val1;
+            if (cond2.getValue())
+                return val2;
+            if (cond3.getValue())
+                return val3;
+            if (cond4.getValue())
+                return val4;
+            return otherwise;
+        }, cond1, cond2, cond3, cond4);
+
+        target.bind(binding);
+    }
+
+    public static <E extends Enum<E>> void bindEnum(
+            Property<E> target,
+            E val1, ObservableValue<Boolean> cond1,
+            E val2, ObservableValue<Boolean> cond2,
+            E val3, ObservableValue<Boolean> cond3,
+            E val4, ObservableValue<Boolean> cond4,
+            E val5, ObservableValue<Boolean> cond5,
+            E val6, ObservableValue<Boolean> cond6,
+            E val7, ObservableValue<Boolean> cond7,
+            E val8, ObservableValue<Boolean> cond8,
+            E val9, ObservableValue<Boolean> cond9,
+            E val10, ObservableValue<Boolean> cond10,
+            E otherwise
+    ) {
+        ObjectBinding<E> binding = Bindings.createObjectBinding(() -> {
+            if (cond1 != null && Boolean.TRUE.equals(cond1.getValue()))
+                return val1;
+            if (cond2 != null && Boolean.TRUE.equals(cond2.getValue()))
+                return val2;
+            if (cond3 != null && Boolean.TRUE.equals(cond3.getValue()))
+                return val3;
+            if (cond4 != null && Boolean.TRUE.equals(cond4.getValue()))
+                return val4;
+            if (cond5 != null && Boolean.TRUE.equals(cond5.getValue()))
+                return val5;
+            if (cond6 != null && Boolean.TRUE.equals(cond6.getValue()))
+                return val6;
+            if (cond7 != null && Boolean.TRUE.equals(cond7.getValue()))
+                return val7;
+            if (cond8 != null && Boolean.TRUE.equals(cond8.getValue()))
+                return val8;
+            if (cond9 != null && Boolean.TRUE.equals(cond9.getValue()))
+                return val9;
+            if (cond10 != null && Boolean.TRUE.equals(cond10.getValue()))
+                return val10;
+            return otherwise;
+        }, cond1, cond2, cond3, cond4, cond5, cond6, cond7, cond8, cond9, cond10);
+
+        target.bind(binding);
+    }
+
+    public static <T, V, R extends ObservableValue<V>> void bindInternalListener(
+            ObservableValue<T> parentProperty,
+            Function<T, R> propertyExtractor,
+            ChangeListener<? super V> listener
+    ) {
+
+        parentProperty.addListener((_, oldVal, newVal) -> {
+            if (oldVal != null) {
+                propertyExtractor.apply(oldVal).removeListener(listener);
+            }
+            if (newVal != null) {
+                propertyExtractor.apply(newVal).addListener(listener);
             }
         });
     }

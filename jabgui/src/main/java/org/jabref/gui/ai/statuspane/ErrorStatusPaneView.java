@@ -34,6 +34,10 @@ public class ErrorStatusPaneView extends BorderPane {
     private void initialize() {
         viewModel = new ErrorStatusPaneViewModel();
 
+        setupBindings();
+    }
+
+    private void setupBindings() {
         titleLabel.textProperty().bind(viewModel.titleProperty());
         descriptionLabel.textProperty().bind(viewModel.descriptionProperty());
         textArea.textProperty().bind(viewModel.exceptionStringProperty());
