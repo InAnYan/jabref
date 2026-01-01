@@ -1,6 +1,9 @@
 package org.jabref.gui.ai.chat;
 
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
+import java.util.TreeMap;
 import java.util.UUID;
 
 import javafx.beans.binding.Bindings;
@@ -11,6 +14,7 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.BindingsHelper;
@@ -33,6 +37,7 @@ import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
 import org.jabref.model.ai.chatting.messages.ErrorMessage;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
+import com.google.common.collect.Comparators;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
@@ -51,6 +56,9 @@ public class AiChatViewModel extends AbstractViewModel {
     private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ObjectProperty<BackgroundTask<ChatHistoryRecordV2>> generateLlmResponseTask = new SimpleObjectProperty<>();
+
+    private final TreeMap<List<BibEntryAiIdentifier>, BackgroundTask<ChatHistoryRecordV2>> tasksMap =
+            new TreeMap<>(Comparators.lexicographical(Comparator.comparing(id -> id.entry().getId())));
 
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
@@ -143,6 +151,8 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private void changeEmbeddingTasks() {
         generateEmbeddingsTasks.clear();
+        // It's okay to pass null.
+        generateLlmResponseTask.set(tasksMap.get(entries));
 
         entries.forEach(identifier ->
                 identifier.entry().getFiles().forEach(file -> {
@@ -178,24 +188,32 @@ public class AiChatViewModel extends AbstractViewModel {
                 .call(
                         userMessage,
                         entries
-                )
-                .onSuccess(message -> {
-                    aiChatLogic.chatHistoryProperty().add(message);
-                    clearGenerateLlmResponseTask();
-                })
-                .onFailure(ex -> {
-                    aiChatLogic.chatHistoryProperty().add(new ChatHistoryRecordV2(
-                            UUID.randomUUID().toString(),
-                            ErrorMessage.class.getName(),
-                            ex.getMessage(),
-                            Instant.now())
-                    );
-                    clearGenerateLlmResponseTask();
-                });
+                );
+
+        ObservableList<ChatHistoryRecordV2> taskChatHistory = aiChatLogic.chatHistoryProperty().get();
+        List<BibEntryAiIdentifier> taskEntries = entries.get();
+
+        task.onSuccess(a ->
+                taskChatHistory.add(a));
+
+        task.onFailure(ex ->
+                taskChatHistory.add(new ChatHistoryRecordV2(
+                        UUID.randomUUID().toString(),
+                        ErrorMessage.class.getName(),
+                        ex.getMessage(),
+                        Instant.now())
+                ));
+
+        task.onFinished(() -> {
+            tasksMap.remove(taskEntries);
+            if (generateLlmResponseTask.get() == task) {
+                generateLlmResponseTask.set(null);
+            }
+        });
 
         task.executeWith(taskExecutor);
-
         generateLlmResponseTask.set(task);
+        tasksMap.put(taskEntries, task);
     }
 
     private void clearGenerateLlmResponseTask() {

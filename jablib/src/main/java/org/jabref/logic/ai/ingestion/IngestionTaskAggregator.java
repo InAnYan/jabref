@@ -14,6 +14,8 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral.Generate
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.entry.LinkedFile;
 
+import com.google.common.collect.Comparators;
+
 public class IngestionTaskAggregator {
     private final TaskExecutor taskExecutor;
 
@@ -21,21 +23,9 @@ public class IngestionTaskAggregator {
     private final TreeMap<LinkedFile, Pair<Future<Void>, GenerateEmbeddingsTask>> generateEmbeddingsTasks =
             new TreeMap<>(Comparator.comparing(LinkedFile::getLink));
 
+    // TODO: It's also wrong to compare by list of files, as the group might change, and this will lead to change of the bib entry list.
     private final TreeMap<List<LinkedFile>, Pair<Future<Void>, GenerateEmbeddingsForSeveralTask>> generateEmbeddingsForSeveralTasks =
-            new TreeMap<>((a, b) -> {
-                if (a.size() != b.size()) {
-                    return Integer.compare(a.size(), b.size());
-                }
-
-                for (int i = 0; i < a.size(); i++) {
-                    int cmp = a.get(i).getLink().compareTo(b.get(i).getLink());
-                    if (cmp != 0) {
-                        return cmp;
-                    }
-                }
-
-                return 0;
-            });
+            new TreeMap<>(Comparators.lexicographical(Comparator.comparing(LinkedFile::getLink)));
 
     public IngestionTaskAggregator(TaskExecutor taskExecutor) {
         this.taskExecutor = taskExecutor;

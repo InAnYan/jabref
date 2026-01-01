@@ -36,7 +36,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
     private final ObjectProperty<BibEntryAiIdentifier> selectedEntry = new SimpleObjectProperty<>();
     private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatHistoryRecordV2> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
-
+    
     private final AiPreferences aiPreferences;
     private final ChatHistoryRepository chatHistoryRepository;
 

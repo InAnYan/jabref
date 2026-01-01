@@ -16,6 +16,8 @@ import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 import org.jabref.model.entry.BibEntry;
 
+import com.google.common.collect.Comparators;
+
 public class SummarizationTaskAggregator {
     private final TaskExecutor taskExecutor;
 
@@ -23,20 +25,7 @@ public class SummarizationTaskAggregator {
             new TreeMap<>(Comparator.comparing(BibEntry::getId));
 
     private final TreeMap<List<BibEntry>, Pair<Future<Void>, GenerateSummaryForSeveralTask>> generateSummaryForSeveralTasks =
-            new TreeMap<>((a, b) -> {
-                if (a.size() != b.size()) {
-                    return Integer.compare(a.size(), b.size());
-                }
-
-                for (int i = 0; i < a.size(); i++) {
-                    int cmp = a.get(i).getId().compareTo(b.get(i).getId());
-                    if (cmp != 0) {
-                        return cmp;
-                    }
-                }
-
-                return 0;
-            });
+            new TreeMap<>(Comparators.lexicographical(Comparator.comparing(BibEntry::getId)));
 
     public SummarizationTaskAggregator(TaskExecutor taskExecutor) {
         this.taskExecutor = taskExecutor;
