@@ -1,9 +1,7 @@
 package org.jabref.gui.ai.chat;
 
-import java.util.Objects;
-
-import javafx.beans.binding.StringExpression;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -18,12 +16,9 @@ import javafx.scene.layout.VBox;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.MarkdownTextFlow;
-import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
-import org.jabref.model.ai.chatting.ErrorMessage;
+import org.jabref.model.ai.chatting.ChatMessage;
 
 import com.airhacks.afterburner.views.ViewLoader;
-import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.data.message.UserMessage;
 
 public class AiChatMessageView extends HBox {
     private static final PseudoClass USER_PSEUDO_CLASS = PseudoClass.getPseudoClass("user");
@@ -73,13 +68,15 @@ public class AiChatMessageView extends HBox {
     }
 
     private void setupPseudoClasses() {
-        StringExpression messageType = StringExpression.stringExpression(
-                chatMessageProperty().map(ChatHistoryRecordV2::messageTypeClassName)
-        );
+        ObservableValue<ChatMessage.Role> messageRole = chatMessageProperty().map(ChatMessage::getRole);
 
-        BindingsHelper.includePseudoClassWhen(vBox, USER_PSEUDO_CLASS, messageType.isEqualTo(UserMessage.class.getName()));
-        BindingsHelper.includePseudoClassWhen(vBox, AI_PSEUDO_CLASS, messageType.isEqualTo(AiMessage.class.getName()));
-        BindingsHelper.includePseudoClassWhen(vBox, ERROR_PSEUDO_CLASS, messageType.isEqualTo(ErrorMessage.class.getName()));
+        ObservableValue<Boolean> isUser = messageRole.map(v -> v == ChatMessage.Role.USER);
+        ObservableValue<Boolean> isAi = messageRole.map(v -> v == ChatMessage.Role.AI);
+        ObservableValue<Boolean> isError = messageRole.map(v -> v == ChatMessage.Role.ERROR);
+
+        BindingsHelper.includePseudoClassWhen(vBox, USER_PSEUDO_CLASS, isUser.orElse(false));
+        BindingsHelper.includePseudoClassWhen(vBox, AI_PSEUDO_CLASS, isAi.orElse(false));
+        BindingsHelper.includePseudoClassWhen(vBox, ERROR_PSEUDO_CLASS, isError.orElse(false));
     }
 
     private void setupListeners() {
@@ -87,24 +84,22 @@ public class AiChatMessageView extends HBox {
         ListenersHelper.onChangeNonNull(viewModel.chatMessageProperty(), this::updateContent);
     }
 
-    private void updateOrder(ChatHistoryRecordV2 chatMessage) {
-        String type = chatMessage.messageTypeClassName();
-        boolean isUser = Objects.equals(type, UserMessage.class.getName());
-
+    private void updateOrder(ChatMessage chatMessage) {
         this.getChildren().clear();
-        if (isUser) {
+
+        if (chatMessage.getRole() == ChatMessage.Role.USER) {
             this.getChildren().addAll(buttonsVBox, vBox);
         } else {
             this.getChildren().addAll(vBox, buttonsVBox);
         }
     }
 
-    private void updateContent(ChatHistoryRecordV2 chatMessage) {
-        markdownTextFlow.setMarkdown(chatMessage.content());
+    private void updateContent(ChatMessage chatMessage) {
+        markdownTextFlow.setMarkdown(chatMessage.getContent());
     }
 
-    private static Pos determineAlignment(ChatHistoryRecordV2 chatMessage) {
-        if (Objects.equals(chatMessage.messageTypeClassName(), UserMessage.class.getName())) {
+    private static Pos determineAlignment(ChatMessage chatMessage) {
+        if (chatMessage.getRole() == ChatMessage.Role.USER) {
             return Pos.TOP_RIGHT;
         } else {
             return Pos.TOP_LEFT;
@@ -121,15 +116,15 @@ public class AiChatMessageView extends HBox {
         viewModel.regenerate();
     }
 
-    public ObjectProperty<ChatHistoryRecordV2> chatMessageProperty() {
+    public ObjectProperty<ChatMessage> chatMessageProperty() {
         return viewModel.chatMessageProperty();
     }
 
-    public ChatHistoryRecordV2 getChatMessage() {
+    public ChatMessage getChatMessage() {
         return viewModel.chatMessageProperty().get();
     }
 
-    public void setChatMessage(ChatHistoryRecordV2 chatMessage) {
+    public void setChatMessage(ChatMessage chatMessage) {
         viewModel.chatMessageProperty().set(chatMessage);
     }
 

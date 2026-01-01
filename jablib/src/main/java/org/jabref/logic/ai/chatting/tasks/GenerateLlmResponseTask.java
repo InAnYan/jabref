@@ -1,46 +1,69 @@
 package org.jabref.logic.ai.chatting.tasks;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
-import org.jabref.logic.ai.chatting.util.ChatHistoryRecordUtils;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
-import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
+import org.jabref.model.ai.chatting.ChatMessage;
+import org.jabref.model.ai.debug.AiDebugInformation;
+import org.jabref.model.ai.debug.StepRecorder;
+import org.jabref.model.ai.pipeline.RelevantInformation;
 
-import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.model.chat.response.ChatResponse;
+import jakarta.annotation.Nullable;
 
-public class GenerateLlmResponseTask extends BackgroundTask<ChatHistoryRecordV2> {
+public class GenerateLlmResponseTask extends BackgroundTask<ChatMessage> {
     private final ChatModel chatModel;
-    private final List<ChatHistoryRecordV2> chatHistory;
+    private final List<ChatMessage> chatHistory;
+    private final List<RelevantInformation> relevantInformation;
+    private final AiDebugInformation debugInformation;
 
+    /// Relevant information is not added, but it's used to propagate to the resulting AI message.
     public GenerateLlmResponseTask(
             ChatModel chatModel,
-            List<ChatHistoryRecordV2> chatHistory
+            List<ChatMessage> chatHistory,
+            List<RelevantInformation> relevantInformation,
+            AiDebugInformation debugInformation
     ) {
         this.chatModel = chatModel;
         this.chatHistory = chatHistory;
+        this.relevantInformation = relevantInformation;
+        this.debugInformation = debugInformation;
 
         showToUser(true);
         titleProperty().set(Localization.lang("Waiting for AI reply..."));
     }
 
     @Override
-    public ChatHistoryRecordV2 call() throws Exception {
-        List<ChatMessage> chatMessages = ChatHistoryRecordUtils.convertRecordsToLangchain(chatHistory);
+    public ChatMessage call() throws Exception {
+        List<dev.langchain4j.data.message.ChatMessage> chatMessages = chatHistory
+                .stream()
+                .map(ChatMessage::toLangChainMessage)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
 
-        ChatResponse response = chatModel.chat(chatMessages);
-        String context = response.aiMessage().text();
+        StepRecorder stepRecorder = new StepRecorder();
 
-        return new ChatHistoryRecordV2(
-                UUID.randomUUID().toString(),
-                AiMessage.class.getName(),
-                context,
-                Instant.now()
-        );
+        try {
+            ChatResponse response = chatModel.chat(chatMessages);
+            String content = response.aiMessage().text();
+            @Nullable String thinking = response.aiMessage().thinking();
+
+            return ChatMessage.aiMessage(
+                    content,
+                    relevantInformation,
+                    thinking,
+                    debugInformation
+            );
+        } finally {
+            debugInformation.getSteps().add(chatModel.fillDebugStep(stepRecorder));
+        }
+    }
+
+    public AiDebugInformation getDebugInformation() {
+        return debugInformation;
     }
 }

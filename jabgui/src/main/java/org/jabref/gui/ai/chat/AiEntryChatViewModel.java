@@ -17,7 +17,7 @@ import org.jabref.logic.ai.chatting.util.ChatHistoryFactory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.strings.StringUtil;
-import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.chatting.EntryChatHistoryIdentifier;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
@@ -35,8 +35,8 @@ public class AiEntryChatViewModel extends AbstractViewModel {
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.NO_DATABASE_PATH);
     private final ObjectProperty<BibEntryAiIdentifier> selectedEntry = new SimpleObjectProperty<>();
     private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
-    private final ListProperty<ChatHistoryRecordV2> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
-    
+    private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
+
     private final AiPreferences aiPreferences;
     private final ChatHistoryRepository chatHistoryRepository;
 
@@ -116,7 +116,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         return entries;
     }
 
-    public ListProperty<ChatHistoryRecordV2> chatHistoryProperty() {
+    public ListProperty<ChatMessage> chatHistoryProperty() {
         return chatHistory;
     }
 }

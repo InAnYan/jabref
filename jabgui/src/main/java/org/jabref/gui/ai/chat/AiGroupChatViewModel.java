@@ -18,7 +18,7 @@ import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.chatting.util.ChatHistoryFactory;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.chatting.GroupChatHistoryIdentifier;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
@@ -37,7 +37,7 @@ public class AiGroupChatViewModel extends AbstractViewModel {
     private final ObjectProperty<BibDatabaseContext> databaseContext = new SimpleObjectProperty<>();
 
     private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
-    private final ListProperty<ChatHistoryRecordV2> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     private final ChatHistoryRepository chatHistoryRepository;
 
@@ -98,7 +98,7 @@ public class AiGroupChatViewModel extends AbstractViewModel {
         return entries;
     }
 
-    public ListProperty<ChatHistoryRecordV2> chatHistoryProperty() {
+    public ListProperty<ChatMessage> chatHistoryProperty() {
         return chatHistory;
     }
 }

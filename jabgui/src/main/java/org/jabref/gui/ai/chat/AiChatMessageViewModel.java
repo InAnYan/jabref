@@ -17,15 +17,14 @@ import javafx.event.EventHandler;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.PropertiesHelper;
-import org.jabref.logic.ai.chatting.util.ChatHistoryRecordUtils;
-import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.chatting.ErrorMessage;
 
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.UserMessage;
 
 public class AiChatMessageViewModel extends AbstractViewModel {
-    private final ObjectProperty<ChatHistoryRecordV2> chatMessage = new SimpleObjectProperty<>();
+    private final ObjectProperty<ChatMessage> chatMessage = new SimpleObjectProperty<>();
 
     private final StringProperty id = new SimpleStringProperty("");
     private final StringProperty source = new SimpleStringProperty("");
@@ -45,14 +44,14 @@ public class AiChatMessageViewModel extends AbstractViewModel {
     }
 
     private void setupBindings() {
-        id.bind(chatMessage.map(ChatHistoryRecordV2::id));
+        id.bind(chatMessage.map(ChatMessage::getId));
         source.bind(chatMessage
-                .map(ChatHistoryRecordV2::messageTypeClassName)
-                .map(ChatHistoryRecordUtils::getMessageAuthorDisplayName));
-        messageContent.bind(chatMessage.map(ChatHistoryRecordV2::content));
-        timestamp.bind(chatMessage.map(ChatHistoryRecordV2::createdAt));
+                .map(ChatMessage::getRole)
+                .map(ChatMessage.Role::getDisplayName));
+        messageContent.bind(chatMessage.map(ChatMessage::getContent).map(s -> s == null ? "" : s));
+        timestamp.bind(chatMessage.map(ChatMessage::getTimestamp));
 
-        StringExpression messageType = StringExpression.stringExpression(chatMessage.map(ChatHistoryRecordV2::messageTypeClassName));
+        StringExpression messageType = StringExpression.stringExpression(chatMessage.map(ChatMessage::getRole).map(ChatMessage.Role::getDisplayName));
         showEdit.bind(messageType.isEqualTo(UserMessage.class.getName()));
         showRegenerate.bind(messageType.isEqualTo(AiMessage.class.getName()).or(messageType.isEqualTo(ErrorMessage.class.getName())));
     }
@@ -69,7 +68,7 @@ public class AiChatMessageViewModel extends AbstractViewModel {
         PropertiesHelper.handle(onEdit);
     }
 
-    public ObjectProperty<ChatHistoryRecordV2> chatMessageProperty() {
+    public ObjectProperty<ChatMessage> chatMessageProperty() {
         return chatMessage;
     }
 

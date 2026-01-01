@@ -1,7 +1,5 @@
 package org.jabref.gui.ai.chat;
 
-import java.util.Optional;
-
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ListProperty;
 import javafx.fxml.FXML;
@@ -19,12 +17,11 @@ import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.HistoryTextArea;
 import org.jabref.gui.util.ListScrollPane;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.util.ChatHistoryRecordUtils;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
-import org.jabref.logic.ai.util.ChatMessagesUtil;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
+import org.jabref.logic.util.strings.StringUtil;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
 import com.airhacks.afterburner.views.ViewLoader;
@@ -38,7 +35,7 @@ public class AiChatView extends StackPane {
     @FXML private BorderPane mainContainer;
 
     @FXML private ProgressIndicator loadingIndicator;
-    @FXML private ListScrollPane<ChatHistoryRecordV2> chatHistoryScrollPane;
+    @FXML private ListScrollPane<ChatMessage> chatHistoryScrollPane;
 
     @FXML private Button infoButton;
     @FXML private HistoryTextArea userMessageTextArea;
@@ -88,7 +85,7 @@ public class AiChatView extends StackPane {
         aiChatStatusWindow.generateEmbeddingsTasksProperty().bind(viewModel.generateEmbeddingsTasksProperty());
 
         chatHistoryScrollPane.itemsProperty().bind(viewModel.chatHistoryProperty());
-        chatHistoryScrollPane.setRenderer(this::renderChatHistoryRecord);
+        chatHistoryScrollPane.setRenderer(this::renderChatMessage);
 
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
         noFilesErrorPane.managedProperty().bind(noFilesErrorPane.visibleProperty());
@@ -125,10 +122,8 @@ public class AiChatView extends StackPane {
                 viewModel
                         .chatHistoryProperty()
                         .stream()
-                        .map(ChatHistoryRecordUtils::convertRecordToLangchain)
-                        .map(ChatMessagesUtil::getContent)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
+                        .map(ChatMessage::getContent)
+                        .filter(StringUtil::isNotBlank)
                         .toList()
         );
     }
@@ -145,12 +140,12 @@ public class AiChatView extends StackPane {
         );
     }
 
-    private Node renderChatHistoryRecord(ChatHistoryRecordV2 chatHistoryRecordV2) {
+    private Node renderChatMessage(ChatMessage chatMessage) {
         AiChatMessageView aiChatMessageView = new AiChatMessageView();
 
-        aiChatMessageView.setChatMessage(chatHistoryRecordV2);
-        aiChatMessageView.setOnDelete(_ -> viewModel.delete(chatHistoryRecordV2.id()));
-        aiChatMessageView.setOnRegenerate(_ -> viewModel.regenerate(chatHistoryRecordV2.id()));
+        aiChatMessageView.setChatMessage(chatMessage);
+        aiChatMessageView.setOnDelete(_ -> viewModel.delete(chatMessage.getId()));
+        aiChatMessageView.setOnRegenerate(_ -> viewModel.regenerate(chatMessage.getId()));
 
         return aiChatMessageView;
     }
@@ -181,7 +176,7 @@ public class AiChatView extends StackPane {
         viewModel.chatHistoryProperty().get().clear();
     }
 
-    public ListProperty<ChatHistoryRecordV2> chatHistoryProperty() {
+    public ListProperty<ChatMessage> chatHistoryProperty() {
         return viewModel.chatHistoryProperty();
     }
 

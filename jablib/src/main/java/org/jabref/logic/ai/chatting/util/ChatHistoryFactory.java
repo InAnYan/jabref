@@ -9,7 +9,7 @@ import javafx.collections.ObservableList;
 
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.model.ai.chatting.ChatHistoryIdentifier;
-import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
+import org.jabref.model.ai.chatting.ChatMessage;
 
 public class ChatHistoryFactory {
     private ChatHistoryFactory() {
@@ -17,28 +17,28 @@ public class ChatHistoryFactory {
     }
 
     // Works one way: when the property is modified, the repository is modified too, but not vice versa.
-    public static ObservableList<ChatHistoryRecordV2> makeChatHistoryProperty(
+    public static ObservableList<ChatMessage> makeChatHistoryProperty(
             ChatHistoryIdentifier identifier,
             ChatHistoryRepository repository
     ) {
-        List<ChatHistoryRecordV2> allMessages = repository
+        List<ChatMessage> allMessages = repository
                 .getAllMessages(identifier)
                 .stream()
-                .sorted(Comparator.comparing(ChatHistoryRecordV2::createdAt))
+                .sorted(Comparator.comparing(ChatMessage::getTimestamp))
                 .toList();
 
-        ObservableList<ChatHistoryRecordV2> list = FXCollections.observableArrayList(allMessages);
+        ObservableList<ChatMessage> list = FXCollections.observableArrayList(allMessages);
 
-        list.addListener((ListChangeListener<ChatHistoryRecordV2>) change -> {
+        list.addListener((ListChangeListener<ChatMessage>) change -> {
             while (change.next()) {
                 if (change.wasAdded()) {
-                    for (ChatHistoryRecordV2 added : change.getAddedSubList()) {
+                    for (ChatMessage added : change.getAddedSubList()) {
                         repository.addMessage(identifier, added);
                     }
                 }
                 if (change.wasRemoved()) {
-                    for (ChatHistoryRecordV2 removed : change.getRemoved()) {
-                        repository.deleteMessage(identifier, removed.id());
+                    for (ChatMessage removed : change.getRemoved()) {
+                        repository.deleteMessage(identifier, removed.getId());
                     }
                 }
             }

@@ -1,10 +1,8 @@
 package org.jabref.gui.ai.chat;
 
-import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.UUID;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -21,6 +19,7 @@ import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.logic.AiChatLogic;
+import org.jabref.logic.ai.chatting.tasks.GenerateLlmResponseTask;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.ingestion.IngestionTaskAggregator;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
@@ -30,11 +29,9 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddings
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.ai.templates.AiTemplatesFactory;
-import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
-import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
-import org.jabref.model.ai.chatting.ErrorMessage;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
 import com.google.common.collect.Comparators;
@@ -55,9 +52,9 @@ public class AiChatViewModel extends AbstractViewModel {
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
     private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
-    private final ObjectProperty<BackgroundTask<ChatHistoryRecordV2>> generateLlmResponseTask = new SimpleObjectProperty<>();
+    private final ObjectProperty<GenerateLlmResponseTask> generateLlmResponseTask = new SimpleObjectProperty<>();
 
-    private final TreeMap<List<BibEntryAiIdentifier>, BackgroundTask<ChatHistoryRecordV2>> tasksMap =
+    private final TreeMap<List<BibEntryAiIdentifier>, GenerateLlmResponseTask> tasksMap =
             new TreeMap<>(Comparators.lexicographical(Comparator.comparing(id -> id.entry().getId())));
 
     private final AiPreferences aiPreferences;
@@ -122,7 +119,7 @@ public class AiChatViewModel extends AbstractViewModel {
             if (aiChatLogic.chatHistoryProperty().isEmpty()) {
                 return false;
             }
-            return ErrorMessage.class.getName().equals(aiChatLogic.chatHistoryProperty().getLast().messageTypeClassName());
+            return aiChatLogic.chatHistoryProperty().getLast().getRole() == ChatMessage.Role.ERROR;
         }, aiChatLogic.chatHistoryProperty());
 
         BindingsHelper.bindEnum(
@@ -184,24 +181,18 @@ public class AiChatViewModel extends AbstractViewModel {
 
         clearGenerateLlmResponseTask();
 
-        BackgroundTask<ChatHistoryRecordV2> task = aiChatLogic
+        GenerateLlmResponseTask task = aiChatLogic
                 .call(
                         userMessage,
                         entries
                 );
 
-        ObservableList<ChatHistoryRecordV2> taskChatHistory = aiChatLogic.chatHistoryProperty().get();
+        ObservableList<ChatMessage> taskChatHistory = aiChatLogic.chatHistoryProperty().get();
         List<BibEntryAiIdentifier> taskEntries = entries.get();
 
         task.onSuccess(taskChatHistory::add);
 
-        task.onFailure(ex ->
-                taskChatHistory.add(new ChatHistoryRecordV2(
-                        UUID.randomUUID().toString(),
-                        ErrorMessage.class.getName(),
-                        ex.getMessage(),
-                        Instant.now())
-                ));
+        task.onFailure(ex -> taskChatHistory.add(ChatMessage.errorMessage(ex, task.getDebugInformation())));
 
         task.onFinished(() -> {
             tasksMap.remove(taskEntries);
@@ -253,7 +244,7 @@ public class AiChatViewModel extends AbstractViewModel {
 
     public void regenerate() {
         if (!aiChatLogic.chatHistoryProperty().isEmpty()) {
-            regenerate(aiChatLogic.chatHistoryProperty().getLast().id());
+            regenerate(aiChatLogic.chatHistoryProperty().getLast().getId());
         }
     }
 
@@ -261,7 +252,7 @@ public class AiChatViewModel extends AbstractViewModel {
         return entries;
     }
 
-    public ListProperty<ChatHistoryRecordV2> chatHistoryProperty() {
+    public ListProperty<ChatMessage> chatHistoryProperty() {
         return aiChatLogic.chatHistoryProperty();
     }
 

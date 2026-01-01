@@ -2,8 +2,10 @@ package org.jabref.model.ai.chatting;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.debug.AiDebugInformation;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 
@@ -15,7 +17,18 @@ public class ChatMessage {
     public enum Role {
         USER,
         AI,
-        ERROR
+        ERROR;
+
+        public String getDisplayName() {
+            return switch (this) {
+                case USER ->
+                        Localization.lang("User");
+                case AI ->
+                        Localization.lang("AI");
+                case ERROR ->
+                        Localization.lang("Error");
+            };
+        }
     }
 
     private final String id;
@@ -24,7 +37,7 @@ public class ChatMessage {
     private final String content;
     private final List<RelevantInformation> relevantInformation;
     @Nullable private final String thinking;
-    @Nullable private final AiDebugInformation aiDebugInformation;
+    @Nullable private final AiDebugInformation debugInformation;
 
     @JsonCreator
     public ChatMessage(
@@ -42,7 +55,7 @@ public class ChatMessage {
         this.content = content;
         this.relevantInformation = relevantInformation;
         this.thinking = thinking;
-        this.aiDebugInformation = aiDebugInformation;
+        this.debugInformation = aiDebugInformation;
     }
 
     public static ChatMessage userMessage(String content) {
@@ -57,11 +70,23 @@ public class ChatMessage {
         );
     }
 
+    public static ChatMessage userMessage(Instant timestamp, String content) {
+        return new ChatMessage(
+                UUID.randomUUID().toString(),
+                timestamp,
+                Role.USER,
+                content,
+                List.of(),
+                null,
+                null
+        );
+    }
+
     public static ChatMessage aiMessage(
             String content,
             List<RelevantInformation> relevantInformation,
             @Nullable String thinking,
-            AiDebugInformation aiDebugInformation
+            AiDebugInformation debugInformation
     ) {
         return new ChatMessage(
                 UUID.randomUUID().toString(),
@@ -70,13 +95,13 @@ public class ChatMessage {
                 content,
                 relevantInformation,
                 thinking,
-                aiDebugInformation
+                debugInformation
         );
     }
 
     public static ChatMessage errorMessage(
             Throwable throwable,
-            AiDebugInformation aiDebugInformation
+            AiDebugInformation debugInformation
     ) {
         return new ChatMessage(
                 UUID.randomUUID().toString(),
@@ -85,7 +110,7 @@ public class ChatMessage {
                 throwable.getMessage(),
                 List.of(),
                 null,
-                aiDebugInformation
+                debugInformation
         );
     }
 
@@ -115,7 +140,18 @@ public class ChatMessage {
     }
 
     @Nullable
-    public AiDebugInformation getDebugInformationGraph() {
-        return aiDebugInformation;
+    public AiDebugInformation getDebugInformation() {
+        return debugInformation;
+    }
+
+    public Optional<dev.langchain4j.data.message.ChatMessage> toLangChainMessage() {
+        return Optional.ofNullable(switch (role) {
+            case USER ->
+                    new dev.langchain4j.data.message.UserMessage(content);
+            case AI ->
+                    new dev.langchain4j.data.message.AiMessage(content);
+            case ERROR ->
+                    null;
+        });
     }
 }

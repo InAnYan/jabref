@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
-import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.chatting.EntryChatHistoryIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
@@ -66,7 +66,7 @@ public class EntryChattingDatabaseListener {
             EntryChatHistoryIdentifier oldIdentifier = new EntryChatHistoryIdentifier(databasePath.get(), oldCitationKey);
             EntryChatHistoryIdentifier newIdentifier = new EntryChatHistoryIdentifier(databasePath.get(), newCitationKey);
 
-            List<ChatHistoryRecordV2> chatHistory = chatHistoryRepository.getAllMessages(oldIdentifier);
+            List<ChatMessage> chatHistory = chatHistoryRepository.getAllMessages(oldIdentifier);
 
             chatHistoryRepository.clear(oldIdentifier);
             chatHistoryRepository.clear(newIdentifier);

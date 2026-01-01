@@ -89,9 +89,12 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
                     String link = textSegment.metadata().getString(EmbeddingsCleaner.LINK_METADATA_KEY);
 
                     if (link == null) {
-                        return new RelevantInformation(List.of(), textSegment.text());
+                        return new RelevantInformation(null, textSegment.text());
                     } else {
-                        return new RelevantInformation(List.of(findEntryByLink(entriesFilter, link).flatMap(BibEntry::getCitationKey).orElse("")), textSegment.text());
+                        return new RelevantInformation(
+                                BibEntryAiIdentifier.findEntryByLink(entriesFilter, link).flatMap(BibEntry::getCitationKey).orElse(null),
+                                textSegment.text()
+                        );
                     }
                 })
                 .toList();
@@ -99,29 +102,6 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
         LOGGER.debug("Found excerpts for the message: {}", excerpts);
 
         return excerpts;
-    }
-
-    private Optional<BibEntry> findEntryByLink(List<BibEntryAiIdentifier> entries, String link) {
-        // TODO: Simplify??
-        return entries
-                .stream()
-                .flatMap(identifier ->
-                        identifier
-                                .databaseContext()
-                                .getEntries()
-                                .stream()
-                                .filter(entry ->
-                                        entry
-                                                .getFiles()
-                                                .stream()
-                                                .anyMatch(file ->
-                                                        file
-                                                                .getLink().
-                                                                equals(link)
-                                                )
-                                )
-                )
-                .findFirst();
     }
 
     @Override

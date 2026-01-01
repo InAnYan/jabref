@@ -3,7 +3,7 @@ package org.jabref.logic.ai.chatting.listeners;
 import java.util.List;
 
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
-import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.chatting.GroupChatHistoryIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 
@@ -38,6 +38,7 @@ public class GroupChattingDatabaseListener {
                 }));
     }
 
+    // TODO: Generalize transfer
     private void transferHistory(BibDatabaseContext bibDatabaseContext, String oldName, String newName) {
         if (bibDatabaseContext.getDatabasePath().isEmpty()) {
             LOGGER.warn("Could not transfer chat history of group {} (old name: {}): database path is empty.", newName, oldName);
@@ -47,7 +48,7 @@ public class GroupChattingDatabaseListener {
         GroupChatHistoryIdentifier oldIdentifier = new GroupChatHistoryIdentifier(bibDatabaseContext.getDatabasePath().get(), oldName);
         GroupChatHistoryIdentifier newIdentifier = new GroupChatHistoryIdentifier(bibDatabaseContext.getDatabasePath().get(), newName);
 
-        List<ChatHistoryRecordV2> chatHistory = chatHistoryRepository.getAllMessages(oldIdentifier);
+        List<ChatMessage> chatHistory = chatHistoryRepository.getAllMessages(oldIdentifier);
 
         chatHistoryRepository.clear(oldIdentifier);
         chatHistoryRepository.clear(newIdentifier);

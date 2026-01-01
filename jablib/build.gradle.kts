@@ -103,6 +103,9 @@ dependencies {
 
     implementation("org.eclipse.jgit:org.eclipse.jgit")
 
+    implementation(
+        "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.2"
+    )
     implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
     implementation("tools.jackson.core:jackson-databind")
     // TODO: Somwewhere we get a warning: unknown enum constant Id.CLASS reason: class file for com.fasterxml.jackson.annotation.JsonTypeInfo$Id not found

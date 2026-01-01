@@ -3,6 +3,8 @@ package org.jabref.model.ai.debug;
 import java.time.Duration;
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -18,22 +20,23 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = LlmStep.class, name = "llm"),
 })
 public abstract class AiDebugStep {
-    public Instant happenedAt;
-    public Duration timeSpent;
+    private final Instant happenedAt;
+    private final Duration timeSpent;
+
+    @JsonCreator
+    public AiDebugStep(
+            @JsonProperty("happenedAt") Instant happenedAt,
+            @JsonProperty("timeSpent") Duration timeSpent
+    ) {
+        this.happenedAt = happenedAt;
+        this.timeSpent = timeSpent;
+    }
 
     public Instant getHappenedAt() {
         return happenedAt;
     }
 
-    public void setHappenedAt(Instant happenedAt) {
-        this.happenedAt = happenedAt;
-    }
-
     public Duration getTimeSpent() {
         return timeSpent;
-    }
-
-    public void setTimeSpent(Duration timeSpent) {
-        this.timeSpent = timeSpent;
     }
 }

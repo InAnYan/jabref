@@ -9,6 +9,7 @@ import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
+import org.jabref.model.entry.BibEntry;
 
 public class FullDocumentAnswerEngine implements AnswerEngine {
     private final FilePreferences filePreferences;
@@ -38,7 +39,7 @@ public class FullDocumentAnswerEngine implements AnswerEngine {
                                         linkedFile
                                                 .findIn(entryIdentifier.databaseContext(), filePreferences)
                                                 .flatMap(p -> universalContentParser.parse(longTaskInfo, p))
-                                                .map(c -> new RelevantInformation(List.of(linkedFile.getLink()), c))
+                                                .map(c -> new RelevantInformation(BibEntryAiIdentifier.findEntryByLink(entryIdentifier, linkedFile.getLink()).flatMap(BibEntry::getCitationKey).orElse(null), c))
                                 )
                                 .filter(Optional::isPresent)
                                 .map(Optional::get)
