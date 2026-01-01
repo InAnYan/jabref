@@ -12,7 +12,6 @@ We need to choose the serialization and deserialization method for AI chat messa
 
 * The API should be simple and easy to use
 * It should be easy to perform migrations
-* The method should support polymorphic types
 * Preferably, use methods that are already used in JabRef
 
 ## Considered Options
@@ -36,14 +35,12 @@ However, if a database is integrated to AI features, then preferably a database 
 ### Use Java native serialization
 
 * Good, because it is simple and already builtin to Java
-* Good, because it supports polymorphic types
 * Bad, because it is not easily extensible
 * Bad, because it is not easily migratable
 
 ### Use JSON format
 
 * Good, because it is widely used
-* Good, because Jackson (the library) supports polymorphic types
 * Good, because it is easy to use with Jackson
 * Good, because it is easy to migrate via a custom script/function
 * Good, because it is already used in JabRef
@@ -87,8 +84,6 @@ However, if a database is integrated to AI features, then preferably a database 
 * Bad, because it requires a lot of effort to implement
 
 ## More information
-
-A preliminary decision was taken: use polymorphic types for messages, as different types of chat messages have different fields.
 
 It is hard to decide between JSON and YAML, as they both suffit well. But because JSON is more used generally, more used in AI applications, it was chosen.
 
