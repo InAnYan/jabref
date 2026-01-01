@@ -8,3 +8,11 @@ JBang
 OpenFastTrace
 OpenRewrite
 Temurin
+impl
+utest
+dsn
+summarizator
+HuggingFace
+vLLM
+Ollama
+de-facto
