@@ -193,8 +193,7 @@ public class AiChatViewModel extends AbstractViewModel {
         ObservableList<ChatHistoryRecordV2> taskChatHistory = aiChatLogic.chatHistoryProperty().get();
         List<BibEntryAiIdentifier> taskEntries = entries.get();
 
-        task.onSuccess(a ->
-                taskChatHistory.add(a));
+        task.onSuccess(taskChatHistory::add);
 
         task.onFailure(ex ->
                 taskChatHistory.add(new ChatHistoryRecordV2(

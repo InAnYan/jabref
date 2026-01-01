@@ -1,8 +1,7 @@
 package org.jabref.model.ai.pipeline;
 
-import java.util.List;
+import jakarta.annotation.Nullable;
 
-// Sources are citation key.
-// Used only in AI replies in one library?
-public record RelevantInformation(List<String> sources, String text) {
+/// Source is a citation key.
+public record RelevantInformation(@Nullable String source, String text) {
 }
