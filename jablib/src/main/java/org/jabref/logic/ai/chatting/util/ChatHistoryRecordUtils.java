@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
-import org.jabref.model.ai.chatting.messages.ErrorMessage;
+import org.jabref.model.ai.chatting.ErrorMessage;
 
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;

@@ -34,7 +34,7 @@ import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
-import org.jabref.model.ai.chatting.messages.ErrorMessage;
+import org.jabref.model.ai.chatting.ErrorMessage;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
 import com.google.common.collect.Comparators;

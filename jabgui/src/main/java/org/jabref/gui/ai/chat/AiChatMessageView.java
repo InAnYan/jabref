@@ -19,7 +19,7 @@ import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.MarkdownTextFlow;
 import org.jabref.model.ai.chatting.ChatHistoryRecordV2;
-import org.jabref.model.ai.chatting.messages.ErrorMessage;
+import org.jabref.model.ai.chatting.ErrorMessage;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import dev.langchain4j.data.message.AiMessage;
