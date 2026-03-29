@@ -55,9 +55,15 @@ Core logic classes should expose dependencies through constructors, with no fiel
 * Bad, because JavaFX does not allow passing complex constructor arguments (like `Services` or `Preferences`) to view in FXML.
 * Bad, because nesting views in FXML becomes harder without a DI mechanism.
 
-### Use a mix of a DI framework and constructor-based DI.
+### Use a mix of a DI framework and constructor-based DI
 
-More specifically: use a DI framework for JavaFX view models; constructor-based DI for core code.
+More specifically: 
+
+* JavaFX controllers: use afterburnerfx framework.
+* JAX-RS: use `jakarta.inject.Inject` and HK2 `org.glassfish.hk2.api.ServiceLocator`.
+* Other code: use constructor-based DI.
+
+Analysis of the choice:
 
 * Good, because it respects JavaFX requirements.
 * Good, because core components remain simple and testable.
