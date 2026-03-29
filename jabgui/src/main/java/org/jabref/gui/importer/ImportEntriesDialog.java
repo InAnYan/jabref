@@ -32,6 +32,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.util.StringConverter;
 
 import org.jabref.gui.DialogService;
 import org.jabref.gui.StateManager;
@@ -41,6 +42,7 @@ import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.BaseDialog;
 import org.jabref.gui.util.NoSelectionModel;
 import org.jabref.gui.util.ViewModelListCellFactory;
+import org.jabref.logic.groups.GroupsFactory;
 import org.jabref.logic.importer.PagedSearchBasedFetcher;
 import org.jabref.logic.importer.ParserResult;
 import org.jabref.logic.importer.SearchBasedFetcher;
@@ -53,6 +55,8 @@ import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.BibEntryTypesManager;
 import org.jabref.model.groups.AllEntriesGroup;
+import org.jabref.model.groups.ExplicitGroup;
+import org.jabref.model.groups.GroupHierarchyType;
 import org.jabref.model.groups.GroupTreeNode;
 import org.jabref.model.util.FileUpdateMonitor;
 
@@ -148,7 +152,6 @@ public class ImportEntriesDialog extends BaseDialog<Boolean> {
         });
 
         libraryListView.setEditable(false);
-        groupListView.setEditable(false);
         libraryListView.getItems().addAll(stateManager.getOpenDatabases());
         new ViewModelListCellFactory<BibDatabaseContext>()
                 .withText(database -> {
@@ -226,6 +229,18 @@ public class ImportEntriesDialog extends BaseDialog<Boolean> {
 
     private void setupGroupListView() {
         groupListView.setVisibleRowCount(5);
+        groupListView.setEditable(true);
+        groupListView.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(GroupTreeNode node) {
+                return node != null ? node.getName() : "";
+            }
+
+            @Override
+            public GroupTreeNode fromString(String string) {
+                return findGroupByName(string).orElse(null);
+            }
+        });
         updateGroupList();
         libraryListView.getSelectionModel().selectedItemProperty()
                        .addListener((_, _, _) -> {
@@ -287,12 +302,13 @@ public class ImportEntriesDialog extends BaseDialog<Boolean> {
 
         setResultConverter(button -> {
             if (button == importButton) {
-                if (groupListView.getItems().size() > 1) {
-                    // 1 is the "All entries" group, so if more than 1, we have groups defined
-                    GroupTreeNode prevSelectedGroup = stateManager.getSelectedGroups(stateManager.getActiveDatabase().orElse(null)).getFirst();
-                    stateManager.setSelectedGroups(libraryListView.getSelectionModel().getSelectedItem(), List.of(groupListView.getSelectionModel().getSelectedItem()));
+                Optional<GroupTreeNode> groupToImportInto = getOrCreateSelectedGroup();
+                if (groupToImportInto.isPresent()) {
+                    Optional<GroupTreeNode> prevSelectedGroup = stateManager.getSelectedGroups(stateManager.getActiveDatabase().orElse(null)).stream().findFirst();
+                    stateManager.setSelectedGroups(libraryListView.getSelectionModel().getSelectedItem(), List.of(groupToImportInto.get()));
                     viewModel.importEntries(viewModel.getCheckedEntries().stream().toList(), downloadLinkedOnlineFiles.isSelected());
-                    stateManager.setSelectedGroups(stateManager.getActiveDatabase().orElse(null), List.of(prevSelectedGroup));
+                    prevSelectedGroup.ifPresent(group ->
+                            stateManager.setSelectedGroups(stateManager.getActiveDatabase().orElse(null), List.of(group)));
                 } else {
                     viewModel.importEntries(viewModel.getCheckedEntries().stream().toList(), downloadLinkedOnlineFiles.isSelected());
                 }
@@ -302,6 +318,50 @@ public class ImportEntriesDialog extends BaseDialog<Boolean> {
 
             return false;
         });
+    }
+
+    private Optional<GroupTreeNode> findGroupByName(String name) {
+        if (name == null || name.isBlank()) {
+            return Optional.empty();
+        }
+        return groupListView.getItems().stream()
+                            .filter(node -> node != null && name.equals(node.getName()))
+                            .findFirst();
+    }
+
+    private Optional<GroupTreeNode> getOrCreateSelectedGroup() {
+        BibDatabaseContext selectedDb = libraryListView.getSelectionModel().getSelectedItem();
+        if (selectedDb == null) {
+            return Optional.empty();
+        }
+
+        GroupTreeNode selected = groupListView.getValue();
+        if (selected != null) {
+            if (selected.getGroup() instanceof AllEntriesGroup) {
+                return Optional.empty();
+            }
+            return Optional.of(selected);
+        }
+
+        String typedName = groupListView.getEditor().getText();
+        if (typedName == null || typedName.isBlank()) {
+            return Optional.empty();
+        }
+
+        Optional<GroupTreeNode> existingGroup = findGroupByName(typedName);
+        if (existingGroup.isPresent()) {
+            return existingGroup;
+        }
+
+        ExplicitGroup newGroup = new ExplicitGroup(typedName, GroupHierarchyType.INDEPENDENT,
+                preferences.getBibEntryPreferences().getKeywordSeparator());
+        GroupTreeNode rootNode = selectedDb.getMetaData().getGroups()
+                                           .orElseGet(() -> {
+                                               GroupTreeNode newRoot = GroupTreeNode.fromGroup(GroupsFactory.createAllEntriesGroup());
+                                               selectedDb.getMetaData().setGroups(newRoot);
+                                               return newRoot;
+                                           });
+        return Optional.of(rootNode.addSubgroup(newGroup));
     }
 
     private void setupPaginationBindings() {
