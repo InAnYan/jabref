@@ -1,5 +1,5 @@
 ---
-title: Use of Dependency Injection in the Application
+title: Usage of Dependency Injection
 nav_order: 100
 parent: Decision Records
 ---
@@ -19,13 +19,13 @@ JavaFX imposes certain constraints on controllers and view models, especially re
 
 ## Considered Options
 
-* Use DI framework for everything.
-* Use constructor-based DI everywhere.
+* Use DI framework for every use case.
+* Use constructor-based DI for every use case.
 * Use a mix of a DI framework and constructor-based DI.
 
 ## Decision Outcome
 
-Chosen option: "Use a mix of a DI framework and constructor-based DI.", because this approach works with the constraints of JavaFX while preserving explicitness and testability in the rest of the system.
+Chosen option: "Use a mix of a DI framework and constructor-based DI", because this approach works with the constraints of JavaFX while preserving explicitness and testability in the rest of the system.
 
 ### Consequences
 
@@ -42,20 +42,22 @@ Core logic classes should expose dependencies through constructors, with no fiel
 
 ## Pros and Cons of the Options
 
-### Use DI framework for everything
+### Use DI framework for every use case
 
 * Good, because dependency creation is centralized.
 * Good, because configuration can be standardized across all components.
 * Bad, because the whole application becomes more dependent on a framework and harder to test without it.
 
-### Use constructor-based DI everywhere
+### Use constructor-based DI for every use case
 
 * Good, because constructors clearly express dependencies.
 * Good, because testing is straightforward.
 * Bad, because JavaFX does not allow passing complex constructor arguments (like `Services` or `Preferences`) to view in FXML.
 * Bad, because nesting views in FXML becomes harder without a DI mechanism.
 
-### Use DI for JavaFX view models; constructor-based DI for core
+### Use a mix of a DI framework and constructor-based DI.
+
+More specifically: use a DI framework for JavaFX view models; constructor-based DI for core code.
 
 * Good, because it respects JavaFX requirements.
 * Good, because core components remain simple and testable.
