@@ -6,7 +6,7 @@ parent: Decision Records
 
 ## Context and Problem Statement
 
-JabRef uses JavaFX for its graphical interface and plain Java for its logic layer. We need a consistent and maintainable strategy for dependency injection (DI). 
+JabRef uses JavaFX for its graphical interface and plain Java for its logic layer. We need a consistent and maintainable strategy for dependency injection (DI).
 
 JavaFX imposes certain constraints on controllers and view models, especially regarding how FXML loads classes. At the same time, the rest of the app benefits from clear, explicit, and testable construction patterns. However, sometimes there are too much arguments in a constructor. The question is how to balance JavaFX requirements with the architectural clarity of constructor-based DI.
 
