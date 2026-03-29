@@ -3,6 +3,7 @@ title: Usage of Dependency Injection
 nav_order: 100
 parent: Decision Records
 ---
+# Usage of Dependency Injection
 
 ## Context and Problem Statement
 
