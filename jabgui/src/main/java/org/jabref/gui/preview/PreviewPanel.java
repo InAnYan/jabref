@@ -6,9 +6,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.DragEvent;
@@ -16,8 +22,12 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import javafx.util.StringConverter;
 
 import org.jabref.gui.DialogService;
 import org.jabref.gui.Notifications;
@@ -27,6 +37,7 @@ import org.jabref.gui.icon.IconTheme;
 import org.jabref.gui.keyboard.KeyBinding;
 import org.jabref.gui.keyboard.KeyBindingRepository;
 import org.jabref.gui.preferences.GuiPreferences;
+import org.jabref.gui.preferences.PreferencesDialogView;
 import org.jabref.gui.theme.ThemeManager;
 import org.jabref.gui.util.DragDrop;
 import org.jabref.logic.l10n.Localization;
@@ -71,7 +82,55 @@ public class PreviewPanel extends VBox implements PreviewControls {
         previewView.setOnDragOver(PreviewPanel::onDragOver);
         previewView.setOnDragDropped(this::onDragDropped);
 
-        this.getChildren().add(previewView);
+        ComboBox<PreviewLayout> styleComboBox = new ComboBox<>();
+        styleComboBox.setItems(previewPreferences.getLayoutCycle());
+        styleComboBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(PreviewLayout layout) {
+                return layout == null ? "" : layout.getDisplayName();
+            }
+
+            @Override
+            public PreviewLayout fromString(String string) {
+                return null;
+            }
+        });
+        if (!previewPreferences.getLayoutCycle().isEmpty()) {
+            styleComboBox.getSelectionModel().select(previewPreferences.getLayoutCyclePosition());
+        }
+        styleComboBox.setOnAction(_ -> {
+            int selectedIndex = styleComboBox.getSelectionModel().getSelectedIndex();
+            if (selectedIndex >= 0 && selectedIndex != previewPreferences.getLayoutCyclePosition()) {
+                previewPreferences.setLayoutCyclePosition(selectedIndex);
+                previewView.setLayout(previewPreferences.getSelectedPreviewLayout());
+            }
+        });
+        previewPreferences.layoutCyclePositionProperty().addListener((_, _, newVal) -> {
+            int pos = newVal.intValue();
+            if (pos >= 0 && pos < previewPreferences.getLayoutCycle().size()
+                    && styleComboBox.getSelectionModel().getSelectedIndex() != pos) {
+                styleComboBox.getSelectionModel().select(pos);
+            }
+        });
+
+        Button openPreferencesButton = new Button();
+        openPreferencesButton.setGraphic(IconTheme.JabRefIcons.PREFERENCES.getGraphicNode());
+        openPreferencesButton.setTooltip(new Tooltip(Localization.lang("Open preview preferences")));
+        openPreferencesButton.setOnAction(_ -> {
+            dialogService.showCustomDialogAndWait(
+                    new PreferencesDialogView(org.jabref.gui.preferences.preview.PreviewTab.class));
+            previewView.setLayout(previewPreferences.getSelectedPreviewLayout());
+        });
+
+        Label styleLabel = new Label(Localization.lang("Preview style"));
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox bottomBar = new HBox(5, styleLabel, styleComboBox, spacer, openPreferencesButton);
+        bottomBar.setAlignment(Pos.CENTER_LEFT);
+        bottomBar.setPadding(new Insets(2, 5, 2, 5));
+
+        VBox.setVgrow(previewView, Priority.ALWAYS);
+        this.getChildren().addAll(previewView, bottomBar);
 
         createKeyBindings();
         previewView.setLayout(previewPreferences.getSelectedPreviewLayout());
