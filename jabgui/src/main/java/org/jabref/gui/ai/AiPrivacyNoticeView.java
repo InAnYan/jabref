@@ -69,7 +69,6 @@ public class AiPrivacyNoticeView extends ScrollPane {
         addPrivacyHyperlink(aiPolicies, AiProvider.MISTRAL_AI);
         addPrivacyHyperlink(aiPolicies, AiProvider.GEMINI);
         addPrivacyHyperlink(aiPolicies, AiProvider.HUGGING_FACE);
-        addPrivacyHyperlink(aiPolicies, AiProvider.GPT4ALL);
 
         // Note: Ideally, this should be bound to update automatically if the size changes but keeping the original logic for text replacement here.
         String embeddingTemplate = embeddingModelText.getText();

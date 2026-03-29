@@ -7,30 +7,24 @@ import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.model.ai.chatting.ChatMessage;
-import org.jabref.model.ai.debug.AiDebugInformation;
-import org.jabref.model.ai.debug.StepRecorder;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 
 import dev.langchain4j.model.chat.response.ChatResponse;
-import jakarta.annotation.Nullable;
 
 public class GenerateLlmResponseTask extends BackgroundTask<ChatMessage> {
     private final ChatModel chatModel;
     private final List<ChatMessage> chatHistory;
     private final List<RelevantInformation> relevantInformation;
-    private final AiDebugInformation debugInformation;
 
     /// Relevant information is not added, but it's used to propagate to the resulting AI message.
     public GenerateLlmResponseTask(
             ChatModel chatModel,
             List<ChatMessage> chatHistory,
-            List<RelevantInformation> relevantInformation,
-            AiDebugInformation debugInformation
+            List<RelevantInformation> relevantInformation
     ) {
         this.chatModel = chatModel;
         this.chatHistory = chatHistory;
         this.relevantInformation = relevantInformation;
-        this.debugInformation = debugInformation;
 
         showToUser(true);
         titleProperty().set(Localization.lang("Waiting for AI reply..."));
@@ -45,25 +39,12 @@ public class GenerateLlmResponseTask extends BackgroundTask<ChatMessage> {
                 .map(Optional::get)
                 .toList();
 
-        StepRecorder stepRecorder = new StepRecorder();
+        ChatResponse response = chatModel.chat(chatMessages);
+        String content = response.aiMessage().text();
 
-        try {
-            ChatResponse response = chatModel.chat(chatMessages);
-            String content = response.aiMessage().text();
-            @Nullable String thinking = response.aiMessage().thinking();
-
-            return ChatMessage.aiMessage(
-                    content,
-                    relevantInformation,
-                    thinking,
-                    debugInformation
-            );
-        } finally {
-            debugInformation.getSteps().add(chatModel.fillDebugStep(stepRecorder));
-        }
-    }
-
-    public AiDebugInformation getDebugInformation() {
-        return debugInformation;
+        return ChatMessage.aiMessage(
+                content,
+                relevantInformation
+        );
     }
 }

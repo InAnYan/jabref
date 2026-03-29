@@ -3,14 +3,16 @@ package org.jabref.logic.ai.preferences;
 import java.util.Map;
 
 import org.jabref.model.ai.llm.AiProvider;
+import org.jabref.model.ai.llm.PredefinedChatModel;
 
+// Chat model depends on ai provider. E.g. to not have cycles
+// TODO: Improve comment above.
 public class AiProviderDefaultChatModels {
     private static final Map<AiProvider, PredefinedChatModel> CHAT_MODELS = Map.of(
             AiProvider.OPEN_AI, PredefinedChatModel.GPT_4O_MINI,
             AiProvider.MISTRAL_AI, PredefinedChatModel.OPEN_MIXTRAL_8X22B,
             AiProvider.GEMINI, PredefinedChatModel.GEMINI_1_5_FLASH,
-            AiProvider.HUGGING_FACE, PredefinedChatModel.BLANK_HUGGING_FACE,
-            AiProvider.GPT4ALL, PredefinedChatModel.BLANK_GPT4ALL
+            AiProvider.HUGGING_FACE, PredefinedChatModel.BLANK_HUGGING_FACE
     );
 
     public static PredefinedChatModel getDefaultChatModel(AiProvider aiProvider) {

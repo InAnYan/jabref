@@ -6,7 +6,6 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
-import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.model.ai.identifiers.ResolvedBibEntryAiIdentifier;
 import org.jabref.model.ai.summarization.BibEntrySummary;
@@ -41,7 +40,6 @@ public class PersistentBibEntrySummarizator {
 
     public BibEntrySummary summarize(
             ChatModel chatModel,
-            LongTaskInfo longTaskInfo,
             BibDatabaseContext bibDatabaseContext,
             BibEntry entry,
             boolean regenerate
@@ -64,7 +62,6 @@ public class PersistentBibEntrySummarizator {
         try {
             bibEntrySummary = bibEntrySummarizator.summarize(
                     chatModel,
-                    longTaskInfo,
                     bibDatabaseContext,
                     entry
             );

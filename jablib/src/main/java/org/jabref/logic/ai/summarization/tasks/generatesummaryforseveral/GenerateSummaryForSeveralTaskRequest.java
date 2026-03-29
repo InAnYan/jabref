@@ -2,7 +2,6 @@ package org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral;
 
 import java.util.List;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
@@ -25,8 +24,7 @@ public record GenerateSummaryForSeveralTaskRequest(
         BibDatabaseContext bibDatabaseContext,
         StringProperty groupName,
         List<BibEntry> entries,
-        boolean regenerate,
-        ReadOnlyBooleanProperty shutdownSignals
+        boolean regenerate
 ) {
     public GenerateSummaryTaskRequest toSingle(BibEntry entry) {
         return new GenerateSummaryTaskRequest(
@@ -36,8 +34,7 @@ public record GenerateSummaryForSeveralTaskRequest(
                 summarizator,
                 bibDatabaseContext,
                 entry,
-                false,
-                shutdownSignals
+                false
         );
     }
 }

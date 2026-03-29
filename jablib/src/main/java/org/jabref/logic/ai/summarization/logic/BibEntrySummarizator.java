@@ -12,7 +12,6 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.ingestion.logic.parsing.UniversalContentParser;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
-import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.summarization.BibEntrySummary;
 import org.jabref.model.database.BibDatabaseContext;
@@ -41,7 +40,6 @@ public class BibEntrySummarizator {
 
     public BibEntrySummary summarize(
             ChatModel chatModel,
-            LongTaskInfo longTaskInfo,
             BibDatabaseContext bibDatabaseContext,
             BibEntry entry
     ) throws InterruptedException {
@@ -56,7 +54,6 @@ public class BibEntrySummarizator {
         for (LinkedFile linkedFile : entry.getFiles()) {
             generateSummary(
                     chatModel,
-                    longTaskInfo,
                     bibDatabaseContext,
                     linkedFile,
                     citationKey
@@ -65,7 +62,6 @@ public class BibEntrySummarizator {
         }
 
         if (linkedFilesSummary.isEmpty()) {
-            longTaskInfo.progressCounter().increaseWorkDone(1); // Skipped generation of final summary.
             throw new RuntimeException(Localization.lang("No summary can be generated for entry '%0'. Could not find attached linked files.", citationKey));
         }
 
@@ -73,19 +69,14 @@ public class BibEntrySummarizator {
 
         String finalSummary;
 
-        longTaskInfo.progressCounter().increaseWorkMax(1); // For generating final summary.
-
         if (linkedFilesSummary.size() == 1) {
             finalSummary = linkedFilesSummary.getFirst();
         } else {
             finalSummary = summarizeSeveralDocuments(
                     chatModel,
-                    longTaskInfo,
                     linkedFilesSummary.stream()
             );
         }
-
-        longTaskInfo.progressCounter().increaseWorkDone(1);
 
         return new BibEntrySummary(
                 LocalDateTime.now(),
@@ -98,7 +89,6 @@ public class BibEntrySummarizator {
 
     private Optional<String> generateSummary(
             ChatModel chatModel,
-            LongTaskInfo longTaskInfo,
             BibDatabaseContext bibDatabaseContext,
             LinkedFile linkedFile,
             String citationKey
@@ -113,7 +103,11 @@ public class BibEntrySummarizator {
             return Optional.empty();
         }
 
-        Optional<String> document = universalFileParser.parse(longTaskInfo, path.get());
+        Optional<String> document = universalFileParser.parse(path.get());
+
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
 
         if (document.isEmpty()) {
             LOGGER.warn("Could not extract text from a linked file \"{}\" of entry {}. It will be skipped when generating a summary.", linkedFile.getLink(), citationKey);
@@ -123,7 +117,6 @@ public class BibEntrySummarizator {
 
         String linkedFileSummary = summarizator.summarize(
                 chatModel,
-                longTaskInfo,
                 document.get()
         );
 
@@ -133,12 +126,10 @@ public class BibEntrySummarizator {
 
     public String summarizeSeveralDocuments(
             ChatModel chatModel,
-            LongTaskInfo longTaskInfo,
             Stream<String> documents
     ) throws InterruptedException {
         return summarizator.summarize(
                 chatModel,
-                longTaskInfo,
                 documents.collect(Collectors.joining("\n\n"))
         );
     }

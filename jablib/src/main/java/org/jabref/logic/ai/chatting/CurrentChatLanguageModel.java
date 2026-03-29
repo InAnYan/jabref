@@ -7,7 +7,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
-import org.jabref.logic.ai.customimplementations.llms.Gpt4AllModel;
 import org.jabref.logic.ai.customimplementations.llms.JvmOpenAiChatLanguageModel;
 import org.jabref.logic.ai.customimplementations.tokenization.algorithms.TokenEstimator;
 import org.jabref.logic.ai.preferences.AiPreferences;
@@ -58,7 +57,7 @@ public class CurrentChatLanguageModel implements ChatModel, AutoCloseable {
 
     private void rebuild() {
         String apiKey = aiPreferences.getApiKeyForAiProvider(aiPreferences.getAiProvider());
-        if (!aiPreferences.getEnableAi() || (apiKey.isEmpty() && aiPreferences.getAiProvider() != AiProvider.GPT4ALL)) {
+        if (!aiPreferences.getEnableAi() || apiKey.isEmpty()) {
             langchainChatModel = null;
             return;
         }
@@ -66,9 +65,6 @@ public class CurrentChatLanguageModel implements ChatModel, AutoCloseable {
         switch (aiPreferences.getAiProvider()) {
             case OPEN_AI ->
                     langchainChatModel = new JvmOpenAiChatLanguageModel(aiPreferences, httpClient);
-
-            case GPT4ALL ->
-                    langchainChatModel = new Gpt4AllModel(aiPreferences, httpClient);
 
             case MISTRAL_AI ->
                     langchainChatModel = MistralAiChatModel
@@ -128,7 +124,7 @@ public class CurrentChatLanguageModel implements ChatModel, AutoCloseable {
         if (langchainChatModel == null) {
             if (!aiPreferences.getEnableAi()) {
                 throw new RuntimeException(Localization.lang("In order to use AI chat, you need to enable chatting with attached PDF files in JabRef preferences (AI tab)."));
-            } else if (aiPreferences.getApiKeyForAiProvider(aiPreferences.getAiProvider()).isEmpty() && aiPreferences.getAiProvider() != AiProvider.GPT4ALL) {
+            } else if (aiPreferences.getApiKeyForAiProvider(aiPreferences.getAiProvider()).isEmpty()) {
                 throw new RuntimeException(Localization.lang("In order to use AI chat, set an API key inside JabRef preferences (AI tab)."));
             } else {
                 rebuild();

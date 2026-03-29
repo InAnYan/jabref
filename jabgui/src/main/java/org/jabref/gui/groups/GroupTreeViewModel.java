@@ -517,7 +517,6 @@ public class GroupTreeViewModel extends AbstractViewModel {
                         currentDatabase.get(),
                         group.nameProperty(),
                         linkedFiles,
-                        aiService.getShutdownSignal(),
                         taskExecutor
                 ));
 
@@ -548,8 +547,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
                         currentDatabase.get(),
                         group.nameProperty(),
                         entries,
-                        false,
-                        aiService.getShutdownSignal()
+                        false
                 )
         );
 

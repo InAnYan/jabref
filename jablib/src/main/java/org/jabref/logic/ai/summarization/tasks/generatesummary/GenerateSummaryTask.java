@@ -1,7 +1,6 @@
 package org.jabref.logic.ai.summarization.tasks.generatesummary;
 
 import org.jabref.logic.ai.summarization.logic.PersistentBibEntrySummarizator;
-import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.summarization.BibEntrySummary;
@@ -38,14 +37,8 @@ public class GenerateSummaryTask extends TrackedBackgroundTask<BibEntrySummary> 
     public BibEntrySummary perform() throws InterruptedException {
         LOGGER.debug("Starting summarization task for entry {}", citationKey);
 
-        LongTaskInfo longTaskInfo = new LongTaskInfo(
-                progressCounter,
-                request.shutdownSignal()
-        );
-
         BibEntrySummary bibEntrySummary = persistentBibEntrySummarizator.summarize(
                 request.chatModel(),
-                longTaskInfo,
                 request.bibDatabaseContext(),
                 request.entry(),
                 request.regenerate()

@@ -16,7 +16,6 @@ import org.jabref.logic.ai.chatting.templates.ChattingUserMessageAiTemplate;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.model.ai.chatting.ChatMessage;
-import org.jabref.model.ai.debug.AiDebugInformation;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 
 public class AiChatLogic {
@@ -44,8 +43,7 @@ public class AiChatLogic {
                 chatModel.get(),
                 chatHistory,
                 answerEngine.get(),
-                template.get(),
-                new AiDebugInformation()
+                template.get()
         );
 
         return aiAnswerLogic.answer(

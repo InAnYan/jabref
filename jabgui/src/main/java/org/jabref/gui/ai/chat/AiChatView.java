@@ -71,7 +71,6 @@ public class AiChatView extends StackPane {
                 aiService.getEmbeddingFeature().getCurrentEmbeddingModel(),
                 aiService.getIngestionFeature().getEmbeddingsStore(),
                 aiService.getIngestionFeature().getCurrentDocumentSplitter(),
-                aiService.getShutdownSignal(),
                 taskExecutor
         );
 

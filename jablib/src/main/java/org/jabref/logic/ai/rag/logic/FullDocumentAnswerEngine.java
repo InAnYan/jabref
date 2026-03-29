@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.ingestion.logic.parsing.UniversalContentParser;
-import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
@@ -23,7 +22,6 @@ public class FullDocumentAnswerEngine implements AnswerEngine {
 
     @Override
     public List<RelevantInformation> process(
-            LongTaskInfo longTaskInfo,
             String query,
             List<BibEntryAiIdentifier> entriesFilter
     ) {
@@ -38,7 +36,7 @@ public class FullDocumentAnswerEngine implements AnswerEngine {
                                 .map(linkedFile ->
                                         linkedFile
                                                 .findIn(entryIdentifier.databaseContext(), filePreferences)
-                                                .flatMap(p -> universalContentParser.parse(longTaskInfo, p))
+                                                .flatMap(universalContentParser::parse)
                                                 .map(c -> new RelevantInformation(BibEntryAiIdentifier.findEntryByLink(entryIdentifier, linkedFile.getLink()).flatMap(BibEntry::getCitationKey).orElse(null), c))
                                 )
                                 .filter(Optional::isPresent)

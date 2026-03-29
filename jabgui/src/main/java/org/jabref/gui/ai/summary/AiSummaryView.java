@@ -55,7 +55,6 @@ public class AiSummaryView extends StackPane {
                 aiService.getSummarizationFeature().getCurrentSummarizator(),
                 aiService.getSummarizationFeature().getSummariesRepository(),
                 aiService.getSummarizationFeature().getTaskAggregator(),
-                aiService.getShutdownSignal(),
                 dialogService
         );
 

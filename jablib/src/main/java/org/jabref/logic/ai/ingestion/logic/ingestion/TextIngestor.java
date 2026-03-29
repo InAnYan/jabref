@@ -3,7 +3,6 @@ package org.jabref.logic.ai.ingestion.logic.ingestion;
 import java.util.List;
 
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
-import org.jabref.logic.ai.util.LongTaskInfo;
 
 import dev.langchain4j.data.document.DefaultDocument;
 import dev.langchain4j.data.document.Metadata;
@@ -33,21 +32,17 @@ public class TextIngestor {
     }
 
     public void ingest(
-            LongTaskInfo longTaskInfo,
             Metadata metadata,
             String text
     ) throws InterruptedException {
-        List<String> chunks = documentSplitter.split(longTaskInfo, text).toList();
-        longTaskInfo.progressCounter().increaseWorkMax(chunks.size());
+        List<String> chunks = documentSplitter.split(text).toList();
 
         for (String documentPart : chunks) {
-            if (longTaskInfo.shutdownSignal().get()) {
+            if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException();
             }
 
             ingestor.ingest(new DefaultDocument(documentPart, metadata));
-
-            longTaskInfo.progressCounter().increaseWorkDone(1);
         }
     }
 }

@@ -8,7 +8,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -65,7 +64,6 @@ public class AiChatViewModel extends AbstractViewModel {
     private final EmbeddingModel embeddingModel;
     private final EmbeddingStore<TextSegment> embeddingStore;
     private final DocumentSplitter documentSplitter;
-    private final ReadOnlyBooleanProperty shutdownSignal;
     private final TaskExecutor taskExecutor;
 
     private final AiChatLogic aiChatLogic;
@@ -80,7 +78,6 @@ public class AiChatViewModel extends AbstractViewModel {
             EmbeddingModel embeddingModel,
             EmbeddingStore<TextSegment> embeddingStore,
             DocumentSplitter documentSplitter,
-            ReadOnlyBooleanProperty shutdownSignal,
             TaskExecutor taskExecutor
     ) {
         this.aiPreferences = aiPreferences;
@@ -91,7 +88,6 @@ public class AiChatViewModel extends AbstractViewModel {
         this.embeddingModel = embeddingModel;
         this.embeddingStore = embeddingStore;
         this.documentSplitter = documentSplitter;
-        this.shutdownSignal = shutdownSignal;
         this.taskExecutor = taskExecutor;
 
         this.aiChatLogic = new AiChatLogic(
@@ -161,8 +157,7 @@ public class AiChatViewModel extends AbstractViewModel {
                                             embeddingModel,
                                             documentSplitter,
                                             identifier.databaseContext(),
-                                            file,
-                                            shutdownSignal
+                                            file
                                     )
                             );
 
@@ -192,7 +187,7 @@ public class AiChatViewModel extends AbstractViewModel {
 
         task.onSuccess(taskChatHistory::add);
 
-        task.onFailure(ex -> taskChatHistory.add(ChatMessage.errorMessage(ex, task.getDebugInformation())));
+        task.onFailure(ex -> taskChatHistory.add(ChatMessage.errorMessage(ex)));
 
         task.onFinished(() -> {
             tasksMap.remove(taskEntries);

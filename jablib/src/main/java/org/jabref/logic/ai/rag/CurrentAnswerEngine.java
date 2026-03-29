@@ -7,7 +7,6 @@ import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.ai.rag.logic.EmbeddingsSearchAnswerEngine;
 import org.jabref.logic.ai.rag.logic.FullDocumentAnswerEngine;
-import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
@@ -67,14 +66,13 @@ public class CurrentAnswerEngine implements AnswerEngine {
 
     @Override
     public List<RelevantInformation> process(
-            LongTaskInfo longTaskInfo,
             String query,
             List<BibEntryAiIdentifier> entriesFilter
     ) {
         if (answerEngine == null) {
             return List.of();
         } else {
-            return answerEngine.process(longTaskInfo, query, entriesFilter);
+            return answerEngine.process(query, entriesFilter);
         }
     }
 

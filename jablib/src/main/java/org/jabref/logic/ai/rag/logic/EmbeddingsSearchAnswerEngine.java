@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.jabref.logic.ai.ingestion.logic.EmbeddingsCleaner;
-import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
@@ -45,7 +44,6 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
 
     @Override
     public List<RelevantInformation> process(
-            LongTaskInfo longTaskInfo,
             String query,
             List<BibEntryAiIdentifier> entriesFilter
     ) {

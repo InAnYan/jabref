@@ -49,9 +49,7 @@ public class GenerateSummaryForSeveralTask extends TrackedBackgroundTask<Void> {
         request.entries()
                .stream()
                .map(entry -> {
-                   Pair<? extends Future<?>, GenerateSummaryTask> pair = request.summarizationTaskAggregator().startWithFuture(
-                           request.toSingle(entry)
-                   );
+                   Pair<? extends Future<?>, GenerateSummaryTask> pair = request.summarizationTaskAggregator().startWithFuture(request.toSingle(entry));
 
                    pair.getValue().statusProperty().addListener((_, _, newValue) -> {
                        if (newValue.isFinished()) {

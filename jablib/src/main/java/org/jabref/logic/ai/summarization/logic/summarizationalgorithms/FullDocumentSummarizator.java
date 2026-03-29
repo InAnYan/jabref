@@ -5,7 +5,6 @@ import java.util.List;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.templates.SummarizationFullDocumentSystemMessageAiTemplate;
 import org.jabref.logic.ai.summarization.templates.SummarizationFullDocumentUserMessageAiTemplate;
-import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
 import dev.langchain4j.data.message.SystemMessage;
@@ -28,12 +27,10 @@ public class FullDocumentSummarizator implements Summarizator {
     }
 
     @Override
-    public String summarize(ChatModel chatModel, LongTaskInfo longTaskInfo, String text) throws InterruptedException {
+    public String summarize(ChatModel chatModel, String text) throws InterruptedException {
         LOGGER.debug("Summarizing whole document ({} chars)", text.length());
 
-        longTaskInfo.progressCounter().increaseWorkMax(1);
-
-        if (longTaskInfo.shutdownSignal().get()) {
+        if (Thread.currentThread().isInterrupted()) {
             throw new InterruptedException();
         }
 
@@ -45,9 +42,8 @@ public class FullDocumentSummarizator implements Summarizator {
                 new SystemMessage(systemMessage),
                 new UserMessage(userMessage)
         )).aiMessage().text();
+        
         LOGGER.debug("Full-document summary was generated successfully");
-
-        longTaskInfo.progressCounter().increaseWorkDone(1);
         return result;
     }
 

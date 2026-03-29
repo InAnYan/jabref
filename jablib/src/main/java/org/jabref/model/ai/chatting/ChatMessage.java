@@ -6,13 +6,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.debug.AiDebugInformation;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.annotation.Nullable;
-
 public class ChatMessage {
     public enum Role {
         USER,
@@ -36,8 +33,6 @@ public class ChatMessage {
     private final Role role;
     private final String content;
     private final List<RelevantInformation> relevantInformation;
-    @Nullable private final String thinking;
-    @Nullable private final AiDebugInformation debugInformation;
 
     @JsonCreator
     public ChatMessage(
@@ -45,17 +40,13 @@ public class ChatMessage {
             @JsonProperty("timestamp") Instant timestamp,
             @JsonProperty("role") Role role,
             @JsonProperty("content") String content,
-            @JsonProperty("relevantInformation") List<RelevantInformation> relevantInformation,
-            @JsonProperty("thinking") @Nullable String thinking,
-            @JsonProperty("aiDebugInformation") @Nullable AiDebugInformation aiDebugInformation
+            @JsonProperty("relevantInformation") List<RelevantInformation> relevantInformation
     ) {
         this.id = id;
         this.timestamp = timestamp;
         this.role = role;
         this.content = content;
         this.relevantInformation = relevantInformation;
-        this.thinking = thinking;
-        this.debugInformation = aiDebugInformation;
     }
 
     public static ChatMessage userMessage(String content) {
@@ -64,9 +55,7 @@ public class ChatMessage {
                 Instant.now(),
                 Role.USER,
                 content,
-                List.of(),
-                null,
-                null
+                List.of()
         );
     }
 
@@ -76,41 +65,30 @@ public class ChatMessage {
                 timestamp,
                 Role.USER,
                 content,
-                List.of(),
-                null,
-                null
+                List.of()
         );
     }
 
     public static ChatMessage aiMessage(
             String content,
-            List<RelevantInformation> relevantInformation,
-            @Nullable String thinking,
-            AiDebugInformation debugInformation
+            List<RelevantInformation> relevantInformation
     ) {
         return new ChatMessage(
                 UUID.randomUUID().toString(),
                 Instant.now(),
                 Role.AI,
                 content,
-                relevantInformation,
-                thinking,
-                debugInformation
+                relevantInformation
         );
     }
 
-    public static ChatMessage errorMessage(
-            Throwable throwable,
-            AiDebugInformation debugInformation
-    ) {
+    public static ChatMessage errorMessage(Throwable throwable) {
         return new ChatMessage(
                 UUID.randomUUID().toString(),
                 Instant.now(),
                 Role.ERROR,
                 throwable.getMessage(),
-                List.of(),
-                null,
-                debugInformation
+                List.of()
         );
     }
 
@@ -134,15 +112,6 @@ public class ChatMessage {
         return relevantInformation;
     }
 
-    @Nullable
-    public String getThinking() {
-        return thinking;
-    }
-
-    @Nullable
-    public AiDebugInformation getDebugInformation() {
-        return debugInformation;
-    }
 
     public Optional<dev.langchain4j.data.message.ChatMessage> toLangChainMessage() {
         return Optional.ofNullable(switch (role) {

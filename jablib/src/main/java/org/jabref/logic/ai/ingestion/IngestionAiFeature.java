@@ -10,12 +10,11 @@ import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.database.BibDatabaseContext;
 
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 
-public class IngestionAiFeature implements AiFeature {
+public class IngestionAiFeature extends AiFeature {
     private static final String EMBEDDINGS_FILE_NAME = "embeddings.mv";
     private static final String FULLY_INGESTED_FILE_NAME = "fully-ingested.mv";
 
@@ -54,10 +53,6 @@ public class IngestionAiFeature implements AiFeature {
         );
     }
 
-    @Override
-    public void setupDatabase(BibDatabaseContext context) {
-        // Nothing to listen for.
-    }
 
     public IngestionTaskAggregator getIngestionTaskAggregator() {
         return ingestionTaskAggregator;

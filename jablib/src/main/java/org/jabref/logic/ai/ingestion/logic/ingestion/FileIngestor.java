@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.logic.parsing.UniversalContentParser;
-import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.l10n.Localization;
 
 import dev.langchain4j.data.document.Metadata;
@@ -35,15 +34,17 @@ public class FileIngestor {
     }
 
     public void ingest(
-            LongTaskInfo longTaskInfo,
             Metadata metadata,
             Path path
     ) throws InterruptedException {
-        Optional<String> document = universalFileParser.parse(longTaskInfo, path);
+        Optional<String> document = universalFileParser.parse(path);
+
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
 
         if (document.isPresent()) {
             textIngestor.ingest(
-                    longTaskInfo,
                     metadata,
                     document.get()
             );

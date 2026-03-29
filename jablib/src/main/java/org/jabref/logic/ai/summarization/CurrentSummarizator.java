@@ -5,7 +5,6 @@ import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.templates.AiTemplatesFactory;
-import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 import org.jabref.model.ai.templating.AiTemplateKind;
 
@@ -46,12 +45,12 @@ public class CurrentSummarizator implements Summarizator {
     }
 
     @Override
-    public String summarize(ChatModel chatModel, LongTaskInfo longTaskInfo, String text) throws InterruptedException {
+    public String summarize(ChatModel chatModel, String text) throws InterruptedException {
         if (summarizator == null) {
             throw new RuntimeException("No summarization algorithm selected.");
         }
 
-        return summarizator.summarize(chatModel, longTaskInfo, text);
+        return summarizator.summarize(chatModel, text);
     }
 
     @Override

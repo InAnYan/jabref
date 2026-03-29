@@ -8,17 +8,13 @@ import org.jabref.logic.ai.chatting.repositories.MVStoreChatHistoryRepository;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.NotificationService;
-import org.jabref.model.database.BibDatabaseContext;
 
-public class ChattingAiFeature implements AiFeature {
+public class ChattingAiFeature extends AiFeature {
     private static final String CHAT_HISTORY_FILE_NAME = "chat-histories.mv"; // v2
 
     private final MVStoreChatHistoryRepository mvStoreChatHistoryRepository;
 
     private final CurrentChatLanguageModel currentChatLanguageModel;
-
-    private final EntryChattingDatabaseListener entryChattingDatabaseListener;
-    private final GroupChattingDatabaseListener groupChattingDatabaseListener;
 
     public ChattingAiFeature(
             AiPreferences aiPreferences,
@@ -34,17 +30,8 @@ public class ChattingAiFeature implements AiFeature {
                 new CurrentTokenEstimator(aiPreferences)
         );
 
-        this.entryChattingDatabaseListener = new EntryChattingDatabaseListener(
-                mvStoreChatHistoryRepository
-        );
-        this.groupChattingDatabaseListener = new GroupChattingDatabaseListener(
-                mvStoreChatHistoryRepository
-        );
-    }
-
-    public void setupDatabase(BibDatabaseContext databaseContext) {
-        entryChattingDatabaseListener.setupDatabase(databaseContext);
-        groupChattingDatabaseListener.setupDatabase(databaseContext);
+        databaseListeners.add(new EntryChattingDatabaseListener(mvStoreChatHistoryRepository));
+        databaseListeners.add(new GroupChattingDatabaseListener(mvStoreChatHistoryRepository));
     }
 
     public CurrentChatLanguageModel getCurrentChatModel() {

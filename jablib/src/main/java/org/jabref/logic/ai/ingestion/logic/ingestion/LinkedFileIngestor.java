@@ -4,7 +4,6 @@ import java.nio.file.Path;
 
 import org.jabref.logic.ai.ingestion.logic.EmbeddingsCleaner;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
-import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.model.entry.LinkedFile;
 
 import dev.langchain4j.data.document.Metadata;
@@ -28,13 +27,12 @@ public class LinkedFileIngestor {
     }
 
     public void ingest(
-            LongTaskInfo longTaskInfo,
             LinkedFile linkedFile,
             Path path
     ) throws InterruptedException {
         Metadata metadata = new Metadata();
         metadata.put(EmbeddingsCleaner.LINK_METADATA_KEY, linkedFile.getLink());
 
-        fileIngestor.ingest(longTaskInfo, metadata, path);
+        fileIngestor.ingest(metadata, path);
     }
 }

@@ -2,6 +2,7 @@ package org.jabref.logic.ai.chatting.listeners;
 
 import java.util.List;
 
+import org.jabref.logic.ai.DatabaseListener;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.chatting.GroupChatHistoryIdentifier;
@@ -10,7 +11,7 @@ import org.jabref.model.database.BibDatabaseContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GroupChattingDatabaseListener {
+public class GroupChattingDatabaseListener implements DatabaseListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupChattingDatabaseListener.class);
 
     private final ChatHistoryRepository chatHistoryRepository;
@@ -21,6 +22,7 @@ public class GroupChattingDatabaseListener {
         this.chatHistoryRepository = chatHistoryRepository;
     }
 
+    @Override
     public void setupDatabase(BibDatabaseContext databaseContext) {
         databaseContext.getMetaData().getGroups().ifPresent(rootGroupTreeNode ->
                 rootGroupTreeNode.iterateOverTree().forEach(groupNode -> {

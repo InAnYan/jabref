@@ -70,8 +70,7 @@ public class GenerateEmbeddingsForSeveralTask extends BackgroundTask<Void> {
                                     request.embeddingModel(),
                                     request.documentSplitter(),
                                     request.bibDatabaseContext(),
-                                    linkedFile,
-                                    request.shutdownSignal()
+                                    linkedFile
                             ));
 
                     pair.getValue()

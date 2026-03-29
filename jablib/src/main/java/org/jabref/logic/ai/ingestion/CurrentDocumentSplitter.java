@@ -5,7 +5,6 @@ import java.util.stream.Stream;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.SlidingWindowDocumentSplitter;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.model.ai.pipeline.DocumentSplitterKind;
 
 import org.jspecify.annotations.Nullable;
@@ -44,12 +43,12 @@ public class CurrentDocumentSplitter implements DocumentSplitter {
     }
 
     @Override
-    public Stream<String> split(LongTaskInfo longTaskInfo, String text) throws InterruptedException {
+    public Stream<String> split(String text) throws InterruptedException {
         if (documentSplitter == null) {
             return Stream.of(text);
         }
 
-        return documentSplitter.split(longTaskInfo, text);
+        return documentSplitter.split(text);
     }
 
     @Override

@@ -1,7 +1,5 @@
 package org.jabref.logic.ai.summarization;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
-
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiFeature;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
@@ -14,16 +12,14 @@ import org.jabref.logic.ai.templates.AiTemplatesFactory;
 import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.database.BibDatabaseContext;
 
-public class SummarizationAiFeature implements AiFeature {
+public class SummarizationAiFeature extends AiFeature {
     private static final String SUMMARIES_FILE_NAME = "summaries.mv";
 
     private final MVStoreSummariesRepository mvStoreSummariesRepository;
 
     private final CurrentSummarizator currentSummarizator;
 
-    private final GenerateSummaryDatabaseListener generateSummaryDatabaseListener;
     private final SummarizationTaskAggregator summarizationTaskAggregator;
 
     public SummarizationAiFeature(
@@ -31,7 +27,6 @@ public class SummarizationAiFeature implements AiFeature {
             FilePreferences filePreferences,
             ChatModel chatModel,
             AiTemplatesFactory aiTemplatesFactory,
-            ReadOnlyBooleanProperty shutdownSignal,
             TaskExecutor taskExecutor,
             NotificationService notificationService
     ) {
@@ -42,19 +37,15 @@ public class SummarizationAiFeature implements AiFeature {
         this.currentSummarizator = new CurrentSummarizator(aiPreferences, aiTemplatesFactory);
 
         this.summarizationTaskAggregator = new SummarizationTaskAggregator(taskExecutor);
-        this.generateSummaryDatabaseListener = new GenerateSummaryDatabaseListener(
+
+        this.databaseListeners.add(new GenerateSummaryDatabaseListener(
                 aiPreferences,
                 filePreferences,
                 chatModel,
                 mvStoreSummariesRepository,
                 summarizationTaskAggregator,
-                currentSummarizator,
-                shutdownSignal
-        );
-    }
-
-    public void setupDatabase(BibDatabaseContext context) {
-        generateSummaryDatabaseListener.setupDatabase(context);
+                currentSummarizator
+        ));
     }
 
     public SummarizationTaskAggregator getTaskAggregator() {

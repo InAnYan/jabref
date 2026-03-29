@@ -2,7 +2,6 @@ package org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral;
 
 import java.util.List;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
@@ -25,7 +24,6 @@ public record GenerateEmbeddingsForSeveralTaskRequest(
         BibDatabaseContext bibDatabaseContext,
         StringProperty groupName,
         List<LinkedFile> linkedFiles,
-        ReadOnlyBooleanProperty shutdownSignal,
         TaskExecutor taskExecutor
 ) {
 }

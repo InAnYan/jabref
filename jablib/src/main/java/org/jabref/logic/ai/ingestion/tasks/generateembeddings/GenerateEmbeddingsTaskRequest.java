@@ -1,7 +1,5 @@
 package org.jabref.logic.ai.ingestion.tasks.generateembeddings;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
-
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
@@ -19,7 +17,6 @@ public record GenerateEmbeddingsTaskRequest(
         EmbeddingModel embeddingModel,
         DocumentSplitter documentSplitter,
         BibDatabaseContext bibDatabaseContext,
-        LinkedFile linkedFile,
-        ReadOnlyBooleanProperty shutdownSignal
+        LinkedFile linkedFile
 ) {
 }

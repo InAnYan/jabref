@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 
@@ -68,7 +67,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
     private final Summarizator defaultSummarizator;
     private final SummariesRepository summariesRepository;
     private final SummarizationTaskAggregator summarizationTaskAggregator;
-    private final ReadOnlyBooleanProperty shutdownSignal;
     private final DialogService dialogService;
 
     public AiSummaryViewModel(
@@ -78,7 +76,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
             Summarizator defaultSummarizator,
             SummariesRepository summariesRepository,
             SummarizationTaskAggregator summarizationTaskAggregator,
-            ReadOnlyBooleanProperty shutdownSignal,
             DialogService dialogService
     ) {
         this.aiPreferences = aiPreferences;
@@ -87,7 +84,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
         this.defaultSummarizator = defaultSummarizator;
         this.summariesRepository = summariesRepository;
         this.summarizationTaskAggregator = summarizationTaskAggregator;
-        this.shutdownSignal = shutdownSignal;
         this.dialogService = dialogService;
 
         setupBindings();
@@ -253,8 +249,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
                         summarizator.get(),
                         bibDatabaseContext,
                         entry,
-                        true,
-                        shutdownSignal
+                        true
                 )
         );
 

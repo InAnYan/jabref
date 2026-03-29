@@ -1,9 +1,9 @@
-package org.jabref.logic.ai.preferences;
+package org.jabref.model.ai.llm;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.jabref.model.ai.llm.AiProvider;
+import org.jabref.logic.ai.preferences.AiDefaultExpertSettings;
 
 public enum PredefinedChatModel {
     GPT_4O_MINI(AiProvider.OPEN_AI, "gpt-4o-mini", 128000),
@@ -21,8 +21,7 @@ public enum PredefinedChatModel {
     GEMINI_1_0_PRO(AiProvider.GEMINI, "gemini-1.0-pro", 32000),
     // Dummy variant for Hugging Face models.
     // Blank entry used for cases where the model name is not specified.
-    BLANK_HUGGING_FACE(AiProvider.HUGGING_FACE, "", 0),
-    BLANK_GPT4ALL(AiProvider.GPT4ALL, "", 0);
+    BLANK_HUGGING_FACE(AiProvider.HUGGING_FACE, "", 0);
 
     private final AiProvider aiProvider;
     private final String name;
@@ -65,3 +64,5 @@ public enum PredefinedChatModel {
         return aiProvider.toString() + " " + name;
     }
 }
+
+

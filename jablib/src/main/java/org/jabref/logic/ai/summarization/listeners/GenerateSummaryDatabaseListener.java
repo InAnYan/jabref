@@ -1,8 +1,7 @@
 package org.jabref.logic.ai.summarization.listeners;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
-
 import org.jabref.logic.FilePreferences;
+import org.jabref.logic.ai.DatabaseListener;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.SummarizationTaskAggregator;
@@ -16,14 +15,13 @@ import org.jabref.model.entry.field.StandardField;
 
 import com.google.common.eventbus.Subscribe;
 
-public class GenerateSummaryDatabaseListener {
+public class GenerateSummaryDatabaseListener implements DatabaseListener {
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
     private final ChatModel chatModel;
     private final SummariesRepository summariesRepository;
     private final SummarizationTaskAggregator summarizationTaskAggregator;
     private final Summarizator summarizator;
-    private final ReadOnlyBooleanProperty shutdownSignal;
 
     public GenerateSummaryDatabaseListener(
             AiPreferences aiPreferences,
@@ -31,8 +29,7 @@ public class GenerateSummaryDatabaseListener {
             ChatModel chatModel,
             SummariesRepository summariesRepository,
             SummarizationTaskAggregator summarizationTaskAggregator,
-            Summarizator summarizator,
-            ReadOnlyBooleanProperty shutdownSignal
+            Summarizator summarizator
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
@@ -40,9 +37,9 @@ public class GenerateSummaryDatabaseListener {
         this.summariesRepository = summariesRepository;
         this.summarizationTaskAggregator = summarizationTaskAggregator;
         this.summarizator = summarizator;
-        this.shutdownSignal = shutdownSignal;
     }
 
+    @Override
     public void setupDatabase(BibDatabaseContext context) {
         // GC was eating the listeners, so we have to fall back to the event bus.
         context.getDatabase().registerListener(new EntriesChangedListener(context));
@@ -66,8 +63,7 @@ public class GenerateSummaryDatabaseListener {
                             summarizator,
                             context,
                             entry,
-                            false,
-                            shutdownSignal
+                            false
                     ));
                 }
             });
@@ -83,8 +79,7 @@ public class GenerateSummaryDatabaseListener {
                         summarizator,
                         context,
                         e.getBibEntry(),
-                        false,
-                        shutdownSignal
+                        false
                 ));
             }
         }

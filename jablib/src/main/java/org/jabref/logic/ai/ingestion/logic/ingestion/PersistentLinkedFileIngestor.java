@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
-import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.LinkedFile;
@@ -46,7 +45,6 @@ public class PersistentLinkedFileIngestor {
 
     public void ingest(
             BibDatabaseContext bibDatabaseContext,
-            LongTaskInfo longTaskInfo,
             LinkedFile linkedFile
     ) throws InterruptedException {
         // TODO: Simplify this method.
@@ -92,9 +90,9 @@ public class PersistentLinkedFileIngestor {
             return;
         }
 
-        linkedFileIngestor.ingest(longTaskInfo, linkedFile, path.get());
+        linkedFileIngestor.ingest(linkedFile, path.get());
 
-        if (!longTaskInfo.shutdownSignal().get()) {
+        if (!Thread.currentThread().isInterrupted()) {
             ingestedDocumentsRepository.markDocumentAsFullyIngested(linkedFile.getLink(), modTime.orElse(0L));
         }
     }

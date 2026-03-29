@@ -1,7 +1,5 @@
 package org.jabref.logic.ai.summarization.tasks.generatesummary;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
-
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
@@ -16,7 +14,6 @@ public record GenerateSummaryTaskRequest(
         Summarizator summarizator,
         BibDatabaseContext bibDatabaseContext,
         BibEntry entry,
-        boolean regenerate,
-        ReadOnlyBooleanProperty shutdownSignal
+        boolean regenerate
 ) {
 }

@@ -2,7 +2,6 @@ package org.jabref.logic.ai.ingestion.logic.documentsplitting;
 
 import java.util.stream.Stream;
 
-import org.jabref.logic.ai.util.LongTaskInfo;
 import org.jabref.model.ai.pipeline.DocumentSplitterKind;
 
 import dev.langchain4j.data.document.DefaultDocument;
@@ -20,8 +19,7 @@ public class SlidingWindowDocumentSplitter implements DocumentSplitter {
     }
 
     @Override
-    public Stream<String> split(LongTaskInfo longTaskInfo, String text) throws InterruptedException {
-        // NOTE: Unfortunately, there is no way to handle the shutdown signal. It returns a `List` and not a stream or an iterator.
+    public Stream<String> split(String text) {
         return langchainDocumentSplitter
                 .split(new DefaultDocument(text))
                 .stream()
