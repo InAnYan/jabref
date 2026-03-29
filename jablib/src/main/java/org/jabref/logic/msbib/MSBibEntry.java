@@ -70,7 +70,7 @@ class MSBibEntry {
     /// WORD SPACE , SPACE WORD SPACE (Can be zero or more) , SPACE WORD (Can be zero or more) <br>
     /// Matches both single locations (only city) like Berlin and full locations like Stroudsburg, PA, USA <br>
     /// tested using http://www.regexpal.com/
-    private final Pattern ADDRESS_PATTERN = Pattern.compile("\\b(\\w+)\\s?[,]?\\s?(\\w*)\\s?[,]?\\s?(\\w*)\\b");
+    private static final Pattern ADDRESS_PATTERN = Pattern.compile("\\b(\\w+)\\s?[,]?\\s?(\\w*)\\s?[,]?\\s?(\\w*)\\b");
 
     public MSBibEntry() {
         // empty

@@ -40,6 +40,7 @@ import com.sun.star.text.XTextDocument;
 public class CSLCitationOOAdapter {
 
     private static final CitationStyleOutputFormat HTML_OUTPUT_FORMAT = CitationStyleOutputFormat.HTML;
+    private static final Pattern CITATION_NUMBER_PATTERN = Pattern.compile("(\\D*)(\\d+)(\\D*)");
 
     private final XTextDocument document;
     private final CSLReferenceMarkManager markManager;
@@ -259,8 +260,7 @@ public class CSLCitationOOAdapter {
 
     /// Transforms the numbers in the citation to globally-unique (and thus, reusable) numbers.
     private String updateSingleOrMultipleCitationNumbers(String citation, List<BibEntry> entries) {
-        Pattern pattern = Pattern.compile("(\\D*)(\\d+)(\\D*)");
-        Matcher matcher = pattern.matcher(citation);
+        Matcher matcher = CITATION_NUMBER_PATTERN.matcher(citation);
         StringBuilder sb = new StringBuilder();
         Iterator<BibEntry> iterator = entries.iterator();
 

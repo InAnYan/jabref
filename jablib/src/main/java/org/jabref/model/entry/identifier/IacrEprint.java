@@ -21,13 +21,14 @@ public class IacrEprint implements Identifier {
     private static final Logger LOGGER = LoggerFactory.getLogger(IacrEprint.class);
 
     private static final String IACR_EPRINT_EXP = "\\d{4}\\/\\d{3,5}";
+    private static final Pattern IACR_EPRINT_PATTERN = Pattern.compile(IACR_EPRINT_EXP);
     private final String iacrEprint;
 
     IacrEprint(@NonNull String iacrEprint) {
         String trimmedId = iacrEprint.trim();
 
         if (matchesExcepted(trimmedId)) {
-            Matcher matcher = Pattern.compile(IACR_EPRINT_EXP).matcher(trimmedId);
+            Matcher matcher = IACR_EPRINT_PATTERN.matcher(trimmedId);
             matcher.find();
             this.iacrEprint = matcher.group(0);
         } else {
