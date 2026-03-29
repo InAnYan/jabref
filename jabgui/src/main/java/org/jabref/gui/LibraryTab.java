@@ -432,7 +432,16 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
         } else {
             if (databaseLocation == DatabaseLocation.LOCAL) {
                 tabTitle.append('*');
-                tabTitle.append(Localization.lang("untitled"));
+                List<LibraryTab> untitledTabs = tabContainer.getLibraryTabs().stream()
+                        .filter(tab -> tab.getBibDatabaseContext().getDatabasePath().isEmpty()
+                                && tab.getBibDatabaseContext().getLocation() == DatabaseLocation.LOCAL)
+                        .toList();
+                int untitledIndex = untitledTabs.indexOf(this);
+                if (untitledIndex > 0) {
+                    tabTitle.append(Localization.lang("untitled (%0)", Integer.toString(untitledIndex)));
+                } else {
+                    tabTitle.append(Localization.lang("untitled"));
+                }
             } else {
                 addSharedDbInformation(tabTitle, bibDatabaseContext);
                 addSharedDbInformation(toolTipText, bibDatabaseContext);
