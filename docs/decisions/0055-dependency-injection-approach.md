@@ -1,6 +1,5 @@
 ---
-title: Usage of Dependency Injection
-nav_order: 100
+nav_order: 55
 parent: Decision Records
 ---
 # Usage of Dependency Injection
