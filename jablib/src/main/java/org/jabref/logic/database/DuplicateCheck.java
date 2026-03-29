@@ -75,7 +75,15 @@ public class DuplicateCheck {
     private static boolean haveSameIdentifier(final BibEntry one, final BibEntry two) {
         return one.getFields().stream()
                   .filter(field -> field.getProperties().contains(FieldProperty.IDENTIFIER))
-                  .anyMatch(field -> two.getField(field).map(content -> one.getField(field).orElseThrow().equals(content)).orElse(false));
+                  .anyMatch(field -> two.getField(field)
+                                        .map(content -> {
+                                            String oneValue = one.getField(field).orElseThrow();
+                                            if (field == StandardField.DOI) {
+                                                return oneValue.equalsIgnoreCase(content);
+                                            }
+                                            return oneValue.equals(content);
+                                        })
+                                        .orElse(false));
     }
 
     private static boolean haveDifferentEntryType(final BibEntry one, final BibEntry two) {
@@ -328,7 +336,6 @@ public class DuplicateCheck {
     public Optional<BibEntry> containsDuplicate(final BibDatabase database,
                                                 final BibEntry entry,
                                                 final BibDatabaseMode bibDatabaseMode) {
-
         return database.getEntries().stream().filter(other -> isDuplicate(entry, other, bibDatabaseMode)).findFirst();
     }
 }

@@ -1,3 +1,7 @@
+# AI tooling
+
+.claude/
+
 # no generated files in version control
 src/main/gen/
 src/main/generated/
@@ -69,9 +73,6 @@ flatpak/JabRef-portable_linux.tar.gz
 # Gradle
 # generated when `gradlew --gui` is called
 ui/
-# for workspace specific gradle properties
-gradle.properties
-
 
 # IntelliJ IDEA
 !.idea/codeStyles

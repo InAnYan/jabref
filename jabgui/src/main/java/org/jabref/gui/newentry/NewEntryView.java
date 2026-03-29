@@ -54,6 +54,7 @@ import org.jabref.model.entry.BibEntryType;
 import org.jabref.model.entry.BibEntryTypesManager;
 import org.jabref.model.entry.identifier.Identifier;
 import org.jabref.model.entry.types.BiblatexAPAEntryTypeDefinitions;
+import org.jabref.model.entry.types.BiblatexApaEntryType;
 import org.jabref.model.entry.types.BiblatexEntryTypeDefinitions;
 import org.jabref.model.entry.types.BiblatexNonStandardEntryType;
 import org.jabref.model.entry.types.BiblatexNonStandardEntryTypeDefinitions;
@@ -160,12 +161,11 @@ public class NewEntryView extends BaseDialog<BibEntry> {
         setOnCloseRequest(_ -> cancel());
         setResultConverter(_ -> result);
 
-        getDialogPane().disableProperty().bind(viewModel.executingProperty());
-
         finalizeTabs();
         tabs.requestFocus();
     }
 
+    // [impl->req~newentry.clipboard.autofocus~1]
     private void finalizeTabs() {
         NewEntryDialogTab approach = initialApproach;
         if (approach == null) {
@@ -174,8 +174,11 @@ public class NewEntryView extends BaseDialog<BibEntry> {
                 Optional<Identifier> identifier = Identifier.from(clipboardText);
                 if (identifier.isPresent()) {
                     approach = NewEntryDialogTab.ENTER_IDENTIFIER;
-                    interpretText.setText(clipboardText);
-                    interpretText.selectAll();
+                    if (idText != null) {
+                        idText.setText(clipboardText);
+                        idText.selectAll();
+                        Platform.runLater(() -> idText.requestFocus());
+                    }
                 } else if (clipboardText.split(LINE_BREAK)[0].matches(BIBTEX_REGEX)) {
                     approach = NewEntryDialogTab.SPECIFY_BIBTEX;
                 } else {
@@ -214,6 +217,8 @@ public class NewEntryView extends BaseDialog<BibEntry> {
     @FXML
     public void initialize() {
         viewModel = new NewEntryViewModel(preferences, libraryTab, dialogService, stateManager, (UiTaskExecutor) taskExecutor, aiService, fileUpdateMonitor);
+
+        getDialogPane().disableProperty().bind(viewModel.executingProperty());
 
         visualizer.setDecoration(new IconValidationDecorator());
 
@@ -256,7 +261,6 @@ public class NewEntryView extends BaseDialog<BibEntry> {
             otherEntries = new ArrayList<>(BiblatexEntryTypeDefinitions.ALL);
             otherEntries.removeAll(recommendedEntries);
             otherEntries.addAll(BiblatexSoftwareEntryTypeDefinitions.ALL);
-            otherEntries.addAll(BiblatexAPAEntryTypeDefinitions.ALL);
         } else {
             recommendedEntries = BibtexEntryTypeDefinitions.RECOMMENDED;
             otherEntries = new ArrayList<>(BiblatexEntryTypeDefinitions.ALL);
@@ -277,6 +281,7 @@ public class NewEntryView extends BaseDialog<BibEntry> {
 
         if (isBiblatexMode) {
             addEntriesToPane(entryNonStandard, BiblatexNonStandardEntryTypeDefinitions.ALL);
+            addEntriesToPane(entryNonStandard, BiblatexAPAEntryTypeDefinitions.ALL);
         } else {
             entryNonStandardTitle.setVisible(false);
         }
@@ -308,19 +313,6 @@ public class NewEntryView extends BaseDialog<BibEntry> {
             }
         });
 
-        extractIdentifierFromClipboard()
-                .ifPresentOrElse(identifier -> {
-                            idText.setText(ClipBoardManager.getContents().trim());
-                            idText.selectAll();
-                            Platform.runLater(() -> {
-                                // [impl->req~newentry.clipboard.autofocus~1]
-                                idLookupSpecify.setSelected(true);
-                                WebFetchers.getIdBasedFetcherForIdentifier(identifier, importFormatPreferences)
-                                           .ifPresent(idFetcher::setValue);
-                            });
-                        },
-                        () -> Platform.runLater(() -> idLookupGuess.setSelected(true)));
-
         idLookupGuess.selectedProperty().addListener((_, _, newValue) -> {
             newEntryPreferences.setIdLookupGuessing(newValue);
             // When switching to auto-detect mode, detect identifier type from current text
@@ -329,16 +321,33 @@ public class NewEntryView extends BaseDialog<BibEntry> {
             }
         });
 
-        idFetcher.itemsProperty().bind(viewModel.idFetchersProperty());
+        idFetcher.setItems(viewModel.idFetchersProperty());
         new ViewModelListCellFactory<IdBasedFetcher>().withText(WebFetcher::getName).install(idFetcher);
-        idFetcher.disableProperty().bind(idLookupSpecify.selectedProperty().not());
+
         idFetcher.valueProperty().bindBidirectional(viewModel.idFetcherProperty());
+
         IdBasedFetcher initialFetcher = fetcherFromName(newEntryPreferences.getLatestIdFetcher());
         if (initialFetcher == null) {
             initialFetcher = fetcherFromName(DoiFetcher.NAME);
         }
         idFetcher.setValue(initialFetcher);
-        idFetcher.setOnAction(_ -> newEntryPreferences.setLatestIdFetcher(idFetcher.getValue().getName()));
+
+        String clipboard = ClipBoardManager.getContents().trim();
+        Optional<Identifier> identifier = Identifier.from(clipboard);
+
+        if (identifier.isPresent()) {
+            idText.setText(clipboard);
+            idText.selectAll();
+
+            Platform.runLater(() -> updateFetcherFromIdentifierText(clipboard));
+        }
+
+        idFetcher.disableProperty().bind(idLookupSpecify.selectedProperty().not());
+        idFetcher.setOnAction(_ -> {
+            if (idFetcher.getValue() != null) {
+                newEntryPreferences.setLatestIdFetcher(idFetcher.getValue().getName());
+            }
+        });
 
         // Auto-detect identifier type when typing in the identifier field
         // Only works when "Automatically determine identifier type" is selected
@@ -536,6 +545,9 @@ public class NewEntryView extends BaseDialog<BibEntry> {
         if (type instanceof BiblatexNonStandardEntryType entryType) {
             return descriptionOfNonStandardEntryType(entryType);
         }
+        if (type instanceof BiblatexApaEntryType entryType) {
+            return descriptionOfApaEntryType(entryType);
+        }
         return null;
     }
 
@@ -626,12 +638,6 @@ public class NewEntryView extends BaseDialog<BibEntry> {
                     Localization.lang("Commentaries which have a status different from regular books, such as legal commentaries.");
             case Image ->
                     Localization.lang("Images, pictures, photographs, and similar media.");
-            case Jurisdiction ->
-                    Localization.lang("Court decisions, court recordings, and similar things.");
-            case Legislation ->
-                    Localization.lang("Laws, bills, legislative proposals, and similar things.");
-            case Legal ->
-                    Localization.lang("Legal documents such as treaties.");
             case Letter ->
                     Localization.lang("Personal correspondence such as letters, emails, memoranda, etc.");
             case Movie ->
@@ -646,6 +652,23 @@ public class NewEntryView extends BaseDialog<BibEntry> {
                     Localization.lang("National and international standards issued by a standards body such as the International Organization for Standardization.");
             case Video ->
                     Localization.lang("Audiovisual recordings, typically on dvd, vhs cassette, or similar media.");
+        };
+    }
+
+    private static @NonNull String descriptionOfApaEntryType(BiblatexApaEntryType type) {
+        // These descriptions are based on biblatex-apa documentation, section 4.2.4.
+        // See [https://mirrors.ctan.org/macros/latex/contrib/biblatex-contrib/biblatex-apa/biblatex-apa.pdf].
+        return switch (type) {
+            case Jurisdiction ->
+                    Localization.lang("Court decisions, court recordings, and similar things.");
+            case Legislation ->
+                    Localization.lang("Laws, bills, legislative proposals, and similar things.");
+            case Legadminmaterial ->
+                    Localization.lang("Legislative and administrative material such as hearings, reports, and documents.");
+            case Constitution ->
+                    Localization.lang("National and international constitutions.");
+            case Legal ->
+                    Localization.lang("Legal documents such as treaties.");
         };
     }
 
@@ -668,22 +691,16 @@ public class NewEntryView extends BaseDialog<BibEntry> {
         return PlainCitationParserChoice.RULE_BASED_GENERAL;
     }
 
-    /// Updates the fetcher based on the identifier text.
-    /// Detects the identifier type and sets the appropriate fetcher if a valid identifier is found.
-    ///
-    /// @param text the identifier text to parse
     private void updateFetcherFromIdentifierText(@Nullable String text) {
-        Identifier.from(text)
-                  .flatMap(identifier -> WebFetchers.getIdBasedFetcherForIdentifier(identifier, importFormatPreferences))
-                  .map(fetcher -> fetcherFromName(fetcher.getName()))
-                  .ifPresent(idFetcher::setValue);
-    }
-
-    private Optional<Identifier> extractIdentifierFromClipboard() {
-        String clipboardText = ClipBoardManager.getContents().trim();
-        if (!StringUtil.isBlank(clipboardText) && !clipboardText.contains("\n")) {
-            return Identifier.from(clipboardText);
+        if (text == null) {
+            return;
         }
-        return Optional.empty();
+
+        Optional<Identifier> identifier = Identifier.from(text);
+
+        identifier
+                .flatMap(id -> WebFetchers.getIdBasedFetcherForIdentifier(id, importFormatPreferences))
+                .map(fetcher -> fetcherFromName(fetcher.getName()))
+                .ifPresent(idFetcher::setValue);
     }
 }
