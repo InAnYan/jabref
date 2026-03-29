@@ -39,6 +39,7 @@ import org.jabref.logic.importer.fetcher.MathSciNet;
 import org.jabref.logic.importer.fetcher.MedlineFetcher;
 import org.jabref.logic.importer.fetcher.Medra;
 import org.jabref.logic.importer.fetcher.OpenAccessDoi;
+import org.jabref.logic.importer.fetcher.OpenAireFetcher;
 import org.jabref.logic.importer.fetcher.OpenAlex;
 import org.jabref.logic.importer.fetcher.ResearchGate;
 import org.jabref.logic.importer.fetcher.RfcFetcher;
@@ -168,6 +169,7 @@ public class WebFetchers {
         searchBasedFetchers.add(new SpringerNatureWebFetcher(importerPreferences));
         searchBasedFetchers.add(new CrossRef());
         searchBasedFetchers.add(new OpenAlex(importerPreferences));
+        searchBasedFetchers.add(new OpenAireFetcher());
         searchBasedFetchers.add(new CiteSeer());
         searchBasedFetchers.add(new DOAJFetcher(importFormatPreferences));
         searchBasedFetchers.add(new IEEE(importFormatPreferences, importerPreferences));
