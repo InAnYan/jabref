@@ -57,7 +57,7 @@ Core logic classes should expose dependencies through constructors, with no fiel
 
 ### Use a mix of a DI framework and constructor-based DI
 
-More specifically: 
+More specifically:
 
 * JavaFX controllers: use `afterburnerfx` framework.
 * JAX-RS: use `jakarta.inject.Inject` and HK2 `org.glassfish.hk2.api.ServiceLocator`.
