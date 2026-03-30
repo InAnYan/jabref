@@ -40,6 +40,7 @@ import org.jspecify.annotations.Nullable;
 /// The mode is selected by the preferences whether to use Grobid or not.
 public class ExtractReferencesAction extends SimpleCommand {
     private static final Pattern COMMENT_NUMBER_PATTERN = Pattern.compile("^\\[(\\d+)\\]");
+
     private final int FILES_LIMIT = 10;
 
     private final DialogService dialogService;
