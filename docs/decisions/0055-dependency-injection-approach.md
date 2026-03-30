@@ -73,5 +73,3 @@ Analysis of the choice:
 ## More information
 
 This ADR focuses on the DI approach: constructor-based or with framework. However, an ADR of the chosen DI framework is to be done.
-
-Our use of `afterburnerfx` is also similar to the `ServiceLocator` pattern, as it relies on a centralized registry of objects that dependent components retrieve their dependencies from.
