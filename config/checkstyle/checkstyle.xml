@@ -73,8 +73,6 @@
     <!-- Detect Pattern.compile() with a string literal argument outside a static final field declaration.
          Use a private static final Pattern field instead to avoid recompiling on every invocation.
          Dynamic patterns (where the argument is a variable or concatenation) are intentionally excluded.
-         Note: &quot; is the XML entity for " and is required here because the regex appears in an XML attribute value;
-         CDATA sections cannot be used in attribute values.
          Limitation: patterns where the word "static" appears inside the string literal itself would not be flagged. -->
     <module name="RegexpSingleline">
         <property name="id" value="PatternCompileToStaticField"/>
