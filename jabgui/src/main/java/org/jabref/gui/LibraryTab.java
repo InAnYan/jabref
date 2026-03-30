@@ -279,6 +279,18 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
         text.append(modeInfo);
     }
 
+    private String getUntitledTabTitle() {
+        List<LibraryTab> untitledTabs = tabContainer.getLibraryTabs().stream()
+                .filter(tab -> tab.getBibDatabaseContext().getDatabasePath().isEmpty()
+                        && tab.getBibDatabaseContext().getLocation() == DatabaseLocation.LOCAL)
+                .toList();
+        int untitledIndex = untitledTabs.indexOf(this);
+        if (untitledIndex > 0) {
+            return Localization.lang("untitled (%0)", Integer.toString(untitledIndex));
+        }
+        return Localization.lang("untitled");
+    }
+
     private static void addSharedDbInformation(StringBuilder text, BibDatabaseContext bibDatabaseContext) {
         text.append(bibDatabaseContext.getDBMSSynchronizer().getDBName());
         text.append(" [");
@@ -432,16 +444,7 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
         } else {
             if (databaseLocation == DatabaseLocation.LOCAL) {
                 tabTitle.append('*');
-                List<LibraryTab> untitledTabs = tabContainer.getLibraryTabs().stream()
-                        .filter(tab -> tab.getBibDatabaseContext().getDatabasePath().isEmpty()
-                                && tab.getBibDatabaseContext().getLocation() == DatabaseLocation.LOCAL)
-                        .toList();
-                int untitledIndex = untitledTabs.indexOf(this);
-                if (untitledIndex > 0) {
-                    tabTitle.append(Localization.lang("untitled (%0)", Integer.toString(untitledIndex)));
-                } else {
-                    tabTitle.append(Localization.lang("untitled"));
-                }
+                tabTitle.append(getUntitledTabTitle());
             } else {
                 addSharedDbInformation(tabTitle, bibDatabaseContext);
                 addSharedDbInformation(toolTipText, bibDatabaseContext);
