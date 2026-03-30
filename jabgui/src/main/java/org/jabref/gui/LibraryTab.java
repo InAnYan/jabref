@@ -279,11 +279,16 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
         text.append(modeInfo);
     }
 
+    /// Returns an index for a new untitled library to generate names like "untitled (1)", "untitled (2)", etc.
     private int getUntitledLibraryNumber() {
+        // Relies on a fact that a fresh "untitled" library doesn't have a path and that new libraries are added at the end of the list.
+        // A trick, but works good enough.
+        
         List<LibraryTab> untitledTabs = tabContainer.getLibraryTabs().stream()
                 .filter(tab -> tab.getBibDatabaseContext().getDatabasePath().isEmpty()
                         && tab.getBibDatabaseContext().getLocation() == DatabaseLocation.LOCAL)
                 .toList();
+        
         return untitledTabs.indexOf(this);
     }
 
