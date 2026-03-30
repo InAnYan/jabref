@@ -49,7 +49,7 @@ public final class CSLFormatUtils {
 
     private static final Pattern YEAR_IN_CITATION_PATTERN = Pattern.compile("(.)(.*), (\\d{4}.*)");
     private static final Pattern BIBLIOGRAPHY_NUMBER_PATTERN = Pattern.compile("([\\[(])?(\\d+)([])])?(\\.)?\\s*");
-    
+
     private CSLFormatUtils() {
         // prevent instantiation
     }
