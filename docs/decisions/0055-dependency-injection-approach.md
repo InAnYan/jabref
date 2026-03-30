@@ -8,7 +8,7 @@ parent: Decision Records
 
 JabRef uses JavaFX for its graphical interface and plain Java for its logic layer. We need a consistent and maintainable strategy for dependency injection (DI).
 
-JavaFX imposes certain constraints on controllers and view models, especially regarding how FXML loads classes. At the same time, the rest of the app benefits from clear, explicit, and testable construction patterns. However, sometimes there are too much arguments in a constructor. The question is how to balance JavaFX requirements with the architectural clarity of constructor-based DI.
+JavaFX imposes certain constraints on controllers and view models, especially regarding how FXML loads classes. At the same time, the rest of the app benefits from clear, explicit, and testable construction patterns. However, sometimes there are too many arguments in a constructor. The question is how to balance JavaFX requirements with the architectural clarity of constructor-based DI.
 
 ## Decision Drivers
 
@@ -37,7 +37,7 @@ Chosen option: "Use a mix of a DI framework and constructor-based DI", because t
 ### Confirmation
 
 Compliance can be verified by code review:  
-JavaFX views should not expose required constructor parameters, classes that are necessary for the view model are injected as a fields in view class.
+JavaFX views should not expose required constructor parameters, classes that are necessary for the view model are injected as fields in view class.
 Core logic classes should expose dependencies through constructors, with no field injection or framework-specific annotations.  
 
 ## Pros and Cons of the Options
@@ -59,7 +59,7 @@ Core logic classes should expose dependencies through constructors, with no fiel
 
 More specifically: 
 
-* JavaFX controllers: use afterburnerfx framework.
+* JavaFX controllers: use `afterburnerfx` framework.
 * JAX-RS: use `jakarta.inject.Inject` and HK2 `org.glassfish.hk2.api.ServiceLocator`.
 * Other code: use constructor-based DI.
 
