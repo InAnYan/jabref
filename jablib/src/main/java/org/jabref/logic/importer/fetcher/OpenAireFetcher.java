@@ -5,13 +5,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringJoiner;
 
+import org.jabref.logic.importer.PagedSearchBasedParserFetcher;
 import org.jabref.logic.importer.ParseException;
 import org.jabref.logic.importer.Parser;
-import org.jabref.logic.importer.SearchBasedParserFetcher;
 import org.jabref.logic.importer.fetcher.transformers.DefaultQueryTransformer;
 import org.jabref.logic.importer.util.JsonReader;
+import org.jabref.model.entry.AuthorList;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.field.StandardField;
 import org.jabref.model.entry.types.EntryType;
@@ -22,14 +22,13 @@ import kong.unirest.core.json.JSONArray;
 import kong.unirest.core.json.JSONException;
 import kong.unirest.core.json.JSONObject;
 import org.apache.hc.core5.net.URIBuilder;
-import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// Fetcher for <a href="https://api.openaire.eu/graph/">OpenAIRE Graph API</a>
-/// Docs: <a href="https://graph.openaire.eu/docs/apis/graph-api/searching-entities/filtering-search-results">OpenAIRE Graph API Docs</a>
-@NullMarked
-public class OpenAireFetcher implements SearchBasedParserFetcher {
+/// Fetcher for the <a href="https://api.openaire.eu/graph/">OpenAIRE Graph API</a>
+///
+/// @see <a href="https://graph.openaire.eu/docs/apis/graph-api/searching-entities/filtering-search-results">API documentation</a>
+public class OpenAireFetcher implements PagedSearchBasedParserFetcher {
 
     public static final String FETCHER_NAME = "OpenAIRE";
 
@@ -37,21 +36,18 @@ public class OpenAireFetcher implements SearchBasedParserFetcher {
 
     private static final String API_URL = "https://api.openaire.eu/graph/v2/researchProducts";
 
-    private static final int PAGE_SIZE = 10;
-
     @Override
     public String getName() {
         return FETCHER_NAME;
     }
 
     @Override
-    public URL getURLForQuery(BaseQueryNode queryNode) throws URISyntaxException, MalformedURLException {
+    public URL getURLForQuery(BaseQueryNode queryNode, int pageNumber) throws URISyntaxException, MalformedURLException {
         URIBuilder uriBuilder = new URIBuilder(API_URL);
-        String searchQuery = new DefaultQueryTransformer().transformSearchQuery(queryNode).orElse("");
-        if (!searchQuery.isBlank()) {
-            uriBuilder.addParameter("search", searchQuery);
-        }
-        uriBuilder.addParameter("pageSize", String.valueOf(PAGE_SIZE));
+        new DefaultQueryTransformer().transformSearchQuery(queryNode).ifPresent(
+                query -> uriBuilder.addParameter("search", query));
+        uriBuilder.addParameter("page", String.valueOf(pageNumber + 1));
+        uriBuilder.addParameter("pageSize", String.valueOf(getPageSize()));
         uriBuilder.addParameter("sortBy", "relevance DESC");
         URL result = uriBuilder.build().toURL();
         LOGGER.debug("URL for query: {}", result);
@@ -62,145 +58,113 @@ public class OpenAireFetcher implements SearchBasedParserFetcher {
     public Parser getParser() {
         return inputStream -> {
             JSONObject response = JsonReader.toJsonObject(inputStream);
-            if (response.isEmpty()) {
-                return List.of();
-            }
-            if (!response.has("results")) {
+            if (response.isEmpty() || !response.has("results")) {
                 return List.of();
             }
             JSONArray results = response.getJSONArray("results");
             List<BibEntry> entries = new ArrayList<>(results.length());
             for (int i = 0; i < results.length(); i++) {
                 JSONObject item = results.getJSONObject(i);
-                entries.add(jsonItemToBibEntry(item));
+                entries.add(parseJSONtoBibEntry(item));
             }
             return entries;
         };
     }
 
-    private BibEntry jsonItemToBibEntry(JSONObject item) throws ParseException {
+    private BibEntry parseJSONtoBibEntry(JSONObject item) throws ParseException {
         try {
-            EntryType entryType = parseType(item.optString("type", ""));
+            BibEntry entry = new BibEntry(parseType(item.optString("type", "")));
 
-            BibEntry entry = new BibEntry(entryType);
+            entry.setField(StandardField.TITLE, item.optString("mainTitle", ""));
 
-            // Title
-            String mainTitle = item.optString("mainTitle", "");
-            if (!mainTitle.isBlank()) {
-                entry.withField(StandardField.TITLE, mainTitle);
-            }
-
-            // Description (abstract) - it's an array
+            // Description (abstract) - provided as an array
             JSONArray descriptions = item.optJSONArray("description");
             if (descriptions != null && !descriptions.isEmpty()) {
-                String abstractText = descriptions.optString(0, "");
-                if (!abstractText.isBlank()) {
-                    entry.withField(StandardField.ABSTRACT, abstractText);
-                }
+                entry.setField(StandardField.ABSTRACT, descriptions.optString(0, ""));
             }
 
-            // Publication date
+            // Publication date - extract the year portion
             String publicationDate = item.optString("publicationDate", "");
-            if (!publicationDate.isBlank() && publicationDate.length() >= 4) {
-                entry.withField(StandardField.YEAR, publicationDate.substring(0, 4));
+            if (publicationDate.length() >= 4) {
+                entry.setField(StandardField.YEAR, publicationDate.substring(0, 4));
             }
 
             // Authors
             JSONArray authors = item.optJSONArray("authors");
             if (authors != null && !authors.isEmpty()) {
-                StringJoiner authorJoiner = new StringJoiner(" and ");
+                List<String> authorNames = new ArrayList<>(authors.length());
                 for (int i = 0; i < authors.length(); i++) {
                     JSONObject author = authors.optJSONObject(i);
                     if (author != null) {
                         String fullName = author.optString("fullName", "");
                         if (!fullName.isBlank()) {
-                            authorJoiner.add(fullName);
+                            authorNames.add(fullName);
                         }
                     }
                 }
-                String authorString = authorJoiner.toString();
-                if (!authorString.isBlank()) {
-                    entry.withField(StandardField.AUTHOR, authorString);
+                if (!authorNames.isEmpty()) {
+                    entry.setField(StandardField.AUTHOR,
+                            AuthorList.parse(String.join(" and ", authorNames)).getAsLastFirstNamesWithAnd(false));
                 }
             }
 
-            // PIDs (DOI, etc.)
+            // PIDs - extract DOI if present
             JSONArray pids = item.optJSONArray("pid");
             if (pids != null) {
                 for (int i = 0; i < pids.length(); i++) {
                     JSONObject pid = pids.optJSONObject(i);
                     if (pid != null && "doi".equalsIgnoreCase(pid.optString("scheme", ""))) {
-                        String doiValue = pid.optString("value", "");
-                        if (!doiValue.isBlank()) {
-                            entry.withField(StandardField.DOI, doiValue);
-                            break;
-                        }
+                        entry.setField(StandardField.DOI, pid.optString("value", ""));
+                        break;
                     }
                 }
             }
 
-            // Publisher
-            String publisher = item.optString("publisher", "");
-            if (!publisher.isBlank()) {
-                entry.withField(StandardField.PUBLISHER, publisher);
-            }
+            entry.setField(StandardField.PUBLISHER, item.optString("publisher", ""));
 
             // Journal info
             JSONObject journal = item.optJSONObject("journal");
             if (journal != null) {
-                String journalName = journal.optString("name", "");
-                if (!journalName.isBlank()) {
-                    entry.withField(StandardField.JOURNAL, journalName);
-                }
-                String issn = journal.optString("issn", "");
-                if (!issn.isBlank()) {
-                    entry.withField(StandardField.ISSN, issn);
-                }
-                String volume = journal.optString("volume", "");
-                if (!volume.isBlank()) {
-                    entry.withField(StandardField.VOLUME, volume);
-                }
-                String issue = journal.optString("issue", "");
-                if (!issue.isBlank()) {
-                    entry.withField(StandardField.NUMBER, issue);
-                }
-                // OpenAIRE may use either "sp"/"ep" or "startPage"/"endPage"
-                String startPage = journal.optString("sp", journal.optString("startPage", ""));
-                String endPage = journal.optString("ep", journal.optString("endPage", ""));
+                entry.setField(StandardField.JOURNAL, journal.optString("name", ""));
+                entry.setField(StandardField.ISSN, journal.optString("issn", ""));
+                entry.setField(StandardField.VOLUME, journal.optString("volume", ""));
+                entry.setField(StandardField.NUMBER, journal.optString("issue", ""));
+                // OpenAIRE uses "sp"/"ep" for start/end page
+                String startPage = journal.optString("sp", "");
+                String endPage = journal.optString("ep", "");
                 if (!startPage.isBlank() && !endPage.isBlank()) {
-                    entry.withField(StandardField.PAGES, startPage + "--" + endPage);
+                    entry.setField(StandardField.PAGES, startPage + "--" + endPage);
                 } else if (!startPage.isBlank()) {
-                    entry.withField(StandardField.PAGES, startPage);
+                    entry.setField(StandardField.PAGES, startPage);
                 }
             }
 
-            // Subjects / Keywords
+            // Subjects as keywords
             JSONArray subjects = item.optJSONArray("subjects");
             if (subjects != null && !subjects.isEmpty()) {
-                StringJoiner keywordJoiner = new StringJoiner(", ");
+                List<String> keywordList = new ArrayList<>(subjects.length());
                 for (int i = 0; i < subjects.length(); i++) {
                     JSONObject subjectWrapper = subjects.optJSONObject(i);
                     if (subjectWrapper != null) {
-                        // OpenAIRE subjects can be nested: {"subject": {"value": "...", "scheme": "..."}}
+                        // Subject value may be nested under a "subject" key
                         JSONObject nestedSubject = subjectWrapper.optJSONObject("subject");
                         String value = nestedSubject != null
                                 ? nestedSubject.optString("value", "")
                                 : subjectWrapper.optString("value", "");
                         if (!value.isBlank()) {
-                            keywordJoiner.add(value);
+                            keywordList.add(value);
                         }
                     }
                 }
-                String keywords = keywordJoiner.toString();
-                if (!keywords.isBlank()) {
-                    entry.withField(StandardField.KEYWORDS, keywords);
+                if (!keywordList.isEmpty()) {
+                    entry.setField(StandardField.KEYWORDS, String.join(", ", keywordList));
                 }
             }
 
-            // URL from the OpenAIRE identifier
+            // Link to the OpenAIRE explore page using the entry's OpenAIRE id
             String id = item.optString("id", "");
             if (!id.isBlank()) {
-                entry.withField(StandardField.URL, "https://explore.openaire.eu/search/publication?articleId=" + id);
+                entry.setField(StandardField.URL, "https://explore.openaire.eu/search/publication?articleId=" + id);
             }
 
             return entry;

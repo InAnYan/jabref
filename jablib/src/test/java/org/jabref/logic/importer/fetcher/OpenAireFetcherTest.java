@@ -39,10 +39,11 @@ class OpenAireFetcherTest {
         String query = "OpenAIRE Graph";
         SearchQuery searchQueryObject = new SearchQuery(query);
         SearchQueryVisitor visitor = new SearchQueryVisitor(searchQueryObject.getSearchFlags());
-        URL url = fetcher.getURLForQuery(visitor.visitStart(searchQueryObject.getContext()));
+        URL url = fetcher.getURLForQuery(visitor.visitStart(searchQueryObject.getContext()), 0);
         assertTrue(url.toString().startsWith("https://api.openaire.eu/graph/v2/researchProducts"));
         assertTrue(url.toString().contains("search="));
-        assertTrue(url.toString().contains("pageSize=10"));
+        assertTrue(url.toString().contains("pageSize=20"));
+        assertTrue(url.toString().contains("page=1"));
     }
 
     @Test
