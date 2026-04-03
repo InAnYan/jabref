@@ -6,6 +6,7 @@ import java.util.List;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.templates.SummarizationChunkSystemMessageAiTemplate;
 import org.jabref.logic.ai.summarization.templates.SummarizationCombineSystemMessageAiTemplate;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
 import dev.langchain4j.data.document.DefaultDocument;
@@ -43,7 +44,10 @@ public class ChunkedSummarizator implements Summarizator {
         LOGGER.debug("Summarizing text ({} chars)", text.length());
 
         DocumentSplitter documentSplitter = DocumentSplitters.recursive(
-                chatModel.getContextWindowSize() - MAX_OVERLAP_SIZE_IN_CHARS * 2 - chatModel.getTokenizer().estimate(new SystemMessage(summarizationChunkSystemMessageTemplate.getSource())),
+                chatModel.getContextWindowSize() - MAX_OVERLAP_SIZE_IN_CHARS * 2 - chatModel.getTokenizer().estimate(
+                        ChatMessage.Role.SYSTEM,
+                        summarizationChunkSystemMessageTemplate.getSource()
+                ),
                 MAX_OVERLAP_SIZE_IN_CHARS
         );
 
@@ -53,8 +57,7 @@ public class ChunkedSummarizator implements Summarizator {
 
         int passes = 0;
 
-        do
-        {
+        do {
             passes++;
             LOGGER.debug("Summarizing {} chunk (of {}", passes, chunkSummaries.size());
 
@@ -78,7 +81,10 @@ public class ChunkedSummarizator implements Summarizator {
             }
 
             chunkSummaries = list;
-        } while (chatModel.getTokenizer().estimate(chunkSummaries.stream().map(UserMessage::new).toList()) > chatModel.getContextWindowSize() - chatModel.getTokenizer().estimate(new SystemMessage(summarizationCombineSystemMessageTemplate.getSource())));
+        } while (chatModel.getTokenizer().estimate(chunkSummaries.stream().map(ChatMessage::userMessage).toList()) > chatModel.getContextWindowSize() - chatModel.getTokenizer().estimate(
+                ChatMessage.Role.SYSTEM,
+                summarizationCombineSystemMessageTemplate.getSource()
+        ));
 
         if (chunkSummaries.size() == 1) {
             LOGGER.debug("BibEntrySummary of the text was generated successfully");

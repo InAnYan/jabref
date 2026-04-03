@@ -2,24 +2,23 @@ package org.jabref.logic.ai.customimplementations.tokenization.algorithms;
 
 import java.util.List;
 
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.tokenization.TokenEstimatorKind;
-
-import dev.langchain4j.data.message.ChatMessage;
 
 public class AverageTokenEstimator implements TokenEstimator {
     private final ByCharacterTokenEstimator byCharacterTokenizer = new ByCharacterTokenEstimator();
     private final ByWordsTokenEstimator byWordsTokenizer = new ByWordsTokenEstimator();
 
     @Override
-    public int estimate(ChatMessage message) {
-        int byCharacter = byCharacterTokenizer.estimate(message);
-        int byWords = byWordsTokenizer.estimate(message);
+    public int estimate(ChatMessage.Role role, String content) {
+        int byCharacter = byCharacterTokenizer.estimate(role, content);
+        int byWords = byWordsTokenizer.estimate(role, content);
 
         return calculate(byCharacter, byWords);
     }
 
     @Override
-    public int estimate(List<? extends ChatMessage> messages) {
+    public int estimate(List<ChatMessage> messages) {
         int byCharacter = byCharacterTokenizer.estimate(messages);
         int byWords = byWordsTokenizer.estimate(messages);
 

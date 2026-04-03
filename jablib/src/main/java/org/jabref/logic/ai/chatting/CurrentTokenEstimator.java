@@ -9,9 +9,9 @@ import org.jabref.logic.ai.customimplementations.tokenization.algorithms.Maximum
 import org.jabref.logic.ai.customimplementations.tokenization.algorithms.MinimumTokenEstimator;
 import org.jabref.logic.ai.customimplementations.tokenization.algorithms.TokenEstimator;
 import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
-import dev.langchain4j.data.message.ChatMessage;
 import org.jspecify.annotations.Nullable;
 
 public class CurrentTokenEstimator implements TokenEstimator {
@@ -30,9 +30,7 @@ public class CurrentTokenEstimator implements TokenEstimator {
     }
 
     private void setupListeningToPreferences() {
-        aiPreferences.tokenEstimatorKindProperty().addListener(_ -> {
-            createTokenizer();
-        });
+        aiPreferences.tokenEstimatorKindProperty().addListener(_ -> createTokenizer());
     }
 
     private void createTokenizer() {
@@ -46,16 +44,16 @@ public class CurrentTokenEstimator implements TokenEstimator {
     }
 
     @Override
-    public int estimate(ChatMessage message) {
+    public int estimate(ChatMessage.Role role, String content) {
         if (tokenEstimator == null) {
             return 0;
         }
 
-        return tokenEstimator.estimate(message);
+        return tokenEstimator.estimate(role, content);
     }
 
     @Override
-    public int estimate(List<? extends ChatMessage> messages) {
+    public int estimate(List<ChatMessage> messages) {
         if (tokenEstimator == null) {
             return 0;
         }
