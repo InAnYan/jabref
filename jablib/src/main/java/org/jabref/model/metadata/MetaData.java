@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 @AllowedToUseLogic("because it needs access to citation pattern and cleanups")
 public class MetaData {
-
     public static final String META_FLAG = "jabref-meta: ";
     public static final String ENTRYTYPE_FLAG = "jabref-entrytype: ";
     public static final String SAVE_ORDER_CONFIG = "saveOrderConfig"; // ToDo: Rename in next major version to saveOrder, adapt testbibs
@@ -54,11 +53,11 @@ public class MetaData {
     public static final String PROTECTED_FLAG_META = "protectedFlag";
     public static final String SELECTOR_META_PREFIX = "selector_";
     public static final String BIBDESK_STATIC_FLAG = "BibDesk Static Groups";
-
     public static final char ESCAPE_CHARACTER = '\\';
     public static final char SEPARATOR_CHARACTER = ';';
     public static final String SEPARATOR_STRING = String.valueOf(SEPARATOR_CHARACTER);
     public static final String BLG_FILE_PATH = "blgFilePath";
+    public static final String AI_LIBRARY_ID = "aiLibraryId";
     private static final Logger LOGGER = LoggerFactory.getLogger(MetaData.class);
     private final EventBus eventBus = new EventBus();
     private final Map<EntryType, String> citeKeyPatterns = new HashMap<>(); // <BibType, Pattern>
@@ -68,8 +67,9 @@ public class MetaData {
     private final ObjectProperty<GroupTreeNode> groupsRoot = new SimpleObjectProperty<>(null);
     private final OptionalBinding<GroupTreeNode> groupsRootBinding = new OptionalWrapper<>(groupsRoot);
     private final Map<String, Path> blgFilePathMap = new HashMap<>();
+    private final ContentSelectors contentSelectors = new ContentSelectors();
+    private final Map<String, List<String>> unknownMetaData = new HashMap<>();
     private Optional<Version> groupSearchSyntaxVersion = Optional.empty();
-
     private Charset encoding;
     private SaveOrder saveOrder;
     private String defaultCiteKeyPattern;
@@ -77,11 +77,10 @@ public class MetaData {
     private BibDatabaseMode mode;
     private boolean isProtected;
     private String librarySpecificFileDirectory;
-    private final ContentSelectors contentSelectors = new ContentSelectors();
-    private final Map<String, List<String>> unknownMetaData = new HashMap<>();
     private boolean isEventPropagationEnabled = true;
     private boolean encodingExplicitlySupplied;
     private String versionDBStructure;
+    private String aiLibraryId;
 
     /**
      * Constructs an empty metadata.
@@ -103,10 +102,6 @@ public class MetaData {
         return groupsRootBinding.getValue();
     }
 
-    public OptionalBinding<GroupTreeNode> groupsBinding() {
-        return groupsRootBinding;
-    }
-
     /**
      * Sets a new group root node. <b>WARNING </b>: This invalidates everything returned by getGroups() so far!!!
      */
@@ -118,13 +113,17 @@ public class MetaData {
         postChange();
     }
 
-    public void setGroupSearchSyntaxVersion(Version version) {
-        groupSearchSyntaxVersion = Optional.of(version);
-        postChange();
+    public OptionalBinding<GroupTreeNode> groupsBinding() {
+        return groupsRootBinding;
     }
 
     public Optional<Version> getGroupSearchSyntaxVersion() {
         return this.groupSearchSyntaxVersion;
+    }
+
+    public void setGroupSearchSyntaxVersion(Version version) {
+        groupSearchSyntaxVersion = Optional.of(version);
+        postChange();
     }
 
     /**
@@ -233,6 +232,15 @@ public class MetaData {
 
     public void setVersionDBStructure(@NonNull String version) {
         versionDBStructure = version.trim();
+        postChange();
+    }
+
+    public Optional<String> getAiLibraryId() {
+        return Optional.ofNullable(aiLibraryId);
+    }
+
+    public void setAiLibraryId(@NonNull String id) {
+        this.aiLibraryId = id;
         postChange();
     }
 
@@ -394,18 +402,19 @@ public class MetaData {
                 && (mode == that.mode)
                 && Objects.equals(librarySpecificFileDirectory, that.librarySpecificFileDirectory)
                 && Objects.equals(contentSelectors, that.contentSelectors)
-                && Objects.equals(versionDBStructure, that.versionDBStructure);
+                && Objects.equals(versionDBStructure, that.versionDBStructure)
+                && Objects.equals(aiLibraryId, that.aiLibraryId);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(isProtected, groupsRoot.getValue(), encoding, encodingExplicitlySupplied, saveOrder, citeKeyPatterns, userFileDirectory,
-                latexFileDirectory, defaultCiteKeyPattern, saveActions, mode, librarySpecificFileDirectory, contentSelectors, versionDBStructure);
+                latexFileDirectory, defaultCiteKeyPattern, saveActions, mode, librarySpecificFileDirectory, contentSelectors, versionDBStructure, aiLibraryId);
     }
 
     @Override
     public String toString() {
-        return "MetaData [citeKeyPatterns=" + citeKeyPatterns + ", userFileDirectory=" + userFileDirectory + ", laTexFileDirectory=" + latexFileDirectory + ", groupsRoot=" + groupsRoot + ", encoding=" + encoding + ", saveOrderConfig=" + saveOrder + ", defaultCiteKeyPattern=" + defaultCiteKeyPattern + ", saveActions=" + saveActions + ", mode=" + mode + ", isProtected=" + isProtected + ", librarySpecificFileDirectory=" + librarySpecificFileDirectory + ", contentSelectors=" + contentSelectors + ", encodingExplicitlySupplied=" + encodingExplicitlySupplied + ", VersionDBStructure=" + versionDBStructure + "]";
+        return "MetaData [citeKeyPatterns=" + citeKeyPatterns + ", userFileDirectory=" + userFileDirectory + ", laTexFileDirectory=" + latexFileDirectory + ", groupsRoot=" + groupsRoot + ", encoding=" + encoding + ", saveOrderConfig=" + saveOrder + ", defaultCiteKeyPattern=" + defaultCiteKeyPattern + ", saveActions=" + saveActions + ", mode=" + mode + ", isProtected=" + isProtected + ", librarySpecificFileDirectory=" + librarySpecificFileDirectory + ", contentSelectors=" + contentSelectors + ", encodingExplicitlySupplied=" + encodingExplicitlySupplied + ", VersionDBStructure=" + versionDBStructure + ", aiLibraryId=" + aiLibraryId + "]";
     }
 
     public Optional<Path> getBlgFilePath(String user) {

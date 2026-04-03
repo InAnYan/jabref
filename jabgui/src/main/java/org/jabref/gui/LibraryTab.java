@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.swing.undo.UndoManager;
@@ -120,50 +121,35 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
     private final NavigationHistory navigationHistory = new NavigationHistory();
     private final BooleanProperty canGoBackProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty canGoForwardProperty = new SimpleBooleanProperty(false);
+    // Indicates whether the tab is loading data using a dataloading task
+    // The constructors take care to the right true/false assignment during start.
+    private final SimpleBooleanProperty loading = new SimpleBooleanProperty(false);
+    private final OptionalObjectProperty<SearchQuery> searchQueryProperty = OptionalObjectProperty.empty();
+    private final IntegerProperty resultSize = new SimpleIntegerProperty(0);
+    private final ClipBoardManager clipBoardManager;
+    private final TaskExecutor taskExecutor;
+    private final AiService aiService;
     private boolean backOrForwardNavigationActionTriggered = false;
-
     private BibDatabaseContext bibDatabaseContext;
-
     // All subscribers needing "coarse" change events should use this filter
     // See https://devdocs.jabref.org/code-howtos/eventbus.html for details
     private CoarseChangeFilter coarseChangeFilter;
-
     private MainTableDataModel tableModel;
     private FileAnnotationCache annotationCache;
     private MainTable mainTable;
     private DatabaseNotification databaseNotificationPane;
     private AutoRenameFileOnEntryChange autoRenameFileOnEntryChange;
-
-    // Indicates whether the tab is loading data using a dataloading task
-    // The constructors take care to the right true/false assignment during start.
-    private final SimpleBooleanProperty loading = new SimpleBooleanProperty(false);
-
     // initially, the dialog is loading, not saving
     private boolean saving = false;
-
     private PersonNameSuggestionProvider searchAutoCompleter;
-
     private SuggestionProviders suggestionProviders;
-
     @SuppressWarnings({"FieldCanBeLocal"})
     private Subscription dividerPositionSubscription;
-
     private ListProperty<GroupTreeNode> selectedGroupsProperty;
-    private final OptionalObjectProperty<SearchQuery> searchQueryProperty = OptionalObjectProperty.empty();
-    private final IntegerProperty resultSize = new SimpleIntegerProperty(0);
-
     private Optional<DatabaseChangeMonitor> changeMonitor = Optional.empty();
-
     private BackgroundTask<ParserResult> dataLoadingTask;
-
-    private final ClipBoardManager clipBoardManager;
-    private final TaskExecutor taskExecutor;
-
     private ImportHandler importHandler;
     private IndexManager indexManager;
-
-    private final AiService aiService;
-
     private Runnable autoCompleterChangedListener;
 
     /**
@@ -213,6 +199,94 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
         });
     }
 
+    private static void addChangedInformation(StringBuilder text) {
+        text.append("\n");
+        text.append(Localization.lang("The library has been modified."));
+    }
+
+    private static void addModeInfo(StringBuilder text, BibDatabaseContext bibDatabaseContext) {
+        String mode = bibDatabaseContext.getMode().getFormattedName();
+        String modeInfo = "\n%s".formatted(Localization.lang("%0 mode", mode));
+        text.append(modeInfo);
+    }
+
+    private static void addSharedDbInformation(StringBuilder text, BibDatabaseContext bibDatabaseContext) {
+        text.append(bibDatabaseContext.getDBMSSynchronizer().getDBName());
+        text.append(" [");
+        text.append(Localization.lang("shared"));
+        text.append("]");
+    }
+
+    /**
+     * Creates a new library tab. Contents are loaded by the {@code dataLoadingTask}. Most of the other parameters are required by {@code resetChangeMonitor()}.
+     *
+     * @param dataLoadingTask The task to execute to load the data asynchronously.
+     * @param file            the path to the file (loaded by the dataLoadingTask)
+     */
+    public static LibraryTab createLibraryTab(BackgroundTask<ParserResult> dataLoadingTask,
+                                              Path file,
+                                              DialogService dialogService,
+                                              AiService aiService,
+                                              GuiPreferences preferences,
+                                              StateManager stateManager,
+                                              LibraryTabContainer tabContainer,
+                                              FileUpdateMonitor fileUpdateMonitor,
+                                              BibEntryTypesManager entryTypesManager,
+                                              CountingUndoManager undoManager,
+                                              ClipBoardManager clipBoardManager,
+                                              TaskExecutor taskExecutor) {
+        BibDatabaseContext context = new BibDatabaseContext();
+        context.setDatabasePath(file);
+
+        LibraryTab newTab = new LibraryTab(
+                context,
+                tabContainer,
+                dialogService,
+                aiService,
+                preferences,
+                stateManager,
+                fileUpdateMonitor,
+                entryTypesManager,
+                undoManager,
+                clipBoardManager,
+                taskExecutor,
+                true);
+
+        newTab.setDataLoadingTask(dataLoadingTask);
+        dataLoadingTask.onRunning(newTab::onDatabaseLoadingStarted)
+                       .onSuccess(newTab::onDatabaseLoadingSucceed)
+                       .onFailure(newTab::onDatabaseLoadingFailed)
+                       .executeWith(taskExecutor);
+
+        return newTab;
+    }
+
+    public static LibraryTab createLibraryTab(@NonNull BibDatabaseContext databaseContext,
+                                              LibraryTabContainer tabContainer,
+                                              DialogService dialogService,
+                                              AiService aiService,
+                                              GuiPreferences preferences,
+                                              StateManager stateManager,
+                                              FileUpdateMonitor fileUpdateMonitor,
+                                              BibEntryTypesManager entryTypesManager,
+                                              UndoManager undoManager,
+                                              ClipBoardManager clipBoardManager,
+                                              TaskExecutor taskExecutor) {
+        return new LibraryTab(
+                databaseContext,
+                tabContainer,
+                dialogService,
+                aiService,
+                preferences,
+                stateManager,
+                fileUpdateMonitor,
+                entryTypesManager,
+                (CountingUndoManager) undoManager,
+                clipBoardManager,
+                taskExecutor,
+                false);
+    }
+
     private void initializeComponentsAndListeners(boolean isDummyContext) {
         if (!isDummyContext) {
             createIndexManager();
@@ -254,6 +328,10 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
         autoRenameFileOnEntryChange = new AutoRenameFileOnEntryChange(bibDatabaseContext, preferences.getFilePreferences());
         coarseChangeFilter.registerListener(autoRenameFileOnEntryChange);
 
+        if (!isDummyContext) {
+            ensureAiLibraryIdPresent(bibDatabaseContext);
+        }
+
         aiService.setupDatabase(bibDatabaseContext);
 
         Platform.runLater(() -> {
@@ -263,26 +341,14 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
         });
     }
 
+    static void ensureAiLibraryIdPresent(BibDatabaseContext bibDatabaseContext) {
+        if (bibDatabaseContext.getMetaData().getAiLibraryId().isEmpty()) {
+            bibDatabaseContext.getMetaData().setAiLibraryId(UUID.randomUUID().toString());
+        }
+    }
+
     public void setAutoCompleterChangedListener(@NonNull Runnable listener) {
         this.autoCompleterChangedListener = listener;
-    }
-
-    private static void addChangedInformation(StringBuilder text) {
-        text.append("\n");
-        text.append(Localization.lang("The library has been modified."));
-    }
-
-    private static void addModeInfo(StringBuilder text, BibDatabaseContext bibDatabaseContext) {
-        String mode = bibDatabaseContext.getMode().getFormattedName();
-        String modeInfo = "\n%s".formatted(Localization.lang("%0 mode", mode));
-        text.append(modeInfo);
-    }
-
-    private static void addSharedDbInformation(StringBuilder text, BibDatabaseContext bibDatabaseContext) {
-        text.append(bibDatabaseContext.getDBMSSynchronizer().getDBName());
-        text.append(" [");
-        text.append(Localization.lang("shared"));
-        text.append("]");
     }
 
     private void setDataLoadingTask(BackgroundTask<ParserResult> dataLoadingTask) {
@@ -1019,82 +1085,45 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
         canGoForwardProperty.set(canGoForward());
     }
 
-    /**
-     * Creates a new library tab. Contents are loaded by the {@code dataLoadingTask}. Most of the other parameters are required by {@code resetChangeMonitor()}.
-     *
-     * @param dataLoadingTask The task to execute to load the data asynchronously.
-     * @param file            the path to the file (loaded by the dataLoadingTask)
-     */
-    public static LibraryTab createLibraryTab(BackgroundTask<ParserResult> dataLoadingTask,
-                                              Path file,
-                                              DialogService dialogService,
-                                              AiService aiService,
-                                              GuiPreferences preferences,
-                                              StateManager stateManager,
-                                              LibraryTabContainer tabContainer,
-                                              FileUpdateMonitor fileUpdateMonitor,
-                                              BibEntryTypesManager entryTypesManager,
-                                              CountingUndoManager undoManager,
-                                              ClipBoardManager clipBoardManager,
-                                              TaskExecutor taskExecutor) {
-        BibDatabaseContext context = new BibDatabaseContext();
-        context.setDatabasePath(file);
-
-        LibraryTab newTab = new LibraryTab(
-                context,
-                tabContainer,
-                dialogService,
-                aiService,
-                preferences,
-                stateManager,
-                fileUpdateMonitor,
-                entryTypesManager,
-                undoManager,
-                clipBoardManager,
-                taskExecutor,
-                true);
-
-        newTab.setDataLoadingTask(dataLoadingTask);
-        dataLoadingTask.onRunning(newTab::onDatabaseLoadingStarted)
-                       .onSuccess(newTab::onDatabaseLoadingSucceed)
-                       .onFailure(newTab::onDatabaseLoadingFailed)
-                       .executeWith(taskExecutor);
-
-        return newTab;
-    }
-
-    public static LibraryTab createLibraryTab(@NonNull BibDatabaseContext databaseContext,
-                                              LibraryTabContainer tabContainer,
-                                              DialogService dialogService,
-                                              AiService aiService,
-                                              GuiPreferences preferences,
-                                              StateManager stateManager,
-                                              FileUpdateMonitor fileUpdateMonitor,
-                                              BibEntryTypesManager entryTypesManager,
-                                              UndoManager undoManager,
-                                              ClipBoardManager clipBoardManager,
-                                              TaskExecutor taskExecutor) {
-        return new LibraryTab(
-                databaseContext,
-                tabContainer,
-                dialogService,
-                aiService,
-                preferences,
-                stateManager,
-                fileUpdateMonitor,
-                entryTypesManager,
-                (CountingUndoManager) undoManager,
-                clipBoardManager,
-                taskExecutor,
-                false);
-    }
-
     public BooleanProperty canGoBackProperty() {
         return canGoBackProperty;
     }
 
     public BooleanProperty canGoForwardProperty() {
         return canGoForwardProperty;
+    }
+
+    public DatabaseNotification getNotificationPane() {
+        return databaseNotificationPane;
+    }
+
+    @Override
+    public String toString() {
+        return "LibraryTab{" +
+                "bibDatabaseContext=" + bibDatabaseContext +
+                '}';
+    }
+
+    public static class DatabaseNotification extends NotificationPane {
+        public DatabaseNotification(Node content) {
+            super(content);
+        }
+
+        public void notify(Node graphic, String text, List<Action> actions, Duration duration) {
+            this.setGraphic(graphic);
+            this.setText(text);
+            this.getActions().setAll(actions);
+            this.show();
+            if ((duration != null) && !duration.equals(Duration.ZERO)) {
+                PauseTransition delay = new PauseTransition(duration);
+                delay.setOnFinished(this::handle);
+                delay.play();
+            }
+        }
+
+        private void handle(ActionEvent e) {
+            this.hide();
+        }
     }
 
     private class GroupTreeListener {
@@ -1130,38 +1159,5 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
         public void listen(FieldChangedEvent fieldChangedEvent) {
             indexManager.updateEntry(fieldChangedEvent);
         }
-    }
-
-    public static class DatabaseNotification extends NotificationPane {
-        public DatabaseNotification(Node content) {
-            super(content);
-        }
-
-        public void notify(Node graphic, String text, List<Action> actions, Duration duration) {
-            this.setGraphic(graphic);
-            this.setText(text);
-            this.getActions().setAll(actions);
-            this.show();
-            if ((duration != null) && !duration.equals(Duration.ZERO)) {
-                PauseTransition delay = new PauseTransition(duration);
-                delay.setOnFinished(this::handle);
-                delay.play();
-            }
-        }
-
-        private void handle(ActionEvent e) {
-            this.hide();
-        }
-    }
-
-    public DatabaseNotification getNotificationPane() {
-        return databaseNotificationPane;
-    }
-
-    @Override
-    public String toString() {
-        return "LibraryTab{" +
-                "bibDatabaseContext=" + bibDatabaseContext +
-                '}';
     }
 }
