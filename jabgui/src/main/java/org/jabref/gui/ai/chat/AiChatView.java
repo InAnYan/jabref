@@ -17,7 +17,7 @@ import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.HistoryTextArea;
 import org.jabref.gui.util.ListScrollPane;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.customimplementations.llms.ChatModel;
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;

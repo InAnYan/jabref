@@ -11,9 +11,9 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.tasks.GenerateLlmResponseTask;
 import org.jabref.logic.ai.chatting.templates.ChattingUserMessageAiTemplate;
-import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;

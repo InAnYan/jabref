@@ -3,9 +3,9 @@ package org.jabref.logic.ai.chatting.logic;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.tasks.GenerateLlmResponseTask;
 import org.jabref.logic.ai.chatting.templates.ChattingUserMessageAiTemplate;
-import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;

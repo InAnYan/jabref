@@ -6,10 +6,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.jabref.logic.ai.customimplementations.llms.ChatModel;
-import org.jabref.logic.ai.customimplementations.llms.JvmOpenAiChatLanguageModel;
-import org.jabref.logic.ai.customimplementations.tokenization.algorithms.TokenEstimator;
 import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.logic.ai.tokenization.logic.TokenEstimator;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.llm.AiProvider;
 

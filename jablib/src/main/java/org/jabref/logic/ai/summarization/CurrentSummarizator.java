@@ -1,6 +1,6 @@
 package org.jabref.logic.ai.summarization;
 
-import org.jabref.logic.ai.customimplementations.llms.ChatModel;
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;

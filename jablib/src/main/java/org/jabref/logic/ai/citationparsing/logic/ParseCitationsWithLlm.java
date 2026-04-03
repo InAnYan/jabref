@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
 
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.citationparsing.templates.CitationParsingSystemMessageAiTemplate;
-import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.importer.ImportFormatPreferences;
 import org.jabref.logic.importer.ParserResult;
 import org.jabref.logic.importer.fileformat.BibtexParser;

@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.customimplementations.tokenization.algorithms;
+package org.jabref.logic.ai.tokenization.logic;
 
 import java.util.List;
 import java.util.stream.Collectors;

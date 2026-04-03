@@ -2,7 +2,7 @@ package org.jabref.logic.ai.summarization.logic.summarizationalgorithms;
 
 import java.util.List;
 
-import org.jabref.logic.ai.customimplementations.llms.ChatModel;
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.summarization.templates.SummarizationFullDocumentSystemMessageAiTemplate;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 

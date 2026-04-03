@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.customimplementations.embeddingstores;
+package org.jabref.logic.ai.embedding;
 
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -46,13 +46,7 @@ import static org.jabref.logic.ai.ingestion.logic.EmbeddingsCleaner.LINK_METADAT
 public class MVStoreEmbeddingStore extends MVStoreBase implements EmbeddingStore<TextSegment> {
 
     private static final EmbeddingRecord EMPTY_EMBEDDING_RECORD = new EmbeddingRecord(null, "", new float[0]);
-
-    // `file` field is nullable, because {@link Optional} can't be serialized.
-    private record EmbeddingRecord(@Nullable String file, String content, float[] embeddingVector) implements Serializable {
-    }
-
     private static final String EMBEDDINGS_MAP_NAME = "embeddings";
-
     private final Map<String, EmbeddingRecord> embeddingsMap;
 
     public MVStoreEmbeddingStore(Path path, NotificationService dialogService) {
@@ -189,5 +183,9 @@ public class MVStoreEmbeddingStore extends MVStoreBase implements EmbeddingStore
     @Override
     protected String errorMessageForOpeningLocalized() {
         return Localization.lang("An error occurred while opening the embeddings cache file. Embeddings will not be stored in the next session.");
+    }
+
+    // `file` field is nullable, because {@link Optional} can't be serialized.
+    private record EmbeddingRecord(@Nullable String file, String content, float[] embeddingVector) implements Serializable {
     }
 }

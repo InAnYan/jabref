@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.customimplementations.embeddingmodels;
+package org.jabref.logic.ai.embedding;
 
 import java.io.IOException;
 import java.util.ArrayList;

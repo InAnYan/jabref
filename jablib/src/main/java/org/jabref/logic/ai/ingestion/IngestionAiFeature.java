@@ -1,7 +1,7 @@
 package org.jabref.logic.ai.ingestion;
 
 import org.jabref.logic.ai.AiFeature;
-import org.jabref.logic.ai.customimplementations.embeddingstores.MVStoreEmbeddingStore;
+import org.jabref.logic.ai.embedding.MVStoreEmbeddingStore;
 import org.jabref.logic.ai.ingestion.logic.EmbeddingsCleaner;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;

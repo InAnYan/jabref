@@ -5,7 +5,7 @@ import java.util.List;
 import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.customimplementations.llms.ChatModel;
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.summarization.SummarizationTaskAggregator;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;

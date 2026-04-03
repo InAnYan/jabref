@@ -3,7 +3,7 @@ package org.jabref.logic.ai.chatting.tasks;
 import java.util.List;
 import java.util.Optional;
 
-import org.jabref.logic.ai.customimplementations.llms.ChatModel;
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.model.ai.chatting.ChatMessage;

@@ -14,7 +14,7 @@ import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.customimplementations.llms.ChatModel;
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.ingestion.logic.parsing.UniversalContentParser;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.SummarizationTaskAggregator;

@@ -3,7 +3,7 @@ package org.jabref.logic.ai.summarization.logic.summarizationalgorithms;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jabref.logic.ai.customimplementations.llms.ChatModel;
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.summarization.templates.SummarizationChunkSystemMessageAiTemplate;
 import org.jabref.logic.ai.summarization.templates.SummarizationCombineSystemMessageAiTemplate;
 import org.jabref.model.ai.chatting.ChatMessage;
@@ -57,7 +57,8 @@ public class ChunkedSummarizator implements Summarizator {
 
         int passes = 0;
 
-        do {
+        do
+        {
             passes++;
             LOGGER.debug("Summarizing {} chunk (of {}", passes, chunkSummaries.size());
 

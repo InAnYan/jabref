@@ -1,6 +1,6 @@
-package org.jabref.logic.ai.customimplementations.llms;
+package org.jabref.logic.ai.chatting;
 
-import org.jabref.logic.ai.customimplementations.tokenization.algorithms.TokenEstimator;
+import org.jabref.logic.ai.tokenization.logic.TokenEstimator;
 import org.jabref.model.ai.llm.AiProvider;
 
 public interface ChatModel extends dev.langchain4j.model.chat.ChatModel {

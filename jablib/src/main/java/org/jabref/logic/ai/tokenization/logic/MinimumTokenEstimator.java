@@ -1,11 +1,11 @@
-package org.jabref.logic.ai.customimplementations.tokenization.algorithms;
+package org.jabref.logic.ai.tokenization.logic;
 
 import java.util.List;
 
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
-public class MaximumTokenEstimator implements TokenEstimator {
+public class MinimumTokenEstimator implements TokenEstimator {
     private final ByCharacterTokenEstimator byCharacterTokenizer = new ByCharacterTokenEstimator();
     private final ByWordsTokenEstimator byWordsTokenizer = new ByWordsTokenEstimator();
 
@@ -26,11 +26,11 @@ public class MaximumTokenEstimator implements TokenEstimator {
     }
 
     private int calculate(int byWords, int byCharacters) {
-        return Math.max(byWords, byCharacters);
+        return Math.min(byWords, byCharacters);
     }
 
     @Override
     public TokenEstimatorKind getKind() {
-        return TokenEstimatorKind.MAX;
+        return TokenEstimatorKind.MIN;
     }
 }
