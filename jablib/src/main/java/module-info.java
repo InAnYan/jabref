@@ -118,9 +118,6 @@ open module org.jabref.jablib {
     exports org.jabref.model.sciteTallies;
 
     // region: AI
-    exports org.jabref.logic.ai.customimplementations.embeddingmodels;
-    exports org.jabref.logic.ai.customimplementations.embeddingstores;
-    exports org.jabref.logic.ai.customimplementations.llms;
     exports org.jabref.logic.ai.ingestion;
     exports org.jabref.logic.ai.ingestion.logic.documentsplitting;
     exports org.jabref.logic.ai.ingestion.logic.ingestion;
@@ -144,7 +141,6 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.citationparsing.templates;
     exports org.jabref.logic.ai.preferences;
     exports org.jabref.model.ai.chatting;
-    exports org.jabref.model.ai.templating;
     exports org.jabref.model.ai.pipeline;
     exports org.jabref.model.ai.embeddings;
     exports org.jabref.model.ai.summarization;

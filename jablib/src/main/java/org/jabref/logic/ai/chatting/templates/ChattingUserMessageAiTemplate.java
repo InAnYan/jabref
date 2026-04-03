@@ -1,7 +1,6 @@
 package org.jabref.logic.ai.chatting.templates;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.jabref.logic.ai.templates.AiTemplate;
 import org.jabref.model.ai.pipeline.RelevantInformation;
@@ -10,7 +9,7 @@ import org.jabref.model.entry.BibEntry;
 import org.apache.velocity.VelocityContext;
 
 public class ChattingUserMessageAiTemplate extends AiTemplate {
-    public ChattingUserMessageAiTemplate(Supplier<String> source) {
+    public ChattingUserMessageAiTemplate(String source) {
         super(source);
     }
 

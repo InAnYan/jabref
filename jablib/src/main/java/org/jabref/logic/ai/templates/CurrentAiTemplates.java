@@ -20,24 +20,24 @@ public class CurrentAiTemplates implements AiTemplatesFactory {
 
     public CurrentAiTemplates(AiPreferences aiPreferences) {
         this.summarizationChunkSystemMessageTemplate = new SummarizationChunkSystemMessageAiTemplate(
-                aiPreferences::getSummarizationChunkSystemMessageTemplate
+                aiPreferences.getSummarizationChunkSystemMessageTemplate()
         );
         this.summarizationCombineSystemMessageTemplate = new SummarizationCombineSystemMessageAiTemplate(
-                aiPreferences::getSummarizationCombineSystemMessageTemplate
+                aiPreferences.getSummarizationCombineSystemMessageTemplate()
         );
         this.summarizationFullDocumentSystemMessageTemplate = new SummarizationFullDocumentSystemMessageAiTemplate(
-                aiPreferences::getSummarizationFullDocumentSystemMessageTemplate
+                aiPreferences.getSummarizationFullDocumentSystemMessageTemplate()
         );
 
         this.chattingSystemMessageTemplate = new ChattingSystemMessageAiTemplate(
-                aiPreferences::getChattingSystemMessageTemplate
+                aiPreferences.getChattingSystemMessageTemplate()
         );
         this.chattingUserMessageTemplate = new ChattingUserMessageAiTemplate(
-                aiPreferences::getChattingUserMessageTemplate
+                aiPreferences.getChattingUserMessageTemplate()
         );
 
         this.citationParsingSystemMessageTemplate = new CitationParsingSystemMessageAiTemplate(
-                aiPreferences::getCitationParsingSystemMessageTemplate
+                aiPreferences.getCitationParsingSystemMessageTemplate()
         );
     }
 
