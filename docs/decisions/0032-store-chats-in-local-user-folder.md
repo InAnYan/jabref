@@ -2,7 +2,7 @@
 nav_order: 0032
 parent: Decision Records
 ---
-# Store Chats Alongside the Library
+# Store Chats in a Local User Folder
 
 ## Context and Problem Statement
 
