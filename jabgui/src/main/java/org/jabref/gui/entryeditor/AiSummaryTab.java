@@ -6,7 +6,7 @@ import org.jabref.gui.StateManager;
 import org.jabref.gui.ai.summary.AiSummaryView;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -41,6 +41,6 @@ public class AiSummaryTab extends EntryEditorTab {
     @Override
     protected void bindToEntry(BibEntry entry) {
         BibDatabaseContext bibDatabaseContext = stateManager.getActiveDatabase().orElse(new BibDatabaseContext());
-        aiSummaryView.entryProperty().set(new BibEntryAiIdentifier(bibDatabaseContext, entry));
+        aiSummaryView.entryProperty().set(new FullBibEntry(bibDatabaseContext, entry));
     }
 }

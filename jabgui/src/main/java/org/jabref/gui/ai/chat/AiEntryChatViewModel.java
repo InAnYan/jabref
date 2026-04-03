@@ -20,7 +20,7 @@ import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.chatting.ChatType;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -34,8 +34,8 @@ public class AiEntryChatViewModel extends AbstractViewModel {
     }
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.NO_DATABASE_PATH);
-    private final ObjectProperty<BibEntryAiIdentifier> selectedEntry = new SimpleObjectProperty<>();
-    private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final ObjectProperty<FullBibEntry> selectedEntry = new SimpleObjectProperty<>();
+    private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     private final AiPreferences aiPreferences;
@@ -56,13 +56,13 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         ObservableValue<Boolean> isAiTurnedOff = aiPreferences.enableAiProperty().not();
 
         ObservableValue<Boolean> isNoDatabasePath = selectedEntry
-                .map(BibEntryAiIdentifier::databaseContext)
+                .map(FullBibEntry::databaseContext)
                 .map(BibDatabaseContext::getDatabasePath)
                 .map(Optional::isEmpty)
                 .orElse(false);
 
         ObservableValue<Boolean> isNoCitationKey = selectedEntry
-                .map(BibEntryAiIdentifier::entry)
+                .map(FullBibEntry::entry)
                 .map(BibEntry::getCitationKey)
                 .map(opt -> opt.isEmpty() || StringUtil.isBlank(opt.get()))
                 .orElse(false);
@@ -90,7 +90,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         );
     }
 
-    private void load(BibEntryAiIdentifier identifier) {
+    private void load(FullBibEntry identifier) {
         assert identifier.databaseContext().getMetaData().getAiLibraryId().isPresent();
         assert identifier.entry().getCitationKey().isPresent();
 
@@ -106,7 +106,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         ));
     }
 
-    public ObjectProperty<BibEntryAiIdentifier> selectedEntryProperty() {
+    public ObjectProperty<FullBibEntry> selectedEntryProperty() {
         return selectedEntry;
     }
 
@@ -114,7 +114,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         return state;
     }
 
-    public ListProperty<BibEntryAiIdentifier> entriesProperty() {
+    public ListProperty<FullBibEntry> entriesProperty() {
         return entries;
     }
 

@@ -38,7 +38,7 @@ import org.jabref.logic.command.CommandSelectionTab;
 import org.jabref.logic.search.IndexManager;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.OptionalObjectProperty;
-import org.jabref.model.ai.identifiers.ResolvedGroupAiIdentifier;
+import org.jabref.model.ai.identifiers.ResoledGroup;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.groups.GroupTreeNode;
@@ -90,7 +90,7 @@ public class JabRefGuiStateManager implements StateManager {
     private final ObservableList<SidePaneType> visibleSidePanes = FXCollections.observableArrayList();
     private final ObjectProperty<LastAutomaticFieldEditorEdit> lastAutomaticFieldEditorEdit = new SimpleObjectProperty<>();
     private final ObservableList<String> searchHistory = FXCollections.observableArrayList();
-    private final Map<ResolvedGroupAiIdentifier, AiGroupChatWindow> groupAiChatWindows = new HashMap<>();
+    private final Map<ResoledGroup, AiGroupChatWindow> groupAiChatWindows = new HashMap<>();
     private final BooleanProperty editorShowing = new SimpleBooleanProperty(false);
     private final OptionalObjectProperty<Walkthrough> activeWalkthrough = OptionalObjectProperty.empty();
     private final BooleanProperty canGoBack = new SimpleBooleanProperty(false);
@@ -293,17 +293,17 @@ public class JabRefGuiStateManager implements StateManager {
     }
 
     @Override
-    public Optional<AiGroupChatWindow> getAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier) {
+    public Optional<AiGroupChatWindow> getAiChatWindowForGroup(ResoledGroup groupIdentifier) {
         return Optional.ofNullable(groupAiChatWindows.get(groupIdentifier));
     }
 
     @Override
-    public void setAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier, AiGroupChatWindow aiGroupChatWindow) {
+    public void setAiChatWindowForGroup(ResoledGroup groupIdentifier, AiGroupChatWindow aiGroupChatWindow) {
         groupAiChatWindows.put(groupIdentifier, aiGroupChatWindow);
     }
 
     @Override
-    public void removeAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier) {
+    public void removeAiChatWindowForGroup(ResoledGroup groupIdentifier) {
         groupAiChatWindows.remove(groupIdentifier);
     }
 
@@ -313,13 +313,13 @@ public class JabRefGuiStateManager implements StateManager {
     }
 
     @Override
-    public void setActiveWalkthrough(Walkthrough walkthrough) {
-        activeWalkthrough.set(Optional.ofNullable(walkthrough));
+    public Optional<Walkthrough> getActiveWalkthrough() {
+        return activeWalkthrough.get();
     }
 
     @Override
-    public Optional<Walkthrough> getActiveWalkthrough() {
-        return activeWalkthrough.get();
+    public void setActiveWalkthrough(Walkthrough walkthrough) {
+        activeWalkthrough.set(Optional.ofNullable(walkthrough));
     }
 
     @Override

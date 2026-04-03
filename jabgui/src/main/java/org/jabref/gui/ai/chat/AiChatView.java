@@ -22,7 +22,7 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatMessage;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
@@ -179,7 +179,7 @@ public class AiChatView extends StackPane {
         return viewModel.chatHistoryProperty();
     }
 
-    public ListProperty<BibEntryAiIdentifier> entriesProperty() {
+    public ListProperty<FullBibEntry> entriesProperty() {
         return viewModel.entriesProperty();
     }
 }

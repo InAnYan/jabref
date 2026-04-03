@@ -1,6 +1,6 @@
 package org.jabref.logic.util;
 
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -21,7 +21,7 @@ public final class CitationKeyCheck {
         return bibDatabaseContext.getDatabase().getNumberOfCitationKeyOccurrences(citationKey) == 1;
     }
 
-    public static boolean citationKeyIsUnique(BibEntryAiIdentifier identifier) {
+    public static boolean citationKeyIsUnique(FullBibEntry identifier) {
         return identifier.entry().getCitationKey().map(key -> citationKeyIsUnique(identifier.databaseContext(), key)).orElse(false);
     }
 }

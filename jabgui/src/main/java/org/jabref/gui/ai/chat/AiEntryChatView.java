@@ -8,7 +8,7 @@ import org.jabref.gui.ai.AiPrivacyNoticeView;
 import org.jabref.gui.ai.statuspane.SimpleStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
@@ -58,7 +58,7 @@ public class AiEntryChatView extends StackPane {
         aiChatView.entriesProperty().bind(viewModel.entriesProperty());
     }
 
-    public ObjectProperty<BibEntryAiIdentifier> selectedEntryProperty() {
+    public ObjectProperty<FullBibEntry> selectedEntryProperty() {
         return viewModel.selectedEntryProperty();
     }
 }

@@ -31,7 +31,7 @@ import org.jabref.logic.ai.templates.AiTemplatesFactory;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatMessage;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 
 import com.google.common.collect.Comparators;
 import dev.langchain4j.data.segment.TextSegment;
@@ -49,11 +49,11 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.IDLE);
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
-    private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ObjectProperty<GenerateLlmResponseTask> generateLlmResponseTask = new SimpleObjectProperty<>();
 
-    private final TreeMap<List<BibEntryAiIdentifier>, GenerateLlmResponseTask> tasksMap =
+    private final TreeMap<List<FullBibEntry>, GenerateLlmResponseTask> tasksMap =
             new TreeMap<>(Comparators.lexicographical(Comparator.comparing(id -> id.entry().getId())));
 
     private final AiPreferences aiPreferences;
@@ -183,7 +183,7 @@ public class AiChatViewModel extends AbstractViewModel {
                 );
 
         ObservableList<ChatMessage> taskChatHistory = aiChatLogic.chatHistoryProperty().get();
-        List<BibEntryAiIdentifier> taskEntries = entries.get();
+        List<FullBibEntry> taskEntries = entries.get();
 
         task.onSuccess(taskChatHistory::add);
 
@@ -243,7 +243,7 @@ public class AiChatViewModel extends AbstractViewModel {
         }
     }
 
-    public ListProperty<BibEntryAiIdentifier> entriesProperty() {
+    public ListProperty<FullBibEntry> entriesProperty() {
         return entries;
     }
 

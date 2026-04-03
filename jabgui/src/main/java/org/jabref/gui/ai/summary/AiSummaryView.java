@@ -15,7 +15,7 @@ import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
@@ -44,6 +44,19 @@ public class AiSummaryView extends StackPane {
         ViewLoader.view(this)
                   .root(this)
                   .load();
+    }
+
+    private static String generateDescription(Summarizator summarizator, ChatModel chatModel) {
+        if (summarizator == null || chatModel == null) {
+            return "";
+        }
+
+        return Localization.lang(
+                "Your entry is being summarized by %0 %1 using algorithm %2",
+                chatModel.getAiProvider().getDisplayName(),
+                chatModel.getName(),
+                summarizator.getKind().getDisplayName()
+        );
     }
 
     @FXML
@@ -91,21 +104,8 @@ public class AiSummaryView extends StackPane {
         summaryShowing.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.DONE));
     }
 
-    public ObjectProperty<BibEntryAiIdentifier> entryProperty() {
+    public ObjectProperty<FullBibEntry> entryProperty() {
         return viewModel.entryProperty();
-    }
-
-    private static String generateDescription(Summarizator summarizator, ChatModel chatModel) {
-        if (summarizator == null || chatModel == null) {
-            return "";
-        }
-
-        return Localization.lang(
-                "Your entry is being summarized by %0 %1 using algorithm %2",
-                chatModel.getAiProvider().getDisplayName(),
-                chatModel.getName(),
-                summarizator.getKind().getDisplayName()
-        );
     }
 
     @FXML

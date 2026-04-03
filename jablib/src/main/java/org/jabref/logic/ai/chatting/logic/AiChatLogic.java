@@ -16,7 +16,7 @@ import org.jabref.logic.ai.chatting.templates.ChattingUserMessageAiTemplate;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.model.ai.chatting.ChatMessage;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 
 public class AiChatLogic {
     private final ObjectProperty<ChattingUserMessageAiTemplate> template;
@@ -34,7 +34,7 @@ public class AiChatLogic {
      */
     public GenerateLlmResponseTask call(
             String userMessageContent,
-            List<BibEntryAiIdentifier> entries
+            List<FullBibEntry> entries
     ) {
         Objects.requireNonNull(chatModel.get());
         Objects.requireNonNull(answerEngine.get());

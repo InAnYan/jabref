@@ -8,7 +8,7 @@ import org.jabref.logic.ai.chatting.templates.ChattingUserMessageAiTemplate;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.model.ai.chatting.ChatMessage;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 
 public class AiAnswerLogic {
@@ -31,7 +31,7 @@ public class AiAnswerLogic {
 
     public GenerateLlmResponseTask answer(
             String userMessageContent,
-            List<BibEntryAiIdentifier> entries
+            List<FullBibEntry> entries
     ) {
         ChatMessage userMessage = ChatMessage.userMessage(userMessageContent);
         chatHistory.add(userMessage);
@@ -42,7 +42,7 @@ public class AiAnswerLogic {
         );
 
         String injected = injectionTemplate.render(
-                entries.stream().map(BibEntryAiIdentifier::entry).toList(),
+                entries.stream().map(FullBibEntry::entry).toList(),
                 userMessage.content(),
                 relevantInformation
         );

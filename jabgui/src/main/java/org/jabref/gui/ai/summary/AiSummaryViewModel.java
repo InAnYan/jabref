@@ -24,7 +24,7 @@ import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTa
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.util.CitationKeyCheck;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.summarization.AiSummary;
 import org.jabref.model.ai.summarization.AiSummaryIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
@@ -54,7 +54,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
     private final ObjectProperty<Exception> error = new SimpleObjectProperty<>(null);
     private final ObjectProperty<AiSummary> summary = new SimpleObjectProperty<>();
 
-    private final ObjectProperty<BibEntryAiIdentifier> entry = new SimpleObjectProperty<>();
+    private final ObjectProperty<FullBibEntry> entry = new SimpleObjectProperty<>();
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
     private final ObjectProperty<Summarizator> summarizator = new SimpleObjectProperty<>();
 
@@ -94,11 +94,11 @@ public class AiSummaryViewModel extends AbstractViewModel {
         BindingsHelper.bindEnum(
                 state,
                 State.AI_TURNED_OFF, aiPreferences.enableAiProperty().not(),
-                State.NO_DATABASE_PATH, entry.map(BibEntryAiIdentifier::databaseContext).map(BibDatabaseContext::getDatabasePath).map(Optional::isEmpty),
-                State.NO_CITATION_KEY, entry.map(BibEntryAiIdentifier::entry).map(BibEntry::getCitationKey).map(Optional::isEmpty),
+                State.NO_DATABASE_PATH, entry.map(FullBibEntry::databaseContext).map(BibDatabaseContext::getDatabasePath).map(Optional::isEmpty),
+                State.NO_CITATION_KEY, entry.map(FullBibEntry::entry).map(BibEntry::getCitationKey).map(Optional::isEmpty),
                 State.WRONG_CITATION_KEY, entry.map(CitationKeyCheck::citationKeyIsUnique).map(isUnique -> !isUnique),
-                State.NO_FILES, entry.map(BibEntryAiIdentifier::entry).map(BibEntry::getFiles).map(List::isEmpty),
-                State.NO_SUPPORTED_FILE_TYPES, entry.map(BibEntryAiIdentifier::entry).map(BibEntry::getFiles).map(l -> l.stream().map(f -> Path.of(f.getLink())).noneMatch(UniversalContentParser::isSupportedFileType)),
+                State.NO_FILES, entry.map(FullBibEntry::entry).map(BibEntry::getFiles).map(List::isEmpty),
+                State.NO_SUPPORTED_FILE_TYPES, entry.map(FullBibEntry::entry).map(BibEntry::getFiles).map(l -> l.stream().map(f -> Path.of(f.getLink())).noneMatch(UniversalContentParser::isSupportedFileType)),
                 State.DONE, summary.isNotNull(),
                 State.PROCESSING, currentTask.isNotNull(),
                 State.ERROR_WHILE_GENERATING, error.isNotNull(),
@@ -161,7 +161,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
         error.set(null);
     }
 
-    private void processEntry(BibEntryAiIdentifier identifier) {
+    private void processEntry(FullBibEntry identifier) {
         BibDatabaseContext bibDatabaseContext = identifier.databaseContext();
         BibEntry entry = identifier.entry();
 
@@ -183,12 +183,12 @@ public class AiSummaryViewModel extends AbstractViewModel {
         }
     }
 
-    private void regenerate(BibEntryAiIdentifier identifier) {
+    private void regenerate(FullBibEntry identifier) {
         clearSummary(identifier);
         generate(identifier);
     }
 
-    private void regenerateCustom(BibEntryAiIdentifier identifier) {
+    private void regenerateCustom(FullBibEntry identifier) {
         if (identifier == null) {
             return;
         }
@@ -206,13 +206,13 @@ public class AiSummaryViewModel extends AbstractViewModel {
         startSummarization(identifier);
     }
 
-    private void generate(BibEntryAiIdentifier identifier) {
+    private void generate(FullBibEntry identifier) {
         setDefaultModels();
         clearSummary(identifier);
         startSummarization(identifier);
     }
 
-    public void clearSummary(BibEntryAiIdentifier identifier) {
+    public void clearSummary(FullBibEntry identifier) {
         if (identifier == null) {
             return;
         }
@@ -230,7 +230,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
         summary.set(null);
     }
 
-    private void startSummarization(BibEntryAiIdentifier identifier) {
+    private void startSummarization(FullBibEntry identifier) {
         if (identifier == null) {
             return;
         }
@@ -271,15 +271,15 @@ public class AiSummaryViewModel extends AbstractViewModel {
         });
     }
 
-    public ObjectProperty<BibEntryAiIdentifier> entryProperty() {
+    public ObjectProperty<FullBibEntry> entryProperty() {
         return entry;
     }
 
-    public BibEntryAiIdentifier getEntry() {
+    public FullBibEntry getEntry() {
         return entry.get();
     }
 
-    public void setEntry(BibEntryAiIdentifier entry) {
+    public void setEntry(FullBibEntry entry) {
         this.entry.set(entry);
     }
 

@@ -6,7 +6,7 @@ import org.jabref.gui.StateManager;
 import org.jabref.gui.ai.chat.AiEntryChatView;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -39,6 +39,6 @@ public class AiChatTab extends EntryEditorTab {
     @Override
     protected void bindToEntry(BibEntry entry) {
         BibDatabaseContext bibDatabaseContext = stateManager.getActiveDatabase().orElse(new BibDatabaseContext());
-        aiEntryChatView.selectedEntryProperty().set(new BibEntryAiIdentifier(bibDatabaseContext, entry));
+        aiEntryChatView.selectedEntryProperty().set(new FullBibEntry(bibDatabaseContext, entry));
     }
 }

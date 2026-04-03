@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 import org.jetbrains.annotations.NotNull;
 
-public record ResolvedBibEntryAiIdentifier(Path databasePath, String citationKey) {
+public record ResolvedBibEntry(Path databasePath, String citationKey) {
     @Override
     public @NotNull String toString() {
         return databasePath.toString() + "/" + citationKey;

@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.ingestion.logic.parsing.UniversalContentParser;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 import org.jabref.model.entry.BibEntry;
@@ -23,7 +23,7 @@ public class FullDocumentAnswerEngine implements AnswerEngine {
     @Override
     public List<RelevantInformation> process(
             String query,
-            List<BibEntryAiIdentifier> entriesFilter
+            List<FullBibEntry> entriesFilter
     ) {
         // Look at this!
         return entriesFilter
@@ -37,7 +37,7 @@ public class FullDocumentAnswerEngine implements AnswerEngine {
                                         linkedFile
                                                 .findIn(entryIdentifier.databaseContext(), filePreferences)
                                                 .flatMap(universalContentParser::parse)
-                                                .map(c -> new RelevantInformation(BibEntryAiIdentifier.findEntryByLink(entryIdentifier, linkedFile.getLink()).flatMap(BibEntry::getCitationKey).orElse(null), c))
+                                                .map(c -> new RelevantInformation(FullBibEntry.findEntryByLink(entryIdentifier, linkedFile.getLink()).flatMap(BibEntry::getCitationKey).orElse(null), c))
                                 )
                                 .filter(Optional::isPresent)
                                 .map(Optional::get)

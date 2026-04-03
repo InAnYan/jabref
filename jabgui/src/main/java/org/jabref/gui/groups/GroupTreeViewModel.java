@@ -34,7 +34,7 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral.Generate
 import org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral.GenerateSummaryForSeveralTaskRequest;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.ai.identifiers.ResolvedGroupAiIdentifier;
+import org.jabref.model.ai.identifiers.ResoledGroup;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
@@ -73,6 +73,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
     private final Comparator<GroupTreeNode> compAlphabetIgnoreCaseReverse = (GroupTreeNode v1, GroupTreeNode v2) -> v2
             .getName()
             .compareToIgnoreCase(v1.getName());
+    private Optional<BibDatabaseContext> currentDatabase = Optional.empty();
     private final Comparator<GroupTreeNode> compEntries = (GroupTreeNode v1, GroupTreeNode v2) -> {
         int numChildren1 = v1.getEntriesInGroup(this.currentDatabase.get().getEntries()).size();
         int numChildren2 = v2.getEntriesInGroup(this.currentDatabase.get().getEntries()).size();
@@ -83,7 +84,6 @@ public class GroupTreeViewModel extends AbstractViewModel {
         int numChildren2 = v2.getEntriesInGroup(this.currentDatabase.get().getEntries()).size();
         return Integer.compare(numChildren1, numChildren2);
     };
-    private Optional<BibDatabaseContext> currentDatabase = Optional.empty();
 
     public GroupTreeViewModel(@NonNull StateManager stateManager,
                               @NonNull DialogService dialogService,
@@ -464,7 +464,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
 
         BibDatabaseContext context = currentDatabase.get();
 
-        ResolvedGroupAiIdentifier groupIdentifier = new ResolvedGroupAiIdentifier(
+        ResoledGroup groupIdentifier = new ResoledGroup(
                 context.getDatabasePath().orElse(null),
                 group.getGroupNode().getGroup().getName()
         );

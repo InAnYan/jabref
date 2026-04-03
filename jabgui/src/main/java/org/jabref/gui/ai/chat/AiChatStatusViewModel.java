@@ -22,7 +22,7 @@ import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.ai.rag.util.AnswerEngineFactory;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.entry.LinkedFile;
 
@@ -53,60 +53,17 @@ public class AiChatStatusViewModel extends AbstractViewModel {
             };
         }
     }
-
-    public static class IngestionStatusRow {
-        private final LinkedFile linkedFile;
-        private final ReadOnlyStringWrapper name;
-        private final ObjectProperty<FileStatus> status;
-        private final ObjectProperty<Exception> error;
-
-        public IngestionStatusRow(LinkedFile linkedFile) {
-            this.linkedFile = linkedFile;
-            this.name = new ReadOnlyStringWrapper(linkedFile.getLink());
-            this.status = new SimpleObjectProperty<>(FileStatus.PENDING);
-            this.error = new SimpleObjectProperty<>();
-        }
-
-        public ReadOnlyStringWrapper nameProperty() {
-            return name;
-        }
-
-        public ObjectProperty<FileStatus> statusProperty() {
-            return status;
-        }
-
-        public FileStatus getStatus() {
-            return status.get();
-        }
-
-        public ObjectProperty<Exception> errorProperty() {
-            return error;
-        }
-
-        public Exception getError() {
-            return error.get();
-        }
-
-        public LinkedFile getLinkedFile() {
-            return linkedFile;
-        }
-    }
-
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final Map<GenerateEmbeddingsTask, ChangeListener<? super TrackedBackgroundTask.Status>> taskListeners = new HashMap<>();
-
-    private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ObservableList<IngestionStatusRow> ingestionStatuses = FXCollections.observableArrayList(row ->
             new Observable[] {row.statusProperty(), row.errorProperty()}
     );
-
     private final ListProperty<AnswerEngineKind> answerEngineKinds = new SimpleListProperty<>(FXCollections.observableArrayList(AnswerEngineKind.values()));
     private final ObjectProperty<AnswerEngineKind> selectedAnswerEngineKind = new SimpleObjectProperty<>();
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
-
     private final AiPreferences aiPreferences;
     private final AnswerEngineFactory answerEngineFactory;
-
     public AiChatStatusViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
@@ -205,7 +162,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         return generateEmbeddingsTasks;
     }
 
-    public ListProperty<BibEntryAiIdentifier> entriesProperty() {
+    public ListProperty<FullBibEntry> entriesProperty() {
         return entries;
     }
 
@@ -219,5 +176,43 @@ public class AiChatStatusViewModel extends AbstractViewModel {
 
     public ObjectProperty<AnswerEngineKind> selectedAnswerEngineKindProperty() {
         return selectedAnswerEngineKind;
+    }
+
+    public static class IngestionStatusRow {
+        private final LinkedFile linkedFile;
+        private final ReadOnlyStringWrapper name;
+        private final ObjectProperty<FileStatus> status;
+        private final ObjectProperty<Exception> error;
+
+        public IngestionStatusRow(LinkedFile linkedFile) {
+            this.linkedFile = linkedFile;
+            this.name = new ReadOnlyStringWrapper(linkedFile.getLink());
+            this.status = new SimpleObjectProperty<>(FileStatus.PENDING);
+            this.error = new SimpleObjectProperty<>();
+        }
+
+        public ReadOnlyStringWrapper nameProperty() {
+            return name;
+        }
+
+        public ObjectProperty<FileStatus> statusProperty() {
+            return status;
+        }
+
+        public FileStatus getStatus() {
+            return status.get();
+        }
+
+        public ObjectProperty<Exception> errorProperty() {
+            return error;
+        }
+
+        public Exception getError() {
+            return error.get();
+        }
+
+        public LinkedFile getLinkedFile() {
+            return linkedFile;
+        }
     }
 }

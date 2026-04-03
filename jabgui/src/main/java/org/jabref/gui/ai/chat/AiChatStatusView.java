@@ -21,16 +21,16 @@ import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
 public class AiChatStatusView extends VBox {
-    @FXML private TableView<BibEntryAiIdentifier> entriesTable;
-    @FXML private TableColumn<BibEntryAiIdentifier, String> libraryColumn;
-    @FXML private TableColumn<BibEntryAiIdentifier, String> citationKeyColumn;
+    @FXML private TableView<FullBibEntry> entriesTable;
+    @FXML private TableColumn<FullBibEntry, String> libraryColumn;
+    @FXML private TableColumn<FullBibEntry, String> citationKeyColumn;
 
     @FXML private TableView<AiChatStatusViewModel.IngestionStatusRow> ingestionTable;
     @FXML private TableColumn<AiChatStatusViewModel.IngestionStatusRow, String> fileColumn;
@@ -73,7 +73,7 @@ public class AiChatStatusView extends VBox {
                         cellData.getValue().entry().getCitationKey().orElse("")
                 )
         );
-        new ValueTableCellFactory<BibEntryAiIdentifier, String>()
+        new ValueTableCellFactory<FullBibEntry, String>()
                 .withText(text -> text)
                 .install(citationKeyColumn);
 
@@ -85,7 +85,7 @@ public class AiChatStatusView extends VBox {
                                 .orElse("")
                 )
         );
-        new ValueTableCellFactory<BibEntryAiIdentifier, String>()
+        new ValueTableCellFactory<FullBibEntry, String>()
                 .withText(text -> text)
                 .install(libraryColumn);
     }
@@ -146,7 +146,7 @@ public class AiChatStatusView extends VBox {
         return viewModel.answerEngineProperty();
     }
 
-    public ListProperty<BibEntryAiIdentifier> entriesProperty() {
+    public ListProperty<FullBibEntry> entriesProperty() {
         return viewModel.entriesProperty();
     }
 

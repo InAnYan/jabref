@@ -21,7 +21,7 @@ import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.chatting.ChatType;
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -37,7 +37,7 @@ public class AiGroupChatViewModel extends AbstractViewModel {
     private final ObjectProperty<GroupNodeViewModel> groupNode = new SimpleObjectProperty<>();
     private final ObjectProperty<BibDatabaseContext> databaseContext = new SimpleObjectProperty<>();
 
-    private final ListProperty<BibEntryAiIdentifier> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     private final ChatHistoryRepository chatHistoryRepository;
@@ -70,7 +70,7 @@ public class AiGroupChatViewModel extends AbstractViewModel {
         assert context.getMetaData().getAiLibraryId().isPresent();
 
         List<BibEntry> matchedEntries = group.getGroupNode().findMatches(context.getDatabase());
-        List<BibEntryAiIdentifier> matchedEntryIdentifiers = BibEntryAiIdentifier.fromSeveral(context, matchedEntries);
+        List<FullBibEntry> matchedEntryIdentifiers = FullBibEntry.fromSeveral(context, matchedEntries);
 
         entries.set(FXCollections.observableArrayList(matchedEntryIdentifiers));
 
@@ -96,7 +96,7 @@ public class AiGroupChatViewModel extends AbstractViewModel {
         return state;
     }
 
-    public ListProperty<BibEntryAiIdentifier> entriesProperty() {
+    public ListProperty<FullBibEntry> entriesProperty() {
         return entries;
     }
 

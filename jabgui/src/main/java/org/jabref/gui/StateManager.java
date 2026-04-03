@@ -23,7 +23,7 @@ import org.jabref.http.SrvStateManager;
 import org.jabref.logic.search.IndexManager;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.OptionalObjectProperty;
-import org.jabref.model.ai.identifiers.ResolvedGroupAiIdentifier;
+import org.jabref.model.ai.identifiers.ResoledGroup;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.groups.GroupTreeNode;
@@ -101,15 +101,17 @@ public interface StateManager extends SrvStateManager {
 
     void clearSearchHistory();
 
-    Optional<AiGroupChatWindow> getAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier);
-    void setAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier, AiGroupChatWindow aiGroupChatWindow);
-    void removeAiChatWindowForGroup(ResolvedGroupAiIdentifier groupIdentifier);
+    Optional<AiGroupChatWindow> getAiChatWindowForGroup(ResoledGroup groupIdentifier);
+
+    void setAiChatWindowForGroup(ResoledGroup groupIdentifier, AiGroupChatWindow aiGroupChatWindow);
+
+    void removeAiChatWindowForGroup(ResoledGroup groupIdentifier);
 
     BooleanProperty getEditorShowing();
 
-    void setActiveWalkthrough(Walkthrough walkthrough);
-
     Optional<Walkthrough> getActiveWalkthrough();
+
+    void setActiveWalkthrough(Walkthrough walkthrough);
 
     BooleanProperty canGoBackProperty();
 

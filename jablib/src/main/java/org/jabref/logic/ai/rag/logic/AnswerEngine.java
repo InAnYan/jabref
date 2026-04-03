@@ -2,14 +2,14 @@ package org.jabref.logic.ai.rag.logic;
 
 import java.util.List;
 
-import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 
 public interface AnswerEngine {
     List<RelevantInformation> process(
             String query,
-            List<BibEntryAiIdentifier> entriesFilter
+            List<FullBibEntry> entriesFilter
     );
 
     AnswerEngineKind getKind();
