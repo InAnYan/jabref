@@ -34,7 +34,7 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral.Generate
 import org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral.GenerateSummaryForSeveralTaskRequest;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.ai.identifiers.ResoledGroup;
+import org.jabref.model.ai.identifiers.ResolvedGroup;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
@@ -464,7 +464,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
 
         BibDatabaseContext context = currentDatabase.get();
 
-        ResoledGroup groupIdentifier = new ResoledGroup(
+        ResolvedGroup groupIdentifier = new ResolvedGroup(
                 context.getDatabasePath().orElse(null),
                 group.getGroupNode().getGroup().getName()
         );
