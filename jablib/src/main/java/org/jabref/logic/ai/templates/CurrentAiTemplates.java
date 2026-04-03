@@ -11,7 +11,6 @@ import org.jabref.logic.ai.summarization.templates.SummarizationCombineSystemMes
 import org.jabref.logic.ai.summarization.templates.SummarizationCombineUserMessageAiTemplate;
 import org.jabref.logic.ai.summarization.templates.SummarizationFullDocumentSystemMessageAiTemplate;
 import org.jabref.logic.ai.summarization.templates.SummarizationFullDocumentUserMessageAiTemplate;
-import org.jabref.model.ai.templating.AiTemplateKind;
 
 public class CurrentAiTemplates implements AiTemplatesFactory {
     private final SummarizationChunkSystemMessageAiTemplate summarizationChunkSystemMessageTemplate;
@@ -30,37 +29,37 @@ public class CurrentAiTemplates implements AiTemplatesFactory {
 
     public CurrentAiTemplates(AiPreferences aiPreferences) {
         this.summarizationChunkSystemMessageTemplate = new SummarizationChunkSystemMessageAiTemplate(
-                () -> aiPreferences.getTemplate(AiTemplateKind.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE)
+                aiPreferences::getSummarizationChunkSystemMessageTemplate
         );
         this.summarizationChunkUserMessageTemplate = new SummarizationChunkUserMessageAiTemplate(
-                () -> aiPreferences.getTemplate(AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE)
+                aiPreferences::getSummarizationChunkUserMessageTemplate
         );
         this.summarizationCombineSystemMessageTemplate = new SummarizationCombineSystemMessageAiTemplate(
-                () -> aiPreferences.getTemplate(AiTemplateKind.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE)
+                aiPreferences::getSummarizationCombineSystemMessageTemplate
         );
         this.summarizationCombineUserMessageTemplate = new SummarizationCombineUserMessageAiTemplate(
-                () -> aiPreferences.getTemplate(AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE)
+                aiPreferences::getSummarizationCombineUserMessageTemplate
         );
 
         this.summarizationFullDocumentSystemMessageTemplate = new SummarizationFullDocumentSystemMessageAiTemplate(
-                () -> aiPreferences.getTemplate(AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE)
+                aiPreferences::getSummarizationFullDocumentSystemMessageTemplate
         );
         this.summarizationFullDocumentUserMessageTemplate = new SummarizationFullDocumentUserMessageAiTemplate(
-                () -> aiPreferences.getTemplate(AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE)
+                aiPreferences::getSummarizationFullDocumentUserMessageTemplate
         );
 
         this.chattingSystemMessageTemplate = new ChattingSystemMessageAiTemplate(
-                () -> aiPreferences.getTemplate(AiTemplateKind.CHATTING_SYSTEM_MESSAGE)
+                aiPreferences::getChattingSystemMessageTemplate
         );
         this.chattingUserMessageTemplate = new ChattingUserMessageAiTemplate(
-                () -> aiPreferences.getTemplate(AiTemplateKind.CHATTING_USER_MESSAGE)
+                aiPreferences::getChattingUserMessageTemplate
         );
 
         this.citationParsingSystemMessageTemplate = new CitationParsingSystemMessageAiTemplate(
-                () -> aiPreferences.getTemplate(AiTemplateKind.CITATION_PARSING_SYSTEM_MESSAGE)
+                aiPreferences::getCitationParsingSystemMessageTemplate
         );
         this.citationParsingUserMessageTemplate = new CitationParsingUserMessageAiTemplate(
-                () -> aiPreferences.getTemplate(AiTemplateKind.CITATION_PARSING_USER_MESSAGE)
+                aiPreferences::getCitationParsingUserMessageTemplate
         );
     }
 

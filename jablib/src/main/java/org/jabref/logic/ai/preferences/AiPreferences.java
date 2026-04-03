@@ -1,7 +1,6 @@
 package org.jabref.logic.ai.preferences;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import javafx.beans.property.BooleanProperty;
@@ -23,7 +22,6 @@ import org.jabref.model.ai.llm.PredefinedChatModel;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.DocumentSplitterKind;
 import org.jabref.model.ai.summarization.SummarizatorKind;
-import org.jabref.model.ai.templating.AiTemplateKind;
 import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
 import com.github.javakeyring.Keyring;
@@ -71,7 +69,16 @@ public class AiPreferences {
     private final IntegerProperty ragMaxResultsCount;
     private final DoubleProperty ragMinScore;
 
-    private final Map<AiTemplateKind, StringProperty> templates;
+    private final StringProperty chattingSystemMessageTemplate;
+    private final StringProperty chattingUserMessageTemplate;
+    private final StringProperty summarizationChunkSystemMessageTemplate;
+    private final StringProperty summarizationChunkUserMessageTemplate;
+    private final StringProperty summarizationCombineSystemMessageTemplate;
+    private final StringProperty summarizationCombineUserMessageTemplate;
+    private final StringProperty summarizationFullDocumentSystemMessageTemplate;
+    private final StringProperty summarizationFullDocumentUserMessageTemplate;
+    private final StringProperty citationParsingSystemMessageTemplate;
+    private final StringProperty citationParsingUserMessageTemplate;
 
     private Runnable apiKeyChangeListener;
 
@@ -100,7 +107,16 @@ public class AiPreferences {
             AnswerEngineKind answerEngineKind,
             int ragMaxResultsCount,
             double ragMinScore,
-            Map<AiTemplateKind, String> templates
+            String chattingSystemMessageTemplate,
+            String chattingUserMessageTemplate,
+            String summarizationChunkSystemMessageTemplate,
+            String summarizationChunkUserMessageTemplate,
+            String summarizationCombineSystemMessageTemplate,
+            String summarizationCombineUserMessageTemplate,
+            String summarizationFullDocumentSystemMessageTemplate,
+            String summarizationFullDocumentUserMessageTemplate,
+            String citationParsingSystemMessageTemplate,
+            String citationParsingUserMessageTemplate
     ) {
         this.enableAi = new SimpleBooleanProperty(enableAi);
         this.autoGenerateEmbeddings = new SimpleBooleanProperty(autoGenerateEmbeddings);
@@ -134,21 +150,19 @@ public class AiPreferences {
         this.ragMaxResultsCount = new SimpleIntegerProperty(ragMaxResultsCount);
         this.ragMinScore = new SimpleDoubleProperty(ragMinScore);
 
+        this.chattingSystemMessageTemplate = new SimpleStringProperty(chattingSystemMessageTemplate);
+        this.chattingUserMessageTemplate = new SimpleStringProperty(chattingUserMessageTemplate);
+        this.summarizationChunkSystemMessageTemplate = new SimpleStringProperty(summarizationChunkSystemMessageTemplate);
+        this.summarizationChunkUserMessageTemplate = new SimpleStringProperty(summarizationChunkUserMessageTemplate);
+        this.summarizationCombineSystemMessageTemplate = new SimpleStringProperty(summarizationCombineSystemMessageTemplate);
+        this.summarizationCombineUserMessageTemplate = new SimpleStringProperty(summarizationCombineUserMessageTemplate);
+        this.summarizationFullDocumentSystemMessageTemplate = new SimpleStringProperty(summarizationFullDocumentSystemMessageTemplate);
+        this.summarizationFullDocumentUserMessageTemplate = new SimpleStringProperty(summarizationFullDocumentUserMessageTemplate);
+        this.citationParsingSystemMessageTemplate = new SimpleStringProperty(citationParsingSystemMessageTemplate);
+        this.citationParsingUserMessageTemplate = new SimpleStringProperty(citationParsingUserMessageTemplate);
+
         this.apiKeyChangeListener = () -> {
         };
-
-        this.templates = Map.of(
-                AiTemplateKind.CHATTING_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.CHATTING_SYSTEM_MESSAGE)),
-                AiTemplateKind.CHATTING_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.CHATTING_USER_MESSAGE)),
-                AiTemplateKind.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE)),
-                AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE)),
-                AiTemplateKind.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE)),
-                AiTemplateKind.SUMMARIZATION_COMBINE_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.SUMMARIZATION_COMBINE_USER_MESSAGE)),
-                AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE)),
-                AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE)),
-                AiTemplateKind.CITATION_PARSING_SYSTEM_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.CITATION_PARSING_SYSTEM_MESSAGE)),
-                AiTemplateKind.CITATION_PARSING_USER_MESSAGE, new SimpleStringProperty(templates.get(AiTemplateKind.CITATION_PARSING_USER_MESSAGE))
-        );
     }
 
     public String getApiKeyForAiProvider(AiProvider aiProvider) {
@@ -590,15 +604,123 @@ public class AiPreferences {
         apiKeyChangeListener.run();
     }
 
-    public void setTemplate(AiTemplateKind aiTemplateKind, String template) {
-        templateProperty(aiTemplateKind).set(template);
+    public StringProperty chattingSystemMessageTemplateProperty() {
+        return chattingSystemMessageTemplate;
     }
 
-    public String getTemplate(AiTemplateKind aiTemplateKind) {
-        return templateProperty(aiTemplateKind).get();
+    public String getChattingSystemMessageTemplate() {
+        return chattingSystemMessageTemplate.get();
     }
 
-    public StringProperty templateProperty(AiTemplateKind aiTemplateKind) {
-        return templates.getOrDefault(aiTemplateKind, new SimpleStringProperty(""));
+    public void setChattingSystemMessageTemplate(String template) {
+        chattingSystemMessageTemplate.set(template);
+    }
+
+    public StringProperty chattingUserMessageTemplateProperty() {
+        return chattingUserMessageTemplate;
+    }
+
+    public String getChattingUserMessageTemplate() {
+        return chattingUserMessageTemplate.get();
+    }
+
+    public void setChattingUserMessageTemplate(String template) {
+        chattingUserMessageTemplate.set(template);
+    }
+
+    public StringProperty summarizationChunkSystemMessageTemplateProperty() {
+        return summarizationChunkSystemMessageTemplate;
+    }
+
+    public String getSummarizationChunkSystemMessageTemplate() {
+        return summarizationChunkSystemMessageTemplate.get();
+    }
+
+    public void setSummarizationChunkSystemMessageTemplate(String template) {
+        summarizationChunkSystemMessageTemplate.set(template);
+    }
+
+    public StringProperty summarizationChunkUserMessageTemplateProperty() {
+        return summarizationChunkUserMessageTemplate;
+    }
+
+    public String getSummarizationChunkUserMessageTemplate() {
+        return summarizationChunkUserMessageTemplate.get();
+    }
+
+    public void setSummarizationChunkUserMessageTemplate(String template) {
+        summarizationChunkUserMessageTemplate.set(template);
+    }
+
+    public StringProperty summarizationCombineSystemMessageTemplateProperty() {
+        return summarizationCombineSystemMessageTemplate;
+    }
+
+    public String getSummarizationCombineSystemMessageTemplate() {
+        return summarizationCombineSystemMessageTemplate.get();
+    }
+
+    public void setSummarizationCombineSystemMessageTemplate(String template) {
+        summarizationCombineSystemMessageTemplate.set(template);
+    }
+
+    public StringProperty summarizationCombineUserMessageTemplateProperty() {
+        return summarizationCombineUserMessageTemplate;
+    }
+
+    public String getSummarizationCombineUserMessageTemplate() {
+        return summarizationCombineUserMessageTemplate.get();
+    }
+
+    public void setSummarizationCombineUserMessageTemplate(String template) {
+        summarizationCombineUserMessageTemplate.set(template);
+    }
+
+    public StringProperty summarizationFullDocumentSystemMessageTemplateProperty() {
+        return summarizationFullDocumentSystemMessageTemplate;
+    }
+
+    public String getSummarizationFullDocumentSystemMessageTemplate() {
+        return summarizationFullDocumentSystemMessageTemplate.get();
+    }
+
+    public void setSummarizationFullDocumentSystemMessageTemplate(String template) {
+        summarizationFullDocumentSystemMessageTemplate.set(template);
+    }
+
+    public StringProperty summarizationFullDocumentUserMessageTemplateProperty() {
+        return summarizationFullDocumentUserMessageTemplate;
+    }
+
+    public String getSummarizationFullDocumentUserMessageTemplate() {
+        return summarizationFullDocumentUserMessageTemplate.get();
+    }
+
+    public void setSummarizationFullDocumentUserMessageTemplate(String template) {
+        summarizationFullDocumentUserMessageTemplate.set(template);
+    }
+
+    public StringProperty citationParsingSystemMessageTemplateProperty() {
+        return citationParsingSystemMessageTemplate;
+    }
+
+    public String getCitationParsingSystemMessageTemplate() {
+        return citationParsingSystemMessageTemplate.get();
+    }
+
+    public void setCitationParsingSystemMessageTemplate(String template) {
+        citationParsingSystemMessageTemplate.set(template);
+    }
+
+    public StringProperty citationParsingUserMessageTemplateProperty() {
+        return citationParsingUserMessageTemplate;
+    }
+
+    public String getCitationParsingUserMessageTemplate() {
+        return citationParsingUserMessageTemplate.get();
+    }
+
+    public void setCitationParsingUserMessageTemplate(String template) {
+        citationParsingUserMessageTemplate.set(template);
     }
 }

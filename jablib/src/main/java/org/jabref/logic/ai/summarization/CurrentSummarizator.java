@@ -6,7 +6,6 @@ import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.templates.AiTemplatesFactory;
 import org.jabref.model.ai.summarization.SummarizatorKind;
-import org.jabref.model.ai.templating.AiTemplateKind;
 
 import org.jspecify.annotations.Nullable;
 
@@ -32,12 +31,12 @@ public class CurrentSummarizator implements Summarizator {
         aiPreferences.summarizatorKindProperty().addListener(_ -> updateAlgorithm());
 
         // Not efficient.
-        aiPreferences.templateProperty(AiTemplateKind.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE).addListener(_ -> updateAlgorithm());
-        aiPreferences.templateProperty(AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE).addListener(_ -> updateAlgorithm());
-        aiPreferences.templateProperty(AiTemplateKind.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE).addListener(_ -> updateAlgorithm());
-        aiPreferences.templateProperty(AiTemplateKind.SUMMARIZATION_COMBINE_USER_MESSAGE).addListener(_ -> updateAlgorithm());
-        aiPreferences.templateProperty(AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE).addListener(_ -> updateAlgorithm());
-        aiPreferences.templateProperty(AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE).addListener(_ -> updateAlgorithm());
+        aiPreferences.summarizationChunkSystemMessageTemplateProperty().addListener(_ -> updateAlgorithm());
+        aiPreferences.summarizationChunkUserMessageTemplateProperty().addListener(_ -> updateAlgorithm());
+        aiPreferences.summarizationCombineSystemMessageTemplateProperty().addListener(_ -> updateAlgorithm());
+        aiPreferences.summarizationCombineUserMessageTemplateProperty().addListener(_ -> updateAlgorithm());
+        aiPreferences.summarizationFullDocumentSystemMessageTemplateProperty().addListener(_ -> updateAlgorithm());
+        aiPreferences.summarizationFullDocumentUserMessageTemplateProperty().addListener(_ -> updateAlgorithm());
     }
 
     private void updateAlgorithm() {

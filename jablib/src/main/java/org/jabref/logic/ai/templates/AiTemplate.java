@@ -3,7 +3,6 @@ package org.jabref.logic.ai.templates;
 import java.io.StringWriter;
 import java.util.function.Supplier;
 
-import org.jabref.model.ai.templating.AiTemplateKind;
 import org.jabref.model.entry.CanonicalBibEntry;
 
 import org.apache.velocity.VelocityContext;
@@ -41,6 +40,4 @@ public abstract class AiTemplate {
 
     // Required by Velocity.
     public abstract String getLogName();
-
-    public abstract AiTemplateKind getKind();
 }

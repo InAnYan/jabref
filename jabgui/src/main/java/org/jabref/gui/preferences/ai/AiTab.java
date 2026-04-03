@@ -1,7 +1,5 @@
 package org.jabref.gui.preferences.ai;
 
-import java.util.Optional;
-
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -26,7 +24,6 @@ import org.jabref.logic.help.HelpFile;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
 import org.jabref.model.ai.llm.AiProvider;
-import org.jabref.model.ai.templating.AiTemplateKind;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import com.dlsc.unitfx.IntegerInputField;
@@ -112,16 +109,14 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     }
 
     private void initializeTemplates() {
-        systemMessageTextArea.textProperty().bindBidirectional(viewModel.getTemplateSources().get(AiTemplateKind.CHATTING_SYSTEM_MESSAGE));
-        userMessageTextArea.textProperty().bindBidirectional(viewModel.getTemplateSources().get(AiTemplateKind.CHATTING_USER_MESSAGE));
-        summarizationChunkSystemMessageTextArea.textProperty().bindBidirectional(viewModel.getTemplateSources().get(AiTemplateKind.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE));
-        summarizationChunkUserMessageTextArea.textProperty().bindBidirectional(viewModel.getTemplateSources().get(AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE));
-        summarizationCombineSystemMessageTextArea.textProperty().bindBidirectional(viewModel.getTemplateSources().get(AiTemplateKind.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE));
-        summarizationCombineUserMessageTextArea.textProperty().bindBidirectional(viewModel.getTemplateSources().get(AiTemplateKind.SUMMARIZATION_COMBINE_USER_MESSAGE));
-        citationParsingSystemMessageTextArea.textProperty().bindBidirectional(viewModel.getTemplateSources().get(AiTemplateKind.CITATION_PARSING_SYSTEM_MESSAGE));
-        citationParsingUserMessageTextArea.textProperty().bindBidirectional(viewModel.getTemplateSources().get(AiTemplateKind.CITATION_PARSING_USER_MESSAGE));
-
-        templatesTabPane.getSelectionModel().selectedItemProperty().addListener(_ -> viewModel.selectedTemplateProperty().set(getAiTemplate()));
+        systemMessageTextArea.textProperty().bindBidirectional(viewModel.chattingSystemMessageTemplateProperty());
+        userMessageTextArea.textProperty().bindBidirectional(viewModel.chattingUserMessageTemplateProperty());
+        summarizationChunkSystemMessageTextArea.textProperty().bindBidirectional(viewModel.summarizationChunkSystemMessageTemplateProperty());
+        summarizationChunkUserMessageTextArea.textProperty().bindBidirectional(viewModel.summarizationChunkUserMessageTemplateProperty());
+        summarizationCombineSystemMessageTextArea.textProperty().bindBidirectional(viewModel.summarizationCombineSystemMessageTemplateProperty());
+        summarizationCombineUserMessageTextArea.textProperty().bindBidirectional(viewModel.summarizationCombineUserMessageTemplateProperty());
+        citationParsingSystemMessageTextArea.textProperty().bindBidirectional(viewModel.citationParsingSystemMessageTemplateProperty());
+        citationParsingUserMessageTextArea.textProperty().bindBidirectional(viewModel.citationParsingUserMessageTemplateProperty());
 
         BooleanBinding aiDisabled = enableAi.selectedProperty().not();
 
@@ -282,33 +277,29 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
 
     @FXML
     private void onResetCurrentTemplateButtonClick() {
-        viewModel.resetCurrentTemplate();
+        Tab selectedTab = templatesTabPane.getSelectionModel().getSelectedItem();
+
+        if (selectedTab == systemMessageForChattingTab) {
+            viewModel.resetChattingSystemMessageTemplate();
+        } else if (selectedTab == userMessageForChattingTab) {
+            viewModel.resetChattingUserMessageTemplate();
+        } else if (selectedTab == summarizationChunkSystemMessageTab) {
+            viewModel.resetSummarizationChunkSystemMessageTemplate();
+        } else if (selectedTab == summarizationChunkUserMessageTab) {
+            viewModel.resetSummarizationChunkUserMessageTemplate();
+        } else if (selectedTab == summarizationCombineSystemMessageTab) {
+            viewModel.resetSummarizationCombineSystemMessageTemplate();
+        } else if (selectedTab == summarizationCombineUserMessageTab) {
+            viewModel.resetSummarizationCombineUserMessageTemplate();
+        } else if (selectedTab == citationParsingSystemMessageTab) {
+            viewModel.resetCitationParsingSystemMessageTemplate();
+        } else if (selectedTab == citationParsingUserMessageTab) {
+            viewModel.resetCitationParsingUserMessageTemplate();
+        }
     }
 
     public ReadOnlyBooleanProperty aiEnabledProperty() {
         return enableAi.selectedProperty();
     }
 
-    public Optional<AiTemplateKind> getAiTemplate() {
-        Tab selectedTab = templatesTabPane.getSelectionModel().getSelectedItem();
-        if (selectedTab == systemMessageForChattingTab) {
-            return Optional.of(AiTemplateKind.CHATTING_SYSTEM_MESSAGE);
-        } else if (selectedTab == userMessageForChattingTab) {
-            return Optional.of(AiTemplateKind.CHATTING_USER_MESSAGE);
-        } else if (selectedTab == summarizationChunkSystemMessageTab) {
-            return Optional.of(AiTemplateKind.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE);
-        } else if (selectedTab == summarizationChunkUserMessageTab) {
-            return Optional.of(AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE);
-        } else if (selectedTab == summarizationCombineSystemMessageTab) {
-            return Optional.of(AiTemplateKind.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE);
-        } else if (selectedTab == summarizationCombineUserMessageTab) {
-            return Optional.of(AiTemplateKind.SUMMARIZATION_COMBINE_USER_MESSAGE);
-        } else if (selectedTab == citationParsingSystemMessageTab) {
-            return Optional.of(AiTemplateKind.CITATION_PARSING_SYSTEM_MESSAGE);
-        } else if (selectedTab == citationParsingUserMessageTab) {
-            return Optional.of(AiTemplateKind.CITATION_PARSING_USER_MESSAGE);
-        }
-
-        return Optional.empty();
-    }
 }

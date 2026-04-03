@@ -1,9 +1,7 @@
 package org.jabref.gui.preferences.ai;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 
 import javafx.beans.property.BooleanProperty;
@@ -26,11 +24,9 @@ import org.jabref.model.ai.llm.PredefinedChatModel;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.preferences.CliPreferences;
 import org.jabref.logic.util.LocalizedNumbers;
-import org.jabref.logic.util.OptionalObjectProperty;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
 import org.jabref.model.ai.llm.AiProvider;
-import org.jabref.model.ai.templating.AiTemplateKind;
 
 import de.saxsys.mvvmfx.utils.validation.FunctionBasedValidator;
 import de.saxsys.mvvmfx.utils.validation.ValidationMessage;
@@ -81,24 +77,16 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     private final StringProperty geminiApiBaseUrl = new SimpleStringProperty();
     private final StringProperty huggingFaceApiBaseUrl = new SimpleStringProperty();
 
-    private final Map<AiTemplateKind, StringProperty> templateSources = Map.of(
-            AiTemplateKind.CHATTING_SYSTEM_MESSAGE, new SimpleStringProperty(),
-            AiTemplateKind.CHATTING_USER_MESSAGE, new SimpleStringProperty(),
-
-            AiTemplateKind.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE, new SimpleStringProperty(),
-            AiTemplateKind.SUMMARIZATION_CHUNK_USER_MESSAGE, new SimpleStringProperty(),
-
-            AiTemplateKind.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE, new SimpleStringProperty(),
-            AiTemplateKind.SUMMARIZATION_COMBINE_USER_MESSAGE, new SimpleStringProperty(),
-
-            AiTemplateKind.CITATION_PARSING_SYSTEM_MESSAGE, new SimpleStringProperty(),
-            AiTemplateKind.CITATION_PARSING_USER_MESSAGE, new SimpleStringProperty(),
-
-            AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE, new SimpleStringProperty(),
-            AiTemplateKind.SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE, new SimpleStringProperty()
-    );
-
-    private final OptionalObjectProperty<AiTemplateKind> selectedTemplate = OptionalObjectProperty.empty();
+    private final StringProperty chattingSystemMessageTemplate = new SimpleStringProperty();
+    private final StringProperty chattingUserMessageTemplate = new SimpleStringProperty();
+    private final StringProperty summarizationChunkSystemMessageTemplate = new SimpleStringProperty();
+    private final StringProperty summarizationChunkUserMessageTemplate = new SimpleStringProperty();
+    private final StringProperty summarizationCombineSystemMessageTemplate = new SimpleStringProperty();
+    private final StringProperty summarizationCombineUserMessageTemplate = new SimpleStringProperty();
+    private final StringProperty citationParsingSystemMessageTemplate = new SimpleStringProperty();
+    private final StringProperty citationParsingUserMessageTemplate = new SimpleStringProperty();
+    private final StringProperty summarizationFullDocumentSystemMessageTemplate = new SimpleStringProperty();
+    private final StringProperty summarizationFullDocumentUserMessageTemplate = new SimpleStringProperty();
 
     private final StringProperty temperature = new SimpleStringProperty();
     private final IntegerProperty contextWindowSize = new SimpleIntegerProperty();
@@ -333,8 +321,16 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
         selectedEmbeddingModel.setValue(aiPreferences.getEmbeddingModel());
 
-        Arrays.stream(AiTemplateKind.values()).forEach(template ->
-                templateSources.get(template).set(aiPreferences.getTemplate(template)));
+        chattingSystemMessageTemplate.set(aiPreferences.getChattingSystemMessageTemplate());
+        chattingUserMessageTemplate.set(aiPreferences.getChattingUserMessageTemplate());
+        summarizationChunkSystemMessageTemplate.set(aiPreferences.getSummarizationChunkSystemMessageTemplate());
+        summarizationChunkUserMessageTemplate.set(aiPreferences.getSummarizationChunkUserMessageTemplate());
+        summarizationCombineSystemMessageTemplate.set(aiPreferences.getSummarizationCombineSystemMessageTemplate());
+        summarizationCombineUserMessageTemplate.set(aiPreferences.getSummarizationCombineUserMessageTemplate());
+        citationParsingSystemMessageTemplate.set(aiPreferences.getCitationParsingSystemMessageTemplate());
+        citationParsingUserMessageTemplate.set(aiPreferences.getCitationParsingUserMessageTemplate());
+        summarizationFullDocumentSystemMessageTemplate.set(aiPreferences.getSummarizationFullDocumentSystemMessageTemplate());
+        summarizationFullDocumentUserMessageTemplate.set(aiPreferences.getSummarizationFullDocumentUserMessageTemplate());
 
         temperature.setValue(LocalizedNumbers.doubleToString(aiPreferences.getTemperature()));
         contextWindowSize.setValue(aiPreferences.getContextWindowSize());
@@ -373,8 +369,16 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         aiPreferences.setGeminiApiBaseUrl(geminiApiBaseUrl.get() == null ? "" : geminiApiBaseUrl.get());
         aiPreferences.setHuggingFaceApiBaseUrl(huggingFaceApiBaseUrl.get() == null ? "" : huggingFaceApiBaseUrl.get());
 
-        Arrays.stream(AiTemplateKind.values()).forEach(template ->
-                aiPreferences.setTemplate(template, templateSources.get(template).get()));
+        aiPreferences.setChattingSystemMessageTemplate(chattingSystemMessageTemplate.get());
+        aiPreferences.setChattingUserMessageTemplate(chattingUserMessageTemplate.get());
+        aiPreferences.setSummarizationChunkSystemMessageTemplate(summarizationChunkSystemMessageTemplate.get());
+        aiPreferences.setSummarizationChunkUserMessageTemplate(summarizationChunkUserMessageTemplate.get());
+        aiPreferences.setSummarizationCombineSystemMessageTemplate(summarizationCombineSystemMessageTemplate.get());
+        aiPreferences.setSummarizationCombineUserMessageTemplate(summarizationCombineUserMessageTemplate.get());
+        aiPreferences.setCitationParsingSystemMessageTemplate(citationParsingSystemMessageTemplate.get());
+        aiPreferences.setCitationParsingUserMessageTemplate(citationParsingUserMessageTemplate.get());
+        aiPreferences.setSummarizationFullDocumentSystemMessageTemplate(summarizationFullDocumentSystemMessageTemplate.get());
+        aiPreferences.setSummarizationFullDocumentUserMessageTemplate(summarizationFullDocumentUserMessageTemplate.get());
 
         // We already check the correctness of temperature and RAG minimum score in validators, so we don't need to check it here.
         aiPreferences.setTemperature(LocalizedNumbers.stringToDouble(oldLocale, temperature.get()).get());
@@ -400,15 +404,56 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     }
 
     public void resetTemplates() {
-        Arrays.stream(AiTemplateKind.values()).forEach(template ->
-                templateSources.get(template).set(AiDefaultTemplates.getTemplate(template)));
+        resetChattingSystemMessageTemplate();
+        resetChattingUserMessageTemplate();
+        resetSummarizationChunkSystemMessageTemplate();
+        resetSummarizationChunkUserMessageTemplate();
+        resetSummarizationCombineSystemMessageTemplate();
+        resetSummarizationCombineUserMessageTemplate();
+        resetCitationParsingSystemMessageTemplate();
+        resetCitationParsingUserMessageTemplate();
+        resetSummarizationFullDocumentSystemMessageTemplate();
+        resetSummarizationFullDocumentUserMessageTemplate();
     }
 
-    public void resetCurrentTemplate() {
-        selectedTemplateProperty().get().ifPresent(template -> {
-            String defaultTemplate = AiDefaultTemplates.getTemplate(template);
-            templateSources.get(template).set(defaultTemplate);
-        });
+    public void resetChattingSystemMessageTemplate() {
+        chattingSystemMessageTemplate.set(AiDefaultTemplates.getChattingSystemMessageTemplate());
+    }
+
+    public void resetChattingUserMessageTemplate() {
+        chattingUserMessageTemplate.set(AiDefaultTemplates.getChattingUserMessageTemplate());
+    }
+
+    public void resetSummarizationChunkSystemMessageTemplate() {
+        summarizationChunkSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationChunkSystemMessageTemplate());
+    }
+
+    public void resetSummarizationChunkUserMessageTemplate() {
+        summarizationChunkUserMessageTemplate.set(AiDefaultTemplates.getSummarizationChunkUserMessageTemplate());
+    }
+
+    public void resetSummarizationCombineSystemMessageTemplate() {
+        summarizationCombineSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationCombineSystemMessageTemplate());
+    }
+
+    public void resetSummarizationCombineUserMessageTemplate() {
+        summarizationCombineUserMessageTemplate.set(AiDefaultTemplates.getSummarizationCombineUserMessageTemplate());
+    }
+
+    public void resetCitationParsingSystemMessageTemplate() {
+        citationParsingSystemMessageTemplate.set(AiDefaultTemplates.getCitationParsingSystemMessageTemplate());
+    }
+
+    public void resetCitationParsingUserMessageTemplate() {
+        citationParsingUserMessageTemplate.set(AiDefaultTemplates.getCitationParsingUserMessageTemplate());
+    }
+
+    public void resetSummarizationFullDocumentSystemMessageTemplate() {
+        summarizationFullDocumentSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationFullDocumentSystemMessageTemplate());
+    }
+
+    public void resetSummarizationFullDocumentUserMessageTemplate() {
+        summarizationFullDocumentUserMessageTemplate.set(AiDefaultTemplates.getSummarizationFullDocumentUserMessageTemplate());
     }
 
     @Override
@@ -510,12 +555,36 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         return disableApiBaseUrl;
     }
 
-    public Map<AiTemplateKind, StringProperty> getTemplateSources() {
-        return templateSources;
+    public StringProperty chattingSystemMessageTemplateProperty() {
+        return chattingSystemMessageTemplate;
     }
 
-    public OptionalObjectProperty<AiTemplateKind> selectedTemplateProperty() {
-        return selectedTemplate;
+    public StringProperty chattingUserMessageTemplateProperty() {
+        return chattingUserMessageTemplate;
+    }
+
+    public StringProperty summarizationChunkSystemMessageTemplateProperty() {
+        return summarizationChunkSystemMessageTemplate;
+    }
+
+    public StringProperty summarizationChunkUserMessageTemplateProperty() {
+        return summarizationChunkUserMessageTemplate;
+    }
+
+    public StringProperty summarizationCombineSystemMessageTemplateProperty() {
+        return summarizationCombineSystemMessageTemplate;
+    }
+
+    public StringProperty summarizationCombineUserMessageTemplateProperty() {
+        return summarizationCombineUserMessageTemplate;
+    }
+
+    public StringProperty citationParsingSystemMessageTemplateProperty() {
+        return citationParsingSystemMessageTemplate;
+    }
+
+    public StringProperty citationParsingUserMessageTemplateProperty() {
+        return citationParsingUserMessageTemplate;
     }
 
     public StringProperty temperatureProperty() {
