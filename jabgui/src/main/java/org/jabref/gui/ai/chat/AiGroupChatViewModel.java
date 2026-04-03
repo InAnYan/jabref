@@ -18,8 +18,9 @@ import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.chatting.util.ChatHistoryFactory;
 import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
-import org.jabref.model.ai.chatting.GroupChatHistoryIdentifier;
+import org.jabref.model.ai.chatting.ChatType;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
@@ -66,7 +67,7 @@ public class AiGroupChatViewModel extends AbstractViewModel {
         BibDatabaseContext context = databaseContext.get();
         GroupNodeViewModel group = groupNode.get();
 
-        assert context.getDatabasePath().isPresent();
+        assert context.getMetaData().getAiLibraryId().isPresent();
 
         List<BibEntry> matchedEntries = group.getGroupNode().findMatches(context.getDatabase());
         List<BibEntryAiIdentifier> matchedEntryIdentifiers = BibEntryAiIdentifier.fromSeveral(context, matchedEntries);
@@ -74,8 +75,9 @@ public class AiGroupChatViewModel extends AbstractViewModel {
         entries.set(FXCollections.observableArrayList(matchedEntryIdentifiers));
 
         chatHistory.set(ChatHistoryFactory.makeChatHistoryProperty(
-                new GroupChatHistoryIdentifier(
-                        context.getDatabasePath().get(),
+                new ChatIdentifier(
+                        context.getMetaData().getAiLibraryId().get(),
+                        ChatType.WITH_GROUP,
                         group.getGroupNode().getGroup().nameProperty().get()
                 ),
                 chatHistoryRepository

@@ -37,17 +37,17 @@ public class AiAnswerLogic {
         chatHistory.add(userMessage);
 
         List<RelevantInformation> relevantInformation = answerEngine.process(
-                userMessage.getContent(),
+                userMessage.content(),
                 entries
         );
 
         String injected = injectionTemplate.render(
                 entries.stream().map(BibEntryAiIdentifier::entry).toList(),
-                userMessage.getContent(),
+                userMessage.content(),
                 relevantInformation
         );
 
-        ChatMessage injectedMessage = ChatMessage.userMessage(userMessage.getTimestamp(), injected);
+        ChatMessage injectedMessage = ChatMessage.userMessage(userMessage.timestamp(), injected);
 
         List<ChatMessage> chatHistoryForLlm = new ArrayList<>(chatHistory);
         if (!chatHistoryForLlm.isEmpty()) {

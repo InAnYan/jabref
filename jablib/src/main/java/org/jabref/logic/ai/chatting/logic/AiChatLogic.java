@@ -58,7 +58,7 @@ public class AiChatLogic {
      * Leaves a "hole" in context, but this is intended.
      */
     public void delete(String id) {
-        chatHistory.removeIf(message -> Objects.equals(message.getId(), id));
+        chatHistory.removeIf(message -> Objects.equals(message.id(), id));
     }
 
     /**
@@ -67,7 +67,7 @@ public class AiChatLogic {
     public String regenerate(String id) {
         Optional<ChatMessage> recordOpt = chatHistory
                 .stream()
-                .filter(message -> Objects.equals(message.getId(), id))
+                .filter(message -> Objects.equals(message.id(), id))
                 .findFirst();
 
         if (recordOpt.isEmpty()) {
@@ -75,23 +75,23 @@ public class AiChatLogic {
         }
 
         ChatMessage message = recordOpt.get();
-        String contentToRegenerate = message.getContent();
-        Instant cutoffTime = message.getTimestamp();
+        String contentToRegenerate = message.content();
+        Instant cutoffTime = message.timestamp();
 
-        if (message.getRole() != ChatMessage.Role.USER) {
+        if (message.role() != ChatMessage.Role.USER) {
             int index = chatHistory.indexOf(message);
             if (index > 0) {
                 ChatMessage prev = chatHistory.get(index - 1);
-                if (message.getRole() == ChatMessage.Role.USER) {
-                    contentToRegenerate = prev.getContent();
-                    cutoffTime = prev.getTimestamp();
+                if (message.role() == ChatMessage.Role.USER) {
+                    contentToRegenerate = prev.content();
+                    cutoffTime = prev.timestamp();
                 }
             }
         }
 
         final Instant finalCutoffTime = cutoffTime;
         chatHistory.removeIf(historyMessage ->
-                !historyMessage.getTimestamp().isBefore(finalCutoffTime)
+                !historyMessage.timestamp().isBefore(finalCutoffTime)
         );
 
         return contentToRegenerate;

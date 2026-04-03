@@ -8,7 +8,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
-import org.jabref.model.ai.chatting.ChatHistoryIdentifier;
+import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
 
 public class ChatHistoryFactory {
@@ -18,13 +18,13 @@ public class ChatHistoryFactory {
 
     // Works one way: when the property is modified, the repository is modified too, but not vice versa.
     public static ObservableList<ChatMessage> makeChatHistoryProperty(
-            ChatHistoryIdentifier identifier,
+            ChatIdentifier chatIdentifier,
             ChatHistoryRepository repository
     ) {
         List<ChatMessage> allMessages = repository
-                .getAllMessages(identifier)
+                .getAllMessages(chatIdentifier)
                 .stream()
-                .sorted(Comparator.comparing(ChatMessage::getTimestamp))
+                .sorted(Comparator.comparing(ChatMessage::timestamp))
                 .toList();
 
         ObservableList<ChatMessage> list = FXCollections.observableArrayList(allMessages);
@@ -33,12 +33,12 @@ public class ChatHistoryFactory {
             while (change.next()) {
                 if (change.wasAdded()) {
                     for (ChatMessage added : change.getAddedSubList()) {
-                        repository.addMessage(identifier, added);
+                        repository.addMessage(chatIdentifier, added);
                     }
                 }
                 if (change.wasRemoved()) {
                     for (ChatMessage removed : change.getRemoved()) {
-                        repository.deleteMessage(identifier, removed.getId());
+                        repository.deleteMessage(chatIdentifier, removed.id());
                     }
                 }
             }

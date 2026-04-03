@@ -2,20 +2,19 @@ package org.jabref.logic.ai.chatting.repositories;
 
 import java.util.List;
 
-import org.jabref.model.ai.chatting.ChatHistoryIdentifier;
+import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
 
-// Represents a reposotory. For each method there is an identifier argument. For a simplified interface for 1 chat, use ChatHistoryFactory which outputs an ObservableList.
 public interface ChatHistoryRepository {
-    void addMessage(ChatHistoryIdentifier identifier, ChatMessage chatHistoryRecord);
+    void addMessage(ChatIdentifier chatIdentifier, ChatMessage chatMessage);
 
-    void deleteMessage(ChatHistoryIdentifier identifier, String id);
+    void deleteMessage(ChatIdentifier chatIdentifier, String id);
 
-    void clear(ChatHistoryIdentifier identifier);
+    void clear(ChatIdentifier chatIdentifier);
 
-    List<ChatMessage> getAllMessages(ChatHistoryIdentifier identifier);
+    List<ChatMessage> getAllMessages(ChatIdentifier chatIdentifier);
 
-    boolean isEmpty(ChatHistoryIdentifier identifier);
+    boolean isEmpty(ChatIdentifier chatIdentifier);
 
-    int size(ChatHistoryIdentifier identifier);
+    int size(ChatIdentifier chatIdentifier);
 }

@@ -1,11 +1,13 @@
 package org.jabref.logic.ai.chatting.listeners;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.jabref.logic.ai.AiDatabaseListener;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
+import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
-import org.jabref.model.ai.chatting.GroupChatHistoryIdentifier;
+import org.jabref.model.ai.chatting.ChatType;
 import org.jabref.model.database.BibDatabaseContext;
 
 import org.slf4j.Logger;
@@ -42,13 +44,15 @@ public class GroupChattingAiDatabaseListener implements AiDatabaseListener {
 
     // TODO: Generalize transfer
     private void transferHistory(BibDatabaseContext bibDatabaseContext, String oldName, String newName) {
-        if (bibDatabaseContext.getDatabasePath().isEmpty()) {
-            LOGGER.warn("Could not transfer chat history of group {} (old name: {}): database path is empty.", newName, oldName);
+        Optional<String> aiLibraryId = bibDatabaseContext.getMetaData().getAiLibraryId();
+
+        if (aiLibraryId.isEmpty()) {
+            LOGGER.warn("Could not transfer chat history of group {} (old key: {}): AI library ID is empty.", oldName, newName);
             return;
         }
 
-        GroupChatHistoryIdentifier oldIdentifier = new GroupChatHistoryIdentifier(bibDatabaseContext.getDatabasePath().get(), oldName);
-        GroupChatHistoryIdentifier newIdentifier = new GroupChatHistoryIdentifier(bibDatabaseContext.getDatabasePath().get(), newName);
+        ChatIdentifier oldIdentifier = new ChatIdentifier(aiLibraryId.get(), ChatType.WITH_GROUP, oldName);
+        ChatIdentifier newIdentifier = new ChatIdentifier(aiLibraryId.get(), ChatType.WITH_GROUP, newName);
 
         List<ChatMessage> chatHistory = chatHistoryRepository.getAllMessages(oldIdentifier);
 

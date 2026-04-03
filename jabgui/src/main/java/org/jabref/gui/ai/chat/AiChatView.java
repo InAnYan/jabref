@@ -59,6 +59,18 @@ public class AiChatView extends StackPane {
                   .load();
     }
 
+    private static String formatChatModelLabel(ChatModel chatModel) {
+        if (chatModel == null) {
+            return "";
+        }
+
+        return Localization.lang(
+                "Current chat model: %0 %1",
+                chatModel.getAiProvider().getDisplayName(),
+                chatModel.getName()
+        );
+    }
+
     @FXML
     private void initialize() {
         viewModel = new AiChatViewModel(
@@ -121,21 +133,9 @@ public class AiChatView extends StackPane {
                 viewModel
                         .chatHistoryProperty()
                         .stream()
-                        .map(ChatMessage::getContent)
+                        .map(ChatMessage::content)
                         .filter(StringUtil::isNotBlank)
                         .toList()
-        );
-    }
-
-    private static String formatChatModelLabel(ChatModel chatModel) {
-        if (chatModel == null) {
-            return "";
-        }
-
-        return Localization.lang(
-                "Current chat model: %0 %1",
-                chatModel.getAiProvider().getDisplayName(),
-                chatModel.getName()
         );
     }
 
@@ -143,8 +143,8 @@ public class AiChatView extends StackPane {
         AiChatMessageView aiChatMessageView = new AiChatMessageView();
 
         aiChatMessageView.setChatMessage(chatMessage);
-        aiChatMessageView.setOnDelete(_ -> viewModel.delete(chatMessage.getId()));
-        aiChatMessageView.setOnRegenerate(_ -> viewModel.regenerate(chatMessage.getId()));
+        aiChatMessageView.setOnDelete(_ -> viewModel.delete(chatMessage.id()));
+        aiChatMessageView.setOnRegenerate(_ -> viewModel.regenerate(chatMessage.id()));
 
         return aiChatMessageView;
     }

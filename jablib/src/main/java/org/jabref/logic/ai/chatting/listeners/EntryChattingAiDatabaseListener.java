@@ -1,13 +1,13 @@
 package org.jabref.logic.ai.chatting.listeners;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
 import org.jabref.logic.ai.AiDatabaseListener;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
+import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
-import org.jabref.model.ai.chatting.EntryChatHistoryIdentifier;
+import org.jabref.model.ai.chatting.ChatType;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.event.FieldChangedEvent;
@@ -63,15 +63,15 @@ public class EntryChattingAiDatabaseListener implements AiDatabaseListener {
             // TODO: This method does not check if the citation key is valid.
             // TODO: I think transferHistory methods could be generalized somehow.
 
-            Optional<Path> databasePath = bibDatabaseContext.getDatabasePath();
+            Optional<String> aiLibraryId = bibDatabaseContext.getMetaData().getAiLibraryId();
 
-            if (databasePath.isEmpty()) {
-                LOGGER.warn("Could not transfer chat history of entry {} (old key: {}): database path is empty.", newCitationKey, oldCitationKey);
+            if (aiLibraryId.isEmpty()) {
+                LOGGER.warn("Could not transfer chat history of entry {} (old key: {}): AI library ID is empty.", newCitationKey, oldCitationKey);
                 return;
             }
 
-            EntryChatHistoryIdentifier oldIdentifier = new EntryChatHistoryIdentifier(databasePath.get(), oldCitationKey);
-            EntryChatHistoryIdentifier newIdentifier = new EntryChatHistoryIdentifier(databasePath.get(), newCitationKey);
+            ChatIdentifier oldIdentifier = new ChatIdentifier(aiLibraryId.get(), ChatType.WITH_ENTRY, oldCitationKey);
+            ChatIdentifier newIdentifier = new ChatIdentifier(aiLibraryId.get(), ChatType.WITH_ENTRY, newCitationKey);
 
             List<ChatMessage> chatHistory = chatHistoryRepository.getAllMessages(oldIdentifier);
 

@@ -41,6 +41,14 @@ public class AiChatMessageView extends HBox {
                   .load();
     }
 
+    private static Pos determineAlignment(ChatMessage chatMessage) {
+        if (chatMessage.role() == ChatMessage.Role.USER) {
+            return Pos.TOP_RIGHT;
+        } else {
+            return Pos.TOP_LEFT;
+        }
+    }
+
     @FXML
     private void initialize() {
         this.viewModel = new AiChatMessageViewModel();
@@ -68,7 +76,7 @@ public class AiChatMessageView extends HBox {
     }
 
     private void setupPseudoClasses() {
-        ObservableValue<ChatMessage.Role> messageRole = chatMessageProperty().map(ChatMessage::getRole);
+        ObservableValue<ChatMessage.Role> messageRole = chatMessageProperty().map(ChatMessage::role);
 
         ObservableValue<Boolean> isUser = messageRole.map(v -> v == ChatMessage.Role.USER);
         ObservableValue<Boolean> isAi = messageRole.map(v -> v == ChatMessage.Role.AI);
@@ -87,7 +95,7 @@ public class AiChatMessageView extends HBox {
     private void updateOrder(ChatMessage chatMessage) {
         this.getChildren().clear();
 
-        if (chatMessage.getRole() == ChatMessage.Role.USER) {
+        if (chatMessage.role() == ChatMessage.Role.USER) {
             this.getChildren().addAll(buttonsVBox, vBox);
         } else {
             this.getChildren().addAll(vBox, buttonsVBox);
@@ -95,15 +103,7 @@ public class AiChatMessageView extends HBox {
     }
 
     private void updateContent(ChatMessage chatMessage) {
-        markdownTextFlow.setMarkdown(chatMessage.getContent());
-    }
-
-    private static Pos determineAlignment(ChatMessage chatMessage) {
-        if (chatMessage.getRole() == ChatMessage.Role.USER) {
-            return Pos.TOP_RIGHT;
-        } else {
-            return Pos.TOP_LEFT;
-        }
+        markdownTextFlow.setMarkdown(chatMessage.content());
     }
 
     @FXML

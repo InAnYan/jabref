@@ -8,13 +8,14 @@ import dev.langchain4j.data.message.UserMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public record ChatHistoryRecordV1(String className, String content) implements Serializable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChatHistoryRecordV1.class);
+/// Old record. Used only for migration.
+public record ChatHistoryRecord(String className, String content) implements Serializable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChatHistoryRecord.class);
 
-    public static ChatHistoryRecordV1 fromLangchainMessage(ChatMessage chatMessage) {
+    public static ChatHistoryRecord fromLangchainMessage(ChatMessage chatMessage) {
         String className = chatMessage.getClass().getName();
         String content = getContentFromLangchainMessage(chatMessage);
-        return new ChatHistoryRecordV1(className, content);
+        return new ChatHistoryRecord(className, content);
     }
 
     private static String getContentFromLangchainMessage(ChatMessage chatMessage) {

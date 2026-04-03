@@ -17,8 +17,9 @@ import org.jabref.logic.ai.chatting.util.ChatHistoryFactory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.strings.StringUtil;
+import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
-import org.jabref.model.ai.chatting.EntryChatHistoryIdentifier;
+import org.jabref.model.ai.chatting.ChatType;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
@@ -90,14 +91,15 @@ public class AiEntryChatViewModel extends AbstractViewModel {
     }
 
     private void load(BibEntryAiIdentifier identifier) {
-        assert identifier.databaseContext().getDatabasePath().isPresent();
+        assert identifier.databaseContext().getMetaData().getAiLibraryId().isPresent();
         assert identifier.entry().getCitationKey().isPresent();
 
         entries.set(FXCollections.observableArrayList(identifier));
 
         chatHistory.set(ChatHistoryFactory.makeChatHistoryProperty(
-                new EntryChatHistoryIdentifier(
-                        identifier.databaseContext().getDatabasePath().get(),
+                new ChatIdentifier(
+                        identifier.databaseContext().getMetaData().getAiLibraryId().get(),
+                        ChatType.WITH_ENTRY,
                         identifier.entry().getCitationKey().get()
                 ),
                 chatHistoryRepository

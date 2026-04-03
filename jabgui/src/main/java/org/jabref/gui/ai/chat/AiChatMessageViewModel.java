@@ -44,14 +44,14 @@ public class AiChatMessageViewModel extends AbstractViewModel {
     }
 
     private void setupBindings() {
-        id.bind(chatMessage.map(ChatMessage::getId));
+        id.bind(chatMessage.map(ChatMessage::id));
         source.bind(chatMessage
-                .map(ChatMessage::getRole)
+                .map(ChatMessage::role)
                 .map(ChatMessage.Role::getDisplayName));
-        messageContent.bind(chatMessage.map(ChatMessage::getContent).map(s -> s == null ? "" : s));
-        timestamp.bind(chatMessage.map(ChatMessage::getTimestamp));
+        messageContent.bind(chatMessage.map(ChatMessage::content).map(s -> s == null ? "" : s));
+        timestamp.bind(chatMessage.map(ChatMessage::timestamp));
 
-        StringExpression messageType = StringExpression.stringExpression(chatMessage.map(ChatMessage::getRole).map(ChatMessage.Role::getDisplayName));
+        StringExpression messageType = StringExpression.stringExpression(chatMessage.map(ChatMessage::role).map(ChatMessage.Role::getDisplayName));
         showEdit.bind(messageType.isEqualTo(UserMessage.class.getName()));
         showRegenerate.bind(messageType.isEqualTo(AiMessage.class.getName()).or(messageType.isEqualTo(ErrorMessage.class.getName())));
     }

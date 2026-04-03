@@ -7,7 +7,7 @@ import java.util.Map;
 import org.jabref.logic.ai.util.MVStoreBase;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.NotificationService;
-import org.jabref.model.ai.chatting.ChatHistoryIdentifier;
+import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,10 +16,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.jspecify.annotations.NonNull;
 
 public class MVStoreChatHistoryRepository extends MVStoreBase implements ChatHistoryRepository {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {
-        objectMapper.registerModule(new JavaTimeModule());
+        OBJECT_MAPPER.registerModule(new JavaTimeModule());
     }
 
     public MVStoreChatHistoryRepository(@NonNull Path path, NotificationService dialogService) {
@@ -37,10 +37,10 @@ public class MVStoreChatHistoryRepository extends MVStoreBase implements ChatHis
     }
 
     @Override
-    public void addMessage(ChatHistoryIdentifier identifier, ChatMessage chatHistoryRecord) {
-        Map<String, String> map = openMap(identifier);
+    public void addMessage(ChatIdentifier chatIdentifier, ChatMessage chatMessage) {
+        Map<String, String> map = openMap(chatIdentifier);
         try {
-            map.put(chatHistoryRecord.getId(), objectMapper.writeValueAsString(chatHistoryRecord));
+            map.put(chatMessage.id(), OBJECT_MAPPER.writeValueAsString(chatMessage));
         } catch (JsonProcessingException e) {
             // NOTE: This is a highly not probable exception, so wrapping in try/catch and turning to a
             // RuntimeException to ignore it.
@@ -49,24 +49,24 @@ public class MVStoreChatHistoryRepository extends MVStoreBase implements ChatHis
     }
 
     @Override
-    public void deleteMessage(ChatHistoryIdentifier identifier, String id) {
-        Map<String, String> map = openMap(identifier);
+    public void deleteMessage(ChatIdentifier chatIdentifier, String id) {
+        Map<String, String> map = openMap(chatIdentifier);
         map.remove(id);
     }
 
     @Override
-    public void clear(ChatHistoryIdentifier identifier) {
-        Map<String, String> map = openMap(identifier);
+    public void clear(ChatIdentifier chatIdentifier) {
+        Map<String, String> map = openMap(chatIdentifier);
         map.clear();
     }
 
     @Override
-    public List<ChatMessage> getAllMessages(ChatHistoryIdentifier identifier) {
-        Map<String, String> map = openMap(identifier);
+    public List<ChatMessage> getAllMessages(ChatIdentifier chatIdentifier) {
+        Map<String, String> map = openMap(chatIdentifier);
 
         return map.values().stream().map(s -> {
             try {
-                return objectMapper.readValue(s, ChatMessage.class);
+                return OBJECT_MAPPER.readValue(s, ChatMessage.class);
             } catch (JsonProcessingException e) {
                 // NOTE: This is a highly not probable exception, so wrapping in try/catch and turning to a
                 // RuntimeException to ignore it.
@@ -76,18 +76,19 @@ public class MVStoreChatHistoryRepository extends MVStoreBase implements ChatHis
     }
 
     @Override
-    public boolean isEmpty(ChatHistoryIdentifier identifier) {
-        Map<String, String> map = openMap(identifier);
+    public boolean isEmpty(ChatIdentifier chatIdentifier) {
+        Map<String, String> map = openMap(chatIdentifier);
         return map.isEmpty();
     }
 
     @Override
-    public int size(ChatHistoryIdentifier identifier) {
-        Map<String, String> map = openMap(identifier);
+    public int size(ChatIdentifier chatIdentifier) {
+        Map<String, String> map = openMap(chatIdentifier);
         return map.size();
     }
 
-    private Map<String, String> openMap(ChatHistoryIdentifier identifier) {
-        return mvStore.openMap(identifier.toStringRepresentation());
+    private Map<String, String> openMap(ChatIdentifier chatIdentifier) {
+        String id = chatIdentifier.libraryId() + "/" + chatIdentifier.chatType() + "/" + chatIdentifier.chatName();
+        return mvStore.openMap(id);
     }
 }

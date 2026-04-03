@@ -10,8 +10,10 @@ import org.jabref.model.ai.pipeline.RelevantInformation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.data.message.UserMessage;
 
-public class ChatMessage {
+public record ChatMessage(String id, Instant timestamp, Role role, String content, List<RelevantInformation> relevantInformation) {
     public enum Role {
         USER,
         AI,
@@ -29,12 +31,6 @@ public class ChatMessage {
         }
     }
 
-    private final String id;
-    private final Instant timestamp;
-    private final Role role;
-    private final String content;
-    private final List<RelevantInformation> relevantInformation;
-
     @JsonCreator
     public ChatMessage(
             @JsonProperty("id") String id,
@@ -51,74 +47,45 @@ public class ChatMessage {
     }
 
     public static ChatMessage userMessage(String content) {
-        return new ChatMessage(
-                UUID.randomUUID().toString(),
-                Instant.now(),
-                Role.USER,
-                content,
-                List.of()
-        );
+        return userMessage(Instant.now(), content);
     }
 
     public static ChatMessage userMessage(Instant timestamp, String content) {
-        return new ChatMessage(
-                UUID.randomUUID().toString(),
-                timestamp,
-                Role.USER,
-                content,
-                List.of()
-        );
+        return dummyChatMessage(Role.USER, content, timestamp, List.of());
     }
 
     public static ChatMessage aiMessage(
             String content,
             List<RelevantInformation> relevantInformation
     ) {
+        return dummyChatMessage(Role.AI, content, Instant.now(), relevantInformation);
+    }
+
+    public static ChatMessage errorMessage(Throwable throwable) {
+        return dummyChatMessage(Role.ERROR, throwable.getMessage(), Instant.now(), List.of());
+    }
+
+    private static ChatMessage dummyChatMessage(
+            Role role,
+            String content,
+            Instant timestamp,
+            List<RelevantInformation> relevantInformation
+    ) {
         return new ChatMessage(
                 UUID.randomUUID().toString(),
-                Instant.now(),
-                Role.AI,
+                timestamp,
+                role,
                 content,
                 relevantInformation
         );
     }
 
-    public static ChatMessage errorMessage(Throwable throwable) {
-        return new ChatMessage(
-                UUID.randomUUID().toString(),
-                Instant.now(),
-                Role.ERROR,
-                throwable.getMessage(),
-                List.of()
-        );
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public List<RelevantInformation> getRelevantInformation() {
-        return relevantInformation;
-    }
-
     public Optional<dev.langchain4j.data.message.ChatMessage> toLangChainMessage() {
         return Optional.ofNullable(switch (role) {
             case USER ->
-                    new dev.langchain4j.data.message.UserMessage(content);
+                    new UserMessage(content);
             case AI ->
-                    new dev.langchain4j.data.message.AiMessage(content);
+                    new AiMessage(content);
             case ERROR ->
                     null;
         });

@@ -115,7 +115,7 @@ public class AiChatViewModel extends AbstractViewModel {
             if (aiChatLogic.chatHistoryProperty().isEmpty()) {
                 return false;
             }
-            return aiChatLogic.chatHistoryProperty().getLast().getRole() == ChatMessage.Role.ERROR;
+            return aiChatLogic.chatHistoryProperty().getLast().role() == ChatMessage.Role.ERROR;
         }, aiChatLogic.chatHistoryProperty());
 
         BindingsHelper.bindEnum(
@@ -239,7 +239,7 @@ public class AiChatViewModel extends AbstractViewModel {
 
     public void regenerate() {
         if (!aiChatLogic.chatHistoryProperty().isEmpty()) {
-            regenerate(aiChatLogic.chatHistoryProperty().getLast().getId());
+            regenerate(aiChatLogic.chatHistoryProperty().getLast().id());
         }
     }
 
