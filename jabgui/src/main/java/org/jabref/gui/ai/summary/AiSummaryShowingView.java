@@ -1,6 +1,7 @@
 package org.jabref.gui.ai.summary;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Locale;
@@ -20,7 +21,7 @@ import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.gui.util.WebViewStore;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.summarization.BibEntrySummary;
+import org.jabref.model.ai.summarization.AiSummary;
 
 import com.airhacks.afterburner.views.ViewLoader;
 
@@ -38,7 +39,25 @@ public class AiSummaryShowingView extends VBox {
                   .load();
     }
 
-    public ObjectProperty<BibEntrySummary> summaryProperty() {
+    private static String formatSummaryInfo(AiSummary summary) {
+        if (summary == null) {
+            return "";
+        }
+
+        return Localization.lang("Generated at %0 by %1 (algorithm %2)")
+                           .replaceAll("%0", formatTimestamp(summary.timestamp()))
+                           .replaceAll("%1", summary.aiProvider().getDisplayName() + " " + summary.model())
+                           .replaceAll("%2", summary.summarizationAlgorithm().getDisplayName());
+    }
+
+    private static String formatTimestamp(Instant timestamp) {
+        return timestamp
+                .atZone(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+                                         .withLocale(Locale.getDefault()));
+    }
+
+    public ObjectProperty<AiSummary> summaryProperty() {
         return viewModel.summaryProperty();
     }
 
@@ -72,21 +91,6 @@ public class AiSummaryShowingView extends VBox {
                 viewModel.webViewSourceProperty(),
                 value -> UiTaskExecutor.runInJavaFXThread(() -> webView.getEngine().loadContent(value))
         );
-    }
-
-    private static String formatSummaryInfo(BibEntrySummary summary) {
-        if (summary == null) {
-            return "";
-        }
-
-        return Localization.lang("Generated at %0 by %1 (algorithm %2)")
-                           .replaceAll("%0", formatTimestamp(summary.timestamp()))
-                           .replaceAll("%1", summary.aiProvider().getDisplayName() + " " + summary.model())
-                           .replaceAll("%2", summary.summarizationAlgorithm().getDisplayName());
-    }
-
-    private static String formatTimestamp(LocalDateTime timestamp) {
-        return timestamp.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(Locale.getDefault()));
     }
 
     public ObjectProperty<EventHandler<ActionEvent>> onRegenerateProperty() {

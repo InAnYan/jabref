@@ -26,7 +26,7 @@ public class AiDefaultTemplates {
 
     private static final String SUMMARIZATION_CHUNK_SYSTEM_MESSAGE_TEMPLATE = """
             Please provide an overview of the following text. It is a part of a scientific paper.
-            The bibEntrySummary should include the main objectives, methodologies used, key findings, and conclusions.
+            The aiSummary should include the main objectives, methodologies used, key findings, and conclusions.
             Mention any significant experiments, data, or discussions presented in the paper.""";
 
     private static final String SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE = """

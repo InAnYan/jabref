@@ -407,6 +407,30 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
         return JabRefGuiPreferences.singleton;
     }
 
+    private static List<String> getColumnNamesAsStringList(ColumnPreferences columnPreferences) {
+        return columnPreferences.getColumns().stream()
+                                .map(MainTableColumnModel::getName)
+                                .toList();
+    }
+
+    private static List<String> getColumnWidthsAsStringList(ColumnPreferences columnPreferences) {
+        return columnPreferences.getColumns().stream()
+                                .map(column -> column.widthProperty().getValue().toString())
+                                .toList();
+    }
+
+    private static List<String> getColumnSortTypesAsStringList(ColumnPreferences columnPreferences) {
+        return columnPreferences.getColumns().stream()
+                                .map(column -> column.sortTypeProperty().getValue().toString())
+                                .toList();
+    }
+
+    private static List<String> getColumnSortOrderAsStringList(ColumnPreferences columnPreferences) {
+        return columnPreferences.getColumnSortOrder().stream()
+                                .map(MainTableColumnModel::getName)
+                                .collect(Collectors.toList());
+    }
+
     public CopyToPreferences getCopyToPreferences() {
         if (copyToPreferences != null) {
             return copyToPreferences;
@@ -436,6 +460,7 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
         // in case of incomplete or corrupt xml fall back to current preferences
         getWorkspacePreferences().setAll(getWorkspacePreferencesFromLowLevelApi(getWorkspacePreferences()));
     }
+    // endregion
 
     // region EntryEditorPreferences
     public EntryEditorPreferences getEntryEditorPreferences() {
@@ -526,6 +551,8 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
         getEntryEditorTabs();
     }
 
+    // endregion
+
     private SequencedMap<String, Set<Field>> getDefaultEntryEditorTabs() {
         SequencedMap<String, Set<Field>> customTabsMap = new LinkedHashMap<>();
 
@@ -544,7 +571,6 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
         }
         return customTabsMap;
     }
-    // endregion
 
     @Override
     public MergeDialogPreferences getMergeDialogPreferences() {
@@ -641,8 +667,6 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
         return coreGuiPreferences;
     }
 
-    // endregion
-
     @Override
     public WorkspacePreferences getWorkspacePreferences() {
         if (workspacePreferences != null) {
@@ -734,6 +758,7 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
 
         return sidePanePreferences;
     }
+    // endregion
 
     private Set<SidePaneType> getVisibleSidePanes() {
         Set<SidePaneType> visiblePanes = new HashSet<>();
@@ -789,7 +814,6 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
         putStringList(SIDE_PANE_COMPONENT_NAMES, names);
         putStringList(SIDE_PANE_COMPONENT_PREFERRED_POSITIONS, positions);
     }
-    // endregion
 
     @Override
     public ExternalApplicationsPreferences getExternalApplicationsPreferences() {
@@ -899,13 +923,16 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
         previewPreferences.getBstPreviewLayoutPaths().addListener((InvalidationListener) c -> storeBstPaths(previewPreferences.getBstPreviewLayoutPaths()));
         return this.previewPreferences;
     }
+    // endregion
+
+    // region NameDisplayPreferences
 
     private void storeBstPaths(List<Path> bstPaths) {
         putStringList(PREVIEW_BST_LAYOUT_PATHS, bstPaths.stream().map(Path::toAbsolutePath).map(Path::toString).toList());
     }
 
     private List<PreviewLayout> getPreviewLayouts(String style) {
-        List<String> cycle = getStringList(CYCLE_PREVIEW);
+        List<String> cycle = new ArrayList<>(getStringList(CYCLE_PREVIEW));
 
         // For backwards compatibility always add at least the default preview to the cycle
         if (cycle.isEmpty()) {
@@ -948,6 +975,10 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
         );
     }
 
+    // endregion
+
+    // region: Main table, main table column, and search dialog column preferences
+
     private int getPreviewCyclePosition(List<PreviewLayout> layouts) {
         int storedCyclePos = getInt(CYCLE_PREVIEW_POS);
         if (storedCyclePos < layouts.size()) {
@@ -956,9 +987,6 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
             return 0; // fallback if stored position is no longer valid
         }
     }
-    // endregion
-
-    // region NameDisplayPreferences
 
     @Override
     public NameDisplayPreferences getNameDisplayPreferences() {
@@ -1004,10 +1032,6 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
         }
         return displayStyle;
     }
-
-    // endregion
-
-    // region: Main table, main table column, and search dialog column preferences
 
     public MainTablePreferences getMainTablePreferences() {
         if (mainTablePreferences != null) {
@@ -1111,30 +1135,6 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
                                                                        .ifPresent(columnsOrdered::add));
 
         return columnsOrdered;
-    }
-
-    private static List<String> getColumnNamesAsStringList(ColumnPreferences columnPreferences) {
-        return columnPreferences.getColumns().stream()
-                                .map(MainTableColumnModel::getName)
-                                .toList();
-    }
-
-    private static List<String> getColumnWidthsAsStringList(ColumnPreferences columnPreferences) {
-        return columnPreferences.getColumns().stream()
-                                .map(column -> column.widthProperty().getValue().toString())
-                                .toList();
-    }
-
-    private static List<String> getColumnSortTypesAsStringList(ColumnPreferences columnPreferences) {
-        return columnPreferences.getColumns().stream()
-                                .map(column -> column.sortTypeProperty().getValue().toString())
-                                .toList();
-    }
-
-    private static List<String> getColumnSortOrderAsStringList(ColumnPreferences columnPreferences) {
-        return columnPreferences.getColumnSortOrder().stream()
-                                .map(MainTableColumnModel::getName)
-                                .collect(Collectors.toList());
     }
     // endregion
 

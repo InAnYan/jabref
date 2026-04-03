@@ -7,30 +7,59 @@ import java.util.Optional;
 import org.jabref.logic.ai.util.MVStoreBase;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.NotificationService;
-import org.jabref.model.ai.identifiers.ResolvedBibEntryAiIdentifier;
-import org.jabref.model.ai.summarization.BibEntrySummary;
+import org.jabref.model.ai.summarization.AiSummary;
+import org.jabref.model.ai.summarization.AiSummaryIdentifier;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class MVStoreSummariesRepository extends MVStoreBase implements SummariesRepository {
-    private static final String SUMMARIES_MAP_PREFIX = "summaries";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    static {
+        OBJECT_MAPPER.registerModule(new JavaTimeModule());
+    }
 
     public MVStoreSummariesRepository(NotificationService dialogService, Path path) {
         super(path, dialogService);
     }
 
-    public void set(ResolvedBibEntryAiIdentifier identifier, BibEntrySummary bibEntrySummary) {
-        getMap(identifier.databasePath()).put(identifier.citationKey(), bibEntrySummary);
+    public void set(AiSummaryIdentifier summaryIdentifier, AiSummary aiSummary) {
+        Map<String, String> map = getMap(summaryIdentifier.libraryId());
+
+        try {
+            map.put(summaryIdentifier.summaryName(), OBJECT_MAPPER.writeValueAsString(aiSummary));
+        } catch (JsonProcessingException e) {
+            // NOTE: This is a highly not probable exception, so wrapping in try/catch and turning to a
+            // RuntimeException to ignore it.
+            throw new RuntimeException(e);
+        }
     }
 
-    public Optional<BibEntrySummary> get(ResolvedBibEntryAiIdentifier identifier) {
-        return Optional.ofNullable(getMap(identifier.databasePath()).get(identifier.citationKey()));
+    public Optional<AiSummary> get(AiSummaryIdentifier summaryIdentifier) {
+        Map<String, String> map = getMap(summaryIdentifier.libraryId());
+        Optional<String> summaryJson = Optional.ofNullable(map.get(summaryIdentifier.summaryName()));
+
+        if (summaryJson.isEmpty()) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(OBJECT_MAPPER.readValue(summaryJson.get(), AiSummary.class));
+        } catch (JsonProcessingException e) {
+            // NOTE: This is a highly not probable exception, so wrapping in try/catch and turning to a
+            // RuntimeException to ignore it.
+            throw new RuntimeException(e);
+        }
     }
 
-    public void clear(ResolvedBibEntryAiIdentifier identifier) {
-        getMap(identifier.databasePath()).remove(identifier.citationKey());
+    public void clear(AiSummaryIdentifier summaryIdentifier) {
+        getMap(summaryIdentifier.libraryId()).remove(summaryIdentifier.summaryName());
     }
 
-    private Map<String, BibEntrySummary> getMap(Path bibDatabasePath) {
-        return mvStore.openMap(SUMMARIES_MAP_PREFIX + "-" + bibDatabasePath.toString());
+    private Map<String, String> getMap(String libraryId) {
+        return mvStore.openMap(libraryId);
     }
 
     @Override

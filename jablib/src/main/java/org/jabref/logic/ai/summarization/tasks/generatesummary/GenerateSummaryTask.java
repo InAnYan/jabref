@@ -3,12 +3,12 @@ package org.jabref.logic.ai.summarization.tasks.generatesummary;
 import org.jabref.logic.ai.summarization.logic.PersistentBibEntrySummarizator;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.summarization.BibEntrySummary;
+import org.jabref.model.ai.summarization.AiSummary;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GenerateSummaryTask extends TrackedBackgroundTask<BibEntrySummary> {
+public class GenerateSummaryTask extends TrackedBackgroundTask<AiSummary> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSummaryTask.class);
 
     private final GenerateSummaryTaskRequest request;
@@ -34,10 +34,10 @@ public class GenerateSummaryTask extends TrackedBackgroundTask<BibEntrySummary> 
     }
 
     @Override
-    public BibEntrySummary perform() throws InterruptedException {
+    public AiSummary perform() throws InterruptedException {
         LOGGER.debug("Starting summarization task for entry {}", citationKey);
 
-        BibEntrySummary bibEntrySummary = persistentBibEntrySummarizator.summarize(
+        AiSummary aiSummary = persistentBibEntrySummarizator.summarize(
                 request.chatModel(),
                 request.bibDatabaseContext(),
                 request.entry(),
@@ -47,6 +47,6 @@ public class GenerateSummaryTask extends TrackedBackgroundTask<BibEntrySummary> 
         LOGGER.debug("Finished summarization task for entry {}", citationKey);
         progressCounter.stop();
 
-        return bibEntrySummary;
+        return aiSummary;
     }
 }

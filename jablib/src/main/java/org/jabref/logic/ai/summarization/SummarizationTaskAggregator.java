@@ -13,7 +13,7 @@ import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTa
 import org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral.GenerateSummaryForSeveralTask;
 import org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral.GenerateSummaryForSeveralTaskRequest;
 import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.ai.summarization.BibEntrySummary;
+import org.jabref.model.ai.summarization.AiSummary;
 import org.jabref.model.entry.BibEntry;
 
 import com.google.common.collect.Comparators;
@@ -21,7 +21,7 @@ import com.google.common.collect.Comparators;
 public class SummarizationTaskAggregator {
     private final TaskExecutor taskExecutor;
 
-    private final TreeMap<BibEntry, Pair<Future<BibEntrySummary>, GenerateSummaryTask>> generateSummaryTasks =
+    private final TreeMap<BibEntry, Pair<Future<AiSummary>, GenerateSummaryTask>> generateSummaryTasks =
             new TreeMap<>(Comparator.comparing(BibEntry::getId));
 
     private final TreeMap<List<BibEntry>, Pair<Future<Void>, GenerateSummaryForSeveralTask>> generateSummaryForSeveralTasks =
@@ -31,11 +31,11 @@ public class SummarizationTaskAggregator {
         this.taskExecutor = taskExecutor;
     }
 
-    public synchronized Pair<Future<BibEntrySummary>, GenerateSummaryTask> startWithFuture(GenerateSummaryTaskRequest request) {
+    public synchronized Pair<Future<AiSummary>, GenerateSummaryTask> startWithFuture(GenerateSummaryTaskRequest request) {
         return generateSummaryTasks.computeIfAbsent(request.entry(), _ -> {
             GenerateSummaryTask task = new GenerateSummaryTask(request);
             task.onFinished(() -> generateSummaryTasks.remove(request.entry()));
-            Future<BibEntrySummary> future = taskExecutor.execute(task);
+            Future<AiSummary> future = taskExecutor.execute(task);
             return new Pair<>(future, task);
         });
     }

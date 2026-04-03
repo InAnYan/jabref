@@ -25,8 +25,8 @@ import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTa
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.model.ai.identifiers.BibEntryAiIdentifier;
-import org.jabref.model.ai.identifiers.ResolvedBibEntryAiIdentifier;
-import org.jabref.model.ai.summarization.BibEntrySummary;
+import org.jabref.model.ai.summarization.AiSummary;
+import org.jabref.model.ai.summarization.AiSummaryIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -52,7 +52,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.AI_TURNED_OFF);
     private final ObjectProperty<Exception> error = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<BibEntrySummary> summary = new SimpleObjectProperty<>();
+    private final ObjectProperty<AiSummary> summary = new SimpleObjectProperty<>();
 
     private final ObjectProperty<BibEntryAiIdentifier> entry = new SimpleObjectProperty<>();
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
@@ -165,15 +165,12 @@ public class AiSummaryViewModel extends AbstractViewModel {
         BibDatabaseContext bibDatabaseContext = identifier.databaseContext();
         BibEntry entry = identifier.entry();
 
-        assert bibDatabaseContext.getDatabasePath().isPresent();
+        assert bibDatabaseContext.getMetaData().getAiLibraryId().isPresent();
         assert entry.getCitationKey().isPresent();
 
-        ResolvedBibEntryAiIdentifier identifier2 = new ResolvedBibEntryAiIdentifier(
-                bibDatabaseContext.getDatabasePath().get(),
-                entry.getCitationKey().get()
-        );
+        AiSummaryIdentifier summaryIdentifier = AiSummaryIdentifier.fromChecked(bibDatabaseContext, entry);
 
-        Optional<BibEntrySummary> summary = summariesRepository.get(identifier2);
+        Optional<AiSummary> summary = summariesRepository.get(summaryIdentifier);
         if (summary.isPresent()) {
             this.summary.set(summary.get());
         } else {
@@ -220,15 +217,15 @@ public class AiSummaryViewModel extends AbstractViewModel {
             return;
         }
 
-        Optional<Path> path = identifier.databaseContext().getDatabasePath();
+        Optional<String> aiLibraryId = identifier.databaseContext().getMetaData().getAiLibraryId();
         Optional<String> citationKey = identifier.entry().getCitationKey();
 
-        if (path.isEmpty() || citationKey.isEmpty()) {
+        if (aiLibraryId.isEmpty() || citationKey.isEmpty()) {
             LOGGER.warn("Could not clear stored summary for regeneration");
             return;
         }
 
-        summariesRepository.clear(new ResolvedBibEntryAiIdentifier(path.get(), citationKey.get()));
+        summariesRepository.clear(AiSummaryIdentifier.fromChecked(identifier.databaseContext(), identifier.entry()));
 
         summary.set(null);
     }
@@ -294,7 +291,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
         return error;
     }
 
-    public ObjectProperty<BibEntrySummary> summaryProperty() {
+    public ObjectProperty<AiSummary> summaryProperty() {
         return summary;
     }
 

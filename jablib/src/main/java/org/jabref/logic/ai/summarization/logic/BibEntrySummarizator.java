@@ -1,7 +1,7 @@
 package org.jabref.logic.ai.summarization.logic;
 
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -13,7 +13,7 @@ import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.ingestion.logic.parsing.UniversalContentParser;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.summarization.BibEntrySummary;
+import org.jabref.model.ai.summarization.AiSummary;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
@@ -38,7 +38,7 @@ public class BibEntrySummarizator {
         this.summarizator = summarizator;
     }
 
-    public BibEntrySummary summarize(
+    public AiSummary summarize(
             ChatModel chatModel,
             BibDatabaseContext bibDatabaseContext,
             BibEntry entry
@@ -78,8 +78,8 @@ public class BibEntrySummarizator {
             );
         }
 
-        return new BibEntrySummary(
-                LocalDateTime.now(),
+        return new AiSummary(
+                Instant.now(),
                 chatModel.getAiProvider(),
                 chatModel.getName(),
                 summarizator.getKind(),

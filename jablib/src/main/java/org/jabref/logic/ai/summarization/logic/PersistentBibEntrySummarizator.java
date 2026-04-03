@@ -7,8 +7,8 @@ import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.util.CitationKeyCheck;
-import org.jabref.model.ai.identifiers.ResolvedBibEntryAiIdentifier;
-import org.jabref.model.ai.summarization.BibEntrySummary;
+import org.jabref.model.ai.summarization.AiSummary;
+import org.jabref.model.ai.summarization.AiSummaryIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -38,29 +38,29 @@ public class PersistentBibEntrySummarizator {
         );
     }
 
-    public BibEntrySummary summarize(
+    public AiSummary summarize(
             ChatModel chatModel,
             BibDatabaseContext bibDatabaseContext,
             BibEntry entry,
             boolean regenerate
     ) throws InterruptedException {
-        if (bibDatabaseContext.getDatabasePath().isEmpty()) {
-            LOGGER.info("No database path is present. BibEntrySummary will not be stored in the next sessions");
+        if (bibDatabaseContext.getMetaData().getAiLibraryId().isEmpty()) {
+            LOGGER.info("No AI library ID is present. BibEntrySummary will not be stored in the next sessions");
         } else if (entry.getCitationKey().isEmpty()) {
             LOGGER.info("No citation key is present. BibEntrySummary will not be stored in the next sessions");
         }
 
-        ResolvedBibEntryAiIdentifier identifier = new ResolvedBibEntryAiIdentifier(bibDatabaseContext.getDatabasePath().get(), entry.getCitationKey().get());
-        Optional<BibEntrySummary> savedSummary = summariesRepository.get(identifier);
+        AiSummaryIdentifier summaryIdentifier = AiSummaryIdentifier.fromChecked(bibDatabaseContext, entry);
+        Optional<AiSummary> savedSummary = summariesRepository.get(summaryIdentifier);
 
         if (savedSummary.isPresent() && !regenerate) {
             return savedSummary.get();
         }
 
-        BibEntrySummary bibEntrySummary;
+        AiSummary aiSummary;
 
         try {
-            bibEntrySummary = bibEntrySummarizator.summarize(
+            aiSummary = bibEntrySummarizator.summarize(
                     chatModel,
                     bibDatabaseContext,
                     entry
@@ -75,15 +75,9 @@ public class PersistentBibEntrySummarizator {
         } else if (!CitationKeyCheck.citationKeyIsPresentAndUnique(bibDatabaseContext, entry)) {
             LOGGER.info("No valid citation key is present. Summary will not be stored in the next sessions");
         } else {
-            summariesRepository.set(
-                    new ResolvedBibEntryAiIdentifier(
-                            bibDatabaseContext.getDatabasePath().get(),
-                            entry.getCitationKey().get()
-                    ),
-                    bibEntrySummary
-            );
+            summariesRepository.set(summaryIdentifier, aiSummary);
         }
 
-        return bibEntrySummary;
+        return aiSummary;
     }
 }
