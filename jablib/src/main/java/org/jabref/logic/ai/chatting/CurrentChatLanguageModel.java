@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.logic.ai.tokenization.CurrentTokenEstimator;
 import org.jabref.logic.ai.tokenization.logic.TokenEstimator;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.llm.AiProvider;

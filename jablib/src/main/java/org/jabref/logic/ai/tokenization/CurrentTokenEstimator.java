@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.chatting;
+package org.jabref.logic.ai.tokenization;
 
 import java.util.List;
 

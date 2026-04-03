@@ -6,6 +6,7 @@ import org.jabref.logic.ai.chatting.listeners.GroupChattingAiDatabaseListener;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.chatting.repositories.MVStoreChatHistoryRepository;
 import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.logic.ai.tokenization.CurrentTokenEstimator;
 import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.model.database.BibDatabaseContext;
