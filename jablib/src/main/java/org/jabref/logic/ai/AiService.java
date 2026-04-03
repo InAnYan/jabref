@@ -115,7 +115,6 @@ public class AiService implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-
         citationParsingFeature.close();
         summarizationFeature.close();
         ragFeature.close();
