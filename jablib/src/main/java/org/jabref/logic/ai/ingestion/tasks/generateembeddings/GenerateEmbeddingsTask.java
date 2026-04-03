@@ -1,6 +1,6 @@
 package org.jabref.logic.ai.ingestion.tasks.generateembeddings;
 
-import org.jabref.logic.ai.ingestion.logic.ingestion.PersistentLinkedFileIngestor;
+import org.jabref.logic.ai.ingestion.logic.ingestion.LinkedFileIngestor;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.entry.LinkedFile;
@@ -18,13 +18,13 @@ public class GenerateEmbeddingsTask extends TrackedBackgroundTask<Void> {
 
     private final GenerateEmbeddingsTaskRequest request;
 
-    private final PersistentLinkedFileIngestor persistentLinkedFileIngestor;
+    private final LinkedFileIngestor linkedFileIngestor;
 
     public GenerateEmbeddingsTask(
             GenerateEmbeddingsTaskRequest request
     ) {
         this.request = request;
-        this.persistentLinkedFileIngestor = new PersistentLinkedFileIngestor(
+        this.linkedFileIngestor = new LinkedFileIngestor(
                 request.filePreferences(),
                 request.ingestedDocumentsRepository(),
                 request.embeddingStore(),
@@ -45,7 +45,7 @@ public class GenerateEmbeddingsTask extends TrackedBackgroundTask<Void> {
         LOGGER.debug("Starting embeddings generation task");
 
         try {
-            persistentLinkedFileIngestor.ingest(
+            linkedFileIngestor.ingest(
                     request.bibDatabaseContext(),
                     request.linkedFile()
             );

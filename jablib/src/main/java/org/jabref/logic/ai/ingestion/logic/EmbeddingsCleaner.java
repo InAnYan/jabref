@@ -1,9 +1,12 @@
 package org.jabref.logic.ai.ingestion.logic;
 
+import java.nio.file.Path;
 import java.util.List;
 
+import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
 import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.LinkedFile;
 
 import dev.langchain4j.data.segment.TextSegment;
@@ -39,7 +42,10 @@ public class EmbeddingsCleaner {
         ingestedDocumentsRepository.unmarkDocumentAsFullyIngested(link);
     }
 
-    public void clearEmbeddingsFor(List<LinkedFile> linkedFiles) {
-        linkedFiles.stream().map(LinkedFile::getLink).forEach(this::removeDocument);
+    public void clearEmbeddingsFor(List<LinkedFile> linkedFiles, BibDatabaseContext bibDatabaseContext, FilePreferences filePreferences) {
+        linkedFiles.stream()
+                   .flatMap(linkedFile -> linkedFile.findIn(bibDatabaseContext, filePreferences).stream())
+                   .map(Path::toString)
+                   .forEach(this::removeDocument);
     }
 }
