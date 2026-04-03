@@ -20,15 +20,12 @@ public class SummarizatorFactory {
             case SummarizatorKind.CHUNKED ->
                     new ChunkedSummarizator(
                             templatesFactory.getSummarizationChunkSystemMessageTemplate(),
-                            templatesFactory.getSummarizationChunkUserMessageTemplate(),
-                            templatesFactory.getSummarizationCombineSystemMessageTemplate(),
-                            templatesFactory.getSummarizationCombineUserMessageTemplate()
+                            templatesFactory.getSummarizationCombineSystemMessageTemplate()
                     );
 
             case SummarizatorKind.FULL_DOCUMENT ->
                     new FullDocumentSummarizator(
-                            templatesFactory.getSummarizationFullDocumentSystemMessageTemplate(),
-                            templatesFactory.getSummarizationFullDocumentUserMessageTemplate()
+                            templatesFactory.getSummarizationFullDocumentSystemMessageTemplate()
                     );
         };
     }

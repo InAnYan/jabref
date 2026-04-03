@@ -5,9 +5,7 @@ import java.util.List;
 
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.summarization.templates.SummarizationChunkSystemMessageAiTemplate;
-import org.jabref.logic.ai.summarization.templates.SummarizationChunkUserMessageAiTemplate;
 import org.jabref.logic.ai.summarization.templates.SummarizationCombineSystemMessageAiTemplate;
-import org.jabref.logic.ai.summarization.templates.SummarizationCombineUserMessageAiTemplate;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
 import dev.langchain4j.data.document.DefaultDocument;
@@ -26,20 +24,14 @@ public class ChunkedSummarizator implements Summarizator {
     private static final int MAX_OVERLAP_SIZE_IN_CHARS = 100;
 
     private final SummarizationChunkSystemMessageAiTemplate summarizationChunkSystemMessageTemplate;
-    private final SummarizationChunkUserMessageAiTemplate summarizationChunkUserMessageTemplate;
     private final SummarizationCombineSystemMessageAiTemplate summarizationCombineSystemMessageTemplate;
-    private final SummarizationCombineUserMessageAiTemplate summarizationCombineUserMessageTemplate;
 
     public ChunkedSummarizator(
             SummarizationChunkSystemMessageAiTemplate summarizationChunkSystemMessageTemplate,
-            SummarizationChunkUserMessageAiTemplate summarizationChunkUserMessageTemplate,
-            SummarizationCombineSystemMessageAiTemplate summarizationCombineSystemMessageTemplate,
-            SummarizationCombineUserMessageAiTemplate summarizationCombineUserMessageTemplate
+            SummarizationCombineSystemMessageAiTemplate summarizationCombineSystemMessageTemplate
     ) {
         this.summarizationChunkSystemMessageTemplate = summarizationChunkSystemMessageTemplate;
-        this.summarizationChunkUserMessageTemplate = summarizationChunkUserMessageTemplate;
         this.summarizationCombineSystemMessageTemplate = summarizationCombineSystemMessageTemplate;
-        this.summarizationCombineUserMessageTemplate = summarizationCombineUserMessageTemplate;
     }
 
     @Override
@@ -73,13 +65,12 @@ public class ChunkedSummarizator implements Summarizator {
                     throw new InterruptedException();
                 }
 
-                String systemMessage =summarizationChunkSystemMessageTemplate.render();
-                String userMessage = summarizationChunkUserMessageTemplate.render(chunkSummary);
+                String systemMessage = summarizationChunkSystemMessageTemplate.render();
 
                 LOGGER.debug("Sending request to AI provider to summarize a chunk");
                 String chunk = chatModel.chat(List.of(
                         new SystemMessage(systemMessage),
-                        new UserMessage(userMessage)
+                        new UserMessage(chunkSummary)
                 )).aiMessage().text();
                 LOGGER.debug("Chunk {} summary was generated successfully", passes);
 
@@ -95,7 +86,6 @@ public class ChunkedSummarizator implements Summarizator {
         }
 
         String systemMessage = summarizationCombineSystemMessageTemplate.render();
-        String userMessage = summarizationCombineUserMessageTemplate.render(chunkSummaries);
 
         if (Thread.currentThread().isInterrupted()) {
             throw new InterruptedException();
@@ -104,7 +94,7 @@ public class ChunkedSummarizator implements Summarizator {
         LOGGER.debug("Sending request to AI provider to combine summary chunks");
         String result = chatModel.chat(List.of(
                 new SystemMessage(systemMessage),
-                new UserMessage(userMessage)
+                new UserMessage(String.join("\n\n", chunkSummaries))
         )).aiMessage().text();
         LOGGER.debug("BibEntrySummary of the text was generated successfully");
         return result;

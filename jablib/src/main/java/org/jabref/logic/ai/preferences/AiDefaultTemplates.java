@@ -29,13 +29,9 @@ public class AiDefaultTemplates {
             The bibEntrySummary should include the main objectives, methodologies used, key findings, and conclusions.
             Mention any significant experiments, data, or discussions presented in the paper.""";
 
-    private static final String SUMMARIZATION_CHUNK_USER_MESSAGE_TEMPLATE = "$text";
-
     private static final String SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE = """
             You have written an overview of a scientific paper. You have been collecting notes from various parts
             of the paper. Now your task is to combine all of the notes in one structured message.""";
-
-    private static final String SUMMARIZATION_COMBINE_USER_MESSAGE_TEMPLATE = "$chunks";
 
     private static final String SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE = """
             Please provide a concise, structured summary of the following document (a scientific paper).
@@ -43,8 +39,6 @@ public class AiDefaultTemplates {
             Use clear headings or short paragraphs for each section and keep the overall summary between 150 and 400 words unless instructed otherwise.
             If the document is not a research paper, adapt the summary to capture the document's main purpose and key points.
             """;
-
-    private static final String SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE_TEMPLATE = "$text";
 
     private static final String CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE = "You are a bot to convert a plain text citation to a BibTeX entry. The user you talk to understands only BibTeX code, so provide it plainly without any wrappings.";
     private static final String CITATION_PARSING_USER_MESSAGE_TEMPLATE = "Please convert this plain text citation to a BibTeX entry:\n$citation\nIn your output, please provide only BibTeX code as your message.";
@@ -61,24 +55,12 @@ public class AiDefaultTemplates {
         return SUMMARIZATION_CHUNK_SYSTEM_MESSAGE_TEMPLATE;
     }
 
-    public static String getSummarizationChunkUserMessageTemplate() {
-        return SUMMARIZATION_CHUNK_USER_MESSAGE_TEMPLATE;
-    }
-
     public static String getSummarizationCombineSystemMessageTemplate() {
         return SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE;
     }
 
-    public static String getSummarizationCombineUserMessageTemplate() {
-        return SUMMARIZATION_COMBINE_USER_MESSAGE_TEMPLATE;
-    }
-
     public static String getSummarizationFullDocumentSystemMessageTemplate() {
         return SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE;
-    }
-
-    public static String getSummarizationFullDocumentUserMessageTemplate() {
-        return SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE_TEMPLATE;
     }
 
     public static String getCitationParsingSystemMessageTemplate() {

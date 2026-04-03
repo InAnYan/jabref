@@ -34,8 +34,7 @@ public class LlmPlainCitationParser extends PdfImporterWithPlainCitationParser i
 
         this.parseCitationsWithLlm = new ParseCitationsWithLlm(
                 importFormatPreferences,
-                aiService.getTemplatesFeature().getCurrentAiTemplates().getCitationParsingSystemMessageTemplate(),
-                aiService.getTemplatesFeature().getCurrentAiTemplates().getCitationParsingUserMessageTemplate()
+                aiService.getTemplatesFeature().getCurrentAiTemplates().getCitationParsingSystemMessageTemplate()
         );
     }
 

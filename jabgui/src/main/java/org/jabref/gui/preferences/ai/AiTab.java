@@ -33,18 +33,15 @@ import org.controlsfx.control.textfield.CustomPasswordField;
 
 public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements PreferencesTab {
     private static final String HUGGING_FACE_CHAT_MODEL_PROMPT = "TinyLlama/TinyLlama_v1.1 (or any other model name)";
-
+    private final ControlsFxVisualizer visualizer = new ControlsFxVisualizer();
     @FXML private CheckBox enableAi;
     @FXML private CheckBox autoGenerateEmbeddings;
     @FXML private CheckBox autoGenerateSummaries;
-
     @FXML private ComboBox<AiProvider> aiProviderComboBox;
     @FXML private ComboBox<String> chatModelComboBox;
     @FXML private CustomPasswordField apiKeyTextField;
-
     @FXML private CheckBox customizeExpertSettingsCheckbox;
     @FXML private VBox expertSettingsPane;
-
     @FXML private TextField apiBaseUrlTextField;
     @FXML private SearchableComboBox<EmbeddingModelEnumeration> embeddingModelComboBox;
     @FXML private TextField temperatureTextField;
@@ -53,7 +50,6 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private IntegerInputField documentSplitterOverlapSizeTextField;
     @FXML private IntegerInputField ragMaxResultsCountTextField;
     @FXML private TextField ragMinScoreTextField;
-
     @FXML private TabPane templatesTabPane;
     @FXML private Tab systemMessageForChattingTab;
     @FXML private Tab userMessageForChattingTab;
@@ -63,7 +59,6 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private Tab summarizationCombineUserMessageTab;
     @FXML private Tab citationParsingSystemMessageTab;
     @FXML private Tab citationParsingUserMessageTab;
-
     @FXML private TextArea systemMessageTextArea;
     @FXML private TextArea userMessageTextArea;
     @FXML private TextArea summarizationChunkSystemMessageTextArea;
@@ -72,15 +67,11 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private TextArea summarizationCombineUserMessageTextArea;
     @FXML private TextArea citationParsingSystemMessageTextArea;
     @FXML private TextArea citationParsingUserMessageTextArea;
-
     @FXML private Button generalSettingsHelp;
     @FXML private Button expertSettingsHelp;
     @FXML private Button templatesHelp;
-
     @FXML private Button resetCurrentTemplateButton;
     @FXML private Button resetTemplatesButton;
-
-    private final ControlsFxVisualizer visualizer = new ControlsFxVisualizer();
 
     public AiTab() {
         ViewLoader.view(this)
@@ -285,12 +276,8 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
             viewModel.resetChattingUserMessageTemplate();
         } else if (selectedTab == summarizationChunkSystemMessageTab) {
             viewModel.resetSummarizationChunkSystemMessageTemplate();
-        } else if (selectedTab == summarizationChunkUserMessageTab) {
-            viewModel.resetSummarizationChunkUserMessageTemplate();
         } else if (selectedTab == summarizationCombineSystemMessageTab) {
             viewModel.resetSummarizationCombineSystemMessageTemplate();
-        } else if (selectedTab == summarizationCombineUserMessageTab) {
-            viewModel.resetSummarizationCombineUserMessageTemplate();
         } else if (selectedTab == citationParsingSystemMessageTab) {
             viewModel.resetCitationParsingSystemMessageTemplate();
         } else if (selectedTab == citationParsingUserMessageTab) {
@@ -301,5 +288,4 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     public ReadOnlyBooleanProperty aiEnabledProperty() {
         return enableAi.selectedProperty();
     }
-
 }

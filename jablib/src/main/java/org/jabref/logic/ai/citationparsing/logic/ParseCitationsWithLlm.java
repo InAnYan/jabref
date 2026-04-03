@@ -5,7 +5,6 @@ import java.io.Reader;
 import java.util.List;
 
 import org.jabref.logic.ai.citationparsing.templates.CitationParsingSystemMessageAiTemplate;
-import org.jabref.logic.ai.citationparsing.templates.CitationParsingUserMessageAiTemplate;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.importer.ImportFormatPreferences;
 import org.jabref.logic.importer.ParserResult;
@@ -20,17 +19,14 @@ public class ParseCitationsWithLlm {
     private final ImportFormatPreferences importFormatPreferences;
 
     private final CitationParsingSystemMessageAiTemplate citationParsingSystemMessageTemplate;
-    private final CitationParsingUserMessageAiTemplate citationParsingUserMessageTemplate;
 
     public ParseCitationsWithLlm(
             ImportFormatPreferences importFormatPreferences,
-            CitationParsingSystemMessageAiTemplate citationParsingSystemMessageTemplate,
-            CitationParsingUserMessageAiTemplate citationParsingUserMessageTemplate
+            CitationParsingSystemMessageAiTemplate citationParsingSystemMessageTemplate
     ) {
         this.importFormatPreferences = importFormatPreferences;
 
         this.citationParsingSystemMessageTemplate = citationParsingSystemMessageTemplate;
-        this.citationParsingUserMessageTemplate = citationParsingUserMessageTemplate;
     }
 
     public Result<List<BibEntry>, IOException> parseMultiplePlainCitations(
@@ -38,13 +34,12 @@ public class ParseCitationsWithLlm {
             String text
     ) {
         String systemMessage = citationParsingSystemMessageTemplate.render();
-        String userMessage = citationParsingUserMessageTemplate.render(text);
 
         // TODO: Clean possibly of backticks.
         String llmResult = chatModel.chat(
                 List.of(
                         new SystemMessage(systemMessage),
-                        new UserMessage(userMessage)
+                        new UserMessage(text)
                 )
         ).aiMessage().text();
 
@@ -69,12 +64,11 @@ public class ParseCitationsWithLlm {
             String searchQuery
     ) {
         String systemMessage = citationParsingSystemMessageTemplate.render();
-        String userMessage = citationParsingUserMessageTemplate.render(searchQuery);
 
         return chatModel.chat(
                 List.of(
                         new SystemMessage(systemMessage),
-                        new UserMessage(userMessage)
+                        new UserMessage(searchQuery)
                 )
         ).aiMessage().text();
     }

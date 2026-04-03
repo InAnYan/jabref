@@ -8,4 +8,9 @@ import org.jabref.model.ai.summarization.SummarizatorKind;
 public class AiSummarizationLogic {
     private final ObjectProperty<SummarizatorKind> summarizatorKind;
     private final ObjectProperty<Summarizator> summarizator;
+
+    public AiSummarizationLogic(ObjectProperty<SummarizatorKind> summarizatorKind, ObjectProperty<Summarizator> summarizator) {
+        this.summarizatorKind = summarizatorKind;
+        this.summarizator = summarizator;
+    }
 }

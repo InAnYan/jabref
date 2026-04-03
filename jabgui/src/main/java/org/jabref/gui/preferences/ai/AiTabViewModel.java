@@ -20,13 +20,13 @@ import javafx.collections.FXCollections;
 import org.jabref.gui.preferences.PreferenceTabViewModel;
 import org.jabref.logic.ai.preferences.AiDefaultTemplates;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.model.ai.llm.PredefinedChatModel;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.preferences.CliPreferences;
 import org.jabref.logic.util.LocalizedNumbers;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
 import org.jabref.model.ai.llm.AiProvider;
+import org.jabref.model.ai.llm.PredefinedChatModel;
 
 import de.saxsys.mvvmfx.utils.validation.FunctionBasedValidator;
 import de.saxsys.mvvmfx.utils.validation.ValidationMessage;
@@ -407,13 +407,10 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         resetChattingSystemMessageTemplate();
         resetChattingUserMessageTemplate();
         resetSummarizationChunkSystemMessageTemplate();
-        resetSummarizationChunkUserMessageTemplate();
         resetSummarizationCombineSystemMessageTemplate();
-        resetSummarizationCombineUserMessageTemplate();
         resetCitationParsingSystemMessageTemplate();
         resetCitationParsingUserMessageTemplate();
         resetSummarizationFullDocumentSystemMessageTemplate();
-        resetSummarizationFullDocumentUserMessageTemplate();
     }
 
     public void resetChattingSystemMessageTemplate() {
@@ -428,16 +425,8 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         summarizationChunkSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationChunkSystemMessageTemplate());
     }
 
-    public void resetSummarizationChunkUserMessageTemplate() {
-        summarizationChunkUserMessageTemplate.set(AiDefaultTemplates.getSummarizationChunkUserMessageTemplate());
-    }
-
     public void resetSummarizationCombineSystemMessageTemplate() {
         summarizationCombineSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationCombineSystemMessageTemplate());
-    }
-
-    public void resetSummarizationCombineUserMessageTemplate() {
-        summarizationCombineUserMessageTemplate.set(AiDefaultTemplates.getSummarizationCombineUserMessageTemplate());
     }
 
     public void resetCitationParsingSystemMessageTemplate() {
@@ -450,10 +439,6 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
     public void resetSummarizationFullDocumentSystemMessageTemplate() {
         summarizationFullDocumentSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationFullDocumentSystemMessageTemplate());
-    }
-
-    public void resetSummarizationFullDocumentUserMessageTemplate() {
-        summarizationFullDocumentUserMessageTemplate.set(AiDefaultTemplates.getSummarizationFullDocumentUserMessageTemplate());
     }
 
     @Override
