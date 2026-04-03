@@ -10,6 +10,7 @@ import org.jabref.model.ai.pipeline.RelevantInformation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ChatMessage {
     public enum Role {
         USER,
@@ -111,7 +112,6 @@ public class ChatMessage {
     public List<RelevantInformation> getRelevantInformation() {
         return relevantInformation;
     }
-
 
     public Optional<dev.langchain4j.data.message.ChatMessage> toLangChainMessage() {
         return Optional.ofNullable(switch (role) {
