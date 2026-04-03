@@ -34,6 +34,11 @@ public class EntryChattingAiDatabaseListener implements AiDatabaseListener {
                 );
     }
 
+    @Override
+    public void close() throws Exception {
+        // Nothing to close.
+    }
+
     private class CitationKeyChangeListener {
         private static final Logger LOGGER = LoggerFactory.getLogger(CitationKeyChangeListener.class);
 

@@ -57,4 +57,9 @@ public class GroupChattingAiDatabaseListener implements AiDatabaseListener {
 
         chatHistory.forEach(record -> chatHistoryRepository.addMessage(newIdentifier, record));
     }
+
+    @Override
+    public void close() throws Exception {
+        // Nothing to close.
+    }
 }
