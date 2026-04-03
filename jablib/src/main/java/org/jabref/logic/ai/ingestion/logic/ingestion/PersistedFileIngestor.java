@@ -5,7 +5,7 @@ import java.nio.file.Path;
 
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
-import org.jabref.logic.ai.util.FileHasher;
+import org.jabref.logic.ai.ingestion.util.FileHasher;
 
 import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.data.segment.TextSegment;

@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.util;
+package org.jabref.logic.ai.chatting.util;
 
 import java.util.Optional;
 
@@ -9,10 +9,10 @@ import dev.langchain4j.data.message.UserMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ChatMessagesUtil {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChatMessagesUtil.class);
+public class ChatMessagesUtils {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChatMessagesUtils.class);
 
-    private ChatMessagesUtil() {
+    private ChatMessagesUtils() {
         throw new UnsupportedOperationException("unable to instantiate a utility class");
     }
 

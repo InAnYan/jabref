@@ -1,12 +1,11 @@
 package org.jabref.logic.ai.chatting.listeners;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.jabref.logic.ai.AiDatabaseListener;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
+import org.jabref.logic.ai.chatting.util.ChatHistoryUtils;
 import org.jabref.model.ai.chatting.ChatIdentifier;
-import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.chatting.ChatType;
 import org.jabref.model.database.BibDatabaseContext;
 
@@ -42,7 +41,6 @@ public class GroupChattingAiDatabaseListener implements AiDatabaseListener {
                 }));
     }
 
-    // TODO: Generalize transfer
     private void transferHistory(BibDatabaseContext bibDatabaseContext, String oldName, String newName) {
         Optional<String> aiLibraryId = bibDatabaseContext.getMetaData().getAiLibraryId();
 
@@ -54,12 +52,7 @@ public class GroupChattingAiDatabaseListener implements AiDatabaseListener {
         ChatIdentifier oldIdentifier = new ChatIdentifier(aiLibraryId.get(), ChatType.WITH_GROUP, oldName);
         ChatIdentifier newIdentifier = new ChatIdentifier(aiLibraryId.get(), ChatType.WITH_GROUP, newName);
 
-        List<ChatMessage> chatHistory = chatHistoryRepository.getAllMessages(oldIdentifier);
-
-        chatHistoryRepository.clear(oldIdentifier);
-        chatHistoryRepository.clear(newIdentifier);
-
-        chatHistory.forEach(record -> chatHistoryRepository.addMessage(newIdentifier, record));
+        ChatHistoryUtils.transferChatHistory(chatHistoryRepository, oldIdentifier, newIdentifier);
     }
 
     @Override

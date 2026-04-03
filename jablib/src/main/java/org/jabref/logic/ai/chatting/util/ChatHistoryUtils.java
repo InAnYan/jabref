@@ -11,9 +11,22 @@ import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
 
-public class ChatHistoryFactory {
-    private ChatHistoryFactory() {
+public class ChatHistoryUtils {
+    private ChatHistoryUtils() {
         throw new UnsupportedOperationException("unable to instantiate a utility class");
+    }
+
+    public static void transferChatHistory(
+            ChatHistoryRepository chatHistoryRepository,
+            ChatIdentifier oldIdentifier,
+            ChatIdentifier newIdentifier
+    ) {
+        List<ChatMessage> chatHistory = chatHistoryRepository.getAllMessages(oldIdentifier);
+
+        chatHistoryRepository.clear(oldIdentifier);
+        chatHistoryRepository.clear(newIdentifier);
+
+        chatHistory.forEach(record -> chatHistoryRepository.addMessage(newIdentifier, record));
     }
 
     // Works one way: when the property is modified, the repository is modified too, but not vice versa.

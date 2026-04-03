@@ -16,7 +16,7 @@ import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
-import org.jabref.logic.ai.chatting.util.ChatHistoryFactory;
+import org.jabref.logic.ai.chatting.util.ChatHistoryUtils;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
@@ -74,7 +74,7 @@ public class AiGroupChatViewModel extends AbstractViewModel {
 
         entries.set(FXCollections.observableArrayList(matchedEntryIdentifiers));
 
-        chatHistory.set(ChatHistoryFactory.makeChatHistoryProperty(
+        chatHistory.set(ChatHistoryUtils.makeChatHistoryProperty(
                 new ChatIdentifier(
                         context.getMetaData().getAiLibraryId().get(),
                         ChatType.WITH_GROUP,

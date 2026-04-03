@@ -155,6 +155,7 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.ingestion.tasks.generateembeddings;
     exports org.jabref.logic.ai.rag.util;
     exports org.jabref.logic.ai.tokenization.logic;
+    exports org.jabref.logic.ai.ingestion.util;
     // endregion
 
     requires java.base;

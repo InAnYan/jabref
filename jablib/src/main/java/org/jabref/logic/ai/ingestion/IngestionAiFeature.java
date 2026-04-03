@@ -1,7 +1,9 @@
 package org.jabref.logic.ai.ingestion;
 
+import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiFeature;
 import org.jabref.logic.ai.embedding.MVStoreEmbeddingStore;
+import org.jabref.logic.ai.ingestion.listeners.GenerateEmbeddingsAiDatabaseListener;
 import org.jabref.logic.ai.ingestion.logic.EmbeddingsCleaner;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
@@ -13,6 +15,7 @@ import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.database.BibDatabaseContext;
 
 import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 
 public class IngestionAiFeature implements AiFeature {
@@ -27,9 +30,13 @@ public class IngestionAiFeature implements AiFeature {
     private final IngestionTaskAggregator ingestionTaskAggregator;
     private final EmbeddingsCleaner embeddingsCleaner;
 
+    private final GenerateEmbeddingsAiDatabaseListener generateEmbeddingsAiDatabaseListener;
+
     public IngestionAiFeature(
             AiPreferences aiPreferences,
+            FilePreferences filePreferences,
             TaskExecutor taskExecutor,
+            EmbeddingModel embeddingModel,
             NotificationService notificationService
     ) {
         this.mvStoreEmbeddingStore = new MVStoreEmbeddingStore(
@@ -52,11 +59,21 @@ public class IngestionAiFeature implements AiFeature {
                 mvStoreEmbeddingStore,
                 mvStoreIngestedDocumentsRepository
         );
+
+        this.generateEmbeddingsAiDatabaseListener = new GenerateEmbeddingsAiDatabaseListener(
+                aiPreferences,
+                filePreferences,
+                mvStoreIngestedDocumentsRepository,
+                mvStoreEmbeddingStore,
+                embeddingModel,
+                currentDocumentSplitter,
+                ingestionTaskAggregator
+        );
     }
 
     @Override
     public void setupDatabase(BibDatabaseContext context) {
-        // No listeners.
+        generateEmbeddingsAiDatabaseListener.setupDatabase(context);
     }
 
     public IngestionTaskAggregator getIngestionTaskAggregator() {

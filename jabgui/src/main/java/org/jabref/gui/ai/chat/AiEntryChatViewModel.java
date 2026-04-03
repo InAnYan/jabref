@@ -13,7 +13,7 @@ import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
-import org.jabref.logic.ai.chatting.util.ChatHistoryFactory;
+import org.jabref.logic.ai.chatting.util.ChatHistoryUtils;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.strings.StringUtil;
@@ -96,7 +96,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
 
         entries.set(FXCollections.observableArrayList(identifier));
 
-        chatHistory.set(ChatHistoryFactory.makeChatHistoryProperty(
+        chatHistory.set(ChatHistoryUtils.makeChatHistoryProperty(
                 new ChatIdentifier(
                         identifier.databaseContext().getMetaData().getAiLibraryId().get(),
                         ChatType.WITH_ENTRY,
