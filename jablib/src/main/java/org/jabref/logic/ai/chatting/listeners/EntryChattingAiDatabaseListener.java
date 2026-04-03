@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-import org.jabref.logic.ai.DatabaseListener;
+import org.jabref.logic.ai.AiDatabaseListener;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.chatting.EntryChatHistoryIdentifier;
@@ -17,10 +17,10 @@ import com.google.common.eventbus.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EntryChattingDatabaseListener implements DatabaseListener {
+public class EntryChattingAiDatabaseListener implements AiDatabaseListener {
     private final ChatHistoryRepository chatHistoryRepository;
 
-    public EntryChattingDatabaseListener(ChatHistoryRepository chatHistoryRepository) {
+    public EntryChattingAiDatabaseListener(ChatHistoryRepository chatHistoryRepository) {
         this.chatHistoryRepository = chatHistoryRepository;
     }
 

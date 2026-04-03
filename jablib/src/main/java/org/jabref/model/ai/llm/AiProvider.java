@@ -8,7 +8,7 @@ public enum AiProvider implements Serializable {
     OPEN_AI(Localization.lang("OpenAI (or API compatible)"), "https://api.openai.com/v1", "https://openai.com/policies/privacy-policy/"),
     MISTRAL_AI(Localization.lang("Mistral AI"), "https://api.mistral.ai/v1", "https://mistral.ai/terms/#privacy-policy"),
     GEMINI(Localization.lang("Gemini"), "https://generativelanguage.googleapis.com/v1beta/", "https://ai.google.dev/gemini-api/terms"),
-    HUGGING_FACE(Localization.lang("Hugging Face"), "https://huggingface.co/api", "https://huggingface.co/privacy");
+    HUGGING_FACE(Localization.lang("Hugging Face"), "https://router.huggingface.co/v1", "https://huggingface.co/privacy");
 
     private final String displayName;
     private final String apiUrl;

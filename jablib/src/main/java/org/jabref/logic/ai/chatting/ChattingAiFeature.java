@@ -1,20 +1,24 @@
 package org.jabref.logic.ai.chatting;
 
 import org.jabref.logic.ai.AiFeature;
-import org.jabref.logic.ai.chatting.listeners.EntryChattingDatabaseListener;
-import org.jabref.logic.ai.chatting.listeners.GroupChattingDatabaseListener;
+import org.jabref.logic.ai.chatting.listeners.EntryChattingAiDatabaseListener;
+import org.jabref.logic.ai.chatting.listeners.GroupChattingAiDatabaseListener;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.chatting.repositories.MVStoreChatHistoryRepository;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.NotificationService;
+import org.jabref.model.database.BibDatabaseContext;
 
-public class ChattingAiFeature extends AiFeature {
+public class ChattingAiFeature implements AiFeature {
     private static final String CHAT_HISTORY_FILE_NAME = "chat-histories.mv"; // v2
 
     private final MVStoreChatHistoryRepository mvStoreChatHistoryRepository;
 
     private final CurrentChatLanguageModel currentChatLanguageModel;
+
+    private final EntryChattingAiDatabaseListener entryChattingAiDatabaseListener;
+    private final GroupChattingAiDatabaseListener groupChattingAiDatabaseListener;
 
     public ChattingAiFeature(
             AiPreferences aiPreferences,
@@ -30,8 +34,14 @@ public class ChattingAiFeature extends AiFeature {
                 new CurrentTokenEstimator(aiPreferences)
         );
 
-        databaseListeners.add(new EntryChattingDatabaseListener(mvStoreChatHistoryRepository));
-        databaseListeners.add(new GroupChattingDatabaseListener(mvStoreChatHistoryRepository));
+        this.entryChattingAiDatabaseListener = new EntryChattingAiDatabaseListener(mvStoreChatHistoryRepository);
+        this.groupChattingAiDatabaseListener = new GroupChattingAiDatabaseListener(mvStoreChatHistoryRepository);
+    }
+
+    @Override
+    public void setupDatabase(BibDatabaseContext context) {
+        entryChattingAiDatabaseListener.setupDatabase(context);
+        groupChattingAiDatabaseListener.setupDatabase(context);
     }
 
     public CurrentChatLanguageModel getCurrentChatModel() {
@@ -44,6 +54,8 @@ public class ChattingAiFeature extends AiFeature {
 
     @Override
     public void close() throws Exception {
+        entryChattingAiDatabaseListener.close();
+        groupChattingAiDatabaseListener.close();
         mvStoreChatHistoryRepository.close();
     }
 }

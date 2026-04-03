@@ -4,8 +4,9 @@ import org.jabref.logic.ai.AiFeature;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.database.BibDatabaseContext;
 
-public class EmbeddingAiFeature extends AiFeature {
+public class EmbeddingAiFeature implements AiFeature {
     private final CurrentEmbeddingModel currentEmbeddingModel;
 
     public EmbeddingAiFeature(
@@ -20,6 +21,10 @@ public class EmbeddingAiFeature extends AiFeature {
         );
     }
 
+    @Override
+    public void setupDatabase(BibDatabaseContext context) {
+        // No listeners.
+    }
 
     public CurrentEmbeddingModel getCurrentEmbeddingModel() {
         return currentEmbeddingModel;

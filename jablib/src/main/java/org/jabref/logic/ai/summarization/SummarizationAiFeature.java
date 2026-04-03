@@ -4,7 +4,7 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiFeature;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.summarization.listeners.GenerateSummaryDatabaseListener;
+import org.jabref.logic.ai.summarization.listeners.GenerateSummaryAiDatabaseListener;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.MVStoreSummariesRepository;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
@@ -12,8 +12,9 @@ import org.jabref.logic.ai.templates.AiTemplatesFactory;
 import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.database.BibDatabaseContext;
 
-public class SummarizationAiFeature extends AiFeature {
+public class SummarizationAiFeature implements AiFeature {
     private static final String SUMMARIES_FILE_NAME = "summaries.mv";
 
     private final MVStoreSummariesRepository mvStoreSummariesRepository;
@@ -21,6 +22,8 @@ public class SummarizationAiFeature extends AiFeature {
     private final CurrentSummarizator currentSummarizator;
 
     private final SummarizationTaskAggregator summarizationTaskAggregator;
+
+    private final GenerateSummaryAiDatabaseListener generateSummaryAiDatabaseListener;
 
     public SummarizationAiFeature(
             AiPreferences aiPreferences,
@@ -38,14 +41,19 @@ public class SummarizationAiFeature extends AiFeature {
 
         this.summarizationTaskAggregator = new SummarizationTaskAggregator(taskExecutor);
 
-        this.databaseListeners.add(new GenerateSummaryDatabaseListener(
+        this.generateSummaryAiDatabaseListener = new GenerateSummaryAiDatabaseListener(
                 aiPreferences,
                 filePreferences,
                 chatModel,
                 mvStoreSummariesRepository,
                 summarizationTaskAggregator,
                 currentSummarizator
-        ));
+        );
+    }
+
+    @Override
+    public void setupDatabase(BibDatabaseContext context) {
+        generateSummaryAiDatabaseListener.setupDatabase(context);
     }
 
     public SummarizationTaskAggregator getTaskAggregator() {
@@ -62,6 +70,7 @@ public class SummarizationAiFeature extends AiFeature {
 
     @Override
     public void close() throws Exception {
-        this.mvStoreSummariesRepository.close();
+        generateSummaryAiDatabaseListener.close();
+        mvStoreSummariesRepository.close();
     }
 }

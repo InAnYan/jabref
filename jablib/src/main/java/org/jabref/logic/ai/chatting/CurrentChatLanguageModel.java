@@ -17,7 +17,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
-import dev.langchain4j.model.huggingface.HuggingFaceChatModel;
 import dev.langchain4j.model.mistralai.MistralAiChatModel;
 import jakarta.annotation.Nullable;
 
@@ -86,14 +85,8 @@ public class CurrentChatLanguageModel implements ChatModel, AutoCloseable {
                             .logRequestsAndResponses(true)
                             .build();
 
-            case HUGGING_FACE -> // NOTE: {@link HuggingFaceChatModel} doesn't support API base url.
-                    langchainChatModel = HuggingFaceChatModel
-                            .builder()
-                            .accessToken(apiKey)
-                            .modelId(aiPreferences.getSelectedChatModel())
-                            .temperature(aiPreferences.getTemperature())
-                            .timeout(Duration.ofMinutes(2))
-                            .build();
+            case HUGGING_FACE -> // NOTE: Hugging Face is implemented via OpenAI API.
+                    langchainChatModel = new JvmOpenAiChatLanguageModel(aiPreferences, httpClient);
         }
     }
 

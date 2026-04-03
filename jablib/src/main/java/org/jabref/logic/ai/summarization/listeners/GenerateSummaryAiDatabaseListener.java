@@ -1,7 +1,7 @@
 package org.jabref.logic.ai.summarization.listeners;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.DatabaseListener;
+import org.jabref.logic.ai.AiDatabaseListener;
 import org.jabref.logic.ai.customimplementations.llms.ChatModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.SummarizationTaskAggregator;
@@ -15,7 +15,7 @@ import org.jabref.model.entry.field.StandardField;
 
 import com.google.common.eventbus.Subscribe;
 
-public class GenerateSummaryDatabaseListener implements DatabaseListener {
+public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
     private final ChatModel chatModel;
@@ -23,7 +23,7 @@ public class GenerateSummaryDatabaseListener implements DatabaseListener {
     private final SummarizationTaskAggregator summarizationTaskAggregator;
     private final Summarizator summarizator;
 
-    public GenerateSummaryDatabaseListener(
+    public GenerateSummaryAiDatabaseListener(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
             ChatModel chatModel,
@@ -43,6 +43,11 @@ public class GenerateSummaryDatabaseListener implements DatabaseListener {
     public void setupDatabase(BibDatabaseContext context) {
         // GC was eating the listeners, so we have to fall back to the event bus.
         context.getDatabase().registerListener(new EntriesChangedListener(context));
+    }
+
+    @Override
+    public void close() throws Exception {
+        // Nothing to close.
     }
 
     private class EntriesChangedListener {
