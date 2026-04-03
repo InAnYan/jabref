@@ -42,6 +42,8 @@ public class GroupChattingAiDatabaseListener implements AiDatabaseListener {
     }
 
     private void transferHistory(BibDatabaseContext bibDatabaseContext, String oldName, String newName) {
+        // TODO: This method does not check if the citation key is valid.
+        
         Optional<String> aiLibraryId = bibDatabaseContext.getMetaData().getAiLibraryId();
 
         if (aiLibraryId.isEmpty()) {

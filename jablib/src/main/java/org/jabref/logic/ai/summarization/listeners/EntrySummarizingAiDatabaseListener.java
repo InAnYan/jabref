@@ -1,12 +1,11 @@
-package org.jabref.logic.ai.chatting.listeners;
+package org.jabref.logic.ai.summarization.listeners;
 
 import java.util.Optional;
 
 import org.jabref.logic.ai.AiDatabaseListener;
-import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
-import org.jabref.logic.ai.chatting.util.ChatHistoryUtils;
-import org.jabref.model.ai.chatting.ChatIdentifier;
-import org.jabref.model.ai.chatting.ChatType;
+import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
+import org.jabref.model.ai.summarization.AiSummary;
+import org.jabref.model.ai.summarization.AiSummaryIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.event.FieldChangedEvent;
@@ -16,11 +15,11 @@ import com.google.common.eventbus.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EntryChattingAiDatabaseListener implements AiDatabaseListener {
-    private final ChatHistoryRepository chatHistoryRepository;
+public class EntrySummarizingAiDatabaseListener implements AiDatabaseListener {
+    private final SummariesRepository summariesRepository;
 
-    public EntryChattingAiDatabaseListener(ChatHistoryRepository chatHistoryRepository) {
-        this.chatHistoryRepository = chatHistoryRepository;
+    public EntrySummarizingAiDatabaseListener(SummariesRepository summariesRepository) {
+        this.summariesRepository = summariesRepository;
     }
 
     @Override
@@ -34,7 +33,7 @@ public class EntryChattingAiDatabaseListener implements AiDatabaseListener {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         // Nothing to close.
     }
 
@@ -55,23 +54,28 @@ public class EntryChattingAiDatabaseListener implements AiDatabaseListener {
                 return;
             }
 
-            transferHistory(bibDatabaseContext, e.getBibEntry(), e.getOldValue(), e.getNewValue());
+            transferSummary(bibDatabaseContext, e.getBibEntry(), e.getOldValue(), e.getNewValue());
         }
 
-        private void transferHistory(BibDatabaseContext bibDatabaseContext, BibEntry entry, String oldCitationKey, String newCitationKey) {
+        private void transferSummary(BibDatabaseContext bibDatabaseContext, BibEntry entry, String oldCitationKey, String newCitationKey) {
             // TODO: This method does not check if the citation key is valid.
 
             Optional<String> aiLibraryId = bibDatabaseContext.getMetaData().getAiLibraryId();
 
             if (aiLibraryId.isEmpty()) {
-                LOGGER.warn("Could not transfer chat history of entry {} (old key: {}): AI library ID is empty.", newCitationKey, oldCitationKey);
+                LOGGER.warn("Could not transfer the summary of entry {} (old key: {}): AI library ID is empty.", newCitationKey, oldCitationKey);
                 return;
             }
 
-            ChatIdentifier oldIdentifier = new ChatIdentifier(aiLibraryId.get(), ChatType.WITH_ENTRY, oldCitationKey);
-            ChatIdentifier newIdentifier = new ChatIdentifier(aiLibraryId.get(), ChatType.WITH_ENTRY, newCitationKey);
+            AiSummaryIdentifier oldIdentifier = new AiSummaryIdentifier(aiLibraryId.get(), oldCitationKey);
+            AiSummaryIdentifier newIdentifier = new AiSummaryIdentifier(aiLibraryId.get(), newCitationKey);
 
-            ChatHistoryUtils.transferChatHistory(chatHistoryRepository, oldIdentifier, newIdentifier);
+            Optional<AiSummary> summary = summariesRepository.get(oldIdentifier);
+
+            if (summary.isPresent()) {
+                summariesRepository.set(newIdentifier, summary.get());
+                summariesRepository.clear(oldIdentifier);
+            }
         }
     }
 }
