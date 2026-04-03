@@ -2,7 +2,7 @@
 nav_order: 0032
 parent: Decision Records
 ---
-# Store Chats Alongside Database
+# Store Chats Alongside the Library
 
 ## Context and Problem Statement
 
