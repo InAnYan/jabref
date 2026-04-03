@@ -91,6 +91,7 @@ public class AiChatViewModel extends AbstractViewModel {
         this.taskExecutor = taskExecutor;
 
         this.aiChatLogic = new AiChatLogic(
+                aiTemplatesFactory.getChattingSystemMessageTemplate(),
                 aiTemplatesFactory.getChattingUserMessageTemplate()
         );
 

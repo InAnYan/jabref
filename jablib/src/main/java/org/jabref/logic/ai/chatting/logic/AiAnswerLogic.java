@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.tasks.GenerateLlmResponseTask;
+import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageAiTemplate;
 import org.jabref.logic.ai.chatting.templates.ChattingUserMessageAiTemplate;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.model.ai.chatting.ChatMessage;
@@ -15,17 +16,20 @@ public class AiAnswerLogic {
     private final ChatModel chatModel;
     private final List<ChatMessage> chatHistory;
     private final AnswerEngine answerEngine;
+    private final ChattingSystemMessageAiTemplate systemMessageTemplate;
     private final ChattingUserMessageAiTemplate injectionTemplate;
 
     public AiAnswerLogic(
             ChatModel chatModel,
             List<ChatMessage> chatHistory,
             AnswerEngine answerEngine,
+            ChattingSystemMessageAiTemplate systemMessageTemplate,
             ChattingUserMessageAiTemplate injectionTemplate
     ) {
         this.chatModel = chatModel;
         this.chatHistory = chatHistory;
         this.answerEngine = answerEngine;
+        this.systemMessageTemplate = systemMessageTemplate;
         this.injectionTemplate = injectionTemplate;
     }
 
@@ -49,8 +53,15 @@ public class AiAnswerLogic {
 
         ChatMessage injectedMessage = ChatMessage.userMessage(userMessage.timestamp(), injected);
 
-        List<ChatMessage> chatHistoryForLlm = new ArrayList<>(chatHistory);
-        if (!chatHistoryForLlm.isEmpty()) {
+        ChatMessage systemMessage = ChatMessage.systemMessage(systemMessageTemplate.render(
+                entries.stream().map(FullBibEntry::entry).toList()
+        ));
+        List<ChatMessage> chatHistoryForLlm = new ArrayList<>();
+        chatHistoryForLlm.add(systemMessage);
+        chatHistoryForLlm.addAll(chatHistory);
+
+        // Removing plain user message and replacing it with augmented one from the answer engine.
+        if (chatHistoryForLlm.getLast().role() != ChatMessage.Role.SYSTEM) {
             chatHistoryForLlm.removeLast();
         }
         chatHistoryForLlm.add(injectedMessage);

@@ -13,20 +13,26 @@ import javafx.collections.FXCollections;
 
 import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.tasks.GenerateLlmResponseTask;
+import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageAiTemplate;
 import org.jabref.logic.ai.chatting.templates.ChattingUserMessageAiTemplate;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 
 public class AiChatLogic {
-    private final ObjectProperty<ChattingUserMessageAiTemplate> template;
+    private final ObjectProperty<ChattingSystemMessageAiTemplate> systemMessageTemplate;
+    private final ObjectProperty<ChattingUserMessageAiTemplate> userMessageTemplate;
 
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
     private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
-    public AiChatLogic(ChattingUserMessageAiTemplate template) {
-        this.template = new SimpleObjectProperty<>(template);
+    public AiChatLogic(
+            ChattingSystemMessageAiTemplate systemMessageTemplate,
+            ChattingUserMessageAiTemplate userMessageAiTemplate
+    ) {
+        this.systemMessageTemplate = new SimpleObjectProperty<>(systemMessageTemplate);
+        this.userMessageTemplate = new SimpleObjectProperty<>(userMessageAiTemplate);
     }
 
     /**
@@ -43,7 +49,8 @@ public class AiChatLogic {
                 chatModel.get(),
                 chatHistory,
                 answerEngine.get(),
-                template.get()
+                systemMessageTemplate.get(),
+                userMessageTemplate.get()
         );
 
         return aiAnswerLogic.answer(
@@ -95,10 +102,6 @@ public class AiChatLogic {
         );
 
         return contentToRegenerate;
-    }
-
-    public ObjectProperty<ChattingUserMessageAiTemplate> templateProperty() {
-        return template;
     }
 
     public ObjectProperty<ChatModel> chatModelProperty() {
