@@ -1,14 +1,11 @@
 package org.jabref.logic.ai.ingestion.logic.ingestion;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
+import org.jabref.logic.ai.util.FileHasher;
 
 import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.data.segment.TextSegment;
@@ -41,30 +38,21 @@ public class PersistedFileIngestor {
             Metadata metadata,
             Path path
     ) throws InterruptedException {
-        String pathKey = path.toAbsolutePath().toString();
-
-        Optional<Long> modTime = Optional.empty();
+        String currentFileHash;
         boolean shouldIngest = true;
 
         try {
-            BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
-            long currentModificationTimeInSeconds = attributes.lastModifiedTime().to(TimeUnit.SECONDS);
+            currentFileHash = FileHasher.computeHash(path);
 
-            Optional<Long> ingestedModificationTimeInSeconds = ingestedDocumentsRepository.getIngestedDocumentModificationTimeInSeconds(pathKey);
-
-            if (ingestedModificationTimeInSeconds.isEmpty()) {
-                modTime = Optional.of(currentModificationTimeInSeconds);
-            } else {
-                if (currentModificationTimeInSeconds > ingestedModificationTimeInSeconds.get()) {
-                    modTime = Optional.of(currentModificationTimeInSeconds);
-                } else {
-                    LOGGER.debug("No need to generate embeddings for file \"{}\", because it was already generated", pathKey);
-                    shouldIngest = false;
-                }
+            if (ingestedDocumentsRepository.isDocumentIngested(currentFileHash)) {
+                // File has already been ingested and has not changed (same hash)
+                LOGGER.debug("No need to generate embeddings for file \"{}\", because it was already ingested and has not changed", path);
+                shouldIngest = false;
             }
         } catch (IOException e) {
-            LOGGER.error("Could not retrieve attributes of a file \"{}\"", pathKey, e);
-            LOGGER.warn("Possibly regenerating embeddings for file \"{}\"", pathKey);
+            LOGGER.error("Could not compute hash of file \"{}\"", path, e);
+            LOGGER.warn("Possibly regenerating embeddings for file \"{}\"", path);
+            currentFileHash = null;
         }
 
         if (!shouldIngest) {
@@ -73,9 +61,8 @@ public class PersistedFileIngestor {
 
         fileIngestor.ingest(metadata, path);
 
-        if (!Thread.currentThread().isInterrupted()) {
-            ingestedDocumentsRepository.markDocumentAsFullyIngested(pathKey, modTime.orElse(0L));
+        if (!Thread.currentThread().isInterrupted() && currentFileHash != null) {
+            ingestedDocumentsRepository.markDocumentAsFullyIngested(currentFileHash);
         }
     }
 }
-
