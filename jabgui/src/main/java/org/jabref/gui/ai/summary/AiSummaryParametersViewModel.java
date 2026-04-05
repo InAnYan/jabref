@@ -10,7 +10,6 @@ import org.jabref.gui.AbstractViewModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
-import org.jabref.logic.ai.templates.AiTemplatesFactory;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
 public class AiSummaryParametersViewModel extends AbstractViewModel {
@@ -20,14 +19,9 @@ public class AiSummaryParametersViewModel extends AbstractViewModel {
     private final ObjectProperty<SummarizatorKind> summarizatorKind = new SimpleObjectProperty<>();
 
     private final AiPreferences aiPreferences;
-    private final SummarizatorFactory summarizatorFactory;
 
-    public AiSummaryParametersViewModel(
-            AiPreferences aiPreferences,
-            AiTemplatesFactory aiTemplatesFactory
-    ) {
+    public AiSummaryParametersViewModel(AiPreferences aiPreferences) {
         this.aiPreferences = aiPreferences;
-        this.summarizatorFactory = new SummarizatorFactory(aiTemplatesFactory);
 
         setupValues();
     }
@@ -45,6 +39,11 @@ public class AiSummaryParametersViewModel extends AbstractViewModel {
     }
 
     public Summarizator constructSummarizator() {
-        return summarizatorFactory.create(summarizatorKind.get());
+        return SummarizatorFactory.create(
+                summarizatorKind.get(),
+                aiPreferences.getSummarizationChunkSystemMessageTemplate(),
+                aiPreferences.getSummarizationCombineSystemMessageTemplate(),
+                aiPreferences.getSummarizationFullDocumentSystemMessageTemplate()
+        );
     }
 }

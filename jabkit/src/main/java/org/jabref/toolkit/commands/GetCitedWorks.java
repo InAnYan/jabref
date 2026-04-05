@@ -58,6 +58,7 @@ class GetCitedWorks implements Callable<Integer> {
                         preferences.getImportFormatPreferences(),
                         preferences.getCitationKeyPatternPreferences(),
                         preferences.getGrobidPreferences(),
+                        preferences.getAiPreferences(),
                         aiService);
             }
             case SEMANTICSCHOLAR ->

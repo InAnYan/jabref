@@ -5,7 +5,7 @@ import java.io.Reader;
 import java.util.List;
 
 import org.jabref.logic.ai.chatting.ChatModel;
-import org.jabref.logic.ai.citationparsing.templates.CitationParsingSystemMessageAiTemplate;
+import org.jabref.logic.ai.templates.AiTemplateRenderer;
 import org.jabref.logic.importer.ImportFormatPreferences;
 import org.jabref.logic.importer.ParserResult;
 import org.jabref.logic.importer.fileformat.BibtexParser;
@@ -17,15 +17,13 @@ import dev.langchain4j.data.message.UserMessage;
 
 public class ParseCitationsWithLlm {
     private final ImportFormatPreferences importFormatPreferences;
-
-    private final CitationParsingSystemMessageAiTemplate citationParsingSystemMessageTemplate;
+    private final String citationParsingSystemMessageTemplate;
 
     public ParseCitationsWithLlm(
             ImportFormatPreferences importFormatPreferences,
-            CitationParsingSystemMessageAiTemplate citationParsingSystemMessageTemplate
+            String citationParsingSystemMessageTemplate
     ) {
         this.importFormatPreferences = importFormatPreferences;
-
         this.citationParsingSystemMessageTemplate = citationParsingSystemMessageTemplate;
     }
 
@@ -33,7 +31,7 @@ public class ParseCitationsWithLlm {
             ChatModel chatModel,
             String text
     ) {
-        String systemMessage = citationParsingSystemMessageTemplate.render();
+        String systemMessage = AiTemplateRenderer.renderCitationParsingSystemMessage(citationParsingSystemMessageTemplate);
 
         // TODO: Clean possibly of backticks.
         String llmResult = chatModel.chat(
@@ -63,7 +61,7 @@ public class ParseCitationsWithLlm {
             ChatModel chatModel,
             String searchQuery
     ) {
-        String systemMessage = citationParsingSystemMessageTemplate.render();
+        String systemMessage = AiTemplateRenderer.renderCitationParsingSystemMessage(citationParsingSystemMessageTemplate);
 
         return chatModel.chat(
                 List.of(

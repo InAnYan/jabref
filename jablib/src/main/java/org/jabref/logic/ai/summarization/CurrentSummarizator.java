@@ -4,24 +4,18 @@ import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
-import org.jabref.logic.ai.templates.AiTemplatesFactory;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
 import org.jspecify.annotations.Nullable;
 
 public class CurrentSummarizator implements Summarizator {
     private final AiPreferences aiPreferences;
-    private final SummarizatorFactory summarizatorFactory;
 
     @Nullable
     private Summarizator summarizator = null;
 
-    public CurrentSummarizator(
-            AiPreferences aiPreferences,
-            AiTemplatesFactory aiTemplatesFactory
-    ) {
+    public CurrentSummarizator(AiPreferences aiPreferences) {
         this.aiPreferences = aiPreferences;
-        this.summarizatorFactory = new SummarizatorFactory(aiTemplatesFactory);
 
         updateAlgorithm();
         setupListeningToPreferences();
@@ -40,7 +34,12 @@ public class CurrentSummarizator implements Summarizator {
     }
 
     private void updateAlgorithm() {
-        summarizator = summarizatorFactory.create(aiPreferences.getSummarizatorKind());
+        summarizator = SummarizatorFactory.create(
+                aiPreferences.getSummarizatorKind(),
+                aiPreferences.getSummarizationChunkSystemMessageTemplate(),
+                aiPreferences.getSummarizationCombineSystemMessageTemplate(),
+                aiPreferences.getSummarizationFullDocumentSystemMessageTemplate()
+        );
     }
 
     @Override

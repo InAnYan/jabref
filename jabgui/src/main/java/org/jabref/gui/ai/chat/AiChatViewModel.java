@@ -27,7 +27,6 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddings
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTaskRequest;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
-import org.jabref.logic.ai.templates.AiTemplatesFactory;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatMessage;
@@ -72,7 +71,8 @@ public class AiChatViewModel extends AbstractViewModel {
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
             ChatModel chatModel,
-            AiTemplatesFactory aiTemplatesFactory,
+            String chattingSystemMessageTemplate,
+            String chattingUserMessageTemplate,
             IngestionTaskAggregator ingestionTaskAggregator,
             IngestedDocumentsRepository ingestedDocumentsRepository,
             EmbeddingModel embeddingModel,
@@ -91,8 +91,8 @@ public class AiChatViewModel extends AbstractViewModel {
         this.taskExecutor = taskExecutor;
 
         this.aiChatLogic = new AiChatLogic(
-                aiTemplatesFactory.getChattingSystemMessageTemplate(),
-                aiTemplatesFactory.getChattingUserMessageTemplate()
+                chattingSystemMessageTemplate,
+                chattingUserMessageTemplate
         );
 
         setupBindings();

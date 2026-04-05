@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.citationparsing.logic.ParseCitationsWithLlm;
 import org.jabref.logic.importer.FetcherException;
@@ -24,8 +23,8 @@ public class LlmPlainCitationParser extends PdfImporterWithPlainCitationParser i
     private final ParseCitationsWithLlm parseCitationsWithLlm;
 
     public LlmPlainCitationParser(
-            AiService aiService,
             ImportFormatPreferences importFormatPreferences,
+            String citationParsingSystemMessageTemplate,
             ChatModel chatModel
     ) {
         this.importFormatPreferences = importFormatPreferences;
@@ -34,7 +33,7 @@ public class LlmPlainCitationParser extends PdfImporterWithPlainCitationParser i
 
         this.parseCitationsWithLlm = new ParseCitationsWithLlm(
                 importFormatPreferences,
-                aiService.getTemplatesFeature().getCurrentAiTemplates().getCitationParsingSystemMessageTemplate()
+                citationParsingSystemMessageTemplate
         );
     }
 
@@ -74,3 +73,4 @@ public class LlmPlainCitationParser extends PdfImporterWithPlainCitationParser i
         return result.getValue();
     }
 }
+

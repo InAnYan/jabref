@@ -6,7 +6,6 @@ import javafx.scene.layout.VBox;
 
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.ViewModelListCellFactory;
-import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
@@ -17,7 +16,6 @@ public class AiSummaryParametersView extends VBox {
     @FXML private ComboBox<SummarizatorKind> summarizatorCombo;
 
     @Inject private GuiPreferences preferences;
-    @Inject private AiService aiService;
 
     private AiSummaryParametersViewModel viewModel;
 
@@ -30,8 +28,7 @@ public class AiSummaryParametersView extends VBox {
     @FXML
     private void initialize() {
         this.viewModel = new AiSummaryParametersViewModel(
-                preferences.getAiPreferences(),
-                aiService.getTemplatesFeature().getCurrentAiTemplates()
+                preferences.getAiPreferences()
         );
 
         setupBindings();

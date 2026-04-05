@@ -35,7 +35,7 @@ public class AiService implements AutoCloseable {
             NotificationService notificationService,
             TaskExecutor taskExecutor
     ) {
-        this.templatesFeature = new TemplatesAiFeature(aiPreferences);
+        this.templatesFeature = new TemplatesAiFeature();
 
         this.embeddingFeature = new EmbeddingAiFeature(
                 aiPreferences,
@@ -67,7 +67,6 @@ public class AiService implements AutoCloseable {
                 aiPreferences,
                 filePreferences,
                 chattingFeature.getCurrentChatModel(),
-                templatesFeature.getCurrentAiTemplates(),
                 taskExecutor,
                 notificationService
         );

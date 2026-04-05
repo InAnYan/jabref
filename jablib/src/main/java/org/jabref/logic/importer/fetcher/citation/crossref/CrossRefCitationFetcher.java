@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
 import org.jabref.logic.importer.FetcherException;
 import org.jabref.logic.importer.ImportFormatPreferences;
@@ -40,6 +41,7 @@ public class CrossRefCitationFetcher implements CitationFetcher {
     private final ImportFormatPreferences importFormatPreferences;
     private final CitationKeyPatternPreferences citationKeyPatternPreferences;
     private final GrobidPreferences grobidPreferences;
+    private final AiPreferences aiPreferences;
     private final AiService aiService;
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -51,11 +53,13 @@ public class CrossRefCitationFetcher implements CitationFetcher {
             ImportFormatPreferences importFormatPreferences,
             CitationKeyPatternPreferences citationKeyPatternPreferences,
             GrobidPreferences grobidPreferences,
+            AiPreferences aiPreferences,
             AiService aiService) {
         this.importerPreferences = importerPreferences;
         this.importFormatPreferences = importFormatPreferences;
         this.citationKeyPatternPreferences = citationKeyPatternPreferences;
         this.grobidPreferences = grobidPreferences;
+        this.aiPreferences = aiPreferences;
         this.aiService = aiService;
     }
 
@@ -75,7 +79,7 @@ public class CrossRefCitationFetcher implements CitationFetcher {
             return List.of();
         }
 
-        final PlainCitationParser parser = PlainCitationParserFactory.getPlainCitationParser(importerPreferences.getDefaultPlainCitationParser(), citationKeyPatternPreferences, grobidPreferences, importFormatPreferences, aiService);
+        final PlainCitationParser parser = PlainCitationParserFactory.getPlainCitationParser(importerPreferences.getDefaultPlainCitationParser(), citationKeyPatternPreferences, grobidPreferences, importFormatPreferences, aiPreferences, aiService);
 
         String url = API_URL + doi.get().asString();
         try (InputStream stream = new URLDownload(url).asInputStream()) {

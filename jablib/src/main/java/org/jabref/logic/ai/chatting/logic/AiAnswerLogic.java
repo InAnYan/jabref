@@ -5,9 +5,8 @@ import java.util.List;
 
 import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.tasks.GenerateLlmResponseTask;
-import org.jabref.logic.ai.chatting.templates.ChattingSystemMessageAiTemplate;
-import org.jabref.logic.ai.chatting.templates.ChattingUserMessageAiTemplate;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
+import org.jabref.logic.ai.templates.AiTemplateRenderer;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.RelevantInformation;
@@ -16,15 +15,15 @@ public class AiAnswerLogic {
     private final ChatModel chatModel;
     private final List<ChatMessage> chatHistory;
     private final AnswerEngine answerEngine;
-    private final ChattingSystemMessageAiTemplate systemMessageTemplate;
-    private final ChattingUserMessageAiTemplate injectionTemplate;
+    private final String systemMessageTemplate;
+    private final String injectionTemplate;
 
     public AiAnswerLogic(
             ChatModel chatModel,
             List<ChatMessage> chatHistory,
             AnswerEngine answerEngine,
-            ChattingSystemMessageAiTemplate systemMessageTemplate,
-            ChattingUserMessageAiTemplate injectionTemplate
+            String systemMessageTemplate,
+            String injectionTemplate
     ) {
         this.chatModel = chatModel;
         this.chatHistory = chatHistory;
@@ -45,7 +44,8 @@ public class AiAnswerLogic {
                 entries
         );
 
-        String injected = injectionTemplate.render(
+        String injected = AiTemplateRenderer.renderChattingUserMessage(
+                injectionTemplate,
                 entries.stream().map(FullBibEntry::entry).toList(),
                 userMessage.content(),
                 relevantInformation
@@ -53,7 +53,8 @@ public class AiAnswerLogic {
 
         ChatMessage injectedMessage = ChatMessage.userMessage(userMessage.timestamp(), injected);
 
-        ChatMessage systemMessage = ChatMessage.systemMessage(systemMessageTemplate.render(
+        ChatMessage systemMessage = ChatMessage.systemMessage(AiTemplateRenderer.renderChattingSystemMessage(
+                systemMessageTemplate,
                 entries.stream().map(FullBibEntry::entry).toList()
         ));
         List<ChatMessage> chatHistoryForLlm = new ArrayList<>();

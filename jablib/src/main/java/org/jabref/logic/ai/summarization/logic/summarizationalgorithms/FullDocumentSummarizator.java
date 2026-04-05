@@ -3,7 +3,7 @@ package org.jabref.logic.ai.summarization.logic.summarizationalgorithms;
 import java.util.List;
 
 import org.jabref.logic.ai.chatting.ChatModel;
-import org.jabref.logic.ai.summarization.templates.SummarizationFullDocumentSystemMessageAiTemplate;
+import org.jabref.logic.ai.templates.AiTemplateRenderer;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
 import dev.langchain4j.data.message.SystemMessage;
@@ -14,12 +14,10 @@ import org.slf4j.LoggerFactory;
 public class FullDocumentSummarizator implements Summarizator {
     private static final Logger LOGGER = LoggerFactory.getLogger(FullDocumentSummarizator.class);
 
-    private final SummarizationFullDocumentSystemMessageAiTemplate systemTemplate;
+    private final String systemMessageTemplate;
 
-    public FullDocumentSummarizator(
-            SummarizationFullDocumentSystemMessageAiTemplate systemTemplate
-    ) {
-        this.systemTemplate = systemTemplate;
+    public FullDocumentSummarizator(String systemMessageTemplate) {
+        this.systemMessageTemplate = systemMessageTemplate;
     }
 
     @Override
@@ -30,7 +28,7 @@ public class FullDocumentSummarizator implements Summarizator {
             throw new InterruptedException();
         }
 
-        String systemMessage = systemTemplate.render();
+        String systemMessage = AiTemplateRenderer.renderSummarizationFullDocumentSystemMessage(systemMessageTemplate);
 
         LOGGER.debug("Sending request to AI provider to summarize the full document");
         String result = chatModel.chat(List.of(

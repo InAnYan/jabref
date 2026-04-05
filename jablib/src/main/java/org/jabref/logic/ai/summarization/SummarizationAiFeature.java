@@ -8,7 +8,6 @@ import org.jabref.logic.ai.summarization.listeners.GenerateSummaryAiDatabaseList
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.MVStoreSummariesRepository;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
-import org.jabref.logic.ai.templates.AiTemplatesFactory;
 import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;
@@ -29,7 +28,6 @@ public class SummarizationAiFeature implements AiFeature {
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
             ChatModel chatModel,
-            AiTemplatesFactory aiTemplatesFactory,
             TaskExecutor taskExecutor,
             NotificationService notificationService
     ) {
@@ -37,7 +35,7 @@ public class SummarizationAiFeature implements AiFeature {
                 notificationService, Directories.getAiFilesDirectory().resolve(SUMMARIES_FILE_NAME)
         );
 
-        this.currentSummarizator = new CurrentSummarizator(aiPreferences, aiTemplatesFactory);
+        this.currentSummarizator = new CurrentSummarizator(aiPreferences);
 
         this.summarizationTaskAggregator = new SummarizationTaskAggregator(taskExecutor);
 

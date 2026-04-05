@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jabref.logic.ai.chatting.ChatModel;
-import org.jabref.logic.ai.summarization.templates.SummarizationChunkSystemMessageAiTemplate;
-import org.jabref.logic.ai.summarization.templates.SummarizationCombineSystemMessageAiTemplate;
+import org.jabref.logic.ai.templates.AiTemplateRenderer;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
@@ -24,12 +23,12 @@ public class ChunkedSummarizator implements Summarizator {
     // TODO: Make a parameter?
     private static final int MAX_OVERLAP_SIZE_IN_CHARS = 100;
 
-    private final SummarizationChunkSystemMessageAiTemplate summarizationChunkSystemMessageTemplate;
-    private final SummarizationCombineSystemMessageAiTemplate summarizationCombineSystemMessageTemplate;
+    private final String summarizationChunkSystemMessageTemplate;
+    private final String summarizationCombineSystemMessageTemplate;
 
     public ChunkedSummarizator(
-            SummarizationChunkSystemMessageAiTemplate summarizationChunkSystemMessageTemplate,
-            SummarizationCombineSystemMessageAiTemplate summarizationCombineSystemMessageTemplate
+            String summarizationChunkSystemMessageTemplate,
+            String summarizationCombineSystemMessageTemplate
     ) {
         this.summarizationChunkSystemMessageTemplate = summarizationChunkSystemMessageTemplate;
         this.summarizationCombineSystemMessageTemplate = summarizationCombineSystemMessageTemplate;
@@ -46,7 +45,7 @@ public class ChunkedSummarizator implements Summarizator {
         DocumentSplitter documentSplitter = DocumentSplitters.recursive(
                 chatModel.getContextWindowSize() - MAX_OVERLAP_SIZE_IN_CHARS * 2 - chatModel.getTokenizer().estimate(
                         ChatMessage.Role.SYSTEM,
-                        summarizationChunkSystemMessageTemplate.getSource()
+                        summarizationChunkSystemMessageTemplate
                 ),
                 MAX_OVERLAP_SIZE_IN_CHARS
         );
@@ -57,8 +56,7 @@ public class ChunkedSummarizator implements Summarizator {
 
         int passes = 0;
 
-        do
-        {
+        do {
             passes++;
             LOGGER.debug("Summarizing {} chunk (of {}", passes, chunkSummaries.size());
 
@@ -69,7 +67,7 @@ public class ChunkedSummarizator implements Summarizator {
                     throw new InterruptedException();
                 }
 
-                String systemMessage = summarizationChunkSystemMessageTemplate.render();
+                String systemMessage = AiTemplateRenderer.renderSummarizationChunkSystemMessage(summarizationChunkSystemMessageTemplate);
 
                 LOGGER.debug("Sending request to AI provider to summarize a chunk");
                 String chunk = chatModel.chat(List.of(
@@ -84,7 +82,7 @@ public class ChunkedSummarizator implements Summarizator {
             chunkSummaries = list;
         } while (chatModel.getTokenizer().estimate(chunkSummaries.stream().map(ChatMessage::userMessage).toList()) > chatModel.getContextWindowSize() - chatModel.getTokenizer().estimate(
                 ChatMessage.Role.SYSTEM,
-                summarizationCombineSystemMessageTemplate.getSource()
+                summarizationCombineSystemMessageTemplate
         ));
 
         if (chunkSummaries.size() == 1) {
@@ -92,7 +90,7 @@ public class ChunkedSummarizator implements Summarizator {
             return chunkSummaries.getFirst();
         }
 
-        String systemMessage = summarizationCombineSystemMessageTemplate.render();
+        String systemMessage = AiTemplateRenderer.renderSummarizationCombineSystemMessage(summarizationCombineSystemMessageTemplate);
 
         if (Thread.currentThread().isInterrupted()) {
             throw new InterruptedException();
