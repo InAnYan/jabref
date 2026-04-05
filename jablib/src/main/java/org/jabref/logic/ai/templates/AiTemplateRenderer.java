@@ -20,7 +20,7 @@ public class AiTemplateRenderer {
     }
 
     private AiTemplateRenderer() {
-        throw new UnsupportedOperationError("cannot instantiate a utility class");
+        throw new UnsupportedOperationException("cannot instantiate a utility class");
     }
 
     public static String renderChattingSystemMessage(String templateSource, List<BibEntry> entries) {
