@@ -61,6 +61,19 @@ class FieldEditorFXTest extends ApplicationTest {
     }
 
     @Test
+    void openingBraceWrapsSelectedTextWithSpaces() {
+        interact(() -> {
+            textField.setText("hello  world ");
+            textField.selectRange(6, 13);
+            textField.fireEvent(new KeyEvent(
+                    textField, textField, KeyEvent.KEY_TYPED, "{", "{", KeyCode.UNDEFINED,
+                    false, false, false, false));
+        });
+
+        assertEquals("hello { world }", textField.getText());
+    }
+
+    @Test
     void openingBraceWithoutSelectionInsertsNormally() {
         interact(() -> {
             textField.setText("hello");
