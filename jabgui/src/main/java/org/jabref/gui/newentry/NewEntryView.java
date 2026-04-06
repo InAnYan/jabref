@@ -37,7 +37,6 @@ import org.jabref.gui.util.ControlHelper;
 import org.jabref.gui.util.IconValidationDecorator;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.gui.util.ViewModelListCellFactory;
-import org.jabref.logic.ai.AiService;
 import org.jabref.logic.importer.IdBasedFetcher;
 import org.jabref.logic.importer.WebFetcher;
 import org.jabref.logic.importer.fetcher.ArXivFetcher;
@@ -89,7 +88,6 @@ public class NewEntryView extends BaseDialog<BibEntry> {
     private final DialogService dialogService;
     @Inject private StateManager stateManager;
     @Inject private TaskExecutor taskExecutor;
-    @Inject private AiService aiService;
     @Inject private FileUpdateMonitor fileUpdateMonitor;
 
     private final ControlsFxVisualizer visualizer;
@@ -205,7 +203,7 @@ public class NewEntryView extends BaseDialog<BibEntry> {
 
     @FXML
     public void initialize() {
-        viewModel = new NewEntryViewModel(guiPreferences, libraryTab, dialogService, stateManager, (UiTaskExecutor) taskExecutor, aiService, fileUpdateMonitor);
+        viewModel = new NewEntryViewModel(guiPreferences, libraryTab, dialogService, stateManager, (UiTaskExecutor) taskExecutor, fileUpdateMonitor);
 
         visualizer.setDecoration(new IconValidationDecorator());
 

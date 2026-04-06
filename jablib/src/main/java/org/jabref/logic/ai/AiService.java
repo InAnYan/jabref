@@ -37,11 +37,7 @@ public class AiService implements AutoCloseable {
     ) {
         this.templatesFeature = new TemplatesAiFeature();
 
-        this.embeddingFeature = new EmbeddingAiFeature(
-                aiPreferences,
-                notificationService,
-                taskExecutor
-        );
+        this.embeddingFeature = new EmbeddingAiFeature();
 
         this.chattingFeature = new ChattingAiFeature(
                 aiPreferences,
@@ -52,21 +48,14 @@ public class AiService implements AutoCloseable {
                 aiPreferences,
                 filePreferences,
                 taskExecutor,
-                embeddingFeature.getCurrentEmbeddingModel(),
                 notificationService
         );
 
-        this.ragFeature = new RagAiFeature(
-                aiPreferences,
-                filePreferences,
-                embeddingFeature.getCurrentEmbeddingModel(),
-                ingestionFeature.getEmbeddingsStore()
-        );
+        this.ragFeature = new RagAiFeature();
 
         this.summarizationFeature = new SummarizationAiFeature(
                 aiPreferences,
                 filePreferences,
-                chattingFeature.getCurrentChatModel(),
                 taskExecutor,
                 notificationService
         );

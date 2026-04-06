@@ -28,9 +28,16 @@ import org.jabref.gui.ai.chat.AiGroupChatWindow;
 import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.BaseDialog;
+import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.CustomLocalDragboard;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.chatting.ChatModelFactory;
+import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
+import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
+import org.jabref.logic.ai.ingestion.DocumentSplitterFactory;
+import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral.GenerateEmbeddingsForSeveralTaskRequest;
+import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
 import org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral.GenerateSummaryForSeveralTaskRequest;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
@@ -67,6 +74,8 @@ public class GroupTreeViewModel extends AbstractViewModel {
     private final CustomLocalDragboard localDragboard;
     private final ObjectProperty<Predicate<GroupNodeViewModel>> filterPredicate = new SimpleObjectProperty<>();
     private final StringProperty filterText = new SimpleStringProperty();
+    private AsyncEmbeddingModel embeddingModel;
+    private DocumentSplitter documentSplitter;
     private final Comparator<GroupTreeNode> compAlphabetIgnoreCase = (GroupTreeNode v1, GroupTreeNode v2) -> v1
             .getName()
             .compareToIgnoreCase(v2.getName());
@@ -101,12 +110,40 @@ public class GroupTreeViewModel extends AbstractViewModel {
         this.taskExecutor = taskExecutor;
         this.localDragboard = localDragboard;
 
+        // Rebuild embedding model when relevant AI preferences change (also calls immediately)
+        BindingsHelper.subscribeToChanges(
+                this::rebuildEmbeddingModel,
+                preferences.getAiPreferences().enableAiProperty(),
+                preferences.getAiPreferences().customizeExpertSettingsProperty(),
+                preferences.getAiPreferences().embeddingModelProperty()
+        );
+
+        // Rebuild document splitter when relevant AI preferences change (also calls immediately)
+        BindingsHelper.subscribeToChanges(
+                this::rebuildDocumentSplitter,
+                preferences.getAiPreferences().customizeExpertSettingsProperty(),
+                preferences.getAiPreferences().documentSplitterKindProperty(),
+                preferences.getAiPreferences().documentSplitterChunkSizeProperty(),
+                preferences.getAiPreferences().documentSplitterOverlapSizeProperty()
+        );
+
         // Register listener
         EasyBind.subscribe(stateManager.activeDatabaseProperty(), this::onActiveDatabaseChanged);
         EasyBind.subscribe(selectedGroups, this::onSelectedGroupChanged);
 
         // Set-up bindings
         filterPredicate.bind(EasyBind.map(filterText, text -> group -> group.isMatchedBy(text)));
+    }
+
+    private void rebuildEmbeddingModel() {
+        if (embeddingModel != null) {
+            embeddingModel.close();
+        }
+        embeddingModel = EmbeddingModelFactory.create(preferences.getAiPreferences(), dialogService, taskExecutor);
+    }
+
+    private void rebuildDocumentSplitter() {
+        documentSplitter = DocumentSplitterFactory.create(preferences.getAiPreferences());
     }
 
     private void refresh() {
@@ -505,20 +542,18 @@ public class GroupTreeViewModel extends AbstractViewModel {
                 .flatMap(entry -> entry.getFiles().stream())
                 .toList();
 
-        aiService
-                .getIngestionFeature()
-                .getIngestionTaskAggregator()
-                .start(new GenerateEmbeddingsForSeveralTaskRequest(
-                        preferences.getFilePreferences(),
-                        aiService.getIngestionFeature().getIngestedDocumentsRepository(),
-                        aiService.getIngestionFeature().getEmbeddingsStore(),
-                        aiService.getEmbeddingFeature().getCurrentEmbeddingModel(),
-                        aiService.getIngestionFeature().getCurrentDocumentSplitter(),
-                        currentDatabase.get(),
-                        group.nameProperty(),
-                        linkedFiles,
-                        taskExecutor
-                ));
+        aiService.getIngestionFeature().getIngestionTaskAggregator()
+                 .start(new GenerateEmbeddingsForSeveralTaskRequest(
+                         preferences.getFilePreferences(),
+                         aiService.getIngestionFeature().getIngestedDocumentsRepository(),
+                         aiService.getIngestionFeature().getEmbeddingsStore(),
+                         embeddingModel,
+                         documentSplitter,
+                         currentDatabase.get(),
+                         group.nameProperty(),
+                         linkedFiles,
+                         taskExecutor
+                 ));
 
         dialogService.notify(Localization.lang("Ingestion started for group \"%0\".", group.getName()));
     }
@@ -541,9 +576,9 @@ public class GroupTreeViewModel extends AbstractViewModel {
                         preferences.getFilePreferences(),
                         aiService.getSummarizationFeature().getTaskAggregator(),
                         taskExecutor,
-                        aiService.getChattingFeature().getCurrentChatModel(),
+                        ChatModelFactory.create(preferences.getAiPreferences()),
                         aiService.getSummarizationFeature().getSummariesRepository(),
-                        aiService.getSummarizationFeature().getCurrentSummarizator(),
+                        SummarizatorFactory.create(preferences.getAiPreferences()),
                         currentDatabase.get(),
                         group.nameProperty(),
                         entries,

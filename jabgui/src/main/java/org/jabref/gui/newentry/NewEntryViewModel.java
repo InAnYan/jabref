@@ -24,7 +24,6 @@ import org.jabref.gui.StateManager;
 import org.jabref.gui.externalfiles.ImportHandler;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.UiTaskExecutor;
-import org.jabref.logic.ai.AiService;
 import org.jabref.logic.importer.CompositeIdFetcher;
 import org.jabref.logic.importer.FetcherClientException;
 import org.jabref.logic.importer.FetcherException;
@@ -61,7 +60,6 @@ public class NewEntryViewModel {
     private final DialogService dialogService;
     private final StateManager stateManager;
     private final UiTaskExecutor taskExecutor;
-    private final AiService aiService;
     private final FileUpdateMonitor fileUpdateMonitor;
 
     private final BooleanProperty executing;
@@ -92,14 +90,12 @@ public class NewEntryViewModel {
                              DialogService dialogService,
                              StateManager stateManager,
                              UiTaskExecutor taskExecutor,
-                             AiService aiService,
                              FileUpdateMonitor fileUpdateMonitor) {
         this.preferences = preferences;
         this.libraryTab = libraryTab;
         this.dialogService = dialogService;
         this.stateManager = stateManager;
         this.taskExecutor = taskExecutor;
-        this.aiService = aiService;
         this.fileUpdateMonitor = fileUpdateMonitor;
 
         executing = new SimpleBooleanProperty(false);
@@ -353,7 +349,7 @@ public class NewEntryViewModel {
                 return Optional.empty();
             }
 
-            final PlainCitationParser parser = PlainCitationParserFactory.getPlainCitationParser(parserChoice, preferences.getCitationKeyPatternPreferences(), preferences.getGrobidPreferences(), preferences.getImportFormatPreferences(), preferences.getAiPreferences(), aiService);
+            final PlainCitationParser parser = PlainCitationParserFactory.getPlainCitationParser(parserChoice, preferences.getCitationKeyPatternPreferences(), preferences.getGrobidPreferences(), preferences.getImportFormatPreferences(), preferences.getAiPreferences());
 
             final List<BibEntry> entries = parser.parseMultiplePlainCitations(text);
 

@@ -14,20 +14,24 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import org.jabref.gui.AbstractViewModel;
+import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.FilePreferences;
+import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
+import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.ai.rag.util.AnswerEngineFactory;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
+import org.jabref.logic.util.NotificationService;
+import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.entry.LinkedFile;
 
 import dev.langchain4j.data.segment.TextSegment;
-import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 
 public class AiChatStatusViewModel extends AbstractViewModel {
@@ -53,6 +57,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
             };
         }
     }
+
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final Map<GenerateEmbeddingsTask, ChangeListener<? super TrackedBackgroundTask.Status>> taskListeners = new HashMap<>();
     private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -63,20 +68,25 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     private final ObjectProperty<AnswerEngineKind> selectedAnswerEngineKind = new SimpleObjectProperty<>();
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
     private final AiPreferences aiPreferences;
-    private final AnswerEngineFactory answerEngineFactory;
+    private final FilePreferences filePreferences;
+    private final NotificationService notificationService;
+    private final TaskExecutor taskExecutor;
+    private final EmbeddingStore<TextSegment> embeddingStore;
+
+    private AsyncEmbeddingModel embeddingModel;
+
     public AiChatStatusViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            EmbeddingModel embeddingModel,
+            NotificationService notificationService,
+            TaskExecutor taskExecutor,
             EmbeddingStore<TextSegment> embeddingStore
     ) {
         this.aiPreferences = aiPreferences;
-        this.answerEngineFactory = new AnswerEngineFactory(
-                aiPreferences,
-                filePreferences,
-                embeddingModel,
-                embeddingStore
-        );
+        this.filePreferences = filePreferences;
+        this.notificationService = notificationService;
+        this.taskExecutor = taskExecutor;
+        this.embeddingStore = embeddingStore;
 
         setupListeners();
         setupValues();
@@ -85,6 +95,25 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     private void setupListeners() {
         ListenersHelper.onChangeNonNull(selectedAnswerEngineKind, this::updateAnswerEngine);
         ListenersHelper.onListContentsChange(generateEmbeddingsTasks, this::wireTask, this::unwireTask);
+
+        // Rebuild embedding model when relevant preferences change (also calls immediately)
+        BindingsHelper.subscribeToChanges(
+                this::rebuildEmbeddingModel,
+                aiPreferences.enableAiProperty(),
+                aiPreferences.customizeExpertSettingsProperty(),
+                aiPreferences.embeddingModelProperty()
+        );
+    }
+
+    private void rebuildEmbeddingModel() {
+        if (embeddingModel != null) {
+            embeddingModel.close();
+        }
+        embeddingModel = EmbeddingModelFactory.create(aiPreferences, notificationService, taskExecutor);
+        // Rebuild the answer engine with the new embedding model
+        if (selectedAnswerEngineKind.get() != null) {
+            updateAnswerEngine(selectedAnswerEngineKind.get());
+        }
     }
 
     private void setupValues() {
@@ -92,8 +121,9 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     }
 
     private void wireTask(GenerateEmbeddingsTask task) {
-        if (taskListeners.containsKey(task))
+        if (taskListeners.containsKey(task)) {
             return;
+        }
 
         UiTaskExecutor.runInJavaFXThread(() -> getOrCreateRow(task.getLinkedFile()));
 
@@ -150,7 +180,14 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     }
 
     private void updateAnswerEngine(AnswerEngineKind kind) {
-        AnswerEngine engine = answerEngineFactory.create(kind);
+        AnswerEngine engine = AnswerEngineFactory.create(
+                kind,
+                filePreferences,
+                embeddingModel,
+                embeddingStore,
+                aiPreferences.getRagMinScore(),
+                aiPreferences.getRagMaxResultsCount()
+        );
         answerEngine.set(engine);
     }
 

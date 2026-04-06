@@ -2,11 +2,10 @@ package org.jabref.logic.importer.fileformat.pdf;
 
 import java.nio.file.Path;
 
-import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.chatting.ChatModelFactory;
 import org.jabref.logic.importer.ParserResult;
 import org.jabref.logic.importer.plaincitation.LlmPlainCitationParser;
 import org.jabref.logic.preferences.JabRefCliPreferences;
-import org.jabref.logic.util.CurrentThreadTaskExecutor;
 import org.jabref.logic.util.NotificationService;
 
 /// Wrapper around the different options to extract citations from a PDF
@@ -23,23 +22,14 @@ public class CitationsFromPdf {
         PdfGrobidImporter importer = new PdfGrobidImporter(preferences.getImportFormatPreferences());
         return importer.importDatabase(path);
     }
-
-    /// As [NotificationService], one can pass `LOGGER::info`
+    
     public static ParserResult extractCitationsUsingLLM(JabRefCliPreferences preferences, NotificationService notificationService, Path path) {
-        try (AiService aiService = new AiService(
-                preferences.getAiPreferences(),
-                preferences.getFilePreferences(),
-                notificationService,
-                new CurrentThreadTaskExecutor())) {
-            LlmPlainCitationParser importer = new LlmPlainCitationParser(
-                    preferences.getImportFormatPreferences(),
-                    preferences.getAiPreferences().getCitationParsingSystemMessageTemplate(),
-                    aiService.getChattingFeature().getCurrentChatModel()
-            );
+        LlmPlainCitationParser importer = new LlmPlainCitationParser(
+                preferences.getImportFormatPreferences(),
+                preferences.getAiPreferences().getCitationParsingSystemMessageTemplate(),
+                ChatModelFactory.create(preferences.getAiPreferences())
+        );
 
-            return importer.importDatabase(path);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return importer.importDatabase(path);
     }
 }

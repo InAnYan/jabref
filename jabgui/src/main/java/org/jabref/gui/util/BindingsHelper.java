@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.ObjectBinding;
@@ -37,6 +38,26 @@ import com.tobiasdiez.easybind.Subscription;
 public class BindingsHelper {
 
     private BindingsHelper() {
+        throw new UnsupportedOperationException("cannot instantiate a utility class");
+    }
+
+    /**
+     * Registers {@code runnable} as a change listener on every one of the given {@code observables}
+     * and also invokes it once immediately.
+     * <p>
+     * Use this to deduplicate the common pattern of:
+     * <pre>
+     *     Runnable r = this::rebuild;
+     *     obs1.addListener(_ -&gt; r.run());
+     *     obs2.addListener(_ -&gt; r.run());
+     *     r.run();
+     * </pre>
+     */
+    public static void subscribeToChanges(Runnable runnable, Observable... observables) {
+        for (Observable observable : observables) {
+            observable.addListener(_ -> runnable.run());
+        }
+        runnable.run();
     }
 
     public static Subscription includePseudoClassWhen(Node node, PseudoClass pseudoClass, ObservableValue<? extends Boolean> condition) {

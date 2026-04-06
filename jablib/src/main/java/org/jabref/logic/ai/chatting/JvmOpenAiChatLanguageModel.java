@@ -3,8 +3,6 @@ package org.jabref.logic.ai.chatting;
 import java.net.http.HttpClient;
 import java.util.List;
 
-import org.jabref.logic.ai.preferences.AiPreferences;
-
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
@@ -25,17 +23,19 @@ import org.slf4j.LoggerFactory;
 public class JvmOpenAiChatLanguageModel implements ChatModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmOpenAiChatLanguageModel.class);
 
-    private final AiPreferences aiPreferences;
+    private final String modelName;
+    private final double temperature;
 
     private final ChatClient chatClient;
 
-    public JvmOpenAiChatLanguageModel(AiPreferences aiPreferences, HttpClient httpClient) {
-        this.aiPreferences = aiPreferences;
+    public JvmOpenAiChatLanguageModel(String apiKey, String modelName, double temperature, String baseUrl, HttpClient httpClient) {
+        this.modelName = modelName;
+        this.temperature = temperature;
 
         OpenAI openAI = OpenAI
-                .newBuilder(aiPreferences.getApiKeyForAiProvider(aiPreferences.getAiProvider()))
+                .newBuilder(apiKey)
                 .httpClient(httpClient)
-                .baseUrl(aiPreferences.getSelectedApiBaseUrl())
+                .baseUrl(baseUrl)
                 .build();
 
         this.chatClient = openAI.chatClient();
@@ -61,8 +61,8 @@ public class JvmOpenAiChatLanguageModel implements ChatModel {
 
         CreateChatCompletionRequest request = CreateChatCompletionRequest
                 .newBuilder()
-                .model(aiPreferences.getSelectedChatModel())
-                .temperature(aiPreferences.getTemperature())
+                .model(modelName)
+                .temperature(temperature)
                 .n(1)
                 .messages(messages)
                 .build();

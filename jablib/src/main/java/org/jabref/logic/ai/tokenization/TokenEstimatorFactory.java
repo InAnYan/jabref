@@ -1,5 +1,6 @@
 package org.jabref.logic.ai.tokenization;
 
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.tokenization.logic.AverageTokenEstimator;
 import org.jabref.logic.ai.tokenization.logic.ByCharacterTokenEstimator;
 import org.jabref.logic.ai.tokenization.logic.ByWordsTokenEstimator;
@@ -26,5 +27,12 @@ public class TokenEstimatorFactory {
             case WORDS ->
                     new ByWordsTokenEstimator();
         };
+    }
+
+    /**
+     * Convenience overload that reads the kind from {@link AiPreferences}.
+     */
+    public static TokenEstimator create(AiPreferences aiPreferences) {
+        return create(aiPreferences.getTokenEstimatorKind());
     }
 }

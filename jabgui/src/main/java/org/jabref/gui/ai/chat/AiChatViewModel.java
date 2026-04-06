@@ -18,8 +18,12 @@ import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.ChatModel;
+import org.jabref.logic.ai.chatting.ChatModelFactory;
 import org.jabref.logic.ai.chatting.logic.AiChatLogic;
 import org.jabref.logic.ai.chatting.tasks.GenerateLlmResponseTask;
+import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
+import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
+import org.jabref.logic.ai.ingestion.DocumentSplitterFactory;
 import org.jabref.logic.ai.ingestion.IngestionTaskAggregator;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
@@ -27,6 +31,7 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddings
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTaskRequest;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
+import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatMessage;
@@ -34,7 +39,6 @@ import org.jabref.model.ai.identifiers.FullBibEntry;
 
 import com.google.common.collect.Comparators;
 import dev.langchain4j.data.segment.TextSegment;
-import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 
 public class AiChatViewModel extends AbstractViewModel {
@@ -52,17 +56,19 @@ public class AiChatViewModel extends AbstractViewModel {
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ObjectProperty<GenerateLlmResponseTask> generateLlmResponseTask = new SimpleObjectProperty<>();
 
+    private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
+    private AsyncEmbeddingModel embeddingModel;
+    private final ObjectProperty<DocumentSplitter> documentSplitter = new SimpleObjectProperty<>();
+
     private final TreeMap<List<FullBibEntry>, GenerateLlmResponseTask> tasksMap =
             new TreeMap<>(Comparators.lexicographical(Comparator.comparing(id -> id.entry().getId())));
 
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
-    private final ChatModel chatModel;
+    private final NotificationService notificationService;
     private final IngestionTaskAggregator ingestionTaskAggregator;
     private final IngestedDocumentsRepository ingestedDocumentsRepository;
-    private final EmbeddingModel embeddingModel;
     private final EmbeddingStore<TextSegment> embeddingStore;
-    private final DocumentSplitter documentSplitter;
     private final TaskExecutor taskExecutor;
 
     private final AiChatLogic aiChatLogic;
@@ -70,24 +76,20 @@ public class AiChatViewModel extends AbstractViewModel {
     public AiChatViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            ChatModel chatModel,
             String chattingSystemMessageTemplate,
             String chattingUserMessageTemplate,
             IngestionTaskAggregator ingestionTaskAggregator,
             IngestedDocumentsRepository ingestedDocumentsRepository,
-            EmbeddingModel embeddingModel,
+            NotificationService notificationService,
             EmbeddingStore<TextSegment> embeddingStore,
-            DocumentSplitter documentSplitter,
             TaskExecutor taskExecutor
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
-        this.chatModel = chatModel;
+        this.notificationService = notificationService;
         this.ingestionTaskAggregator = ingestionTaskAggregator;
         this.ingestedDocumentsRepository = ingestedDocumentsRepository;
-        this.embeddingModel = embeddingModel;
         this.embeddingStore = embeddingStore;
-        this.documentSplitter = documentSplitter;
         this.taskExecutor = taskExecutor;
 
         this.aiChatLogic = new AiChatLogic(
@@ -97,7 +99,6 @@ public class AiChatViewModel extends AbstractViewModel {
 
         setupBindings();
         setupListeners();
-        setupValues();
     }
 
     private void setupBindings() {
@@ -137,10 +138,51 @@ public class AiChatViewModel extends AbstractViewModel {
                 aiPreferences.enableAiProperty().and(entriesPresent),
                 this::changeEmbeddingTasks
         );
+
+        // Rebuild chat model when relevant preferences change (also calls immediately)
+        BindingsHelper.subscribeToChanges(
+                this::rebuildChatModel,
+                aiPreferences.enableAiProperty(),
+                aiPreferences.aiProviderProperty(),
+                aiPreferences.customizeExpertSettingsProperty(),
+                aiPreferences.temperatureProperty()
+        );
+        aiPreferences.addListenerToChatModels(this::rebuildChatModel);
+        aiPreferences.addListenerToApiBaseUrls(this::rebuildChatModel);
+        aiPreferences.setApiKeyChangeListener(this::rebuildChatModel);
+
+        // Rebuild embedding model when relevant preferences change (also calls immediately)
+        BindingsHelper.subscribeToChanges(
+                this::rebuildEmbeddingModel,
+                aiPreferences.enableAiProperty(),
+                aiPreferences.customizeExpertSettingsProperty(),
+                aiPreferences.embeddingModelProperty()
+        );
+
+        // Rebuild document splitter when relevant preferences change (also calls immediately)
+        BindingsHelper.subscribeToChanges(
+                this::rebuildDocumentSplitter,
+                aiPreferences.customizeExpertSettingsProperty(),
+                aiPreferences.documentSplitterKindProperty(),
+                aiPreferences.documentSplitterChunkSizeProperty(),
+                aiPreferences.documentSplitterOverlapSizeProperty()
+        );
     }
 
-    private void setupValues() {
-        aiChatLogic.chatModelProperty().set(chatModel);
+    private void rebuildChatModel() {
+        chatModel.set(ChatModelFactory.create(aiPreferences));
+        aiChatLogic.chatModelProperty().set(chatModel.get());
+    }
+
+    private void rebuildEmbeddingModel() {
+        if (embeddingModel != null) {
+            embeddingModel.close();
+        }
+        embeddingModel = EmbeddingModelFactory.create(aiPreferences, notificationService, taskExecutor);
+    }
+
+    private void rebuildDocumentSplitter() {
+        documentSplitter.set(DocumentSplitterFactory.create(aiPreferences));
     }
 
     private void changeEmbeddingTasks() {
@@ -156,7 +198,7 @@ public class AiChatViewModel extends AbstractViewModel {
                                             ingestedDocumentsRepository,
                                             embeddingStore,
                                             embeddingModel,
-                                            documentSplitter,
+                                            documentSplitter.get(),
                                             identifier.databaseContext(),
                                             file
                                     )

@@ -15,9 +15,11 @@ import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.ChatModel;
+import org.jabref.logic.ai.chatting.ChatModelFactory;
 import org.jabref.logic.ai.ingestion.logic.parsing.UniversalContentParser;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.SummarizationTaskAggregator;
+import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
@@ -63,8 +65,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
-    private final ChatModel defaultChatModel;
-    private final Summarizator defaultSummarizator;
     private final SummariesRepository summariesRepository;
     private final SummarizationTaskAggregator summarizationTaskAggregator;
     private final DialogService dialogService;
@@ -72,16 +72,12 @@ public class AiSummaryViewModel extends AbstractViewModel {
     public AiSummaryViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            ChatModel defaultChatModel,
-            Summarizator defaultSummarizator,
             SummariesRepository summariesRepository,
             SummarizationTaskAggregator summarizationTaskAggregator,
             DialogService dialogService
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
-        this.defaultChatModel = defaultChatModel;
-        this.defaultSummarizator = defaultSummarizator;
         this.summariesRepository = summariesRepository;
         this.summarizationTaskAggregator = summarizationTaskAggregator;
         this.dialogService = dialogService;
@@ -124,11 +120,48 @@ public class AiSummaryViewModel extends AbstractViewModel {
                 state.isEqualTo(State.READY),
                 this::processEntry
         );
+
+        // Rebuild chat model when relevant preferences change (also calls immediately)
+        BindingsHelper.subscribeToChanges(
+                this::rebuildChatModel,
+                aiPreferences.enableAiProperty(),
+                aiPreferences.aiProviderProperty(),
+                aiPreferences.customizeExpertSettingsProperty(),
+                aiPreferences.temperatureProperty()
+        );
+        aiPreferences.addListenerToChatModels(this::rebuildChatModel);
+        aiPreferences.addListenerToApiBaseUrls(this::rebuildChatModel);
+        aiPreferences.setApiKeyChangeListener(this::rebuildChatModel);
+
+        // Rebuild summarizator when relevant preferences change (also calls immediately)
+        BindingsHelper.subscribeToChanges(
+                this::rebuildSummarizator,
+                aiPreferences.summarizatorKindProperty(),
+                aiPreferences.summarizationChunkSystemMessageTemplateProperty(),
+                aiPreferences.summarizationChunkUserMessageTemplateProperty(),
+                aiPreferences.summarizationCombineSystemMessageTemplateProperty(),
+                aiPreferences.summarizationCombineUserMessageTemplateProperty(),
+                aiPreferences.summarizationFullDocumentSystemMessageTemplateProperty(),
+                aiPreferences.summarizationFullDocumentUserMessageTemplateProperty()
+        );
     }
 
+    private void rebuildChatModel() {
+        chatModel.set(ChatModelFactory.create(aiPreferences));
+    }
+
+    private void rebuildSummarizator() {
+        summarizator.set(SummarizatorFactory.create(aiPreferences));
+    }
+
+    /**
+     * Resets the chat model and summarizator to the default values from AI preferences.
+     * Called before generating a summary to ensure default models are used
+     * (as opposed to a custom summarizator set by {@link #regenerateCustom()}).
+     */
     private void setDefaultModels() {
-        chatModel.set(defaultChatModel);
-        summarizator.set(defaultSummarizator);
+        rebuildChatModel();
+        rebuildSummarizator();
     }
 
     private void clearTask() {

@@ -76,14 +76,12 @@ public class AiChatView extends StackPane {
         viewModel = new AiChatViewModel(
                 preferences.getAiPreferences(),
                 preferences.getFilePreferences(),
-                aiService.getChattingFeature().getCurrentChatModel(),
                 preferences.getAiPreferences().getChattingSystemMessageTemplate(),
                 preferences.getAiPreferences().getChattingUserMessageTemplate(),
                 aiService.getIngestionFeature().getIngestionTaskAggregator(),
                 aiService.getIngestionFeature().getIngestedDocumentsRepository(),
-                aiService.getEmbeddingFeature().getCurrentEmbeddingModel(),
+                dialogService,
                 aiService.getIngestionFeature().getEmbeddingsStore(),
-                aiService.getIngestionFeature().getCurrentDocumentSplitter(),
                 taskExecutor
         );
 

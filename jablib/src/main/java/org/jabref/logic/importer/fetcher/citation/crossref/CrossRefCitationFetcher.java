@@ -6,7 +6,6 @@ import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Optional;
 
-import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
 import org.jabref.logic.importer.FetcherException;
@@ -42,7 +41,6 @@ public class CrossRefCitationFetcher implements CitationFetcher {
     private final CitationKeyPatternPreferences citationKeyPatternPreferences;
     private final GrobidPreferences grobidPreferences;
     private final AiPreferences aiPreferences;
-    private final AiService aiService;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -53,14 +51,12 @@ public class CrossRefCitationFetcher implements CitationFetcher {
             ImportFormatPreferences importFormatPreferences,
             CitationKeyPatternPreferences citationKeyPatternPreferences,
             GrobidPreferences grobidPreferences,
-            AiPreferences aiPreferences,
-            AiService aiService) {
+            AiPreferences aiPreferences) {
         this.importerPreferences = importerPreferences;
         this.importFormatPreferences = importFormatPreferences;
         this.citationKeyPatternPreferences = citationKeyPatternPreferences;
         this.grobidPreferences = grobidPreferences;
         this.aiPreferences = aiPreferences;
-        this.aiService = aiService;
     }
 
     @Override
@@ -79,7 +75,7 @@ public class CrossRefCitationFetcher implements CitationFetcher {
             return List.of();
         }
 
-        final PlainCitationParser parser = PlainCitationParserFactory.getPlainCitationParser(importerPreferences.getDefaultPlainCitationParser(), citationKeyPatternPreferences, grobidPreferences, importFormatPreferences, aiPreferences, aiService);
+        final PlainCitationParser parser = PlainCitationParserFactory.getPlainCitationParser(importerPreferences.getDefaultPlainCitationParser(), citationKeyPatternPreferences, grobidPreferences, importFormatPreferences, aiPreferences);
 
         String url = API_URL + doi.get().asString();
         try (InputStream stream = new URLDownload(url).asInputStream()) {

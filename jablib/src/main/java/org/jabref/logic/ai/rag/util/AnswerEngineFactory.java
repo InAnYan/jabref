@@ -1,7 +1,6 @@
 package org.jabref.logic.ai.rag.util;
 
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.ai.rag.logic.EmbeddingsSearchAnswerEngine;
 import org.jabref.logic.ai.rag.logic.FullDocumentAnswerEngine;
@@ -11,26 +10,24 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 
-public class AnswerEngineFactory {
-    private final AiPreferences aiPreferences;
-    private final FilePreferences filePreferences;
-
-    private final EmbeddingModel embeddingModel;
-    private final EmbeddingStore<TextSegment> embeddingStore;
-
-    public AnswerEngineFactory(
-            AiPreferences aiPreferences,
-            FilePreferences filePreferences,
-            EmbeddingModel embeddingModel,
-            EmbeddingStore<TextSegment> embeddingStore
-    ) {
-        this.aiPreferences = aiPreferences;
-        this.filePreferences = filePreferences;
-        this.embeddingModel = embeddingModel;
-        this.embeddingStore = embeddingStore;
+/**
+ * Static factory for creating {@link AnswerEngine} instances.
+ * <p>
+ * All parameters are passed explicitly so this class carries no mutable state.
+ */
+public final class AnswerEngineFactory {
+    private AnswerEngineFactory() {
+        throw new UnsupportedOperationException("cannot instantiate a utility class");
     }
 
-    public AnswerEngine create(AnswerEngineKind kind) {
+    public static AnswerEngine create(
+            AnswerEngineKind kind,
+            FilePreferences filePreferences,
+            EmbeddingModel embeddingModel,
+            EmbeddingStore<TextSegment> embeddingStore,
+            double ragMinScore,
+            int ragMaxResultsCount
+    ) {
         return switch (kind) {
             case FULL_DOCUMENT ->
                     new FullDocumentAnswerEngine(filePreferences);
@@ -38,8 +35,8 @@ public class AnswerEngineFactory {
                     new EmbeddingsSearchAnswerEngine(
                             embeddingModel,
                             embeddingStore,
-                            aiPreferences.getRagMinScore(),
-                            aiPreferences.getRagMaxResultsCount()
+                            ragMinScore,
+                            ragMaxResultsCount
                     );
         };
     }

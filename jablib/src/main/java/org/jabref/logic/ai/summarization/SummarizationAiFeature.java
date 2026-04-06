@@ -2,10 +2,8 @@ package org.jabref.logic.ai.summarization;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiFeature;
-import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.listeners.GenerateSummaryAiDatabaseListener;
-import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.repositories.MVStoreSummariesRepository;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.util.Directories;
@@ -18,8 +16,6 @@ public class SummarizationAiFeature implements AiFeature {
 
     private final MVStoreSummariesRepository mvStoreSummariesRepository;
 
-    private final CurrentSummarizator currentSummarizator;
-
     private final SummarizationTaskAggregator summarizationTaskAggregator;
 
     private final GenerateSummaryAiDatabaseListener generateSummaryAiDatabaseListener;
@@ -27,7 +23,6 @@ public class SummarizationAiFeature implements AiFeature {
     public SummarizationAiFeature(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            ChatModel chatModel,
             TaskExecutor taskExecutor,
             NotificationService notificationService
     ) {
@@ -35,17 +30,13 @@ public class SummarizationAiFeature implements AiFeature {
                 notificationService, Directories.getAiFilesDirectory().resolve(SUMMARIES_FILE_NAME)
         );
 
-        this.currentSummarizator = new CurrentSummarizator(aiPreferences);
-
         this.summarizationTaskAggregator = new SummarizationTaskAggregator(taskExecutor);
 
         this.generateSummaryAiDatabaseListener = new GenerateSummaryAiDatabaseListener(
                 aiPreferences,
                 filePreferences,
-                chatModel,
                 mvStoreSummariesRepository,
-                summarizationTaskAggregator,
-                currentSummarizator
+                summarizationTaskAggregator
         );
     }
 
@@ -56,10 +47,6 @@ public class SummarizationAiFeature implements AiFeature {
 
     public SummarizationTaskAggregator getTaskAggregator() {
         return summarizationTaskAggregator;
-    }
-
-    public Summarizator getCurrentSummarizator() {
-        return currentSummarizator;
     }
 
     public SummariesRepository getSummariesRepository() {
