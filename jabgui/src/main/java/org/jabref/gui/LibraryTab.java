@@ -59,6 +59,8 @@ import org.jabref.gui.undo.UndoableInsertEntries;
 import org.jabref.gui.undo.UndoableRemoveEntries;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.migration.ChatHistoryMigration;
+import org.jabref.logic.ai.migration.SummariesMigration;
 import org.jabref.logic.citationstyle.CitationStyleCache;
 import org.jabref.logic.command.CommandSelectionTab;
 import org.jabref.logic.importer.FetcherClientException;
@@ -330,6 +332,7 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
 
         if (!isDummyContext) {
             ensureAiLibraryIdPresent(bibDatabaseContext);
+            migrateAiData(bibDatabaseContext);
         }
 
         aiService.setupDatabase(bibDatabaseContext);
@@ -344,6 +347,25 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
     static void ensureAiLibraryIdPresent(BibDatabaseContext bibDatabaseContext) {
         if (bibDatabaseContext.getMetaData().getAiLibraryId().isEmpty()) {
             bibDatabaseContext.getMetaData().setAiLibraryId(UUID.randomUUID().toString());
+        }
+    }
+
+    private void migrateAiData(BibDatabaseContext bibDatabaseContext) {
+        // Migrate old AI data from path-based storage to library ID-based storage
+        try {
+            ChatHistoryMigration.migrate(
+                    bibDatabaseContext,
+                    aiService.getChattingFeature().getChatHistoryRepository(),
+                    dialogService
+            );
+
+            SummariesMigration.migrate(
+                    bibDatabaseContext,
+                    aiService.getSummarizationFeature().getSummariesRepository(),
+                    dialogService
+            );
+        } catch (Exception e) {
+            LOGGER.error("Error during AI data migration", e);
         }
     }
 
