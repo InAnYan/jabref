@@ -60,7 +60,7 @@ public class AiChatStatusView extends VBox {
                 preferences.getFilePreferences(),
                 dialogService,
                 taskExecutor,
-                aiService.getIngestionFeature().getEmbeddingsStore()
+                aiService.getEmbeddingsStore()
         );
 
         setupEntriesTable();

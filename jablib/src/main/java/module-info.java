@@ -123,7 +123,6 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.ingestion.logic.documentsplitting;
     exports org.jabref.logic.ai.ingestion.logic.ingestion;
     exports org.jabref.logic.ai.ingestion.logic.parsing;
-    exports org.jabref.logic.ai.rag;
     exports org.jabref.logic.ai.summarization.tasks.generatesummary;
     exports org.jabref.logic.ai.summarization.logic;
     exports org.jabref.logic.ai.summarization.logic.summarizationalgorithms;

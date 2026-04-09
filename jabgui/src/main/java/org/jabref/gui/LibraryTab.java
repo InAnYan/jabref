@@ -355,13 +355,13 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
         try {
             ChatHistoryMigration.migrate(
                     bibDatabaseContext,
-                    aiService.getChattingFeature().getChatHistoryRepository(),
+                    aiService.getChatHistoryRepository(),
                     dialogService
             );
 
             SummariesMigration.migrate(
                     bibDatabaseContext,
-                    aiService.getSummarizationFeature().getSummariesRepository(),
+                    aiService.getSummariesRepository(),
                     dialogService
             );
         } catch (Exception e) {

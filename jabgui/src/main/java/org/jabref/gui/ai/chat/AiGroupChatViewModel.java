@@ -43,7 +43,7 @@ public class AiGroupChatViewModel extends AbstractViewModel {
     private final ChatHistoryRepository chatHistoryRepository;
 
     public AiGroupChatViewModel(AiPreferences aiPreferences, AiService aiService) {
-        this.chatHistoryRepository = aiService.getChattingFeature().getChatHistoryRepository();
+        this.chatHistoryRepository = aiService.getChatHistoryRepository();
 
         BooleanExpression databasePathPresent = BooleanExpression.booleanExpression(
                 databaseContext.map(BibDatabaseContext::getDatabasePath).map(Optional::isPresent)

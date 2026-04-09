@@ -62,9 +62,9 @@ public class AiSummaryView extends StackPane {
         viewModel = new AiSummaryViewModel(
                 preferences.getAiPreferences(),
                 preferences.getFilePreferences(),
-                aiService.getSummarizationFeature().getSummariesRepository(),
-                aiService.getSummarizationFeature().getInMemorySummaryCache(),
-                aiService.getSummarizationFeature().getTaskAggregator(),
+                aiService.getSummariesRepository(),
+                aiService.getSummaryCache(),
+                aiService.getSummarizationTaskAggregator(),
                 dialogService
         );
 

@@ -62,7 +62,6 @@ public class ClearEmbeddingsAction extends SimpleCommand {
 
         BackgroundTask.wrap(() ->
                               aiService
-                                      .getIngestionFeature()
                                       .getEmbeddingsCleaner()
                                       .clearEmbeddingsFor(linkedFiles, bibDatabaseContext, filePreferences))
                       .executeWith(taskExecutor);

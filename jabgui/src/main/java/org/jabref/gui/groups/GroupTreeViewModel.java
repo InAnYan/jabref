@@ -543,11 +543,11 @@ public class GroupTreeViewModel extends AbstractViewModel {
                 .flatMap(entry -> entry.getFiles().stream())
                 .toList();
 
-        aiService.getIngestionFeature().getIngestionTaskAggregator()
+        aiService.getIngestionTaskAggregator()
                  .start(new GenerateEmbeddingsForSeveralTaskRequest(
                          preferences.getFilePreferences(),
-                         aiService.getIngestionFeature().getIngestedDocumentsRepository(),
-                         aiService.getIngestionFeature().getEmbeddingsStore(),
+                         aiService.getIngestedDocumentsRepository(),
+                         aiService.getEmbeddingsStore(),
                          embeddingModel,
                          documentSplitter,
                          currentDatabase.get(),
@@ -573,7 +573,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
                 .toList();
 
         entries.forEach(entry ->
-                aiService.getSummarizationFeature().getTaskAggregator().start(
+                aiService.getSummarizationTaskAggregator().start(
                         new GenerateSummaryTaskRequest(
                                 preferences.getFilePreferences(),
                                 ChatModelFactory.create(preferences.getAiPreferences()),
