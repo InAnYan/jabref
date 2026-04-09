@@ -11,6 +11,11 @@ public record AiSummaryIdentifier(String libraryId, String summaryName) {
             return Optional.empty();
         }
 
+        String citationKey = entry.getCitationKey().get();
+        if (ctx.getDatabase().getNumberOfCitationKeyOccurrences(citationKey) != 1) {
+            return Optional.empty();
+        }
+
         return Optional.of(fromChecked(ctx, entry));
     }
 

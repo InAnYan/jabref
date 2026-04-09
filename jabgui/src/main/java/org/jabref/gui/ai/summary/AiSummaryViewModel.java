@@ -18,6 +18,7 @@ import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.ChatModelFactory;
 import org.jabref.logic.ai.ingestion.logic.parsing.UniversalContentParser;
 import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.logic.ai.summarization.InMemorySummaryCache;
 import org.jabref.logic.ai.summarization.SummarizationTaskAggregator;
 import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
@@ -25,10 +26,8 @@ import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
-import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.summarization.AiSummary;
-import org.jabref.model.ai.summarization.AiSummaryIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -39,8 +38,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
     public enum State {
         AI_TURNED_OFF,
         NO_DATABASE_PATH,
-        NO_CITATION_KEY,
-        WRONG_CITATION_KEY,
         NO_FILES,
         NO_SUPPORTED_FILE_TYPES,
         PROCESSING,
@@ -66,6 +63,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
     private final SummariesRepository summariesRepository;
+    private final InMemorySummaryCache inMemoryCache;
     private final SummarizationTaskAggregator summarizationTaskAggregator;
     private final DialogService dialogService;
 
@@ -73,12 +71,14 @@ public class AiSummaryViewModel extends AbstractViewModel {
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
             SummariesRepository summariesRepository,
+            InMemorySummaryCache inMemoryCache,
             SummarizationTaskAggregator summarizationTaskAggregator,
             DialogService dialogService
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
         this.summariesRepository = summariesRepository;
+        this.inMemoryCache = inMemoryCache;
         this.summarizationTaskAggregator = summarizationTaskAggregator;
         this.dialogService = dialogService;
 
@@ -91,8 +91,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
                 state,
                 State.AI_TURNED_OFF, aiPreferences.enableAiProperty().not(),
                 State.NO_DATABASE_PATH, entry.map(FullBibEntry::databaseContext).map(BibDatabaseContext::getDatabasePath).map(Optional::isEmpty),
-                State.NO_CITATION_KEY, entry.map(FullBibEntry::entry).map(BibEntry::getCitationKey).map(Optional::isEmpty),
-                State.WRONG_CITATION_KEY, entry.map(CitationKeyCheck::citationKeyIsUnique).map(isUnique -> !isUnique),
+                // NO_CITATION_KEY and WRONG_CITATION_KEY are intentionally omitted: entries without
+                // a valid citation key are still summarized; results live in InMemorySummaryCache.
                 State.NO_FILES, entry.map(FullBibEntry::entry).map(BibEntry::getFiles).map(List::isEmpty),
                 State.NO_SUPPORTED_FILE_TYPES, entry.map(FullBibEntry::entry).map(BibEntry::getFiles).map(l -> l.stream().map(f -> Path.of(f.getLink())).noneMatch(UniversalContentParser::isSupportedFileType)),
                 State.DONE, summary.isNotNull(),
@@ -194,26 +194,46 @@ public class AiSummaryViewModel extends AbstractViewModel {
         error.set(null);
     }
 
-    private void processEntry(FullBibEntry identifier) {
-        BibDatabaseContext bibDatabaseContext = identifier.databaseContext();
-        BibEntry entry = identifier.entry();
-
-        assert bibDatabaseContext.getMetaData().getAiLibraryId().isPresent();
-        assert entry.getCitationKey().isPresent();
-
-        AiSummaryIdentifier summaryIdentifier = AiSummaryIdentifier.fromChecked(bibDatabaseContext, entry);
-
-        Optional<AiSummary> summary = summariesRepository.get(summaryIdentifier);
-        if (summary.isPresent()) {
-            this.summary.set(summary.get());
-        } else {
-            Optional<GenerateSummaryTask> task = summarizationTaskAggregator.getTask(entry);
-            if (task.isPresent()) {
-                currentTask.set(task.get());
-            } else {
-                generate();
-            }
+    private void processEntry(FullBibEntry fullEntry) {
+        // 1. Check persistent storage (requires valid citation key + AI library ID).
+        Optional<AiSummary> persistedSummary = fullEntry.toAiSummaryIdentifier()
+                                                        .flatMap(summariesRepository::get);
+        if (persistedSummary.isPresent()) {
+            this.summary.set(persistedSummary.get());
+            return;
         }
+
+        // 2. Check RAM cache (works for all entries, even without a citation key).
+        Optional<AiSummary> cachedSummary = inMemoryCache.get(fullEntry.entry());
+        if (cachedSummary.isPresent()) {
+            this.summary.set(cachedSummary.get());
+            return;
+        }
+
+        // 3. Reconnect to an in-progress task without starting a duplicate.
+        Optional<GenerateSummaryTask> runningTask = summarizationTaskAggregator.getTask(fullEntry.entry());
+        if (runningTask.isPresent()) {
+            GenerateSummaryTask task = runningTask.get();
+            currentTask.set(task);
+            // Edge case: task finished in the narrow window between the aggregator lookup
+            // and the bindInternalListener attaching the status listener. Handle immediately.
+            switch (task.getStatus()) {
+                case SUCCESS -> {
+                    summary.set(task.getResult());
+                    clearTask();
+                }
+                case ERROR -> {
+                    error.set(task.getException());
+                    clearTask();
+                }
+                default -> {
+                } // PENDING / PROCESSING: taskStateListener will fire later
+            }
+            return;
+        }
+
+        // 4. Nothing found — start a new generation task.
+        generate();
     }
 
     private void regenerate(FullBibEntry identifier) {
@@ -245,40 +265,32 @@ public class AiSummaryViewModel extends AbstractViewModel {
         startSummarization(identifier);
     }
 
-    public void clearSummary(FullBibEntry identifier) {
-        if (identifier == null) {
+    public void clearSummary(FullBibEntry fullEntry) {
+        if (fullEntry == null) {
             return;
         }
 
-        Optional<String> aiLibraryId = identifier.databaseContext().getMetaData().getAiLibraryId();
-        Optional<String> citationKey = identifier.entry().getCitationKey();
+        // Always clear from RAM cache (works regardless of citation key).
+        inMemoryCache.remove(fullEntry.entry());
 
-        if (aiLibraryId.isEmpty() || citationKey.isEmpty()) {
-            LOGGER.warn("Could not clear stored summary for regeneration");
-            return;
-        }
-
-        summariesRepository.clear(AiSummaryIdentifier.fromChecked(identifier.databaseContext(), identifier.entry()));
+        // Try to clear from persistent storage (silently skipped if identifier is absent).
+        fullEntry.toAiSummaryIdentifier()
+                 .ifPresent(summariesRepository::clear);
 
         summary.set(null);
     }
 
-    private void startSummarization(FullBibEntry identifier) {
-        if (identifier == null) {
+    private void startSummarization(FullBibEntry fullEntry) {
+        if (fullEntry == null) {
             return;
         }
-
-        BibDatabaseContext bibDatabaseContext = identifier.databaseContext();
-        BibEntry entry = identifier.entry();
 
         GenerateSummaryTask task = summarizationTaskAggregator.start(
                 new GenerateSummaryTaskRequest(
                         filePreferences,
                         chatModel.get(),
-                        summariesRepository,
                         summarizator.get(),
-                        bibDatabaseContext,
-                        entry,
+                        fullEntry,
                         true
                 )
         );
@@ -287,18 +299,22 @@ public class AiSummaryViewModel extends AbstractViewModel {
     }
 
     private void updateByTaskState(TrackedBackgroundTask.Status value) {
-        if (currentTask.get() == null) {
+        // Capture task reference now (on background thread) before the FX-thread lambda runs,
+        // as clearTask() may null it in the interim.
+        GenerateSummaryTask task = currentTask.get();
+        if (task == null) {
             return;
         }
 
         UiTaskExecutor.runInJavaFXThread(() -> {
             switch (value) {
                 case TrackedBackgroundTask.Status.ERROR -> {
-                    error.set(currentTask.get().getException());
+                    error.set(task.getException());
+                    clearTask(); // detach listener, free the reference
                 }
-
                 case TrackedBackgroundTask.Status.SUCCESS -> {
-                    summary.set(currentTask.get().getResult());
+                    summary.set(task.getResult());
+                    clearTask(); // detach listener, free the reference
                 }
             }
         });

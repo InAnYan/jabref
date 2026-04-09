@@ -60,6 +60,7 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.chatting;
     exports org.jabref.logic.ai.util;
     exports org.jabref.logic.ai.summarization;
+    exports org.jabref.logic.ai.summarization.repositories;
     exports org.jabref.logic.layout.format;
     exports org.jabref.logic.auxparser;
     exports org.jabref.logic.cleanup;
@@ -124,8 +125,6 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.ingestion.logic.parsing;
     exports org.jabref.logic.ai.rag;
     exports org.jabref.logic.ai.summarization.tasks.generatesummary;
-    exports org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral;
-    exports org.jabref.logic.ai.summarization.repositories;
     exports org.jabref.logic.ai.summarization.logic;
     exports org.jabref.logic.ai.summarization.logic.summarizationalgorithms;
     exports org.jabref.logic.ai.ingestion.tasks;

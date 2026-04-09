@@ -1,6 +1,6 @@
 package org.jabref.logic.ai.summarization.tasks.generatesummary;
 
-import org.jabref.logic.ai.summarization.logic.PersistentBibEntrySummarizator;
+import org.jabref.logic.ai.summarization.logic.BibEntrySummarizator;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.summarization.AiSummary;
@@ -13,15 +13,14 @@ public class GenerateSummaryTask extends TrackedBackgroundTask<AiSummary> {
 
     private final GenerateSummaryTaskRequest request;
     private final String citationKey; // Useful for logging.
-    private final PersistentBibEntrySummarizator persistentBibEntrySummarizator;
+    private final BibEntrySummarizator bibEntrySummarizator;
 
     public GenerateSummaryTask(GenerateSummaryTaskRequest request) {
         this.request = request;
-        this.citationKey = request.entry().getCitationKey().orElse("<no citation key>");
+        this.citationKey = request.fullEntry().entry().getCitationKey().orElse("<no citation key>");
 
-        this.persistentBibEntrySummarizator = new PersistentBibEntrySummarizator(
+        this.bibEntrySummarizator = new BibEntrySummarizator(
                 request.filePreferences(),
-                request.summariesRepository(),
                 request.summarizator()
         );
 
@@ -37,11 +36,10 @@ public class GenerateSummaryTask extends TrackedBackgroundTask<AiSummary> {
     public AiSummary perform() throws InterruptedException {
         LOGGER.debug("Starting summarization task for entry {}", citationKey);
 
-        AiSummary aiSummary = persistentBibEntrySummarizator.summarize(
+        AiSummary aiSummary = bibEntrySummarizator.summarize(
                 request.chatModel(),
-                request.bibDatabaseContext(),
-                request.entry(),
-                request.regenerate()
+                request.fullEntry().databaseContext(),
+                request.fullEntry().entry()
         );
 
         LOGGER.debug("Finished summarization task for entry {}", citationKey);

@@ -4,10 +4,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.jabref.model.ai.summarization.AiSummaryIdentifier;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
 public record FullBibEntry(BibDatabaseContext databaseContext, BibEntry entry) {
+    /**
+     * Creates an {@link AiSummaryIdentifier} for this entry if it has both a valid AI library ID
+     * and a present, unique citation key.
+     *
+     * @return {@link Optional#empty()} if the preconditions are not met
+     */
+    public Optional<AiSummaryIdentifier> toAiSummaryIdentifier() {
+        return AiSummaryIdentifier.from(databaseContext, entry);
+    }
+
     public static Stream<FullBibEntry> fromSeveral(
             BibDatabaseContext databaseContext,
             Stream<BibEntry> entries

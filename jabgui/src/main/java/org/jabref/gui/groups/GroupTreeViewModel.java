@@ -38,9 +38,10 @@ import org.jabref.logic.ai.ingestion.DocumentSplitterFactory;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral.GenerateEmbeddingsForSeveralTaskRequest;
 import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
-import org.jabref.logic.ai.summarization.tasks.generatesummaryforseveral.GenerateSummaryForSeveralTaskRequest;
+import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.identifiers.ResolvedGroup;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
@@ -571,18 +572,15 @@ public class GroupTreeViewModel extends AbstractViewModel {
                 .filter(group::isMatch)
                 .toList();
 
-        aiService.getSummarizationFeature().getTaskAggregator().start(
-                new GenerateSummaryForSeveralTaskRequest(
-                        preferences.getFilePreferences(),
-                        aiService.getSummarizationFeature().getTaskAggregator(),
-                        taskExecutor,
-                        ChatModelFactory.create(preferences.getAiPreferences()),
-                        aiService.getSummarizationFeature().getSummariesRepository(),
-                        SummarizatorFactory.create(preferences.getAiPreferences()),
-                        currentDatabase.get(),
-                        group.nameProperty(),
-                        entries,
-                        false
+        entries.forEach(entry ->
+                aiService.getSummarizationFeature().getTaskAggregator().start(
+                        new GenerateSummaryTaskRequest(
+                                preferences.getFilePreferences(),
+                                ChatModelFactory.create(preferences.getAiPreferences()),
+                                SummarizatorFactory.create(preferences.getAiPreferences()),
+                                new FullBibEntry(currentDatabase.get(), entry),
+                                false
+                        )
                 )
         );
 

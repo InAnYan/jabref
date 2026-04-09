@@ -27,8 +27,6 @@ public class AiSummaryView extends StackPane {
     @FXML private ErrorStatusPaneView errorPane;
 
     @FXML private SimpleStatusPaneView noDatabasePathPane;
-    @FXML private SimpleStatusPaneView noCitationKeyPane;
-    @FXML private SimpleStatusPaneView wrongCitationKeyPane;
     @FXML private SimpleStatusPaneView noFilesPane;
     @FXML private SimpleStatusPaneView noSupportedFileTypesPane;
 
@@ -65,6 +63,7 @@ public class AiSummaryView extends StackPane {
                 preferences.getAiPreferences(),
                 preferences.getFilePreferences(),
                 aiService.getSummarizationFeature().getSummariesRepository(),
+                aiService.getSummarizationFeature().getInMemorySummaryCache(),
                 aiService.getSummarizationFeature().getTaskAggregator(),
                 dialogService
         );
@@ -85,8 +84,6 @@ public class AiSummaryView extends StackPane {
         processingPane.managedProperty().bind(processingPane.visibleProperty());
         errorPane.managedProperty().bind(errorPane.visibleProperty());
         noDatabasePathPane.managedProperty().bind(noDatabasePathPane.visibleProperty());
-        noCitationKeyPane.managedProperty().bind(noCitationKeyPane.visibleProperty());
-        wrongCitationKeyPane.managedProperty().bind(wrongCitationKeyPane.visibleProperty());
         noFilesPane.managedProperty().bind(noFilesPane.visibleProperty());
         noSupportedFileTypesPane.managedProperty().bind(noSupportedFileTypesPane.visibleProperty());
         summaryShowing.managedProperty().bind(summaryShowing.visibleProperty());
@@ -95,8 +92,6 @@ public class AiSummaryView extends StackPane {
         processingPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.PROCESSING));
         errorPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.ERROR_WHILE_GENERATING));
         noDatabasePathPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.NO_DATABASE_PATH));
-        noCitationKeyPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.NO_CITATION_KEY));
-        wrongCitationKeyPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.WRONG_CITATION_KEY));
         noFilesPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.NO_FILES));
         noSupportedFileTypesPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.NO_SUPPORTED_FILE_TYPES));
         summaryShowing.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.DONE));

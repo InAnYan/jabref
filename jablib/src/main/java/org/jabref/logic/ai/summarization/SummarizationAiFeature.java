@@ -16,6 +16,8 @@ public class SummarizationAiFeature implements AiFeature {
 
     private final MVStoreSummariesRepository mvStoreSummariesRepository;
 
+    private final InMemorySummaryCache inMemorySummaryCache;
+
     private final SummarizationTaskAggregator summarizationTaskAggregator;
 
     private final GenerateSummaryAiDatabaseListener generateSummaryAiDatabaseListener;
@@ -30,7 +32,9 @@ public class SummarizationAiFeature implements AiFeature {
                 notificationService, Directories.getAiFilesDirectory().resolve(SUMMARIES_FILE_NAME)
         );
 
-        this.summarizationTaskAggregator = new SummarizationTaskAggregator(taskExecutor);
+        this.inMemorySummaryCache = new InMemorySummaryCache(mvStoreSummariesRepository);
+
+        this.summarizationTaskAggregator = new SummarizationTaskAggregator(taskExecutor, inMemorySummaryCache);
 
         this.generateSummaryAiDatabaseListener = new GenerateSummaryAiDatabaseListener(
                 aiPreferences,
@@ -49,12 +53,18 @@ public class SummarizationAiFeature implements AiFeature {
         return summarizationTaskAggregator;
     }
 
+    public InMemorySummaryCache getInMemorySummaryCache() {
+        return inMemorySummaryCache;
+    }
+
     public SummariesRepository getSummariesRepository() {
         return mvStoreSummariesRepository;
     }
 
     @Override
     public void close() throws Exception {
+        // Flush RAM cache before closing the persistent store so valid summaries survive restart.
+        inMemorySummaryCache.close();
         generateSummaryAiDatabaseListener.close();
         mvStoreSummariesRepository.close();
     }

@@ -382,6 +382,41 @@ public class BindingsHelper {
         target.bind(binding);
     }
 
+    public static <E extends Enum<E>> void bindEnum(
+            Property<E> target,
+            E val1, ObservableValue<Boolean> cond1,
+            E val2, ObservableValue<Boolean> cond2,
+            E val3, ObservableValue<Boolean> cond3,
+            E val4, ObservableValue<Boolean> cond4,
+            E val5, ObservableValue<Boolean> cond5,
+            E val6, ObservableValue<Boolean> cond6,
+            E val7, ObservableValue<Boolean> cond7,
+            E val8, ObservableValue<Boolean> cond8,
+            E otherwise
+    ) {
+        ObjectBinding<E> binding = Bindings.createObjectBinding(() -> {
+            if (Boolean.TRUE.equals(cond1.getValue()))
+                return val1;
+            if (Boolean.TRUE.equals(cond2.getValue()))
+                return val2;
+            if (Boolean.TRUE.equals(cond3.getValue()))
+                return val3;
+            if (Boolean.TRUE.equals(cond4.getValue()))
+                return val4;
+            if (Boolean.TRUE.equals(cond5.getValue()))
+                return val5;
+            if (Boolean.TRUE.equals(cond6.getValue()))
+                return val6;
+            if (Boolean.TRUE.equals(cond7.getValue()))
+                return val7;
+            if (Boolean.TRUE.equals(cond8.getValue()))
+                return val8;
+            return otherwise;
+        }, cond1, cond2, cond3, cond4, cond5, cond6, cond7, cond8);
+
+        target.bind(binding);
+    }
+
     public static <T, V, R extends ObservableValue<V>> void bindInternalListener(
             ObservableValue<T> parentProperty,
             Function<T, R> propertyExtractor,

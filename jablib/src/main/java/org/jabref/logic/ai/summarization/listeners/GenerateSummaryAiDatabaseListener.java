@@ -11,6 +11,7 @@ import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summariza
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
 import org.jabref.logic.util.ObservablesHelper;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.database.event.EntriesAddedEvent;
 import org.jabref.model.entry.event.FieldChangedEvent;
@@ -102,10 +103,8 @@ public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
                     summarizationTaskAggregator.start(new GenerateSummaryTaskRequest(
                             filePreferences,
                             chatModel,
-                            summariesRepository,
                             summarizator,
-                            context,
-                            entry,
+                            new FullBibEntry(context, entry),
                             false
                     ));
                 }
@@ -118,10 +117,8 @@ public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
                 summarizationTaskAggregator.start(new GenerateSummaryTaskRequest(
                         filePreferences,
                         chatModel,
-                        summariesRepository,
                         summarizator,
-                        context,
-                        e.getBibEntry(),
+                        new FullBibEntry(context, e.getBibEntry()),
                         false
                 ));
             }

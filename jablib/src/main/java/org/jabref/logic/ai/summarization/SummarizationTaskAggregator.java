@@ -1,0 +1,78 @@
+package org.jabref.logic.ai.summarization;
+
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.TreeMap;
+
+import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
+import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
+import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.entry.BibEntry;
+
+/**
+ * Deduplicates summarization tasks across the application lifetime.
+ *
+ * <p>Exactly one {@link GenerateSummaryTask} is created per {@link BibEntry} object reference
+ * ({@link BibEntry#getId()} is the tree key). A second call for the same entry while a task is
+ * still running returns the existing task — no duplicate generation.
+ *
+ * <p>When a task completes successfully, the result is written to the {@link InMemorySummaryCache}
+ * so that callers who were not listening at that moment can still retrieve it. The task is then
+ * removed from the internal map.
+ *
+ * <p>All public methods are {@code synchronized} to make them safe for concurrent access from
+ * both the JavaFX thread and background task threads.
+ */
+public class SummarizationTaskAggregator {
+
+    private final TaskExecutor taskExecutor;
+    private final InMemorySummaryCache inMemoryCache;
+
+    private final TreeMap<BibEntry, GenerateSummaryTask> tasks =
+            new TreeMap<>(Comparator.comparing(BibEntry::getId));
+
+    public SummarizationTaskAggregator(TaskExecutor taskExecutor, InMemorySummaryCache inMemoryCache) {
+        this.taskExecutor = taskExecutor;
+        this.inMemoryCache = inMemoryCache;
+    }
+
+    /**
+     * Starts a {@link GenerateSummaryTask} for the entry in {@code request}, or returns the
+     * already-running task if one exists for that entry.
+     *
+     * <p>{@code computeIfAbsent} is the deduplication mechanism — only one task per entry at a time.
+     *
+     * <p><b>Important:</b> if you attach a status listener to the returned task, also check
+     * {@link org.jabref.logic.ai.util.TrackedBackgroundTask#getStatus()} immediately after
+     * attaching, in case the task already finished before the listener was registered.
+     */
+    public synchronized GenerateSummaryTask start(GenerateSummaryTaskRequest request) {
+        return tasks.computeIfAbsent(request.fullEntry().entry(), _ -> {
+            GenerateSummaryTask task = new GenerateSummaryTask(request);
+
+            // Remove from map when the task finishes (success or failure).
+            // Runs on the JavaFX thread via BackgroundTask.getOnSuccess/getOnException chaining.
+            task.onFinished(() -> tasks.remove(request.fullEntry().entry()));
+
+            // Write result to RAM cache on success (after onFinished removes from map).
+            // This ensures a view that re-binds to this entry after the task finished can still
+            // retrieve the result via InMemorySummaryCache, even without a citation key.
+            task.onSuccess(result -> {
+                if (result != null) {
+                    inMemoryCache.put(request.fullEntry(), result);
+                }
+            });
+
+            taskExecutor.execute(task);
+            return task;
+        });
+    }
+
+    /**
+     * Returns the currently running {@link GenerateSummaryTask} for {@code entry}, or
+     * {@link Optional#empty()} if no task is active for that entry.
+     */
+    public synchronized Optional<GenerateSummaryTask> getTask(BibEntry entry) {
+        return Optional.ofNullable(tasks.get(entry));
+    }
+}
