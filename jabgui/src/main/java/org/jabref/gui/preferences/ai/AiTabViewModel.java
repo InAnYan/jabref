@@ -88,6 +88,10 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     private final StringProperty summarizationFullDocumentSystemMessageTemplate = new SimpleStringProperty();
     private final StringProperty summarizationFullDocumentUserMessageTemplate = new SimpleStringProperty();
 
+    private final BooleanProperty generateFollowUpQuestions = new SimpleBooleanProperty();
+    private final IntegerProperty followUpQuestionsCount = new SimpleIntegerProperty();
+    private final StringProperty followUpQuestionsTemplate = new SimpleStringProperty();
+
     private final StringProperty temperature = new SimpleStringProperty();
     private final IntegerProperty contextWindowSize = new SimpleIntegerProperty();
     private final IntegerProperty documentSplitterChunkSize = new SimpleIntegerProperty();
@@ -332,6 +336,10 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         summarizationFullDocumentSystemMessageTemplate.set(aiPreferences.getSummarizationFullDocumentSystemMessageTemplate());
         summarizationFullDocumentUserMessageTemplate.set(aiPreferences.getSummarizationFullDocumentUserMessageTemplate());
 
+        generateFollowUpQuestions.set(aiPreferences.getGenerateFollowUpQuestions());
+        followUpQuestionsCount.set(aiPreferences.getFollowUpQuestionsCount());
+        followUpQuestionsTemplate.set(aiPreferences.getFollowUpQuestionsTemplate());
+
         temperature.setValue(LocalizedNumbers.doubleToString(aiPreferences.getTemperature()));
         contextWindowSize.setValue(aiPreferences.getContextWindowSize());
         documentSplitterChunkSize.setValue(aiPreferences.getDocumentSplitterChunkSize());
@@ -380,6 +388,10 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         aiPreferences.setSummarizationFullDocumentSystemMessageTemplate(summarizationFullDocumentSystemMessageTemplate.get());
         aiPreferences.setSummarizationFullDocumentUserMessageTemplate(summarizationFullDocumentUserMessageTemplate.get());
 
+        aiPreferences.setGenerateFollowUpQuestions(generateFollowUpQuestions.get());
+        aiPreferences.setFollowUpQuestionsCount(followUpQuestionsCount.get());
+        aiPreferences.setFollowUpQuestionsTemplate(followUpQuestionsTemplate.get());
+
         // We already check the correctness of temperature and RAG minimum score in validators, so we don't need to check it here.
         aiPreferences.setTemperature(LocalizedNumbers.stringToDouble(oldLocale, temperature.get()).get());
         aiPreferences.setContextWindowSize(contextWindowSize.get());
@@ -411,6 +423,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         resetCitationParsingSystemMessageTemplate();
         resetCitationParsingUserMessageTemplate();
         resetSummarizationFullDocumentSystemMessageTemplate();
+        resetFollowUpQuestionsTemplate();
     }
 
     public void resetChattingSystemMessageTemplate() {
@@ -439,6 +452,10 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
     public void resetSummarizationFullDocumentSystemMessageTemplate() {
         summarizationFullDocumentSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationFullDocumentSystemMessageTemplate());
+    }
+
+    public void resetFollowUpQuestionsTemplate() {
+        followUpQuestionsTemplate.set(AiDefaultTemplates.getFollowUpQuestionsTemplate());
     }
 
     @Override
@@ -650,5 +667,17 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
     public ValidationStatus getRagMinScoreRangeValidationStatus() {
         return ragMinScoreRangeValidator.getValidationStatus();
+    }
+
+    public BooleanProperty generateFollowUpQuestionsProperty() {
+        return generateFollowUpQuestions;
+    }
+
+    public IntegerProperty followUpQuestionsCountProperty() {
+        return followUpQuestionsCount;
+    }
+
+    public StringProperty followUpQuestionsTemplateProperty() {
+        return followUpQuestionsTemplate;
     }
 }

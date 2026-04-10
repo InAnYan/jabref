@@ -295,6 +295,11 @@
              closable="false">
             <TextArea fx:id="citationParsingUserMessageTextArea"/>
         </Tab>
+        <Tab fx:id="followUpQuestionsTemplateTab"
+             text="%Template for follow-up questions"
+             closable="false">
+            <TextArea fx:id="followUpQuestionsTemplateTextArea"/>
+        </Tab>
     </TabPane>
 
     <HBox spacing="10" alignment="CENTER_LEFT">
@@ -329,4 +334,20 @@
               text="%Automatically generate summaries for new entries"
               HBox.hgrow="ALWAYS"
               maxWidth="Infinity"/>
+
+    <CheckBox fx:id="generateFollowUpQuestions"
+              mnemonicParsing="false"
+              text="%Generate follow-up questions after AI response"
+              HBox.hgrow="ALWAYS"
+              maxWidth="Infinity"/>
+
+    <HBox alignment="CENTER_LEFT"
+          spacing="10.0"
+          fx:id="followUpQuestionsCountBox">
+        <Label alignment="BASELINE_CENTER"
+               text="%Number of follow-up questions"/>
+        <IntegerInputField
+                fx:id="followUpQuestionsCountField"
+                HBox.hgrow="ALWAYS"/>
+    </HBox>
 </fx:root>

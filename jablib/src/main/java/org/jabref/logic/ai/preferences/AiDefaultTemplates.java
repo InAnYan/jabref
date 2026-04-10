@@ -43,6 +43,19 @@ public class AiDefaultTemplates {
     private static final String CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE = "You are a bot to convert a plain text citation to a BibTeX entry. The user you talk to understands only BibTeX code, so provide it plainly without any wrappings.";
     private static final String CITATION_PARSING_USER_MESSAGE_TEMPLATE = "Please convert this plain text citation to a BibTeX entry:\n$citation\nIn your output, please provide only BibTeX code as your message.";
 
+    private static final String FOLLOW_UP_QUESTIONS_TEMPLATE = """
+            Based on this conversation:
+            User: $userMessage
+            Assistant: $aiResponse
+
+            Generate $count short follow-up questions (maximum 10 words each) that the user might want to ask next.
+            Format your response as a numbered list:
+            1. [question]
+            2. [question]
+            3. [question]
+
+            Only provide the numbered list, nothing else.""";
+
     public static String getChattingSystemMessageTemplate() {
         return CHATTING_SYSTEM_MESSAGE_TEMPLATE;
     }
@@ -69,5 +82,9 @@ public class AiDefaultTemplates {
 
     public static String getCitationParsingUserMessageTemplate() {
         return CITATION_PARSING_USER_MESSAGE_TEMPLATE;
+    }
+
+    public static String getFollowUpQuestionsTemplate() {
+        return FOLLOW_UP_QUESTIONS_TEMPLATE;
     }
 }

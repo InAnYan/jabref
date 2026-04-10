@@ -57,6 +57,14 @@ public class AiTemplateRenderer {
         return render(templateSource, "CITATION_PARSING_SYSTEM_MESSAGE", context);
     }
 
+    public static String renderFollowUpQuestionsPrompt(String templateSource, String userMessage, String aiResponse, int count) {
+        VelocityContext context = new VelocityContext(BASE_CONTEXT);
+        context.put("userMessage", userMessage);
+        context.put("aiResponse", aiResponse);
+        context.put("count", count);
+        return render(templateSource, "FOLLOW_UP_QUESTIONS", context);
+    }
+
     private static String render(String templateSource, String logName, VelocityContext context) {
         StringWriter writer = new StringWriter();
         VELOCITY_ENGINE.evaluate(context, writer, logName, templateSource);

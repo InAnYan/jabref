@@ -12,6 +12,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import org.jabref.gui.actions.ActionFactory;
@@ -72,6 +73,11 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private Button templatesHelp;
     @FXML private Button resetCurrentTemplateButton;
     @FXML private Button resetTemplatesButton;
+    @FXML private CheckBox generateFollowUpQuestions;
+    @FXML private HBox followUpQuestionsCountBox;
+    @FXML private IntegerInputField followUpQuestionsCountField;
+    @FXML private Tab followUpQuestionsTemplateTab;
+    @FXML private TextArea followUpQuestionsTemplateTextArea;
 
     public AiTab() {
         ViewLoader.view(this)
@@ -89,7 +95,24 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         initializeExpertSettings();
         initializeValidations();
         initializeTemplates();
+        initializeFollowUpQuestions();
         initializeHelp();
+    }
+
+    private void initializeFollowUpQuestions() {
+        generateFollowUpQuestions.selectedProperty().bindBidirectional(viewModel.generateFollowUpQuestionsProperty());
+        generateFollowUpQuestions.disableProperty().bind(viewModel.disableBasicSettingsProperty());
+
+        followUpQuestionsCountBox.visibleProperty().bind(generateFollowUpQuestions.selectedProperty());
+        followUpQuestionsCountBox.managedProperty().bind(generateFollowUpQuestions.selectedProperty());
+
+        followUpQuestionsCountField.valueProperty().addListener((observable, oldValue, newValue) ->
+                viewModel.followUpQuestionsCountProperty().set(newValue == null ? 3 : newValue));
+
+        viewModel.followUpQuestionsCountProperty().addListener((observable, oldValue, newValue) ->
+                followUpQuestionsCountField.valueProperty().set(newValue == null ? 3 : newValue.intValue()));
+
+        followUpQuestionsCountField.disableProperty().bind(viewModel.disableBasicSettingsProperty());
     }
 
     private void initializeHelp() {
@@ -108,6 +131,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         summarizationCombineUserMessageTextArea.textProperty().bindBidirectional(viewModel.summarizationCombineUserMessageTemplateProperty());
         citationParsingSystemMessageTextArea.textProperty().bindBidirectional(viewModel.citationParsingSystemMessageTemplateProperty());
         citationParsingUserMessageTextArea.textProperty().bindBidirectional(viewModel.citationParsingUserMessageTemplateProperty());
+        followUpQuestionsTemplateTextArea.textProperty().bindBidirectional(viewModel.followUpQuestionsTemplateProperty());
 
         BooleanBinding aiDisabled = enableAi.selectedProperty().not();
 
@@ -119,6 +143,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         summarizationCombineUserMessageTextArea.disableProperty().bind(aiDisabled);
         citationParsingSystemMessageTextArea.disableProperty().bind(aiDisabled);
         citationParsingUserMessageTextArea.disableProperty().bind(aiDisabled);
+        followUpQuestionsTemplateTextArea.disableProperty().bind(aiDisabled);
 
         resetCurrentTemplateButton.disableProperty().bind(aiDisabled);
         resetTemplatesButton.disableProperty().bind(aiDisabled);
@@ -282,6 +307,8 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
             viewModel.resetCitationParsingSystemMessageTemplate();
         } else if (selectedTab == citationParsingUserMessageTab) {
             viewModel.resetCitationParsingUserMessageTemplate();
+        } else if (selectedTab == followUpQuestionsTemplateTab) {
+            viewModel.resetFollowUpQuestionsTemplate();
         }
     }
 

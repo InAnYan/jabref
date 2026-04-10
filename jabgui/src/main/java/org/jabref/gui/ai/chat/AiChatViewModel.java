@@ -3,7 +3,9 @@ package org.jabref.gui.ai.chat;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.concurrent.CompletableFuture;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ListProperty;
@@ -23,6 +25,7 @@ import org.jabref.logic.ai.chatting.logic.AiChatLogic;
 import org.jabref.logic.ai.chatting.tasks.GenerateLlmResponseTask;
 import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
 import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
+import org.jabref.logic.ai.followup.tasks.GenerateFollowUpQuestions;
 import org.jabref.logic.ai.ingestion.DocumentSplitterFactory;
 import org.jabref.logic.ai.ingestion.IngestionTaskAggregator;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
@@ -40,8 +43,12 @@ import org.jabref.model.ai.identifiers.FullBibEntry;
 import com.google.common.collect.Comparators;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AiChatViewModel extends AbstractViewModel {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatViewModel.class);
+
     public enum State {
         AI_TURNED_OFF,
         NO_FILES,
@@ -55,6 +62,7 @@ public class AiChatViewModel extends AbstractViewModel {
     private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ObjectProperty<GenerateLlmResponseTask> generateLlmResponseTask = new SimpleObjectProperty<>();
+    private final ListProperty<String> followUpQuestions = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
     private AsyncEmbeddingModel embeddingModel;
@@ -217,7 +225,10 @@ public class AiChatViewModel extends AbstractViewModel {
             return;
         }
 
+        followUpQuestions.clear();
         clearGenerateLlmResponseTask();
+
+        final String sentUserMessage = userMessage;
 
         GenerateLlmResponseTask task = aiChatLogic
                 .call(
@@ -228,7 +239,12 @@ public class AiChatViewModel extends AbstractViewModel {
         ObservableList<ChatMessage> taskChatHistory = aiChatLogic.chatHistoryProperty().get();
         List<FullBibEntry> taskEntries = entries.get();
 
-        task.onSuccess(taskChatHistory::add);
+        task.onSuccess(aiMessage -> {
+            taskChatHistory.add(aiMessage);
+            if (aiPreferences.getGenerateFollowUpQuestions() && chatModel.get() != null) {
+                generateFollowUpQuestionsAsync(sentUserMessage, aiMessage.content());
+            }
+        });
 
         task.onFailure(ex -> taskChatHistory.add(ChatMessage.errorMessage(ex)));
 
@@ -242,6 +258,22 @@ public class AiChatViewModel extends AbstractViewModel {
         task.executeWith(taskExecutor);
         generateLlmResponseTask.set(task);
         tasksMap.put(taskEntries, task);
+    }
+
+    private void generateFollowUpQuestionsAsync(String userMessage, String aiResponse) {
+        ChatModel currentChatModel = chatModel.get();
+        if (currentChatModel == null) {
+            return;
+        }
+
+        CompletableFuture.supplyAsync(() -> {
+            GenerateFollowUpQuestions generator = new GenerateFollowUpQuestions(currentChatModel, aiPreferences);
+            return generator.generate(userMessage, aiResponse);
+        }).thenAccept(questions -> Platform.runLater(() -> followUpQuestions.setAll(questions)))
+          .exceptionally(ex -> {
+            LOGGER.warn("Failed to generate follow-up questions asynchronously", ex);
+            return null;
+        });
     }
 
     private void clearGenerateLlmResponseTask() {
@@ -263,6 +295,7 @@ public class AiChatViewModel extends AbstractViewModel {
                 aiChatLogic.chatHistoryProperty().removeLast();
             }
         }
+        followUpQuestions.clear();
     }
 
     public void delete(String id) {
@@ -308,5 +341,13 @@ public class AiChatViewModel extends AbstractViewModel {
 
     public ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasksProperty() {
         return generateEmbeddingsTasks;
+    }
+
+    public ListProperty<String> followUpQuestionsProperty() {
+        return followUpQuestions;
+    }
+
+    public void clearFollowUpQuestions() {
+        followUpQuestions.clear();
     }
 }
