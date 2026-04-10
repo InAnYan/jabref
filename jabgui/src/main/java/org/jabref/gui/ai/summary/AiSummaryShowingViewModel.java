@@ -25,6 +25,8 @@ public class AiSummaryShowingViewModel extends AbstractViewModel {
 
     private final ObjectProperty<EventHandler<ActionEvent>> onRegenerate = new SimpleObjectProperty<>();
     private final ObjectProperty<EventHandler<ActionEvent>> onRegenerateCustom = new SimpleObjectProperty<>();
+    private final ObjectProperty<EventHandler<ActionEvent>> onExportMarkdown = new SimpleObjectProperty<>();
+    private final ObjectProperty<EventHandler<ActionEvent>> onExportJson = new SimpleObjectProperty<>();
 
     public AiSummaryShowingViewModel() {
         setupBindings();
@@ -62,6 +64,14 @@ public class AiSummaryShowingViewModel extends AbstractViewModel {
         PropertiesHelper.handle(onRegenerateCustom);
     }
 
+    public void exportMarkdown() {
+        PropertiesHelper.handle(onExportMarkdown);
+    }
+
+    public void exportJson() {
+        PropertiesHelper.handle(onExportJson);
+    }
+
     public ObjectProperty<AiSummary> summaryProperty() {
         return summary;
     }
@@ -80,5 +90,13 @@ public class AiSummaryShowingViewModel extends AbstractViewModel {
 
     public ObjectProperty<EventHandler<ActionEvent>> onRegenerateCustomProperty() {
         return onRegenerateCustom;
+    }
+
+    public ObjectProperty<EventHandler<ActionEvent>> onExportMarkdownProperty() {
+        return onExportMarkdown;
+    }
+
+    public ObjectProperty<EventHandler<ActionEvent>> onExportJsonProperty() {
+        return onExportJson;
     }
 }

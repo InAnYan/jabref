@@ -1,5 +1,11 @@
 package org.jabref.gui.ai.chat;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
+
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ListProperty;
 import javafx.fxml.FXML;
@@ -14,20 +20,31 @@ import org.jabref.gui.DialogService;
 import org.jabref.gui.ai.AiPrivacyNoticeView;
 import org.jabref.gui.ai.statuspane.SimpleStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
+import org.jabref.gui.util.FileDialogConfiguration;
 import org.jabref.gui.util.HistoryTextArea;
 import org.jabref.gui.util.ListScrollPane;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.chatting.AiChatJsonExporter;
+import org.jabref.logic.ai.chatting.AiChatMarkdownExporter;
 import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.StandardFileType;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
+import org.jabref.model.database.BibDatabaseMode;
+import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.BibEntryTypesManager;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AiChatView extends StackPane {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatView.class);
+
     private final AiChatStatusWindow aiChatStatusWindow = new AiChatStatusWindow();
 
     @FXML private AiPrivacyNoticeView privacyNotice;
@@ -50,6 +67,7 @@ public class AiChatView extends StackPane {
     @Inject private AiService aiService;
     @Inject private DialogService dialogService;
     @Inject private TaskExecutor taskExecutor;
+    @Inject private BibEntryTypesManager entryTypesManager;
 
     private AiChatViewModel viewModel;
 
@@ -172,6 +190,80 @@ public class AiChatView extends StackPane {
     @FXML
     private void clearChatHistory() {
         viewModel.chatHistoryProperty().get().clear();
+    }
+
+    @FXML
+    private void exportMarkdown() {
+        List<ChatMessage> messages = viewModel.chatHistoryProperty().get();
+
+        if (messages == null || messages.isEmpty()) {
+            dialogService.notify(Localization.lang("No chat history available to export"));
+            return;
+        }
+
+        FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
+                .addExtensionFilter(StandardFileType.MARKDOWN)
+                .withDefaultExtension(StandardFileType.MARKDOWN)
+                .withInitialDirectory(Path.of(System.getProperty("user.home")))
+                .build();
+
+        dialogService.showFileSaveDialog(fileDialogConfiguration)
+                     .ifPresent(path -> {
+                         try {
+                             AiChatMarkdownExporter exporter = new AiChatMarkdownExporter(entryTypesManager, preferences.getFieldPreferences());
+                             String content = exporter.export(getExportEntries(), getExportDatabaseMode(), messages);
+                             Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                             dialogService.notify(Localization.lang("Export operation finished successfully."));
+                         } catch (IOException e) {
+                             LOGGER.error("Problem occurred while writing the export file", e);
+                             dialogService.showErrorDialogAndWait(Localization.lang("Problem occurred while writing the export file"), e);
+                         }
+                     });
+    }
+
+    @FXML
+    private void exportJson() {
+        List<ChatMessage> messages = viewModel.chatHistoryProperty().get();
+
+        if (messages == null || messages.isEmpty()) {
+            dialogService.notify(Localization.lang("No chat history available to export"));
+            return;
+        }
+
+        FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
+                .addExtensionFilter(StandardFileType.JSON)
+                .withDefaultExtension(StandardFileType.JSON)
+                .withInitialDirectory(Path.of(System.getProperty("user.home")))
+                .build();
+
+        dialogService.showFileSaveDialog(fileDialogConfiguration)
+                     .ifPresent(path -> {
+                         try {
+                             ChatModel chatModel = viewModel.chatModelProperty().get();
+                             String provider = chatModel != null ? chatModel.getAiProvider().getDisplayName() : "";
+                             String model = chatModel != null ? chatModel.getName() : "";
+
+                             AiChatJsonExporter exporter = new AiChatJsonExporter(entryTypesManager, preferences.getFieldPreferences());
+                             String content = exporter.export(provider, model, getExportEntries(), getExportDatabaseMode(), messages);
+                             Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                             dialogService.notify(Localization.lang("Export operation finished successfully."));
+                         } catch (IOException e) {
+                             LOGGER.error("Problem occurred while writing the export file", e);
+                             dialogService.showErrorDialogAndWait(Localization.lang("Problem occurred while writing the export file"), e);
+                         }
+                     });
+    }
+
+    private List<BibEntry> getExportEntries() {
+        return viewModel.entriesProperty().stream()
+                        .map(FullBibEntry::entry)
+                        .toList();
+    }
+
+    private BibDatabaseMode getExportDatabaseMode() {
+        return viewModel.entriesProperty().isEmpty()
+                ? BibDatabaseMode.BIBTEX
+                : viewModel.entriesProperty().getFirst().databaseContext().getMode();
     }
 
     public ListProperty<ChatMessage> chatHistoryProperty() {
