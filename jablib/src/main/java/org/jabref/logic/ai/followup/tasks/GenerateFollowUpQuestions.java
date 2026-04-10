@@ -54,6 +54,8 @@ public class GenerateFollowUpQuestions {
         }
     }
 
+    private static final String QUOTE_REMOVAL_PATTERN = "^[\"']|[\"']$";
+
     private List<String> parseQuestions(String response) {
         List<String> questions = new ArrayList<>();
 
@@ -62,7 +64,7 @@ public class GenerateFollowUpQuestions {
         while (matcher.find() && questions.size() < aiPreferences.getFollowUpQuestionsCount()) {
             String question = matcher.group(1).trim();
 
-            question = question.replaceAll("^[\"']|[\"']$", "");
+            question = question.replaceAll(QUOTE_REMOVAL_PATTERN, "");
 
             if (isValidQuestion(question)) {
                 questions.add(question);
@@ -81,7 +83,7 @@ public class GenerateFollowUpQuestions {
                 line = line.trim()
                            .replaceAll("^[-*•]\\s*", "")
                            .replaceAll("^\\d+\\.\\s*", "")
-                           .replaceAll("^[\"']|[\"']$", "");
+                           .replaceAll(QUOTE_REMOVAL_PATTERN, "");
 
                 if (isValidQuestion(line)) {
                     questions.add(line);
