@@ -10,8 +10,9 @@ import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.BindingsHelper;
@@ -19,8 +20,8 @@ import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.ChatModelFactory;
-import org.jabref.logic.ai.chatting.logic.AiChatLogic;
-import org.jabref.logic.ai.chatting.tasks.GenerateLlmResponseTask;
+import org.jabref.logic.ai.chatting.tasks.GenerateRagResponseTask;
+import org.jabref.logic.ai.chatting.util.ChatHistoryUtils;
 import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
 import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
 import org.jabref.logic.ai.ingestion.DocumentSplitterFactory;
@@ -54,13 +55,13 @@ public class AiChatViewModel extends AbstractViewModel {
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
     private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
-    private final ObjectProperty<GenerateLlmResponseTask> generateLlmResponseTask = new SimpleObjectProperty<>();
+    private final ObjectProperty<GenerateRagResponseTask> generateRagResponseTask = new SimpleObjectProperty<>();
 
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
     private AsyncEmbeddingModel embeddingModel;
     private final ObjectProperty<DocumentSplitter> documentSplitter = new SimpleObjectProperty<>();
 
-    private final TreeMap<List<FullBibEntry>, GenerateLlmResponseTask> tasksMap =
+    private final TreeMap<List<FullBibEntry>, GenerateRagResponseTask> tasksMap =
             new TreeMap<>(Comparators.lexicographical(Comparator.comparing(id -> id.entry().getId())));
 
     private final AiPreferences aiPreferences;
@@ -71,13 +72,14 @@ public class AiChatViewModel extends AbstractViewModel {
     private final EmbeddingStore<TextSegment> embeddingStore;
     private final TaskExecutor taskExecutor;
 
-    private final AiChatLogic aiChatLogic;
+    // Direct properties replacing AiChatLogic
+    private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final StringProperty systemMessageTemplate = new SimpleStringProperty();
+    private final StringProperty userMessageTemplate = new SimpleStringProperty();
 
     public AiChatViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            String chattingSystemMessageTemplate,
-            String chattingUserMessageTemplate,
             IngestionTaskAggregator ingestionTaskAggregator,
             IngestedDocumentsRepository ingestedDocumentsRepository,
             NotificationService notificationService,
@@ -92,20 +94,16 @@ public class AiChatViewModel extends AbstractViewModel {
         this.embeddingStore = embeddingStore;
         this.taskExecutor = taskExecutor;
 
-        this.aiChatLogic = new AiChatLogic(
-                chattingSystemMessageTemplate,
-                chattingUserMessageTemplate
-        );
-
         setupBindings();
         setupListeners();
     }
 
     private void setupBindings() {
-        aiChatLogic.answerEngineProperty().bind(answerEngine);
+        systemMessageTemplate.bind(aiPreferences.chattingSystemMessageTemplateProperty());
+        userMessageTemplate.bind(aiPreferences.chattingUserMessageTemplateProperty());
 
         BooleanBinding isAiTurnedOff = aiPreferences.enableAiProperty().not();
-        BooleanBinding isWaiting = generateLlmResponseTask.isNotNull();
+        BooleanBinding isWaiting = generateRagResponseTask.isNotNull();
         BooleanBinding hasNoFiles = Bindings.createBooleanBinding(() ->
                         entries.get() == null ||
                                 entries.isEmpty() ||
@@ -114,11 +112,11 @@ public class AiChatViewModel extends AbstractViewModel {
         );
 
         BooleanBinding isError = Bindings.createBooleanBinding(() -> {
-            if (aiChatLogic.chatHistoryProperty().isEmpty()) {
+            if (chatHistory.isEmpty()) {
                 return false;
             }
-            return aiChatLogic.chatHistoryProperty().getLast().role() == ChatMessage.Role.ERROR;
-        }, aiChatLogic.chatHistoryProperty());
+            return chatHistory.getLast().role() == ChatMessage.Role.ERROR;
+        }, chatHistory);
 
         BindingsHelper.bindEnum(
                 state,
@@ -137,6 +135,12 @@ public class AiChatViewModel extends AbstractViewModel {
                 entries,
                 aiPreferences.enableAiProperty().and(entriesPresent),
                 this::changeEmbeddingTasks
+        );
+
+        // Listen to system message template changes and update chat history
+        BindingsHelper.subscribeToChanges(
+                () -> ChatHistoryUtils.updateSystemMessage(chatHistory, systemMessageTemplate.get()),
+                systemMessageTemplate
         );
 
         // Rebuild chat model when relevant preferences change (also calls immediately)
@@ -171,7 +175,6 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private void rebuildChatModel() {
         chatModel.set(ChatModelFactory.create(aiPreferences));
-        aiChatLogic.chatModelProperty().set(chatModel.get());
     }
 
     private void rebuildEmbeddingModel() {
@@ -188,7 +191,7 @@ public class AiChatViewModel extends AbstractViewModel {
     private void changeEmbeddingTasks() {
         generateEmbeddingsTasks.clear();
         // It's okay to pass null.
-        generateLlmResponseTask.set(tasksMap.get(entries));
+        generateRagResponseTask.set(tasksMap.get(entries));
 
         entries.forEach(identifier ->
                 identifier.entry().getFiles().forEach(file -> {
@@ -217,39 +220,47 @@ public class AiChatViewModel extends AbstractViewModel {
             return;
         }
 
-        clearGenerateLlmResponseTask();
+        clearGenerateRagResponseTask();
 
-        GenerateLlmResponseTask task = aiChatLogic
-                .call(
-                        userMessage,
-                        entries
-                );
+        // Add user message to chat history
+        ChatMessage userChatMessage = ChatMessage.userMessage(userMessage);
+        chatHistory.add(userChatMessage);
 
-        ObservableList<ChatMessage> taskChatHistory = aiChatLogic.chatHistoryProperty().get();
+        // Create the RAG task directly
+        GenerateRagResponseTask task = new GenerateRagResponseTask(
+                chatModel.get(),
+                answerEngine.get(),
+                List.copyOf(chatHistory), // Pass immutable copy
+                userMessage,
+                entries.get(),
+                systemMessageTemplate.get(),
+                userMessageTemplate.get()
+        );
+
         List<FullBibEntry> taskEntries = entries.get();
 
-        task.onSuccess(taskChatHistory::add);
+        task.onSuccess(chatHistory::add);
 
-        task.onFailure(ex -> taskChatHistory.add(ChatMessage.errorMessage(ex)));
+        task.onFailure(ex -> chatHistory.add(ChatMessage.errorMessage(ex)));
 
         task.onFinished(() -> {
             tasksMap.remove(taskEntries);
-            if (generateLlmResponseTask.get() == task) {
-                generateLlmResponseTask.set(null);
+            if (generateRagResponseTask.get() == task) {
+                generateRagResponseTask.set(null);
             }
         });
 
         task.executeWith(taskExecutor);
-        generateLlmResponseTask.set(task);
+        generateRagResponseTask.set(task);
         tasksMap.put(taskEntries, task);
     }
 
-    private void clearGenerateLlmResponseTask() {
-        if (generateLlmResponseTask.get() != null) {
-            if (!generateLlmResponseTask.get().isCancelled()) {
-                generateLlmResponseTask.get().cancel();
+    private void clearGenerateRagResponseTask() {
+        if (generateRagResponseTask.get() != null) {
+            if (!generateRagResponseTask.get().isCancelled()) {
+                generateRagResponseTask.get().cancel();
             }
-            generateLlmResponseTask.set(null);
+            generateRagResponseTask.set(null);
         }
     }
 
@@ -257,23 +268,23 @@ public class AiChatViewModel extends AbstractViewModel {
         assert state.get() == State.WAITING_FOR_MESSAGE || state.get() == State.ERROR;
 
         if (state.get() == State.WAITING_FOR_MESSAGE) {
-            clearGenerateLlmResponseTask();
+            clearGenerateRagResponseTask();
         } else if (state.get() == State.ERROR) {
-            if (!aiChatLogic.chatHistoryProperty().isEmpty()) {
-                aiChatLogic.chatHistoryProperty().removeLast();
+            if (!chatHistory.isEmpty()) {
+                chatHistory.removeLast();
             }
         }
     }
 
     public void delete(String id) {
         assert state.get() == State.IDLE;
-        aiChatLogic.delete(id);
+        ChatHistoryUtils.delete(chatHistory, id);
     }
 
     public void regenerate(String id) {
         assert state.get() == State.ERROR || state.get() == State.IDLE;
 
-        String contentToRegenerate = aiChatLogic.regenerate(id);
+        String contentToRegenerate = ChatHistoryUtils.regenerate(chatHistory, id);
 
         if (contentToRegenerate != null) {
             sendMessage(contentToRegenerate);
@@ -281,8 +292,8 @@ public class AiChatViewModel extends AbstractViewModel {
     }
 
     public void regenerate() {
-        if (!aiChatLogic.chatHistoryProperty().isEmpty()) {
-            regenerate(aiChatLogic.chatHistoryProperty().getLast().id());
+        if (!chatHistory.isEmpty()) {
+            regenerate(chatHistory.getLast().id());
         }
     }
 
@@ -291,7 +302,7 @@ public class AiChatViewModel extends AbstractViewModel {
     }
 
     public ListProperty<ChatMessage> chatHistoryProperty() {
-        return aiChatLogic.chatHistoryProperty();
+        return chatHistory;
     }
 
     public ObjectProperty<State> stateProperty() {
@@ -299,7 +310,7 @@ public class AiChatViewModel extends AbstractViewModel {
     }
 
     public ObjectProperty<ChatModel> chatModelProperty() {
-        return aiChatLogic.chatModelProperty();
+        return chatModel;
     }
 
     public ObjectProperty<AnswerEngine> answerEngineProperty() {
