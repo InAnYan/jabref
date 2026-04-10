@@ -117,6 +117,30 @@ public class AiSummaryShowingView extends VBox {
         viewModel.onRegenerateCustomProperty().set(onRegenerateCustom);
     }
 
+    public ObjectProperty<EventHandler<ActionEvent>> onExportMarkdownProperty() {
+        return viewModel.onExportMarkdownProperty();
+    }
+
+    public EventHandler<ActionEvent> getOnExportMarkdown() {
+        return viewModel.onExportMarkdownProperty().get();
+    }
+
+    public void setOnExportMarkdown(EventHandler<ActionEvent> onExportMarkdown) {
+        viewModel.onExportMarkdownProperty().set(onExportMarkdown);
+    }
+
+    public ObjectProperty<EventHandler<ActionEvent>> onExportJsonProperty() {
+        return viewModel.onExportJsonProperty();
+    }
+
+    public EventHandler<ActionEvent> getOnExportJson() {
+        return viewModel.onExportJsonProperty().get();
+    }
+
+    public void setOnExportJson(EventHandler<ActionEvent> onExportJson) {
+        viewModel.onExportJsonProperty().set(onExportJson);
+    }
+
     @FXML
     private void regenerate() {
         viewModel.regenerate();
@@ -125,5 +149,15 @@ public class AiSummaryShowingView extends VBox {
     @FXML
     private void regenerateCustom() {
         viewModel.regenerateCustom();
+    }
+
+    @FXML
+    private void exportMarkdown() {
+        viewModel.exportMarkdown();
+    }
+
+    @FXML
+    private void exportJson() {
+        viewModel.exportJson();
     }
 }
