@@ -63,20 +63,15 @@ public class ChatHistoryUtils {
         return list;
     }
 
-    /**
-     * Removes the message with the specified ID from history.
-     * <p>
-     * Leaves a "hole" in context, but this is intended.
-     */
+    /// Removes the message with the specified ID from history.
+    /// Leaves a "hole" in context, but this is intended.
     public static void delete(List<ChatMessage> chatHistory, String id) {
         chatHistory.removeIf(message -> Objects.equals(message.id(), id));
     }
 
-    /**
-     * Rewinds history to the point before the specified message and returns the user content to be re-sent.
-     *
-     * @return the content to regenerate, or null if the message was not found
-     */
+    /// Rewinds history to the point before the specified message and returns the user content to be re-sent.
+    ///
+    /// @return the content to regenerate, or null if the message was not found
     public static String regenerate(List<ChatMessage> chatHistory, String id) {
         Optional<ChatMessage> recordOpt = chatHistory
                 .stream()
@@ -110,13 +105,11 @@ public class ChatHistoryUtils {
         return contentToRegenerate;
     }
 
-    /**
-     * Updates the system message in the chat history.
-     * If a system message already exists, it is replaced. Otherwise, a new system message is added at the beginning.
-     *
-     * @param chatHistory the chat history to update
-     * @param newSystemMessage the new system message content
-     */
+    /// Updates the system message in the chat history.
+    /// If a system message already exists, it is replaced. Otherwise, a new system message is added at the beginning.
+    ///
+    /// @param chatHistory the chat history to update
+    /// @param newSystemMessage the new system message content
     public static void updateSystemMessage(List<ChatMessage> chatHistory, String newSystemMessage) {
         // Remove existing system message if present
         chatHistory.removeIf(message -> message.role() == ChatMessage.Role.SYSTEM);
@@ -125,5 +118,18 @@ public class ChatHistoryUtils {
         if (newSystemMessage != null && !newSystemMessage.isEmpty()) {
             chatHistory.addFirst(ChatMessage.systemMessage(newSystemMessage));
         }
+    }
+
+    /// Finds the last USER message in the chat history by iterating backwards.
+    ///
+    /// @param chatHistory the chat history to search
+    /// @return the last USER message, or null if no USER message is found
+    public static ChatMessage getLastUserMessage(List<ChatMessage> chatHistory) {
+        for (int i = chatHistory.size() - 1; i >= 0; i--) {
+            if (chatHistory.get(i).role() == ChatMessage.Role.USER) {
+                return chatHistory.get(i);
+            }
+        }
+        return null;
     }
 }

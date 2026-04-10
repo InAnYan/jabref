@@ -14,13 +14,15 @@ public class FileHasher {
     private static final String ALGORITHM = "SHA-256";
     private static final int BUFFER_SIZE = 8192;
 
-    /**
-     * Computes the SHA-256 hash of a file.
-     *
-     * @param path the path to the file
-     * @return the hex-encoded hash of the file
-     * @throws IOException if an I/O error occurs while reading the file
-     */
+    private FileHasher() {
+        throw new UnsupportedOperationException("cannot instantiate a utility class");
+    }
+
+    /// Computes the SHA-256 hash of a file.
+    ///
+    /// @param path the path to the file
+    /// @return the hex-encoded hash of the file
+    /// @throws IOException if an I/O error occurs while reading the file
     public static String computeHash(Path path) throws IOException {
         try {
             MessageDigest digest = MessageDigest.getInstance(ALGORITHM);
@@ -40,12 +42,10 @@ public class FileHasher {
         }
     }
 
-    /**
-     * Converts a byte array to a hexadecimal string.
-     *
-     * @param bytes the byte array
-     * @return the hex-encoded string
-     */
+    /// Converts a byte array to a hexadecimal string.
+    ///
+    /// @param bytes the byte array
+    /// @return the hex-encoded string
     private static String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {

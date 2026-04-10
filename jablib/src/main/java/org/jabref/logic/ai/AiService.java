@@ -25,11 +25,8 @@ import org.jabref.model.database.BibDatabaseContext;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 
-/**
- * The main class for the AI functionality.
- * <p>
- * Holds all the AI components: LLM and embedding model, chat history and embedding cache.
- */
+/// The main class for the AI functionality.
+/// Holds all the AI components: LLM and embedding model, chat history and embedding cache.
 public class AiService implements AutoCloseable {
     public static final String VERSION = "2";
 

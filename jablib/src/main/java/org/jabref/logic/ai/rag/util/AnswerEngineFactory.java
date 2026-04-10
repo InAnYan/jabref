@@ -10,11 +10,8 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 
-/**
- * Static factory for creating {@link AnswerEngine} instances.
- * <p>
- * All parameters are passed explicitly so this class carries no mutable state.
- */
+/// Static factory for creating {@link AnswerEngine} instances.
+/// All parameters are passed explicitly so this class carries no mutable state.
 public final class AnswerEngineFactory {
     private AnswerEngineFactory() {
         throw new UnsupportedOperationException("cannot instantiate a utility class");

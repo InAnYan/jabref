@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.jabref.logic.ai.chatting.ChatModel;
+import org.jabref.logic.ai.chatting.util.ChatHistoryUtils;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.ai.templates.AiTemplateRenderer;
 import org.jabref.logic.l10n.Localization;
@@ -24,10 +25,8 @@ public class GenerateRagResponseTask extends BackgroundTask<ChatMessage> {
     private final String systemMessageTemplate;
     private final String injectionTemplate;
 
-    /**
-     * Creates a task that processes RAG and generates an LLM response.
-     * The input chat history is not modified; a new list is created internally.
-     */
+    /// Creates a task that processes RAG and generates an LLM response.
+    /// The input chat history is not modified; a new list is created internally.
     public GenerateRagResponseTask(
             ChatModel chatModel,
             AnswerEngine answerEngine,
@@ -53,13 +52,7 @@ public class GenerateRagResponseTask extends BackgroundTask<ChatMessage> {
     public ChatMessage call() throws Exception {
         List<ChatMessage> workingChatHistory = new ArrayList<>(chatHistory);
 
-        ChatMessage userMessage = null;
-        for (int i = workingChatHistory.size() - 1; i >= 0; i--) {
-            if (workingChatHistory.get(i).role() == ChatMessage.Role.USER) {
-                userMessage = workingChatHistory.get(i);
-                break;
-            }
-        }
+        ChatMessage userMessage = ChatHistoryUtils.getLastUserMessage(workingChatHistory);
 
         if (userMessage == null) {
             userMessage = ChatMessage.userMessage(userMessageContent);
