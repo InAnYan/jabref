@@ -19,6 +19,7 @@ public class GenerateFollowUpQuestions {
     private static final int MIN_QUESTION_LENGTH = 5;
     private static final int MAX_QUESTION_LENGTH = 100;
     private static final Pattern NUMBERED_PATTERN = Pattern.compile("^\\s*\\d+\\.\\s*(.+)$", Pattern.MULTILINE);
+    private static final String QUOTE_REMOVAL_PATTERN = "^[\"']|[\"']$";
 
     private final ChatModel chatModel;
     private final AiPreferences aiPreferences;
@@ -53,8 +54,6 @@ public class GenerateFollowUpQuestions {
             return new ArrayList<>();
         }
     }
-
-    private static final String QUOTE_REMOVAL_PATTERN = "^[\"']|[\"']$";
 
     private List<String> parseQuestions(String response) {
         List<String> questions = new ArrayList<>();

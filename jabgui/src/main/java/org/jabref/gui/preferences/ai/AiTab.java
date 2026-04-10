@@ -34,7 +34,6 @@ import org.controlsfx.control.textfield.CustomPasswordField;
 
 public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements PreferencesTab {
     private static final String HUGGING_FACE_CHAT_MODEL_PROMPT = "TinyLlama/TinyLlama_v1.1 (or any other model name)";
-    private static final int DEFAULT_FOLLOW_UP_QUESTIONS_COUNT = 3;
     private final ControlsFxVisualizer visualizer = new ControlsFxVisualizer();
     @FXML private CheckBox enableAi;
     @FXML private CheckBox autoGenerateEmbeddings;
@@ -108,10 +107,10 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         followUpQuestionsCountBox.managedProperty().bind(generateFollowUpQuestions.selectedProperty());
 
         followUpQuestionsCountField.valueProperty().addListener((observable, oldValue, newValue) ->
-                viewModel.followUpQuestionsCountProperty().set(newValue == null ? DEFAULT_FOLLOW_UP_QUESTIONS_COUNT : newValue));
+                viewModel.followUpQuestionsCountProperty().set(newValue == null ? 0 : newValue));
 
         viewModel.followUpQuestionsCountProperty().addListener((observable, oldValue, newValue) ->
-                followUpQuestionsCountField.valueProperty().set(newValue == null ? DEFAULT_FOLLOW_UP_QUESTIONS_COUNT : newValue.intValue()));
+                followUpQuestionsCountField.valueProperty().set(newValue == null ? 0 : newValue.intValue()));
 
         followUpQuestionsCountField.disableProperty().bind(viewModel.disableBasicSettingsProperty());
     }
