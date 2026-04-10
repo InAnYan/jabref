@@ -210,15 +210,8 @@ public class AiChatView extends StackPane {
         dialogService.showFileSaveDialog(fileDialogConfiguration)
                      .ifPresent(path -> {
                          try {
-                             List<BibEntry> entries = viewModel.entriesProperty().stream()
-                                                               .map(FullBibEntry::entry)
-                                                               .toList();
-                             var mode = viewModel.entriesProperty().isEmpty()
-                                     ? BibDatabaseMode.BIBTEX
-                                     : viewModel.entriesProperty().getFirst().databaseContext().getMode();
-
                              AiChatMarkdownExporter exporter = new AiChatMarkdownExporter(entryTypesManager, preferences.getFieldPreferences());
-                             String content = exporter.export(entries, mode, messages);
+                             String content = exporter.export(getExportEntries(), getExportDatabaseMode(), messages);
                              Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                              dialogService.notify(Localization.lang("Export operation finished successfully."));
                          } catch (IOException e) {
@@ -246,19 +239,12 @@ public class AiChatView extends StackPane {
         dialogService.showFileSaveDialog(fileDialogConfiguration)
                      .ifPresent(path -> {
                          try {
-                             List<BibEntry> entries = viewModel.entriesProperty().stream()
-                                                               .map(FullBibEntry::entry)
-                                                               .toList();
-                             var mode = viewModel.entriesProperty().isEmpty()
-                                     ? BibDatabaseMode.BIBTEX
-                                     : viewModel.entriesProperty().getFirst().databaseContext().getMode();
-
                              ChatModel chatModel = viewModel.chatModelProperty().get();
                              String provider = chatModel != null ? chatModel.getAiProvider().getDisplayName() : "";
                              String model = chatModel != null ? chatModel.getName() : "";
 
                              AiChatJsonExporter exporter = new AiChatJsonExporter(entryTypesManager, preferences.getFieldPreferences());
-                             String content = exporter.export(provider, model, entries, mode, messages);
+                             String content = exporter.export(provider, model, getExportEntries(), getExportDatabaseMode(), messages);
                              Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                              dialogService.notify(Localization.lang("Export operation finished successfully."));
                          } catch (IOException e) {
@@ -266,6 +252,18 @@ public class AiChatView extends StackPane {
                              dialogService.showErrorDialogAndWait(Localization.lang("Problem occurred while writing the export file"), e);
                          }
                      });
+    }
+
+    private List<BibEntry> getExportEntries() {
+        return viewModel.entriesProperty().stream()
+                        .map(FullBibEntry::entry)
+                        .toList();
+    }
+
+    private BibDatabaseMode getExportDatabaseMode() {
+        return viewModel.entriesProperty().isEmpty()
+                ? BibDatabaseMode.BIBTEX
+                : viewModel.entriesProperty().getFirst().databaseContext().getMode();
     }
 
     public ListProperty<ChatMessage> chatHistoryProperty() {
