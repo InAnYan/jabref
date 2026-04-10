@@ -341,13 +341,8 @@
               HBox.hgrow="ALWAYS"
               maxWidth="Infinity"/>
 
-    <HBox alignment="CENTER_LEFT"
-          spacing="10.0"
-          fx:id="followUpQuestionsCountBox">
-        <Label alignment="BASELINE_CENTER"
-               text="%Number of follow-up questions"/>
-        <IntegerInputField
-                fx:id="followUpQuestionsCountField"
-                HBox.hgrow="ALWAYS"/>
-    </HBox>
+    <Label fx:id="followUpQuestionsCountLabel"
+           text="%Number of follow-up questions"/>
+    <IntegerInputField
+            fx:id="followUpQuestionsCountField"/>
 </fx:root>

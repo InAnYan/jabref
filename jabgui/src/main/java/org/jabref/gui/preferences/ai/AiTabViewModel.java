@@ -87,10 +87,10 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     private final StringProperty citationParsingUserMessageTemplate = new SimpleStringProperty();
     private final StringProperty summarizationFullDocumentSystemMessageTemplate = new SimpleStringProperty();
     private final StringProperty summarizationFullDocumentUserMessageTemplate = new SimpleStringProperty();
+    private final StringProperty followUpQuestionsTemplate = new SimpleStringProperty();
 
     private final BooleanProperty generateFollowUpQuestions = new SimpleBooleanProperty();
     private final IntegerProperty followUpQuestionsCount = new SimpleIntegerProperty();
-    private final StringProperty followUpQuestionsTemplate = new SimpleStringProperty();
 
     private final StringProperty temperature = new SimpleStringProperty();
     private final IntegerProperty contextWindowSize = new SimpleIntegerProperty();

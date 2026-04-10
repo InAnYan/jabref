@@ -3,9 +3,7 @@ package org.jabref.gui.ai.chat;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.concurrent.CompletableFuture;
 
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ListProperty;
@@ -34,6 +32,7 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddings
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTaskRequest;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
+import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
@@ -63,6 +62,7 @@ public class AiChatViewModel extends AbstractViewModel {
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ObjectProperty<GenerateLlmResponseTask> generateLlmResponseTask = new SimpleObjectProperty<>();
     private final ListProperty<String> followUpQuestions = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private BackgroundTask<List<String>> generateFollowUpQuestionsTask;
 
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
     private AsyncEmbeddingModel embeddingModel;
@@ -242,7 +242,7 @@ public class AiChatViewModel extends AbstractViewModel {
         task.onSuccess(aiMessage -> {
             taskChatHistory.add(aiMessage);
             if (aiPreferences.getGenerateFollowUpQuestions() && chatModel.get() != null) {
-                generateFollowUpQuestionsAsync(sentUserMessage, aiMessage.content());
+                scheduleFollowUpQuestionsGeneration(sentUserMessage, aiMessage.content());
             }
         });
 
@@ -260,20 +260,37 @@ public class AiChatViewModel extends AbstractViewModel {
         tasksMap.put(taskEntries, task);
     }
 
-    private void generateFollowUpQuestionsAsync(String userMessage, String aiResponse) {
+    private void scheduleFollowUpQuestionsGeneration(String userMessage, String aiResponse) {
         ChatModel currentChatModel = chatModel.get();
         if (currentChatModel == null) {
             return;
         }
 
-        CompletableFuture.supplyAsync(() -> {
-            GenerateFollowUpQuestions generator = new GenerateFollowUpQuestions(currentChatModel, aiPreferences);
-            return generator.generate(userMessage, aiResponse);
-        }).thenAccept(questions -> Platform.runLater(() -> followUpQuestions.setAll(questions)))
-          .exceptionally(ex -> {
-            LOGGER.warn("Failed to generate follow-up questions asynchronously", ex);
-            return null;
-        });
+        if (generateFollowUpQuestionsTask != null && !generateFollowUpQuestionsTask.isCancelled()) {
+            generateFollowUpQuestionsTask.cancel();
+        }
+
+        generateFollowUpQuestionsTask = new GenerateFollowUpQuestions(
+                currentChatModel,
+                aiPreferences,
+                userMessage,
+                aiResponse
+        );
+
+        generateFollowUpQuestionsTask
+                .onSuccess(followUpQuestions::setAll)
+                .onFailure(ex -> LOGGER.warn("Failed to generate follow-up questions", ex))
+                .executeWith(taskExecutor);
+    }
+
+    public void sendFollowUpMessage(String question) {
+        followUpQuestions.clear();
+        sendMessage(question);
+    }
+
+    public void clearChatHistory() {
+        aiChatLogic.chatHistoryProperty().get().clear();
+        followUpQuestions.clear();
     }
 
     private void clearGenerateLlmResponseTask() {
@@ -345,9 +362,5 @@ public class AiChatViewModel extends AbstractViewModel {
 
     public ListProperty<String> followUpQuestionsProperty() {
         return followUpQuestions;
-    }
-
-    public void clearFollowUpQuestions() {
-        followUpQuestions.clear();
     }
 }

@@ -151,11 +151,7 @@ public class AiChatView extends StackPane {
                 Button chip = new Button(question);
                 chip.getStyleClass().addAll("outlined-button");
                 chip.setWrapText(true);
-                chip.setOnAction(_ -> {
-                    followUpQuestionsArea.setVisible(false);
-                    viewModel.clearFollowUpQuestions();
-                    viewModel.sendMessage(question);
-                });
+                chip.setOnAction(_ -> viewModel.sendFollowUpMessage(question));
                 followUpQuestionsBox.getChildren().add(chip);
             }
 
@@ -207,8 +203,7 @@ public class AiChatView extends StackPane {
 
     @FXML
     private void clearChatHistory() {
-        viewModel.chatHistoryProperty().get().clear();
-        viewModel.clearFollowUpQuestions();
+        viewModel.clearChatHistory();
     }
 
     public ListProperty<ChatMessage> chatHistoryProperty() {

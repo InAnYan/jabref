@@ -12,7 +12,6 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import org.jabref.gui.actions.ActionFactory;
@@ -74,7 +73,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private Button resetCurrentTemplateButton;
     @FXML private Button resetTemplatesButton;
     @FXML private CheckBox generateFollowUpQuestions;
-    @FXML private HBox followUpQuestionsCountBox;
+    @FXML private Label followUpQuestionsCountLabel;
     @FXML private IntegerInputField followUpQuestionsCountField;
     @FXML private Tab followUpQuestionsTemplateTab;
     @FXML private TextArea followUpQuestionsTemplateTextArea;
@@ -103,8 +102,10 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         generateFollowUpQuestions.selectedProperty().bindBidirectional(viewModel.generateFollowUpQuestionsProperty());
         generateFollowUpQuestions.disableProperty().bind(viewModel.disableBasicSettingsProperty());
 
-        followUpQuestionsCountBox.visibleProperty().bind(generateFollowUpQuestions.selectedProperty());
-        followUpQuestionsCountBox.managedProperty().bind(generateFollowUpQuestions.selectedProperty());
+        followUpQuestionsCountLabel.visibleProperty().bind(generateFollowUpQuestions.selectedProperty());
+        followUpQuestionsCountLabel.managedProperty().bind(generateFollowUpQuestions.selectedProperty());
+        followUpQuestionsCountField.visibleProperty().bind(generateFollowUpQuestions.selectedProperty());
+        followUpQuestionsCountField.managedProperty().bind(generateFollowUpQuestions.selectedProperty());
 
         followUpQuestionsCountField.valueProperty().addListener((observable, oldValue, newValue) ->
                 viewModel.followUpQuestionsCountProperty().set(newValue == null ? 0 : newValue));

@@ -8,13 +8,15 @@ import java.util.regex.Pattern;
 import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.templates.AiTemplateRenderer;
+import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.BackgroundTask;
 
 import dev.langchain4j.data.message.UserMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// Generates follow-up questions based on a completed user/AI conversation turn.
-public class GenerateFollowUpQuestions {
+/// Background task that generates follow-up questions based on a completed user/AI conversation turn.
+public class GenerateFollowUpQuestions extends BackgroundTask<List<String>> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateFollowUpQuestions.class);
     private static final int MIN_QUESTION_LENGTH = 5;
     private static final int MAX_QUESTION_LENGTH = 100;
@@ -23,36 +25,43 @@ public class GenerateFollowUpQuestions {
 
     private final ChatModel chatModel;
     private final AiPreferences aiPreferences;
+    private final String userMessage;
+    private final String aiResponse;
 
-    public GenerateFollowUpQuestions(ChatModel chatModel, AiPreferences aiPreferences) {
+    public GenerateFollowUpQuestions(
+            ChatModel chatModel,
+            AiPreferences aiPreferences,
+            String userMessage,
+            String aiResponse
+    ) {
         this.chatModel = chatModel;
         this.aiPreferences = aiPreferences;
+        this.userMessage = userMessage;
+        this.aiResponse = aiResponse;
+
+        titleProperty().set(Localization.lang("Generating follow-up questions..."));
     }
 
-    public List<String> generate(String userMessage, String aiResponse) {
-        try {
-            String prompt = AiTemplateRenderer.renderFollowUpQuestionsPrompt(
-                    aiPreferences.getFollowUpQuestionsTemplate(),
-                    userMessage,
-                    aiResponse,
-                    aiPreferences.getFollowUpQuestionsCount()
-            );
+    @Override
+    public List<String> call() throws Exception {
+        String prompt = AiTemplateRenderer.renderFollowUpQuestionsPrompt(
+                aiPreferences.getFollowUpQuestionsTemplate(),
+                userMessage,
+                aiResponse,
+                aiPreferences.getFollowUpQuestionsCount()
+        );
 
-            LOGGER.debug("Generating follow-up questions for conversation");
+        LOGGER.debug("Generating follow-up questions for conversation");
 
-            String responseText = chatModel.chat(List.of(new UserMessage(prompt))).aiMessage().text();
+        String responseText = chatModel.chat(List.of(new UserMessage(prompt))).aiMessage().text();
 
-            LOGGER.debug("Received follow-up questions response: {}", responseText);
+        LOGGER.debug("Received follow-up questions response: {}", responseText);
 
-            List<String> questions = parseQuestions(responseText);
+        List<String> questions = parseQuestions(responseText);
 
-            LOGGER.debug("Generated {} follow-up questions", questions.size());
+        LOGGER.debug("Generated {} follow-up questions", questions.size());
 
-            return questions;
-        } catch (Exception e) {
-            LOGGER.warn("Failed to generate follow-up questions", e);
-            return new ArrayList<>();
-        }
+        return questions;
     }
 
     private List<String> parseQuestions(String response) {
