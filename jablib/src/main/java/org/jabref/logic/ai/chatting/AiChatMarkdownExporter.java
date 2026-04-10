@@ -1,13 +1,21 @@
 package org.jabref.logic.ai.chatting;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.StringJoiner;
 
+import org.jabref.logic.bibtex.BibEntryWriter;
 import org.jabref.logic.bibtex.FieldPreferences;
+import org.jabref.logic.bibtex.FieldWriter;
+import org.jabref.logic.exporter.BibWriter;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.database.BibDatabaseMode;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.BibEntryTypesManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Exports an AI chat conversation to Markdown format.
@@ -16,6 +24,8 @@ import org.jabref.model.entry.BibEntryTypesManager;
  * with the chat messages formatted as User/AI/Error turns.
  */
 public class AiChatMarkdownExporter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatMarkdownExporter.class);
+
     private final BibEntryTypesManager entryTypesManager;
     private final FieldPreferences fieldPreferences;
 
@@ -34,7 +44,7 @@ public class AiChatMarkdownExporter {
 
         StringJoiner bibtexJoiner = new StringJoiner("\n");
         for (BibEntry entry : entries) {
-            String bibtex = entry.getStringRepresentation(entry, mode, entryTypesManager, fieldPreferences).trim();
+            String bibtex = entryToBibtex(entry, mode).trim();
             if (!bibtex.isEmpty()) {
                 bibtexJoiner.add(bibtex);
                 bibtexJoiner.add("");
@@ -68,5 +78,19 @@ public class AiChatMarkdownExporter {
         stringJoiner.add(conversation.toString().trim());
 
         return stringJoiner + "\n";
+    }
+
+    private String entryToBibtex(BibEntry entry, BibDatabaseMode mode) {
+        try {
+            StringWriter stringWriter = new StringWriter();
+            BibWriter bibWriter = new BibWriter(stringWriter, "\n");
+            FieldWriter fieldWriter = FieldWriter.buildIgnoreHashes(fieldPreferences);
+            BibEntryWriter bibEntryWriter = new BibEntryWriter(fieldWriter, entryTypesManager);
+            bibEntryWriter.write(entry, bibWriter, mode, true);
+            return stringWriter.toString();
+        } catch (IOException e) {
+            LOGGER.error("Could not write entry to BibTeX", e);
+            return "";
+        }
     }
 }

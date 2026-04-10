@@ -1,12 +1,17 @@
 package org.jabref.logic.ai.chatting;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jabref.logic.bibtex.BibEntryWriter;
 import org.jabref.logic.bibtex.FieldPreferences;
+import org.jabref.logic.bibtex.FieldWriter;
+import org.jabref.logic.exporter.BibWriter;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.database.BibDatabaseMode;
 import org.jabref.model.entry.BibEntry;
@@ -17,6 +22,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Exports an AI chat conversation to JSON format.
@@ -25,6 +32,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
  * and the conversation messages with role/content pairs.
  */
 public class AiChatJsonExporter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatJsonExporter.class);
+
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .enable(SerializationFeature.INDENT_OUTPUT)
@@ -53,7 +62,7 @@ public class AiChatJsonExporter {
                 fields.put(field.getName(), entry.getField(field).orElse(""));
             }
             entryData.put("fields", fields);
-            entryData.put("bibtex", entry.getStringRepresentation(entry, mode, entryTypesManager, fieldPreferences));
+            entryData.put("bibtex", entryToBibtex(entry, mode));
 
             entriesList.add(entryData);
         }
@@ -84,6 +93,20 @@ public class AiChatJsonExporter {
         } catch (JsonProcessingException e) {
             // Should not happen for a plain Map<String, Object> with String values
             throw new RuntimeException("Failed to serialize chat export to JSON", e);
+        }
+    }
+
+    private String entryToBibtex(BibEntry entry, BibDatabaseMode mode) {
+        try {
+            StringWriter stringWriter = new StringWriter();
+            BibWriter bibWriter = new BibWriter(stringWriter, "\n");
+            FieldWriter fieldWriter = FieldWriter.buildIgnoreHashes(fieldPreferences);
+            BibEntryWriter bibEntryWriter = new BibEntryWriter(fieldWriter, entryTypesManager);
+            bibEntryWriter.write(entry, bibWriter, mode, true);
+            return stringWriter.toString();
+        } catch (IOException e) {
+            LOGGER.error("Could not write entry to BibTeX", e);
+            return "";
         }
     }
 }
