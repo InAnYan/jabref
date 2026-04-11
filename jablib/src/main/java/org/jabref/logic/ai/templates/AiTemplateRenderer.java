@@ -3,6 +3,8 @@ package org.jabref.logic.ai.templates;
 import java.io.StringWriter;
 import java.util.List;
 
+import org.jabref.model.ai.AiMetadata;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.CanonicalBibEntry;
@@ -21,28 +23,6 @@ public class AiTemplateRenderer {
 
     private AiTemplateRenderer() {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
-    }
-
-    /// Helper class representing a chat message for use inside Velocity export templates.
-    ///
-    /// Velocity accesses Java-bean style getters ({@code getRole()}, {@code getContent()}),
-    /// which is why this is a plain class rather than a record.
-    public static class ExportMessage {
-        private final String role;
-        private final String content;
-
-        public ExportMessage(String role, String content) {
-            this.role = role;
-            this.content = content;
-        }
-
-        public String getRole() {
-            return role;
-        }
-
-        public String getContent() {
-            return content;
-        }
     }
 
     public static String renderChattingSystemMessage(String templateSource, List<BibEntry> entries) {
@@ -79,8 +59,19 @@ public class AiTemplateRenderer {
         return render(templateSource, "CITATION_PARSING_SYSTEM_MESSAGE", context);
     }
 
-    public static String renderMarkdownChatExport(String templateSource, String bibtex, List<ExportMessage> messages) {
+    /// Renders the Markdown chat export template.
+    ///
+    /// The following variables are available in the template:
+    /// <ul>
+    ///   <li>{@code $metadata} — {@link AiMetadata} with provider, model, and timestamp</li>
+    ///   <li>{@code $bibtex} — pre-rendered BibTeX string for all associated entries</li>
+    ///   <li>{@code $messages} — list of {@link ChatMessage} objects (SYSTEM messages excluded).
+    ///       Access content via {@code $message.content()} and role via
+    ///       {@code $message.role().getDisplayName()}</li>
+    /// </ul>
+    public static String renderMarkdownChatExport(String templateSource, AiMetadata metadata, String bibtex, List<ChatMessage> messages) {
         VelocityContext context = new VelocityContext(BASE_CONTEXT);
+        context.put("metadata", metadata);
         context.put("bibtex", bibtex);
         context.put("messages", messages);
         return render(templateSource, "MARKDOWN_CHAT_EXPORT", context);

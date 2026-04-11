@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.jabref.logic.ai.chatting.AiChatJsonExporter;
 import org.jabref.logic.bibtex.FieldPreferences;
+import org.jabref.model.ai.AiMetadata;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.summarization.AiSummary;
 import org.jabref.model.database.BibDatabaseMode;
@@ -24,14 +25,8 @@ public class AiSummaryJsonExporter implements AiSummaryExporter {
     }
 
     @Override
-    public String export(BibEntry entry, BibDatabaseMode mode, AiSummary summary) {
+    public String export(AiMetadata metadata, BibEntry entry, BibDatabaseMode mode, AiSummary summary) {
         List<ChatMessage> dummyChat = List.of(ChatMessage.aiMessage(summary.content(), List.of()));
-        return chatExporter.export(
-                summary.aiProvider().getDisplayName(),
-                summary.model(),
-                List.of(entry),
-                mode,
-                dummyChat
-        );
+        return chatExporter.export(metadata, List.of(entry), mode, dummyChat);
     }
 }

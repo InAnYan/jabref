@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
@@ -44,6 +45,7 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.StandardFileType;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
+import org.jabref.model.ai.AiMetadata;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.database.BibDatabaseMode;
@@ -327,7 +329,7 @@ public class AiChatViewModel extends AbstractViewModel {
                      .ifPresent(path -> {
                          try {
                              AiChatMarkdownExporter exporter = new AiChatMarkdownExporter(entryTypesManager, fieldPreferences, aiPreferences.getMarkdownChatExportTemplate());
-                             String content = exporter.export(getBibEntriesFromFullEntries(), getDatabaseModeOrDefault(), messages);
+                             String content = exporter.export(buildMetadata(), getBibEntriesFromFullEntries(), getDatabaseModeOrDefault(), messages);
                              Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                              dialogService.notify(Localization.lang("Export operation finished successfully."));
                          } catch (IOException e) {
@@ -354,12 +356,8 @@ public class AiChatViewModel extends AbstractViewModel {
         dialogService.showFileSaveDialog(fileDialogConfiguration)
                      .ifPresent(path -> {
                          try {
-                             ChatModel model = chatModel.get();
-                             String provider = model != null ? model.getAiProvider().getDisplayName() : "";
-                             String modelName = model != null ? model.getName() : "";
-
                              AiChatJsonExporter exporter = new AiChatJsonExporter(entryTypesManager, fieldPreferences);
-                             String content = exporter.export(provider, modelName, getBibEntriesFromFullEntries(), getDatabaseModeOrDefault(), messages);
+                             String content = exporter.export(buildMetadata(), getBibEntriesFromFullEntries(), getDatabaseModeOrDefault(), messages);
                              Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                              dialogService.notify(Localization.lang("Export operation finished successfully."));
                          } catch (IOException e) {
@@ -367,6 +365,14 @@ public class AiChatViewModel extends AbstractViewModel {
                              dialogService.showErrorDialogAndWait(Localization.lang("Problem occurred while writing the export file"), e);
                          }
                      });
+    }
+
+    private AiMetadata buildMetadata() {
+        ChatModel model = chatModel.get();
+        if (model == null) {
+            return AiMetadata.empty();
+        }
+        return new AiMetadata(model.getAiProvider(), model.getName(), Instant.now());
     }
 
     private List<BibEntry> getBibEntriesFromFullEntries() {

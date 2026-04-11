@@ -55,9 +55,9 @@ public class AiDefaultTemplates {
             ## Conversation
 
             #foreach( $message in $messages )
-            **${message.role}:**
+            **$message.role().getDisplayName():**
 
-            ${message.content}
+            $message.content()
 
             #end""";
 

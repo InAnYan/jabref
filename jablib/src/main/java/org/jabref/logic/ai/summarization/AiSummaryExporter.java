@@ -1,5 +1,6 @@
 package org.jabref.logic.ai.summarization;
 
+import org.jabref.model.ai.AiMetadata;
 import org.jabref.model.ai.summarization.AiSummary;
 import org.jabref.model.database.BibDatabaseMode;
 import org.jabref.model.entry.BibEntry;
@@ -8,5 +9,5 @@ import org.jabref.model.entry.BibEntry;
 ///
 /// Implementations may produce different output formats (Markdown, JSON, etc.).
 public interface AiSummaryExporter {
-    String export(BibEntry entry, BibDatabaseMode mode, AiSummary summary);
+    String export(AiMetadata metadata, BibEntry entry, BibDatabaseMode mode, AiSummary summary);
 }

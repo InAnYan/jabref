@@ -2,7 +2,6 @@ package org.jabref.logic.ai.chatting;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,6 +11,7 @@ import org.jabref.logic.bibtex.BibEntryWriter;
 import org.jabref.logic.bibtex.FieldPreferences;
 import org.jabref.logic.bibtex.FieldWriter;
 import org.jabref.logic.exporter.BibWriter;
+import org.jabref.model.ai.AiMetadata;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.database.BibDatabaseMode;
 import org.jabref.model.entry.BibEntry;
@@ -48,15 +48,11 @@ public class AiChatJsonExporter implements AiChatExporter {
     }
 
     @Override
-    public String export(List<BibEntry> entries, BibDatabaseMode mode, List<ChatMessage> messages) {
-        return export("", "", entries, mode, messages);
-    }
-
-    public String export(String aiProvider, String model, List<BibEntry> entries, BibDatabaseMode mode, List<ChatMessage> messages) {
+    public String export(AiMetadata metadata, List<BibEntry> entries, BibDatabaseMode mode, List<ChatMessage> messages) {
         Map<String, Object> root = new LinkedHashMap<>();
-        root.put("latest_provider", aiProvider);
-        root.put("latest_model", model);
-        root.put("export_timestamp", Instant.now().toString());
+        root.put("latest_provider", metadata.aiProvider() != null ? metadata.aiProvider().getDisplayName() : "");
+        root.put("latest_model", metadata.model());
+        root.put("export_timestamp", metadata.timestamp().toString());
 
         List<Map<String, Object>> entriesList = new ArrayList<>();
         for (BibEntry entry : entries) {

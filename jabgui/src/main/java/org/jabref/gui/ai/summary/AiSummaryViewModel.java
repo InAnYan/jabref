@@ -35,6 +35,7 @@ import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.bibtex.FieldPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.StandardFileType;
+import org.jabref.model.ai.AiMetadata;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.summarization.AiSummary;
 import org.jabref.model.database.BibDatabaseContext;
@@ -391,7 +392,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
                      .ifPresent(path -> {
                          try {
                              AiSummaryMarkdownExporter exporter = new AiSummaryMarkdownExporter(entryTypesManager, fieldPreferences, aiPreferences.getMarkdownChatExportTemplate());
-                             String content = exporter.export(fullEntry.entry(), fullEntry.databaseContext().getMode(), currentSummary);
+                             AiMetadata metadata = buildMetadata(currentSummary);
+                             String content = exporter.export(metadata, fullEntry.entry(), fullEntry.databaseContext().getMode(), currentSummary);
                              Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                              dialogService.notify(Localization.lang("Export operation finished successfully."));
                          } catch (IOException e) {
@@ -420,7 +422,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
                      .ifPresent(path -> {
                          try {
                              AiSummaryJsonExporter exporter = new AiSummaryJsonExporter(entryTypesManager, fieldPreferences);
-                             String content = exporter.export(fullEntry.entry(), fullEntry.databaseContext().getMode(), currentSummary);
+                             AiMetadata metadata = buildMetadata(currentSummary);
+                             String content = exporter.export(metadata, fullEntry.entry(), fullEntry.databaseContext().getMode(), currentSummary);
                              Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                              dialogService.notify(Localization.lang("Export operation finished successfully."));
                          } catch (IOException e) {
@@ -428,5 +431,9 @@ public class AiSummaryViewModel extends AbstractViewModel {
                              dialogService.showErrorDialogAndWait(Localization.lang("Problem occurred while writing the export file"), e);
                          }
                      });
+    }
+
+    private static AiMetadata buildMetadata(AiSummary summary) {
+        return new AiMetadata(summary.aiProvider(), summary.model(), summary.timestamp());
     }
 }

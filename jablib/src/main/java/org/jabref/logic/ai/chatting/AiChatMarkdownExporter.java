@@ -9,6 +9,7 @@ import org.jabref.logic.bibtex.BibEntryWriter;
 import org.jabref.logic.bibtex.FieldPreferences;
 import org.jabref.logic.bibtex.FieldWriter;
 import org.jabref.logic.exporter.BibWriter;
+import org.jabref.model.ai.AiMetadata;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.database.BibDatabaseMode;
 import org.jabref.model.entry.BibEntry;
@@ -21,10 +22,11 @@ import org.slf4j.LoggerFactory;
  * Exports an AI chat conversation to Markdown format.
  *
  * <p>The Markdown output is produced by rendering a configurable Velocity template.
- * The template has access to two variables:
+ * The template has access to the following variables:
  * <ul>
+ *   <li>{@code $metadata} — {@link AiMetadata} with provider, model, and timestamp</li>
  *   <li>{@code $bibtex} — pre-rendered BibTeX string of all associated entries</li>
- *   <li>{@code $messages} — list of {@link AiTemplateRenderer.ExportMessage} (role + content, system messages excluded)</li>
+ *   <li>{@code $messages} — filtered list of {@link ChatMessage} objects (SYSTEM messages excluded)</li>
  * </ul>
  */
 public class AiChatMarkdownExporter implements AiChatExporter {
@@ -41,23 +43,14 @@ public class AiChatMarkdownExporter implements AiChatExporter {
     }
 
     @Override
-    public String export(List<BibEntry> entries, BibDatabaseMode mode, List<ChatMessage> messages) {
+    public String export(AiMetadata metadata, List<BibEntry> entries, BibDatabaseMode mode, List<ChatMessage> messages) {
         String bibtex = concatenateBibtexEntries(entries, mode);
 
-        List<AiTemplateRenderer.ExportMessage> exportMessages = messages.stream()
+        List<ChatMessage> filteredMessages = messages.stream()
                 .filter(msg -> msg.role() != ChatMessage.Role.SYSTEM)
-                .map(msg -> {
-                    String role = switch (msg.role()) {
-                        case USER -> "User";
-                        case AI -> "AI";
-                        case ERROR -> "Error";
-                        case SYSTEM -> throw new AssertionError("SYSTEM filtered above");
-                    };
-                    return new AiTemplateRenderer.ExportMessage(role, msg.content());
-                })
                 .toList();
 
-        return AiTemplateRenderer.renderMarkdownChatExport(markdownExportTemplate, bibtex, exportMessages);
+        return AiTemplateRenderer.renderMarkdownChatExport(markdownExportTemplate, metadata, bibtex, filteredMessages);
     }
 
     private String concatenateBibtexEntries(List<BibEntry> entries, BibDatabaseMode mode) {
