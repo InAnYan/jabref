@@ -1,5 +1,9 @@
 package org.jabref.gui.ai.chat;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
@@ -14,9 +18,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import org.jabref.gui.AbstractViewModel;
+import org.jabref.gui.DialogService;
 import org.jabref.gui.util.BindingsHelper;
+import org.jabref.gui.util.FileDialogConfiguration;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.FilePreferences;
+import org.jabref.logic.ai.chatting.AiChatJsonExporter;
+import org.jabref.logic.ai.chatting.AiChatMarkdownExporter;
 import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.ChatModelFactory;
 import org.jabref.logic.ai.chatting.logic.AiChatLogic;
@@ -31,17 +39,26 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddings
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTaskRequest;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
-import org.jabref.logic.util.NotificationService;
+import org.jabref.logic.bibtex.FieldPreferences;
+import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.StandardFileType;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
+import org.jabref.model.database.BibDatabaseMode;
+import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.BibEntryTypesManager;
 
 import com.google.common.collect.Comparators;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AiChatViewModel extends AbstractViewModel {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatViewModel.class);
+
     public enum State {
         AI_TURNED_OFF,
         NO_FILES,
@@ -65,7 +82,9 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
-    private final NotificationService notificationService;
+    private final BibEntryTypesManager entryTypesManager;
+    private final FieldPreferences fieldPreferences;
+    private final DialogService dialogService;
     private final IngestionTaskAggregator ingestionTaskAggregator;
     private final IngestedDocumentsRepository ingestedDocumentsRepository;
     private final EmbeddingStore<TextSegment> embeddingStore;
@@ -76,17 +95,21 @@ public class AiChatViewModel extends AbstractViewModel {
     public AiChatViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
+            BibEntryTypesManager entryTypesManager,
+            FieldPreferences fieldPreferences,
             String chattingSystemMessageTemplate,
             String chattingUserMessageTemplate,
             IngestionTaskAggregator ingestionTaskAggregator,
             IngestedDocumentsRepository ingestedDocumentsRepository,
-            NotificationService notificationService,
+            DialogService dialogService,
             EmbeddingStore<TextSegment> embeddingStore,
             TaskExecutor taskExecutor
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
-        this.notificationService = notificationService;
+        this.entryTypesManager = entryTypesManager;
+        this.fieldPreferences = fieldPreferences;
+        this.dialogService = dialogService;
         this.ingestionTaskAggregator = ingestionTaskAggregator;
         this.ingestedDocumentsRepository = ingestedDocumentsRepository;
         this.embeddingStore = embeddingStore;
@@ -178,7 +201,7 @@ public class AiChatViewModel extends AbstractViewModel {
         if (embeddingModel != null) {
             embeddingModel.close();
         }
-        embeddingModel = EmbeddingModelFactory.create(aiPreferences, notificationService, taskExecutor);
+        embeddingModel = EmbeddingModelFactory.create(aiPreferences, dialogService, taskExecutor);
     }
 
     private void rebuildDocumentSplitter() {
@@ -284,6 +307,78 @@ public class AiChatViewModel extends AbstractViewModel {
         if (!aiChatLogic.chatHistoryProperty().isEmpty()) {
             regenerate(aiChatLogic.chatHistoryProperty().getLast().id());
         }
+    }
+
+    public void exportMarkdown() {
+        List<ChatMessage> messages = chatHistoryProperty().get();
+
+        if (messages == null || messages.isEmpty()) {
+            dialogService.notify(Localization.lang("No chat history available to export"));
+            return;
+        }
+
+        FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
+                .addExtensionFilter(StandardFileType.MARKDOWN)
+                .withDefaultExtension(StandardFileType.MARKDOWN)
+                .withInitialDirectory(Path.of(System.getProperty("user.home")))
+                .build();
+
+        dialogService.showFileSaveDialog(fileDialogConfiguration)
+                     .ifPresent(path -> {
+                         try {
+                             AiChatMarkdownExporter exporter = new AiChatMarkdownExporter(entryTypesManager, fieldPreferences, aiPreferences.getMarkdownChatExportTemplate());
+                             String content = exporter.export(getExportEntries(), getExportDatabaseMode(), messages);
+                             Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                             dialogService.notify(Localization.lang("Export operation finished successfully."));
+                         } catch (IOException e) {
+                             LOGGER.error("Problem occurred while writing the export file", e);
+                             dialogService.showErrorDialogAndWait(Localization.lang("Problem occurred while writing the export file"), e);
+                         }
+                     });
+    }
+
+    public void exportJson() {
+        List<ChatMessage> messages = chatHistoryProperty().get();
+
+        if (messages == null || messages.isEmpty()) {
+            dialogService.notify(Localization.lang("No chat history available to export"));
+            return;
+        }
+
+        FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
+                .addExtensionFilter(StandardFileType.JSON)
+                .withDefaultExtension(StandardFileType.JSON)
+                .withInitialDirectory(Path.of(System.getProperty("user.home")))
+                .build();
+
+        dialogService.showFileSaveDialog(fileDialogConfiguration)
+                     .ifPresent(path -> {
+                         try {
+                             ChatModel model = chatModel.get();
+                             String provider = model != null ? model.getAiProvider().getDisplayName() : "";
+                             String modelName = model != null ? model.getName() : "";
+
+                             AiChatJsonExporter exporter = new AiChatJsonExporter(entryTypesManager, fieldPreferences);
+                             String content = exporter.export(provider, modelName, getExportEntries(), getExportDatabaseMode(), messages);
+                             Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                             dialogService.notify(Localization.lang("Export operation finished successfully."));
+                         } catch (IOException e) {
+                             LOGGER.error("Problem occurred while writing the export file", e);
+                             dialogService.showErrorDialogAndWait(Localization.lang("Problem occurred while writing the export file"), e);
+                         }
+                     });
+    }
+
+    private List<BibEntry> getExportEntries() {
+        return entries.stream()
+                      .map(FullBibEntry::entry)
+                      .toList();
+    }
+
+    private BibDatabaseMode getExportDatabaseMode() {
+        return entries.isEmpty()
+                ? BibDatabaseMode.BIBTEX
+                : entries.getFirst().databaseContext().getMode();
     }
 
     public ListProperty<FullBibEntry> entriesProperty() {

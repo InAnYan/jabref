@@ -79,6 +79,7 @@ public class AiPreferences {
     private final StringProperty summarizationFullDocumentUserMessageTemplate;
     private final StringProperty citationParsingSystemMessageTemplate;
     private final StringProperty citationParsingUserMessageTemplate;
+    private final StringProperty markdownChatExportTemplate;
 
     private Runnable apiKeyChangeListener;
 
@@ -116,7 +117,8 @@ public class AiPreferences {
             String summarizationFullDocumentSystemMessageTemplate,
             String summarizationFullDocumentUserMessageTemplate,
             String citationParsingSystemMessageTemplate,
-            String citationParsingUserMessageTemplate
+            String citationParsingUserMessageTemplate,
+            String markdownChatExportTemplate
     ) {
         this.enableAi = new SimpleBooleanProperty(enableAi);
         this.autoGenerateEmbeddings = new SimpleBooleanProperty(autoGenerateEmbeddings);
@@ -160,6 +162,7 @@ public class AiPreferences {
         this.summarizationFullDocumentUserMessageTemplate = new SimpleStringProperty(summarizationFullDocumentUserMessageTemplate);
         this.citationParsingSystemMessageTemplate = new SimpleStringProperty(citationParsingSystemMessageTemplate);
         this.citationParsingUserMessageTemplate = new SimpleStringProperty(citationParsingUserMessageTemplate);
+        this.markdownChatExportTemplate = new SimpleStringProperty(markdownChatExportTemplate);
 
         this.apiKeyChangeListener = () -> {
         };
@@ -722,5 +725,17 @@ public class AiPreferences {
 
     public void setCitationParsingUserMessageTemplate(String template) {
         citationParsingUserMessageTemplate.set(template);
+    }
+
+    public StringProperty markdownChatExportTemplateProperty() {
+        return markdownChatExportTemplate;
+    }
+
+    public String getMarkdownChatExportTemplate() {
+        return markdownChatExportTemplate.get();
+    }
+
+    public void setMarkdownChatExportTemplate(String template) {
+        markdownChatExportTemplate.set(template);
     }
 }

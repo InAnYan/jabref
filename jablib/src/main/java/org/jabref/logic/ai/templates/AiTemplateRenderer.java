@@ -23,6 +23,28 @@ public class AiTemplateRenderer {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
     }
 
+    /// Helper class representing a chat message for use inside Velocity export templates.
+    ///
+    /// Velocity accesses Java-bean style getters ({@code getRole()}, {@code getContent()}),
+    /// which is why this is a plain class rather than a record.
+    public static class ExportMessage {
+        private final String role;
+        private final String content;
+
+        public ExportMessage(String role, String content) {
+            this.role = role;
+            this.content = content;
+        }
+
+        public String getRole() {
+            return role;
+        }
+
+        public String getContent() {
+            return content;
+        }
+    }
+
     public static String renderChattingSystemMessage(String templateSource, List<BibEntry> entries) {
         VelocityContext context = new VelocityContext(BASE_CONTEXT);
         context.put("entries", entries);
@@ -55,6 +77,13 @@ public class AiTemplateRenderer {
     public static String renderCitationParsingSystemMessage(String templateSource) {
         VelocityContext context = new VelocityContext(BASE_CONTEXT);
         return render(templateSource, "CITATION_PARSING_SYSTEM_MESSAGE", context);
+    }
+
+    public static String renderMarkdownChatExport(String templateSource, String bibtex, List<ExportMessage> messages) {
+        VelocityContext context = new VelocityContext(BASE_CONTEXT);
+        context.put("bibtex", bibtex);
+        context.put("messages", messages);
+        return render(templateSource, "MARKDOWN_CHAT_EXPORT", context);
     }
 
     private static String render(String templateSource, String logName, VelocityContext context) {

@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * <p>The JSON output includes export metadata (provider, model, timestamp), BibTeX entry data,
  * and the conversation messages with role/content pairs.
  */
-public class AiChatJsonExporter {
+public class AiChatJsonExporter implements AiChatExporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiChatJsonExporter.class);
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
@@ -45,6 +45,11 @@ public class AiChatJsonExporter {
     public AiChatJsonExporter(BibEntryTypesManager entryTypesManager, FieldPreferences fieldPreferences) {
         this.entryTypesManager = entryTypesManager;
         this.fieldPreferences = fieldPreferences;
+    }
+
+    @Override
+    public String export(List<BibEntry> entries, BibDatabaseMode mode, List<ChatMessage> messages) {
+        return export("", "", entries, mode, messages);
     }
 
     public String export(String aiProvider, String model, List<BibEntry> entries, BibDatabaseMode mode, List<ChatMessage> messages) {

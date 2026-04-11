@@ -1,6 +1,9 @@
 package org.jabref.gui.ai.summary;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +14,7 @@ import javafx.beans.value.ChangeListener;
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.util.BindingsHelper;
+import org.jabref.gui.util.FileDialogConfiguration;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.FilePreferences;
@@ -18,6 +22,8 @@ import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.ChatModelFactory;
 import org.jabref.logic.ai.ingestion.logic.parsing.UniversalContentParser;
 import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.logic.ai.summarization.AiSummaryJsonExporter;
+import org.jabref.logic.ai.summarization.AiSummaryMarkdownExporter;
 import org.jabref.logic.ai.summarization.InMemorySummaryCache;
 import org.jabref.logic.ai.summarization.SummarizationTaskAggregator;
 import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
@@ -26,10 +32,14 @@ import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
+import org.jabref.logic.bibtex.FieldPreferences;
+import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.StandardFileType;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.summarization.AiSummary;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.BibEntryTypesManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +72,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
+    private final BibEntryTypesManager entryTypesManager;
+    private final FieldPreferences fieldPreferences;
     private final SummariesRepository summariesRepository;
     private final InMemorySummaryCache inMemoryCache;
     private final SummarizationTaskAggregator summarizationTaskAggregator;
@@ -70,6 +82,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
     public AiSummaryViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
+            BibEntryTypesManager entryTypesManager,
+            FieldPreferences fieldPreferences,
             SummariesRepository summariesRepository,
             InMemorySummaryCache inMemoryCache,
             SummarizationTaskAggregator summarizationTaskAggregator,
@@ -77,6 +91,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
+        this.entryTypesManager = entryTypesManager;
+        this.fieldPreferences = fieldPreferences;
         this.summariesRepository = summariesRepository;
         this.inMemoryCache = inMemoryCache;
         this.summarizationTaskAggregator = summarizationTaskAggregator;
@@ -354,5 +370,63 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
     public ObjectProperty<GenerateSummaryTask> currentTaskProperty() {
         return currentTask;
+    }
+
+    public void exportMarkdown() {
+        AiSummary currentSummary = summary.get();
+        FullBibEntry fullEntry = getEntry();
+
+        if (currentSummary == null || fullEntry == null) {
+            dialogService.notify(Localization.lang("No summary available to export"));
+            return;
+        }
+
+        FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
+                .addExtensionFilter(StandardFileType.MARKDOWN)
+                .withDefaultExtension(StandardFileType.MARKDOWN)
+                .withInitialDirectory(Path.of(System.getProperty("user.home")))
+                .build();
+
+        dialogService.showFileSaveDialog(fileDialogConfiguration)
+                     .ifPresent(path -> {
+                         try {
+                             AiSummaryMarkdownExporter exporter = new AiSummaryMarkdownExporter(entryTypesManager, fieldPreferences, aiPreferences.getMarkdownChatExportTemplate());
+                             String content = exporter.export(fullEntry.entry(), fullEntry.databaseContext().getMode(), currentSummary);
+                             Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                             dialogService.notify(Localization.lang("Export operation finished successfully."));
+                         } catch (IOException e) {
+                             LOGGER.error("Problem occurred while writing the export file", e);
+                             dialogService.showErrorDialogAndWait(Localization.lang("Problem occurred while writing the export file"), e);
+                         }
+                     });
+    }
+
+    public void exportJson() {
+        AiSummary currentSummary = summary.get();
+        FullBibEntry fullEntry = getEntry();
+
+        if (currentSummary == null || fullEntry == null) {
+            dialogService.notify(Localization.lang("No summary available to export"));
+            return;
+        }
+
+        FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
+                .addExtensionFilter(StandardFileType.JSON)
+                .withDefaultExtension(StandardFileType.JSON)
+                .withInitialDirectory(Path.of(System.getProperty("user.home")))
+                .build();
+
+        dialogService.showFileSaveDialog(fileDialogConfiguration)
+                     .ifPresent(path -> {
+                         try {
+                             AiSummaryJsonExporter exporter = new AiSummaryJsonExporter(entryTypesManager, fieldPreferences);
+                             String content = exporter.export(fullEntry.entry(), fullEntry.databaseContext().getMode(), currentSummary);
+                             Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                             dialogService.notify(Localization.lang("Export operation finished successfully."));
+                         } catch (IOException e) {
+                             LOGGER.error("Problem occurred while writing the export file", e);
+                             dialogService.showErrorDialogAndWait(Localization.lang("Problem occurred while writing the export file"), e);
+                         }
+                     });
     }
 }

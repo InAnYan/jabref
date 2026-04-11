@@ -16,13 +16,14 @@ import org.jabref.model.entry.BibEntryTypesManager;
  * <p>Internally constructs a single-message dummy chat containing the summary content
  * and delegates to {@link AiChatMarkdownExporter}.
  */
-public class AiSummaryMarkdownExporter {
+public class AiSummaryMarkdownExporter implements AiSummaryExporter {
     private final AiChatMarkdownExporter chatExporter;
 
-    public AiSummaryMarkdownExporter(BibEntryTypesManager entryTypesManager, FieldPreferences fieldPreferences) {
-        this.chatExporter = new AiChatMarkdownExporter(entryTypesManager, fieldPreferences);
+    public AiSummaryMarkdownExporter(BibEntryTypesManager entryTypesManager, FieldPreferences fieldPreferences, String markdownExportTemplate) {
+        this.chatExporter = new AiChatMarkdownExporter(entryTypesManager, fieldPreferences, markdownExportTemplate);
     }
 
+    @Override
     public String export(BibEntry entry, BibDatabaseMode mode, AiSummary summary) {
         List<ChatMessage> dummyChat = List.of(ChatMessage.aiMessage(summary.content(), List.of()));
         return chatExporter.export(List.of(entry), mode, dummyChat);

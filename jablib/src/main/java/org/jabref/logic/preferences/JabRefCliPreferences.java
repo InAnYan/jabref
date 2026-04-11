@@ -417,6 +417,7 @@ public class JabRefCliPreferences implements CliPreferences {
     private static final String AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE = "aiCitationParsingUserMessageTemplate";
     private static final String AI_SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE = "aiSummarizationFullDocumentSystemMessageTemplate";
     private static final String AI_SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE_TEMPLATE = "aiSummarizationFullDocumentUserMessageTemplate";
+    private static final String AI_MARKDOWN_CHAT_EXPORT_TEMPLATE = "aiMarkdownChatExportTemplate";
 
     private static final String LAST_USED_DIRECTORY = "lastUsedDirectory";
 
@@ -772,6 +773,7 @@ public class JabRefCliPreferences implements CliPreferences {
         defaults.put(AI_SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.getSummarizationFullDocumentSystemMessageTemplate());
         defaults.put(AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.getCitationParsingSystemMessageTemplate());
         defaults.put(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE, AiDefaultTemplates.getCitationParsingUserMessageTemplate());
+        defaults.put(AI_MARKDOWN_CHAT_EXPORT_TEMPLATE, AiDefaultTemplates.getMarkdownChatExportTemplate());
         // endregion
 
         // endregion
@@ -2075,7 +2077,8 @@ public class JabRefCliPreferences implements CliPreferences {
                 get(AI_SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE),
                 get(AI_SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE_TEMPLATE),
                 get(AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE),
-                get(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE));
+                get(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE),
+                get(AI_MARKDOWN_CHAT_EXPORT_TEMPLATE));
 
         EasyBind.listen(aiPreferences.enableAiProperty(), (_, _, newValue) -> putBoolean(AI_ENABLED, newValue));
         EasyBind.listen(aiPreferences.autoGenerateEmbeddingsProperty(), (_, _, newValue) -> putBoolean(AI_AUTO_GENERATE_EMBEDDINGS, newValue));
@@ -2119,6 +2122,7 @@ public class JabRefCliPreferences implements CliPreferences {
         EasyBind.listen(aiPreferences.summarizationFullDocumentUserMessageTemplateProperty(), (_, _, newValue) -> put(AI_SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE_TEMPLATE, newValue));
         EasyBind.listen(aiPreferences.citationParsingSystemMessageTemplateProperty(), (_, _, newValue) -> put(AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE, newValue));
         EasyBind.listen(aiPreferences.citationParsingUserMessageTemplateProperty(), (_, _, newValue) -> put(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE, newValue));
+        EasyBind.listen(aiPreferences.markdownChatExportTemplateProperty(), (_, _, newValue) -> put(AI_MARKDOWN_CHAT_EXPORT_TEMPLATE, newValue));
 
         return aiPreferences;
     }

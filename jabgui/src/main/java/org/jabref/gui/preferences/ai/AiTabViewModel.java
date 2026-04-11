@@ -87,6 +87,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     private final StringProperty citationParsingUserMessageTemplate = new SimpleStringProperty();
     private final StringProperty summarizationFullDocumentSystemMessageTemplate = new SimpleStringProperty();
     private final StringProperty summarizationFullDocumentUserMessageTemplate = new SimpleStringProperty();
+    private final StringProperty markdownChatExportTemplate = new SimpleStringProperty();
 
     private final StringProperty temperature = new SimpleStringProperty();
     private final IntegerProperty contextWindowSize = new SimpleIntegerProperty();
@@ -331,6 +332,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         citationParsingUserMessageTemplate.set(aiPreferences.getCitationParsingUserMessageTemplate());
         summarizationFullDocumentSystemMessageTemplate.set(aiPreferences.getSummarizationFullDocumentSystemMessageTemplate());
         summarizationFullDocumentUserMessageTemplate.set(aiPreferences.getSummarizationFullDocumentUserMessageTemplate());
+        markdownChatExportTemplate.set(aiPreferences.getMarkdownChatExportTemplate());
 
         temperature.setValue(LocalizedNumbers.doubleToString(aiPreferences.getTemperature()));
         contextWindowSize.setValue(aiPreferences.getContextWindowSize());
@@ -379,6 +381,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         aiPreferences.setCitationParsingUserMessageTemplate(citationParsingUserMessageTemplate.get());
         aiPreferences.setSummarizationFullDocumentSystemMessageTemplate(summarizationFullDocumentSystemMessageTemplate.get());
         aiPreferences.setSummarizationFullDocumentUserMessageTemplate(summarizationFullDocumentUserMessageTemplate.get());
+        aiPreferences.setMarkdownChatExportTemplate(markdownChatExportTemplate.get());
 
         // We already check the correctness of temperature and RAG minimum score in validators, so we don't need to check it here.
         aiPreferences.setTemperature(LocalizedNumbers.stringToDouble(oldLocale, temperature.get()).get());
@@ -411,6 +414,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         resetCitationParsingSystemMessageTemplate();
         resetCitationParsingUserMessageTemplate();
         resetSummarizationFullDocumentSystemMessageTemplate();
+        resetMarkdownChatExportTemplate();
     }
 
     public void resetChattingSystemMessageTemplate() {
@@ -439,6 +443,14 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
     public void resetSummarizationFullDocumentSystemMessageTemplate() {
         summarizationFullDocumentSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationFullDocumentSystemMessageTemplate());
+    }
+
+    public void resetMarkdownChatExportTemplate() {
+        markdownChatExportTemplate.set(AiDefaultTemplates.getMarkdownChatExportTemplate());
+    }
+
+    public StringProperty markdownChatExportTemplateProperty() {
+        return markdownChatExportTemplate;
     }
 
     @Override
