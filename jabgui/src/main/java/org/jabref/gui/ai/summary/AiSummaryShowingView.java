@@ -155,4 +155,3 @@ public class AiSummaryShowingView extends VBox {
         viewModel.exportJson();
     }
 }
-
