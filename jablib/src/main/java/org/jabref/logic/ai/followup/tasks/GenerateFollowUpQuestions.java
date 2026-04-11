@@ -15,11 +15,8 @@ import dev.langchain4j.data.message.UserMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// Background task that generates follow-up questions based on a completed user/AI conversation turn.
 public class GenerateFollowUpQuestions extends BackgroundTask<List<String>> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateFollowUpQuestions.class);
-    private static final int MIN_QUESTION_LENGTH = 5;
-    private static final int MAX_QUESTION_LENGTH = 100;
     private static final Pattern NUMBERED_PATTERN = Pattern.compile("^\\s*\\d+\\.\\s*(.+)$", Pattern.MULTILINE);
     private static final String QUOTE_REMOVAL_PATTERN = "^[\"']|[\"']$";
 
@@ -103,16 +100,6 @@ public class GenerateFollowUpQuestions extends BackgroundTask<List<String>> {
     }
 
     private boolean isValidQuestion(String question) {
-        if (question == null || question.isBlank()) {
-            return false;
-        }
-
-        int length = question.length();
-        if (length < MIN_QUESTION_LENGTH || length > MAX_QUESTION_LENGTH) {
-            LOGGER.debug("Question length {} is outside valid range [{}, {}]", length, MIN_QUESTION_LENGTH, MAX_QUESTION_LENGTH);
-            return false;
-        }
-
-        return true;
+        return question != null && !question.isBlank();
     }
 }
