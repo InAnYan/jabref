@@ -7,7 +7,7 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.ingestion.logic.EmbeddingsCleaner;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
-import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.ai.ingestion.util.FileHasher;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.LinkedFile;
 
@@ -51,11 +51,17 @@ public class LinkedFileIngestor {
         if (path.isEmpty()) {
             LOGGER.error("Could not find path for a linked file \"{}\", while generating embeddings", linkedFile.getLink());
             LOGGER.debug("Unable to generate embeddings for file \"{}\", because it was not found while generating embeddings", linkedFile.getLink());
-            throw new RuntimeException(Localization.lang("Could not find path for a linked file '%0' while generating embeddings.", linkedFile.getLink()));
+            return;
+        }
+
+        Optional<String> fileHash = FileHasher.computeHash(path.get());
+        if (fileHash.isEmpty()) {
+            LOGGER.error("Could not compute hash for file \"{}\" while generating embeddings", linkedFile.getLink());
+            return;
         }
 
         Metadata metadata = new Metadata();
-        metadata.put(EmbeddingsCleaner.LINK_METADATA_KEY, path.get().toString());
+        metadata.put(EmbeddingsCleaner.FILE_HASH_METADATA_KEY, fileHash.get());
 
         persistedFileIngestor.ingest(metadata, path.get());
     }

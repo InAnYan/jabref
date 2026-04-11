@@ -30,6 +30,7 @@ public final class AnswerEngineFactory {
                     new FullDocumentAnswerEngine(filePreferences);
             case EMBEDDINGS_SEARCH ->
                     new EmbeddingsSearchAnswerEngine(
+                            filePreferences,
                             embeddingModel,
                             embeddingStore,
                             ragMinScore,
