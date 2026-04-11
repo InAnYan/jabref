@@ -60,6 +60,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private Tab summarizationCombineUserMessageTab;
     @FXML private Tab citationParsingSystemMessageTab;
     @FXML private Tab citationParsingUserMessageTab;
+    @FXML private Tab followUpQuestionsTemplateTab;
     @FXML private TextArea systemMessageTextArea;
     @FXML private TextArea userMessageTextArea;
     @FXML private TextArea summarizationChunkSystemMessageTextArea;
@@ -68,6 +69,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private TextArea summarizationCombineUserMessageTextArea;
     @FXML private TextArea citationParsingSystemMessageTextArea;
     @FXML private TextArea citationParsingUserMessageTextArea;
+    @FXML private TextArea followUpQuestionsTemplateTextArea;
     @FXML private Button generalSettingsHelp;
     @FXML private Button expertSettingsHelp;
     @FXML private Button templatesHelp;
@@ -76,8 +78,6 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private CheckBox generateFollowUpQuestions;
     @FXML private Label followUpQuestionsCountLabel;
     @FXML private IntegerInputField followUpQuestionsCountField;
-    @FXML private Tab followUpQuestionsTemplateTab;
-    @FXML private TextArea followUpQuestionsTemplateTextArea;
 
     public AiTab() {
         ViewLoader.view(this)
