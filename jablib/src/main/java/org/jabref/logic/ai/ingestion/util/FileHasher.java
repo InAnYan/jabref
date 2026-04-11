@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,14 +15,15 @@ public class FileHasher {
     private static final String ALGORITHM = "SHA-256";
     private static final int BUFFER_SIZE = 8192;
 
-    /**
-     * Computes the SHA-256 hash of a file.
-     *
-     * @param path the path to the file
-     * @return the hex-encoded hash of the file
-     * @throws IOException if an I/O error occurs while reading the file
-     */
-    public static String computeHash(Path path) throws IOException {
+    private FileHasher() {
+        throw new UnsupportedOperationException("cannot instantiate a utility class");
+    }
+
+    /// Computes the SHA-256 hash of a file.
+    ///
+    /// @param path the path to the file
+    /// @return Optional containing the hex-encoded hash of the file, or empty if an error occurred
+    public static Optional<String> computeHash(Path path) {
         try {
             MessageDigest digest = MessageDigest.getInstance(ALGORITHM);
             byte[] buffer = new byte[BUFFER_SIZE];
@@ -33,19 +35,20 @@ public class FileHasher {
                 }
             }
 
-            return bytesToHex(digest.digest());
+            return Optional.of(bytesToHex(digest.digest()));
         } catch (NoSuchAlgorithmException e) {
             LOGGER.error("SHA-256 algorithm not available", e);
             throw new RuntimeException("SHA-256 algorithm not available", e);
+        } catch (IOException e) {
+            LOGGER.error("Could not compute hash for file \"{}\"", path, e);
+            return Optional.empty();
         }
     }
 
-    /**
-     * Converts a byte array to a hexadecimal string.
-     *
-     * @param bytes the byte array
-     * @return the hex-encoded string
-     */
+    /// Converts a byte array to a hexadecimal string.
+    ///
+    /// @param bytes the byte array
+    /// @return the hex-encoded string
     private static String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {

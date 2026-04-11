@@ -5,27 +5,21 @@ import org.jabref.logic.ai.ingestion.logic.documentsplitting.SlidingWindowDocume
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.model.ai.pipeline.DocumentSplitterKind;
 
-/**
- * Static factory for creating {@link DocumentSplitter} instances.
- * <p>
- * All parameters are passed explicitly so this class carries no mutable state.
- */
+/// Static factory for creating {@link DocumentSplitter} instances.
+/// All parameters are passed explicitly so this class carries no mutable state.
 public final class DocumentSplitterFactory {
     private DocumentSplitterFactory() {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
     }
 
     public static DocumentSplitter create(DocumentSplitterKind kind, int chunkSize, int overlapSize) {
-        // Because in the future there will be more strategies.
         return switch (kind) {
             case SLIDING_WINDOW ->
                     new SlidingWindowDocumentSplitter(chunkSize, overlapSize);
         };
     }
 
-    /**
-     * Convenience overload that reads all parameters from {@link AiPreferences}.
-     */
+    /// Convenience overload that reads all parameters from {@link AiPreferences}.
     public static DocumentSplitter create(AiPreferences aiPreferences) {
         return create(
                 aiPreferences.getDocumentSplitterKind(),

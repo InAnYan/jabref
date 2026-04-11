@@ -34,12 +34,12 @@ import org.h2.mvstore.MVStore;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.Comparator.comparingDouble;
-import static org.jabref.logic.ai.ingestion.logic.EmbeddingsCleaner.LINK_METADATA_KEY;
+import static org.jabref.logic.ai.ingestion.logic.EmbeddingsCleaner.FILE_HASH_METADATA_KEY;
 
 /**
  * A custom implementation of langchain4j's {@link EmbeddingStore} that uses a {@link MVStore} as an embedded database.
  * <p>
- * Every embedding has 3 fields: float array (the embedding itself), file where it was generated from, and the embedded
+ * Every embedding has 3 fields: float array (the embedding itself), file hash where it was generated from, and the embedded
  * string (the content).
  * <p>
  */
@@ -80,8 +80,8 @@ public class MVStoreEmbeddingStore extends MVStoreBase implements EmbeddingStore
     @Override
     public String add(Embedding embedding, TextSegment textSegment) {
         String id = String.valueOf(UUID.randomUUID());
-        String linkedFile = textSegment.metadata().getString(LINK_METADATA_KEY);
-        embeddingsMap.put(id, new EmbeddingRecord(linkedFile, textSegment.text(), embedding.vector()));
+        String fileHash = textSegment.metadata().getString(FILE_HASH_METADATA_KEY);
+        embeddingsMap.put(id, new EmbeddingRecord(fileHash, textSegment.text(), embedding.vector()));
         return id;
     }
 
@@ -109,8 +109,8 @@ public class MVStoreEmbeddingStore extends MVStoreBase implements EmbeddingStore
     /// The main function of finding most relevant text segments.
     /// Note: the only filters supported are:
     ///
-    /// - [IsIn] with key [FileEmbeddingsManager#LINK_METADATA_KEY]
-    /// - [IsEqualTo] with key [FileEmbeddingsManager#LINK_METADATA_KEY]
+    /// - [IsIn] with key [EmbeddingsCleaner#FILE_HASH_METADATA_KEY]
+    /// - [IsEqualTo] with key [EmbeddingsCleaner#FILE_HASH_METADATA_KEY]
     ///
     /// @param request embedding search request
     /// @return an [EmbeddingSearchResult], which contains most relevant text segments
@@ -136,7 +136,7 @@ public class MVStoreEmbeddingStore extends MVStoreBase implements EmbeddingStore
                                 new TextSegment(
                                         eRecord.content,
                                         new Metadata(
-                                                eRecord.file == null ? Map.of() : Map.of(LINK_METADATA_KEY, eRecord.file)))));
+                                                eRecord.file == null ? Map.of() : Map.of(FILE_HASH_METADATA_KEY, eRecord.file)))));
 
                 if (matches.size() > request.maxResults()) {
                     matches.poll();
@@ -160,10 +160,10 @@ public class MVStoreEmbeddingStore extends MVStoreBase implements EmbeddingStore
             case null ->
                     embeddingsMap.keySet().stream();
 
-            case IsIn isInFilter when Objects.equals(isInFilter.key(), LINK_METADATA_KEY) ->
+            case IsIn isInFilter when Objects.equals(isInFilter.key(), FILE_HASH_METADATA_KEY) ->
                     filterEntries(entry -> isInFilter.comparisonValues().contains(entry.getValue().file));
 
-            case IsEqualTo isEqualToFilter when Objects.equals(isEqualToFilter.key(), LINK_METADATA_KEY) ->
+            case IsEqualTo isEqualToFilter when Objects.equals(isEqualToFilter.key(), FILE_HASH_METADATA_KEY) ->
                     filterEntries(entry -> isEqualToFilter.comparisonValue().equals(entry.getValue().file));
 
             default ->

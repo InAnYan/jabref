@@ -1,7 +1,7 @@
 package org.jabref.logic.ai.ingestion.logic.ingestion;
 
-import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
@@ -38,21 +38,17 @@ public class PersistedFileIngestor {
             Metadata metadata,
             Path path
     ) throws InterruptedException {
-        String currentFileHash;
+        Optional<String> currentFileHash = FileHasher.computeHash(path);
         boolean shouldIngest = true;
 
-        try {
-            currentFileHash = FileHasher.computeHash(path);
-
-            if (ingestedDocumentsRepository.isDocumentIngested(currentFileHash)) {
+        if (currentFileHash.isPresent()) {
+            if (ingestedDocumentsRepository.isDocumentIngested(currentFileHash.get())) {
                 // File has already been ingested and has not changed (same hash)
                 LOGGER.debug("No need to generate embeddings for file \"{}\", because it was already ingested and has not changed", path);
                 shouldIngest = false;
             }
-        } catch (IOException e) {
-            LOGGER.error("Could not compute hash of file \"{}\"", path, e);
-            LOGGER.warn("Possibly regenerating embeddings for file \"{}\"", path);
-            currentFileHash = null;
+        } else {
+            LOGGER.warn("Possibly regenerating embeddings for file \"{}\" due to hash computation failure", path);
         }
 
         if (!shouldIngest) {
@@ -61,8 +57,8 @@ public class PersistedFileIngestor {
 
         fileIngestor.ingest(metadata, path);
 
-        if (!Thread.currentThread().isInterrupted() && currentFileHash != null) {
-            ingestedDocumentsRepository.markDocumentAsFullyIngested(currentFileHash);
+        if (!Thread.currentThread().isInterrupted() && currentFileHash.isPresent()) {
+            ingestedDocumentsRepository.markDocumentAsFullyIngested(currentFileHash.get());
         }
     }
 }

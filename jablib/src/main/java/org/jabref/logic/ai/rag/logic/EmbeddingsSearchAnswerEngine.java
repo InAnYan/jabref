@@ -1,9 +1,12 @@
 package org.jabref.logic.ai.rag.logic;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
+import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.ingestion.logic.EmbeddingsCleaner;
+import org.jabref.logic.ai.ingestion.util.FileHasher;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
@@ -25,17 +28,20 @@ import org.slf4j.LoggerFactory;
 public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmbeddingsSearchAnswerEngine.class);
 
+    private final FilePreferences filePreferences;
     private final EmbeddingModel embeddingModel;
     private final EmbeddingStore<TextSegment> embeddingStore;
     private final double minimumScore;
     private final int maximumResultsCount;
 
     public EmbeddingsSearchAnswerEngine(
+            FilePreferences filePreferences,
             EmbeddingModel embeddingModel,
             EmbeddingStore<TextSegment> embeddingStore,
             double minimumScore,
             int maximumResultsCount
     ) {
+        this.filePreferences = filePreferences;
         this.embeddingModel = embeddingModel;
         this.embeddingStore = embeddingStore;
         this.minimumScore = minimumScore;
@@ -47,8 +53,6 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
             String query,
             List<FullBibEntry> entriesFilter
     ) {
-        // TODO: Simplify.
-
         List<BibEntry> entries = entriesFilter
                 .stream()
                 .map(FullBibEntry::entry)
@@ -60,13 +64,25 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
         if (linkedFiles.isEmpty()) {
             filter = Optional.empty();
         } else {
-            filter = Optional.of(MetadataFilterBuilder
-                    .metadataKey(EmbeddingsCleaner.LINK_METADATA_KEY)
-                    .isIn(linkedFiles
-                            .stream()
-                            .map(LinkedFile::getLink)
-                            .toList()
-                    ));
+            // Compute file hashes for filtering
+            List<String> fileHashes = linkedFiles
+                    .stream()
+                    .flatMap(linkedFile -> {
+                        // Get all database contexts from entriesFilter
+                        return entriesFilter.stream()
+                                            .flatMap(fullEntry -> {
+                                                Optional<Path> path = linkedFile.findIn(fullEntry.databaseContext(), filePreferences);
+                                                return path.flatMap(FileHasher::computeHash).stream();
+                                            });
+                    })
+                    .distinct()
+                    .toList();
+
+            filter = fileHashes.isEmpty()
+                     ? Optional.empty()
+                     : Optional.of(MetadataFilterBuilder
+                                   .metadataKey(EmbeddingsCleaner.FILE_HASH_METADATA_KEY)
+                                   .isIn(fileHashes));
         }
 
         EmbeddingSearchRequest embeddingSearchRequest = EmbeddingSearchRequest
@@ -84,13 +100,13 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
                 .stream()
                 .map(EmbeddingMatch::embedded)
                 .map(textSegment -> {
-                    String link = textSegment.metadata().getString(EmbeddingsCleaner.LINK_METADATA_KEY);
+                    String fileHash = textSegment.metadata().getString(EmbeddingsCleaner.FILE_HASH_METADATA_KEY);
 
-                    if (link == null) {
+                    if (fileHash == null) {
                         return new RelevantInformation(null, textSegment.text());
                     } else {
                         return new RelevantInformation(
-                                FullBibEntry.findEntryByLink(entriesFilter, link).flatMap(BibEntry::getCitationKey).orElse(null),
+                                findEntryByFileHash(entriesFilter, fileHash).flatMap(BibEntry::getCitationKey).orElse(null),
                                 textSegment.text()
                         );
                     }
@@ -100,6 +116,36 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
         LOGGER.debug("Found excerpts for the message: {}", excerpts);
 
         return excerpts;
+    }
+
+    /**
+     * Finds a BibEntry that has a LinkedFile with the given file hash.
+     *
+     * @param entries the entries to search
+     * @param fileHash the SHA-256 hash of the file
+     * @return the entry if found
+     */
+    private Optional<BibEntry> findEntryByFileHash(List<FullBibEntry> entries, String fileHash) {
+        return entries
+                .stream()
+                .flatMap(fullEntry ->
+                        fullEntry
+                                .databaseContext()
+                                .getEntries()
+                                .stream()
+                                .filter(entry ->
+                                        entry
+                                                .getFiles()
+                                                .stream()
+                                                .anyMatch(linkedFile -> {
+                                                    Optional<Path> path = linkedFile.findIn(fullEntry.databaseContext(), filePreferences);
+                                                    return path.flatMap(FileHasher::computeHash)
+                                                               .map(hash -> hash.equals(fileHash))
+                                                               .orElse(false);
+                                                })
+                                )
+                )
+                .findFirst();
     }
 
     @Override
