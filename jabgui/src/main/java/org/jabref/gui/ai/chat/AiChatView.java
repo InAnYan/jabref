@@ -2,13 +2,16 @@ package org.jabref.gui.ai.chat;
 
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ListProperty;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 
 import org.jabref.gui.DialogService;
 import org.jabref.gui.ai.AiPrivacyNoticeView;
@@ -45,6 +48,9 @@ public class AiChatView extends StackPane {
 
     @FXML private Button clearButton;
     @FXML private Label aiModelLabel;
+
+    @FXML private VBox followUpQuestionsArea;
+    @FXML private FlowPane followUpQuestionsBox;
 
     @Inject private GuiPreferences preferences;
     @Inject private AiService aiService;
@@ -85,6 +91,7 @@ public class AiChatView extends StackPane {
 
         setupBindings();
         setupValues();
+        setupFollowUpQuestions();
     }
 
     private void setupBindings() {
@@ -105,6 +112,7 @@ public class AiChatView extends StackPane {
         retryButton.managedProperty().bind(retryButton.visibleProperty());
         cancelButton.managedProperty().bind(cancelButton.visibleProperty());
         clearButton.managedProperty().bind(clearButton.visibleProperty());
+        followUpQuestionsArea.managedProperty().bind(followUpQuestionsArea.visibleProperty());
 
         BooleanBinding isAiTurnedOff = viewModel.stateProperty().isEqualTo(AiChatViewModel.State.AI_TURNED_OFF);
         BooleanBinding isNoFiles = viewModel.stateProperty().isEqualTo(AiChatViewModel.State.NO_FILES);
@@ -123,6 +131,30 @@ public class AiChatView extends StackPane {
         cancelButton.visibleProperty().bind(isWaiting.or(isError));
 
         aiModelLabel.textProperty().bind(viewModel.chatModelProperty().map(AiChatView::formatChatModelLabel));
+    }
+
+    private void setupFollowUpQuestions() {
+        followUpQuestionsArea.setVisible(false);
+
+        viewModel.followUpQuestionsProperty().addListener((ListChangeListener<String>) change -> {
+            followUpQuestionsBox.getChildren().clear();
+
+            if (viewModel.followUpQuestionsProperty().isEmpty()
+                    || !preferences.getAiPreferences().getGenerateFollowUpQuestions()) {
+                followUpQuestionsArea.setVisible(false);
+                return;
+            }
+
+            for (String question : viewModel.followUpQuestionsProperty()) {
+                Button chip = new Button(question);
+                chip.getStyleClass().addAll("outlined-button");
+                chip.setWrapText(true);
+                chip.setOnAction(_ -> viewModel.sendFollowUpMessage(question));
+                followUpQuestionsBox.getChildren().add(chip);
+            }
+
+            followUpQuestionsArea.setVisible(true);
+        });
     }
 
     private void setupValues() {
@@ -169,7 +201,7 @@ public class AiChatView extends StackPane {
 
     @FXML
     private void clearChatHistory() {
-        viewModel.chatHistoryProperty().get().clear();
+        viewModel.clearChatHistory();
     }
 
     public ListProperty<ChatMessage> chatHistoryProperty() {

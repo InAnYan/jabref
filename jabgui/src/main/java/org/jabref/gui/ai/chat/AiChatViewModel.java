@@ -24,6 +24,7 @@ import org.jabref.logic.ai.chatting.tasks.GenerateRagResponseTask;
 import org.jabref.logic.ai.chatting.util.ChatHistoryUtils;
 import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
 import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
+import org.jabref.logic.ai.followup.tasks.GenerateFollowUpQuestions;
 import org.jabref.logic.ai.ingestion.DocumentSplitterFactory;
 import org.jabref.logic.ai.ingestion.IngestionTaskAggregator;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
@@ -32,6 +33,7 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddings
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTaskRequest;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
+import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
@@ -41,8 +43,12 @@ import org.jabref.model.ai.identifiers.FullBibEntry;
 import com.google.common.collect.Comparators;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AiChatViewModel extends AbstractViewModel {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatViewModel.class);
+
     public enum State {
         AI_TURNED_OFF,
         NO_FILES,
@@ -55,7 +61,11 @@ public class AiChatViewModel extends AbstractViewModel {
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
     private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
+
     private final ObjectProperty<GenerateRagResponseTask> generateRagResponseTask = new SimpleObjectProperty<>();
+
+    private final ListProperty<String> followUpQuestions = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private BackgroundTask<List<String>> generateFollowUpQuestionsTask;
 
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
     private AsyncEmbeddingModel embeddingModel;
@@ -72,7 +82,6 @@ public class AiChatViewModel extends AbstractViewModel {
     private final EmbeddingStore<TextSegment> embeddingStore;
     private final TaskExecutor taskExecutor;
 
-    // Direct properties replacing AiChatLogic
     private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final StringProperty systemMessageTemplate = new SimpleStringProperty();
     private final StringProperty userMessageTemplate = new SimpleStringProperty();
@@ -220,17 +229,16 @@ public class AiChatViewModel extends AbstractViewModel {
             return;
         }
 
+        followUpQuestions.clear();
         clearGenerateRagResponseTask();
 
-        // Add user message to chat history
         ChatMessage userChatMessage = ChatMessage.userMessage(userMessage);
         chatHistory.add(userChatMessage);
 
-        // Create the RAG task directly
         GenerateRagResponseTask task = new GenerateRagResponseTask(
                 chatModel.get(),
                 answerEngine.get(),
-                List.copyOf(chatHistory), // Pass immutable copy
+                List.copyOf(chatHistory), // TODO: Why?
                 userMessage,
                 entries.get(),
                 systemMessageTemplate.get(),
@@ -239,7 +247,13 @@ public class AiChatViewModel extends AbstractViewModel {
 
         List<FullBibEntry> taskEntries = entries.get();
 
-        task.onSuccess(chatHistory::add);
+        task.onSuccess(aiMessage -> {
+            chatHistory.add(aiMessage);
+
+            if (aiPreferences.getGenerateFollowUpQuestions() && chatModel.get() != null) {
+                scheduleFollowUpQuestionsGeneration(sentUserMessage, aiMessage.content());
+            }
+        });
 
         task.onFailure(ex -> chatHistory.add(ChatMessage.errorMessage(ex)));
 
@@ -253,6 +267,39 @@ public class AiChatViewModel extends AbstractViewModel {
         task.executeWith(taskExecutor);
         generateRagResponseTask.set(task);
         tasksMap.put(taskEntries, task);
+    }
+
+    private void scheduleFollowUpQuestionsGeneration(String userMessage, String aiResponse) {
+        ChatModel currentChatModel = chatModel.get();
+        if (currentChatModel == null) {
+            return;
+        }
+
+        if (generateFollowUpQuestionsTask != null && !generateFollowUpQuestionsTask.isCancelled()) {
+            generateFollowUpQuestionsTask.cancel();
+        }
+
+        generateFollowUpQuestionsTask = new GenerateFollowUpQuestions(
+                currentChatModel,
+                aiPreferences,
+                userMessage,
+                aiResponse
+        );
+
+        generateFollowUpQuestionsTask
+                .onSuccess(followUpQuestions::setAll)
+                .onFailure(ex -> LOGGER.warn("Failed to generate follow-up questions", ex))
+                .executeWith(taskExecutor);
+    }
+
+    public void sendFollowUpMessage(String question) {
+        followUpQuestions.clear();
+        sendMessage(question);
+    }
+
+    public void clearChatHistory() {
+        aiChatLogic.chatHistoryProperty().get().clear();
+        followUpQuestions.clear();
     }
 
     private void clearGenerateRagResponseTask() {
@@ -274,6 +321,7 @@ public class AiChatViewModel extends AbstractViewModel {
                 chatHistory.removeLast();
             }
         }
+        followUpQuestions.clear();
     }
 
     public void delete(String id) {
@@ -319,5 +367,9 @@ public class AiChatViewModel extends AbstractViewModel {
 
     public ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasksProperty() {
         return generateEmbeddingsTasks;
+    }
+
+    public ListProperty<String> followUpQuestionsProperty() {
+        return followUpQuestions;
     }
 }
