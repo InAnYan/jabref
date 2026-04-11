@@ -42,7 +42,7 @@ public class AiChatMarkdownExporter implements AiChatExporter {
 
     @Override
     public String export(List<BibEntry> entries, BibDatabaseMode mode, List<ChatMessage> messages) {
-        String bibtex = buildBibtex(entries, mode);
+        String bibtex = concatenateBibtexEntries(entries, mode);
 
         List<AiTemplateRenderer.ExportMessage> exportMessages = messages.stream()
                 .filter(msg -> msg.role() != ChatMessage.Role.SYSTEM)
@@ -60,7 +60,7 @@ public class AiChatMarkdownExporter implements AiChatExporter {
         return AiTemplateRenderer.renderMarkdownChatExport(markdownExportTemplate, bibtex, exportMessages);
     }
 
-    private String buildBibtex(List<BibEntry> entries, BibDatabaseMode mode) {
+    private String concatenateBibtexEntries(List<BibEntry> entries, BibDatabaseMode mode) {
         StringBuilder sb = new StringBuilder();
         for (BibEntry entry : entries) {
             String bibtex = entryToBibtex(entry, mode).trim();

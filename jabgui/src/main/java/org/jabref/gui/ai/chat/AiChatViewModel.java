@@ -327,7 +327,7 @@ public class AiChatViewModel extends AbstractViewModel {
                      .ifPresent(path -> {
                          try {
                              AiChatMarkdownExporter exporter = new AiChatMarkdownExporter(entryTypesManager, fieldPreferences, aiPreferences.getMarkdownChatExportTemplate());
-                             String content = exporter.export(getExportEntries(), getExportDatabaseMode(), messages);
+                             String content = exporter.export(getBibEntriesFromFullEntries(), getDatabaseModeOrDefault(), messages);
                              Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                              dialogService.notify(Localization.lang("Export operation finished successfully."));
                          } catch (IOException e) {
@@ -359,7 +359,7 @@ public class AiChatViewModel extends AbstractViewModel {
                              String modelName = model != null ? model.getName() : "";
 
                              AiChatJsonExporter exporter = new AiChatJsonExporter(entryTypesManager, fieldPreferences);
-                             String content = exporter.export(provider, modelName, getExportEntries(), getExportDatabaseMode(), messages);
+                             String content = exporter.export(provider, modelName, getBibEntriesFromFullEntries(), getDatabaseModeOrDefault(), messages);
                              Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                              dialogService.notify(Localization.lang("Export operation finished successfully."));
                          } catch (IOException e) {
@@ -369,13 +369,13 @@ public class AiChatViewModel extends AbstractViewModel {
                      });
     }
 
-    private List<BibEntry> getExportEntries() {
+    private List<BibEntry> getBibEntriesFromFullEntries() {
         return entries.stream()
                       .map(FullBibEntry::entry)
                       .toList();
     }
 
-    private BibDatabaseMode getExportDatabaseMode() {
+    private BibDatabaseMode getDatabaseModeOrDefault() {
         return entries.isEmpty()
                 ? BibDatabaseMode.BIBTEX
                 : entries.getFirst().databaseContext().getMode();
