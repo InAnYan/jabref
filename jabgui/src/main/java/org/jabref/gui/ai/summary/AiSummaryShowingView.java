@@ -45,8 +45,8 @@ public class AiSummaryShowingView extends VBox {
         }
 
         return Localization.lang("Generated at %0 by %1 (algorithm %2)")
-                           .replaceAll("%0", formatTimestamp(summary.timestamp()))
-                           .replaceAll("%1", summary.aiProvider().getDisplayName() + " " + summary.model())
+                           .replaceAll("%0", formatTimestamp(summary.metadata().timestamp()))
+                           .replaceAll("%1", summary.metadata().aiProvider().getDisplayName() + " " + summary.metadata().model())
                            .replaceAll("%2", summary.summarizationAlgorithm().getDisplayName());
     }
 

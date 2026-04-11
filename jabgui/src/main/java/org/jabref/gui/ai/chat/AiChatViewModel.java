@@ -370,7 +370,7 @@ public class AiChatViewModel extends AbstractViewModel {
     private AiMetadata buildMetadata() {
         ChatModel model = chatModel.get();
         if (model == null) {
-            return AiMetadata.empty();
+            return new AiMetadata(null, "", Instant.now());
         }
         return new AiMetadata(model.getAiProvider(), model.getName(), Instant.now());
     }

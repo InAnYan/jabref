@@ -434,6 +434,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
     }
 
     private static AiMetadata buildMetadata(AiSummary summary) {
-        return new AiMetadata(summary.aiProvider(), summary.model(), summary.timestamp());
+        return summary.metadata();
     }
 }

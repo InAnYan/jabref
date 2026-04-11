@@ -1,30 +1,22 @@
 package org.jabref.model.ai.summarization;
 
-import java.time.Instant;
-
-import org.jabref.model.ai.llm.AiProvider;
+import org.jabref.model.ai.AiMetadata;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record AiSummary(
-        Instant timestamp,
-        AiProvider aiProvider,
-        String model,
+        AiMetadata metadata,
         SummarizatorKind summarizationAlgorithm,
         String content
 ) {
     @JsonCreator()
     public AiSummary(
-            @JsonProperty("timestamp") Instant timestamp,
-            @JsonProperty("aiProvider") AiProvider aiProvider,
-            @JsonProperty("model") String model,
+            @JsonProperty("metadata") AiMetadata metadata,
             @JsonProperty("summarizationAlgorithm") SummarizatorKind summarizationAlgorithm,
             @JsonProperty("content") String content
     ) {
-        this.timestamp = timestamp;
-        this.aiProvider = aiProvider;
-        this.model = model;
+        this.metadata = metadata;
         this.summarizationAlgorithm = summarizationAlgorithm;
         this.content = content;
     }
