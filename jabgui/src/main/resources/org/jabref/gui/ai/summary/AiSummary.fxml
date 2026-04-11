@@ -45,8 +45,6 @@
     <AiSummaryShowingView
             fx:id="summaryShowing"
             onRegenerate="#regenerate"
-            onRegenerateCustom="#regenerateCustom"
-            onExportMarkdown="#exportMarkdown"
-            onExportJson="#exportJson"/>
+            onRegenerateCustom="#regenerateCustom"/>
 
 </fx:root>

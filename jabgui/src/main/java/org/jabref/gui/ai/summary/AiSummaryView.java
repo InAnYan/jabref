@@ -78,6 +78,7 @@ public class AiSummaryView extends StackPane {
     private void setupBindings() {
         errorPane.exceptionProperty().bind(viewModel.errorProperty());
         summaryShowing.summaryProperty().bind(viewModel.summaryProperty());
+        summaryShowing.entryProperty().bind(viewModel.entryProperty());
 
         processingPane.descriptionProperty().bind(BindingsHelper.map(
                 viewModel.summarizatorProperty(), viewModel.chatModelProperty(),
@@ -118,15 +119,5 @@ public class AiSummaryView extends StackPane {
     @FXML
     private void cancel() {
         viewModel.cancel();
-    }
-
-    @FXML
-    private void exportMarkdown() {
-        viewModel.exportMarkdown();
-    }
-
-    @FXML
-    private void exportJson() {
-        viewModel.exportJson();
     }
 }
