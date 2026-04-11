@@ -34,7 +34,9 @@ import org.controlsfx.control.textfield.CustomPasswordField;
 
 public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements PreferencesTab {
     private static final String HUGGING_FACE_CHAT_MODEL_PROMPT = "TinyLlama/TinyLlama_v1.1 (or any other model name)";
+
     private final ControlsFxVisualizer visualizer = new ControlsFxVisualizer();
+
     @FXML private CheckBox enableAi;
     @FXML private CheckBox autoGenerateEmbeddings;
     @FXML private CheckBox autoGenerateSummaries;
@@ -76,7 +78,6 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private Button resetCurrentTemplateButton;
     @FXML private Button resetTemplatesButton;
     @FXML private CheckBox generateFollowUpQuestions;
-    @FXML private Label followUpQuestionsCountLabel;
     @FXML private IntegerInputField followUpQuestionsCountField;
 
     public AiTab() {
@@ -103,15 +104,10 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         generateFollowUpQuestions.selectedProperty().bindBidirectional(viewModel.generateFollowUpQuestionsProperty());
         generateFollowUpQuestions.disableProperty().bind(viewModel.disableBasicSettingsProperty());
 
-        followUpQuestionsCountLabel.visibleProperty().bind(generateFollowUpQuestions.selectedProperty());
-        followUpQuestionsCountLabel.managedProperty().bind(generateFollowUpQuestions.selectedProperty());
-        followUpQuestionsCountField.visibleProperty().bind(generateFollowUpQuestions.selectedProperty());
-        followUpQuestionsCountField.managedProperty().bind(generateFollowUpQuestions.selectedProperty());
-
-        followUpQuestionsCountField.valueProperty().addListener((observable, oldValue, newValue) ->
+        followUpQuestionsCountField.valueProperty().addListener((_, _, newValue) ->
                 viewModel.followUpQuestionsCountProperty().set(newValue == null ? 0 : newValue));
 
-        viewModel.followUpQuestionsCountProperty().addListener((observable, oldValue, newValue) ->
+        viewModel.followUpQuestionsCountProperty().addListener((_, _, newValue) ->
                 followUpQuestionsCountField.valueProperty().set(newValue == null ? 0 : newValue.intValue()));
 
         followUpQuestionsCountField.disableProperty().bind(viewModel.disableBasicSettingsProperty());
