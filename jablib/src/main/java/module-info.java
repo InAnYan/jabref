@@ -141,7 +141,6 @@ open module org.jabref.jablib {
     exports org.jabref.model.ai.identifiers;
     exports org.jabref.model.ai.tokenization;
     exports org.jabref.model.ai.llm;
-    exports org.jabref.logic.ai.chatting.listeners;
     exports org.jabref.logic.ai.chatting.util;
     exports org.jabref.logic.ai.embedding;
     exports org.jabref.logic.ai.rag.logic;

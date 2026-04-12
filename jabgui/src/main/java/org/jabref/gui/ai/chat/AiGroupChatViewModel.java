@@ -15,12 +15,9 @@ import org.jabref.gui.groups.GroupNodeViewModel;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
-import org.jabref.logic.ai.chatting.util.ChatHistoryUtils;
+import org.jabref.logic.ai.chatting.InMemoryChatHistoryCache;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
-import org.jabref.model.ai.chatting.ChatType;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
@@ -40,10 +37,10 @@ public class AiGroupChatViewModel extends AbstractViewModel {
     private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
-    private final ChatHistoryRepository chatHistoryRepository;
+    private final InMemoryChatHistoryCache chatHistoryCache;
 
     public AiGroupChatViewModel(AiPreferences aiPreferences, AiService aiService) {
-        this.chatHistoryRepository = aiService.getChatHistoryRepository();
+        this.chatHistoryCache = aiService.getChatHistoryCache();
 
         BooleanExpression databasePathPresent = BooleanExpression.booleanExpression(
                 databaseContext.map(BibDatabaseContext::getDatabasePath).map(Optional::isPresent)
@@ -74,13 +71,9 @@ public class AiGroupChatViewModel extends AbstractViewModel {
 
         entries.set(FXCollections.observableArrayList(matchedEntryIdentifiers));
 
-        chatHistory.set(ChatHistoryUtils.makeChatHistoryProperty(
-                new ChatIdentifier(
-                        context.getMetaData().getAiLibraryId().get(),
-                        ChatType.WITH_GROUP,
-                        group.getGroupNode().getGroup().nameProperty().get()
-                ),
-                chatHistoryRepository
+        chatHistory.set(chatHistoryCache.getForGroup(
+                context,
+                group.getGroupNode()
         ));
     }
 

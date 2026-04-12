@@ -35,7 +35,7 @@ public class AiEntryChatView extends StackPane {
     private void initialize() {
         viewModel = new AiEntryChatViewModel(
                 preferences.getAiPreferences(),
-                aiService.getChatHistoryRepository()
+                aiService.getChatHistoryCache()
         );
 
         setupBindings();

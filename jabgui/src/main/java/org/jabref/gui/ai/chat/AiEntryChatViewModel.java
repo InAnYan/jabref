@@ -12,14 +12,11 @@ import javafx.collections.FXCollections;
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ListenersHelper;
-import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
-import org.jabref.logic.ai.chatting.util.ChatHistoryUtils;
+import org.jabref.logic.ai.chatting.InMemoryChatHistoryCache;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.strings.StringUtil;
-import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
-import org.jabref.model.ai.chatting.ChatType;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
@@ -39,14 +36,14 @@ public class AiEntryChatViewModel extends AbstractViewModel {
     private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     private final AiPreferences aiPreferences;
-    private final ChatHistoryRepository chatHistoryRepository;
+    private final InMemoryChatHistoryCache chatHistoryCache;
 
     public AiEntryChatViewModel(
             AiPreferences aiPreferences,
-            ChatHistoryRepository chatHistoryRepository
+            InMemoryChatHistoryCache chatHistoryCache
     ) {
         this.aiPreferences = aiPreferences;
-        this.chatHistoryRepository = chatHistoryRepository;
+        this.chatHistoryCache = chatHistoryCache;
 
         setupBindings();
         setupListeners();
@@ -96,13 +93,9 @@ public class AiEntryChatViewModel extends AbstractViewModel {
 
         entries.set(FXCollections.observableArrayList(identifier));
 
-        chatHistory.set(ChatHistoryUtils.makeChatHistoryProperty(
-                new ChatIdentifier(
-                        identifier.databaseContext().getMetaData().getAiLibraryId().get(),
-                        ChatType.WITH_ENTRY,
-                        identifier.entry().getCitationKey().get()
-                ),
-                chatHistoryRepository
+        chatHistory.set(chatHistoryCache.getForEntry(
+                identifier.databaseContext(),
+                identifier.entry()
         ));
     }
 
