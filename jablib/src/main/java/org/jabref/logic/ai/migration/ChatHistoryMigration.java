@@ -137,14 +137,6 @@ public class ChatHistoryMigration {
             notificationService.notify(Localization.lang("Failed to migrate AI chat history. See logs for details."));
             return;
         }
-
-        // Delete old v1 file now that migration is complete (store is already closed above)
-        try {
-            java.nio.file.Files.deleteIfExists(oldFilePath);
-            LOGGER.info("Deleted old v1 chat history file: {}", oldFilePath);
-        } catch (Exception e) {
-            LOGGER.warn("Could not delete old v1 chat history file {}: {}", oldFilePath, e.getMessage());
-        }
     }
 
     private static boolean isOldChatHistoryMap(String mapName) {
