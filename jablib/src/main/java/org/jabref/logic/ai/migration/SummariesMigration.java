@@ -164,14 +164,6 @@ public class SummariesMigration {
             notificationService.notify(Localization.lang("Failed to migrate AI summaries. See logs for details."));
             return;
         }
-
-        // Delete old v1 file now that migration is complete (store is already closed above)
-        try {
-            java.nio.file.Files.deleteIfExists(oldFilePath);
-            LOGGER.info("Deleted old v1 summaries file: {}", oldFilePath);
-        } catch (Exception e) {
-            LOGGER.warn("Could not delete old v1 summaries file {}: {}", oldFilePath, e.getMessage());
-        }
     }
 
     /**
@@ -261,7 +253,7 @@ public class SummariesMigration {
             if (type != TYPE_SERIALIZED_OBJECT) {
                 throw new IllegalStateException(
                         "Unexpected MVStore type byte " + type
-                        + " while reading summaries for migration (expected 19 = serialized object).");
+                                + " while reading summaries for migration (expected 19 = serialized object).");
             }
             int len = readVarInt(buff);
             byte[] data = new byte[len];

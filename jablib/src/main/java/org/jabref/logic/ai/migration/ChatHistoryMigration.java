@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 public class ChatHistoryMigration {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatHistoryMigration.class);
 
-    private static final String OLD_CHAT_HISTORY_FILE_NAME = "chat-history.mv";
+    private static final String OLD_CHAT_HISTORY_FILE_NAME = "chat-histories.mv";
     private static final String ENTRY_CHAT_HISTORY_INFIX = "-entry-";
     private static final String GROUP_CHAT_HISTORY_INFIX = "-group-";
 
@@ -204,9 +204,9 @@ public class ChatHistoryMigration {
         List<ChatMessage> newMessages = new ArrayList<>();
 
         for (Map.Entry<Integer, byte[]> entry : oldMap.entrySet()
-                                                       .stream()
-                                                       .sorted(Comparator.comparingInt(Map.Entry::getKey))
-                                                       .toList()) {
+                                                      .stream()
+                                                      .sorted(Comparator.comparingInt(Map.Entry::getKey))
+                                                      .toList()) {
             try {
                 ChatHistoryRecord record = deserializeOldRecord(entry.getValue());
                 if (record != null) {
@@ -327,7 +327,7 @@ public class ChatHistoryMigration {
             if (type != TYPE_SERIALIZED_OBJECT) {
                 throw new IllegalStateException(
                         "Unexpected MVStore type byte " + type
-                        + " while reading chat history for migration (expected 19 = serialized object).");
+                                + " while reading chat history for migration (expected 19 = serialized object).");
             }
             int len = readVarInt(buff);
             byte[] data = new byte[len];
