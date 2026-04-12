@@ -251,7 +251,7 @@ public class AiChatViewModel extends AbstractViewModel {
             chatHistory.add(aiMessage);
 
             if (aiPreferences.getGenerateFollowUpQuestions() && chatModel.get() != null) {
-                scheduleFollowUpQuestionsGeneration(sentUserMessage, aiMessage.content());
+                scheduleFollowUpQuestionsGeneration(userMessage, aiMessage.content());
             }
         });
 
@@ -298,7 +298,7 @@ public class AiChatViewModel extends AbstractViewModel {
     }
 
     public void clearChatHistory() {
-        aiChatLogic.chatHistoryProperty().get().clear();
+        chatHistory.clear();
         followUpQuestions.clear();
     }
 

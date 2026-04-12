@@ -150,6 +150,7 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.tokenization.logic;
     exports org.jabref.logic.ai.ingestion.util;
     exports org.jabref.logic.ai.migration;
+    exports org.jabref.logic.ai.followup.tasks;
     // endregion
 
     requires java.base;
