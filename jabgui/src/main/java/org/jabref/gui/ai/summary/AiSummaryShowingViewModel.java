@@ -19,7 +19,7 @@ public class AiSummaryShowingViewModel extends AbstractViewModel {
     private static final MarkdownFormatter MARKDOWN_FORMATTER = new MarkdownFormatter();
 
     private final ObjectProperty<AiSummary> summary = new SimpleObjectProperty<>();
-    private final BooleanProperty isMarkdown = new SimpleBooleanProperty(false);
+    private final BooleanProperty isMarkdown = new SimpleBooleanProperty(true);
 
     private final StringProperty webViewSource = new SimpleStringProperty("");
 

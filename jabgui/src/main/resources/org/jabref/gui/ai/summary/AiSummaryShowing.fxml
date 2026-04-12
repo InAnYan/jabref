@@ -25,6 +25,7 @@
             <CheckBox
                     fx:id="markdownCheckbox"
                     mnemonicParsing="false"
+                    selected="true"
                     text="Markdown"/>
         </left>
         <center>

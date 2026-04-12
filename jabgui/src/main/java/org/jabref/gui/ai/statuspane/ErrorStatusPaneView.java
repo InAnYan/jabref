@@ -38,6 +38,18 @@ public class ErrorStatusPaneView extends BorderPane {
     }
 
     private void setupBindings() {
+        titleLabel.managedProperty().bind(titleLabel.visibleProperty());
+        descriptionLabel.managedProperty().bind(descriptionLabel.visibleProperty());
+        textArea.managedProperty().bind(textArea.visibleProperty());
+        restartButton.managedProperty().bind(restartButton.visibleProperty());
+        cancelButton.managedProperty().bind(cancelButton.visibleProperty());
+
+        titleLabel.visibleProperty().bind(viewModel.titleProperty().isNotEmpty());
+        descriptionLabel.visibleProperty().bind(viewModel.descriptionProperty().isNotEmpty());
+        textArea.visibleProperty().bind(viewModel.exceptionStringProperty().isNotEmpty());
+        restartButton.visibleProperty().bind(viewModel.restartButtonTextProperty().isNotEmpty());
+        cancelButton.visibleProperty().bind(viewModel.cancelButtonTextProperty().isNotEmpty());
+
         titleLabel.textProperty().bind(viewModel.titleProperty());
         descriptionLabel.textProperty().bind(viewModel.descriptionProperty());
         textArea.textProperty().bind(viewModel.exceptionStringProperty());

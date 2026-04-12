@@ -3,12 +3,18 @@ package org.jabref.gui.util;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import jakarta.annotation.Nullable;
+
 public class ExceptionsUtil {
     private ExceptionsUtil() {
         throw new UnsupportedOperationException("cannot instantiate utility class");
     }
 
-    public static String generateExceptionMessage(Throwable throwable) {
+    public static String generateExceptionMessage(@Nullable Throwable throwable) {
+        if (throwable == null) {
+            return "";
+        }
+        
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         throwable.printStackTrace(pw);

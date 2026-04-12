@@ -1,4 +1,3 @@
-
 package org.jabref.logic.ai.migration;
 
 import java.io.IOException;
@@ -79,21 +78,19 @@ public class SummariesMigration {
 
         // Get path to old v1 MVStore file (in ai/1/ directory)
         Path oldFilePath = Directories.getAiFilesDirectory()
-                .getParent()  // Go from ai/2/ to ai/
-                .resolve("1")  // Go to ai/1/
-                .resolve(OLD_SUMMARIES_FILE_NAME);
+                                      .getParent()  // Go from ai/2/ to ai/
+                                      .resolve("1")  // Go to ai/1/
+                                      .resolve(OLD_SUMMARIES_FILE_NAME);
 
         if (!oldFilePath.toFile().exists()) {
             LOGGER.debug("No old summaries file found at {} - skipping migration", oldFilePath);
             return;
         }
 
-        MVStore oldMvStore = null;
-        try {
+        try (MVStore oldMvStore = new MVStore.Builder()
+                .fileName(oldFilePath.toString())
+                .open()) {
             // Open old v1 MVStore file
-            oldMvStore = new MVStore.Builder()
-                    .fileName(oldFilePath.toString())
-                    .open();
 
             String oldMapName = SUMMARIES_MAP_PREFIX + "-" + bibDatabasePath.toString();
 
@@ -143,18 +140,9 @@ public class SummariesMigration {
             }
 
             LOGGER.info("Successfully migrated {} summaries, {} failed", migratedCount, failedCount);
-
         } catch (Exception e) {
             LOGGER.error("Failed to migrate summaries from v1 to v2", e);
             notificationService.notify(Localization.lang("Failed to migrate AI summaries. See logs for details."));
-        } finally {
-            if (oldMvStore != null) {
-                try {
-                    oldMvStore.close();
-                } catch (Exception e) {
-                    LOGGER.error("Error closing old MVStore", e);
-                }
-            }
         }
     }
 

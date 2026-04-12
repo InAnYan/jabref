@@ -91,14 +91,12 @@ public class AiSummaryViewModel extends AbstractViewModel {
                 state,
                 State.AI_TURNED_OFF, aiPreferences.enableAiProperty().not(),
                 State.NO_DATABASE_PATH, entry.map(FullBibEntry::databaseContext).map(BibDatabaseContext::getDatabasePath).map(Optional::isEmpty),
-                // NO_CITATION_KEY and WRONG_CITATION_KEY are intentionally omitted: entries without
-                // a valid citation key are still summarized; results live in InMemorySummaryCache.
                 State.NO_FILES, entry.map(FullBibEntry::entry).map(BibEntry::getFiles).map(List::isEmpty),
                 State.NO_SUPPORTED_FILE_TYPES, entry.map(FullBibEntry::entry).map(BibEntry::getFiles).map(l -> l.stream().map(f -> Path.of(f.getLink())).noneMatch(UniversalContentParser::isSupportedFileType)),
                 State.DONE, summary.isNotNull(),
-                State.PROCESSING, currentTask.isNotNull(),
-                State.ERROR_WHILE_GENERATING, error.isNotNull(),
                 State.CANCELLED, currentTask.map(TrackedBackgroundTask::getStatus).map(s -> s == TrackedBackgroundTask.Status.CANCELLED).orElse(false),
+                State.ERROR_WHILE_GENERATING, error.isNotNull(),
+                State.PROCESSING, currentTask.isNotNull(),
                 State.READY
         );
 
@@ -215,6 +213,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
         if (runningTask.isPresent()) {
             GenerateSummaryTask task = runningTask.get();
             currentTask.set(task);
+            summarizator.set(task.getRequest().summarizator());
+            chatModel.set(task.getRequest().chatModel());
             // Edge case: task finished in the narrow window between the aggregator lookup
             // and the bindInternalListener attaching the status listener. Handle immediately.
             switch (task.getStatus()) {
@@ -227,7 +227,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
                     clearTask();
                 }
                 default -> {
-                } // PENDING / PROCESSING: taskStateListener will fire later
+                }
             }
             return;
         }

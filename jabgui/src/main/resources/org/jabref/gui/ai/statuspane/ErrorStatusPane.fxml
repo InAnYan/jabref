@@ -40,8 +40,10 @@
             <HBox spacing="10.0"
                   alignment="CENTER">
                 <Button fx:id="restartButton"
+                        text="%Regenerate"
                         onAction="#restart"/>
                 <Button fx:id="cancelButton"
+                        text="%Cancel"
                         onAction="#cancel"/>
             </HBox>
         </VBox>

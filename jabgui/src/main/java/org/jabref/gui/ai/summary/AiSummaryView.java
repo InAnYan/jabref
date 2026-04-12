@@ -25,6 +25,7 @@ public class AiSummaryView extends StackPane {
 
     @FXML private LoadingStatusPaneView processingPane;
     @FXML private ErrorStatusPaneView errorPane;
+    @FXML private ErrorStatusPaneView cancelledPane;
 
     @FXML private SimpleStatusPaneView noDatabasePathPane;
     @FXML private SimpleStatusPaneView noFilesPane;
@@ -91,6 +92,7 @@ public class AiSummaryView extends StackPane {
         privacyNotice.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.AI_TURNED_OFF));
         processingPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.PROCESSING));
         errorPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.ERROR_WHILE_GENERATING));
+        cancelledPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.CANCELLED));
         noDatabasePathPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.NO_DATABASE_PATH));
         noFilesPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.NO_FILES));
         noSupportedFileTypesPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.NO_SUPPORTED_FILE_TYPES));
