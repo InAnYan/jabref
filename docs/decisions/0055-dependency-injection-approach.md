@@ -21,11 +21,11 @@ JavaFX imposes certain constraints on controllers and view models, especially re
 
 * Use DI framework for every use case.
 * Use constructor-based DI for every use case.
-* Use a mix of a DI framework and constructor-based DI.
+* Use a DI framework in specific use cases, and constructor-based DI in general.
 
 ## Decision Outcome
 
-Chosen option: "Use a mix of a DI framework and constructor-based DI", because this approach works with the constraints of JavaFX while preserving explicitness and testability in the rest of the system.
+Chosen option: "Use a DI framework in specific use cases, and constructor-based DI in general", because this approach works with the constraints of JavaFX while preserving explicitness and testability in the rest of the system.
 
 ### Consequences
 
@@ -55,7 +55,7 @@ Core logic classes should expose dependencies through constructors, with no fiel
 * Bad, because JavaFX does not allow passing complex constructor arguments (like `Services` or `Preferences`) to view in FXML.
 * Bad, because nesting views in FXML becomes harder without a DI mechanism.
 
-### Use a mix of a DI framework and constructor-based DI
+### Use a DI framework in specific use cases, and constructor-based DI in general
 
 More specifically:
 
