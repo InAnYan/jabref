@@ -1,6 +1,7 @@
 package org.jabref.logic.ai.chatting.repositories;
 
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +73,7 @@ public class MVStoreChatHistoryRepository extends MVStoreBase implements ChatHis
                 // RuntimeException to ignore it.
                 throw new RuntimeException(e);
             }
-        }).toList();
+        }).sorted(Comparator.comparing(ChatMessage::timestamp)).toList();
     }
 
     @Override

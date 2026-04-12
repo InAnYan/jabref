@@ -195,6 +195,8 @@ public class ChatHistoryMigration {
 
         List<ChatMessage> newMessages = new ArrayList<>();
 
+        Instant baseTime = Instant.now();
+        int index = 0;
         for (Map.Entry<Integer, byte[]> entry : oldMap.entrySet()
                                                       .stream()
                                                       .sorted(Comparator.comparingInt(Map.Entry::getKey))
@@ -202,8 +204,9 @@ public class ChatHistoryMigration {
             try {
                 ChatHistoryRecord record = deserializeOldRecord(entry.getValue());
                 if (record != null) {
-                    ChatMessage msg = convertToNewChatMessage(record);
+                    ChatMessage msg = convertToNewChatMessage(record, baseTime.plusMillis(index));
                     newMessages.add(msg);
+                    index++;
                 }
             } catch (Exception e) {
                 LOGGER.warn("Failed to deserialize chat history record at index {}: {}",
@@ -238,7 +241,7 @@ public class ChatHistoryMigration {
         }
     }
 
-    private static ChatMessage convertToNewChatMessage(ChatHistoryRecord oldRecord) {
+    private static ChatMessage convertToNewChatMessage(ChatHistoryRecord oldRecord, Instant timestamp) {
         dev.langchain4j.data.message.ChatMessage langchainMessage = oldRecord.toLangchainMessage();
 
         ChatMessage.Role role;
@@ -266,7 +269,7 @@ public class ChatHistoryMigration {
 
         return new ChatMessage(
                 UUID.randomUUID().toString(),
-                Instant.now(),
+                timestamp,
                 role,
                 content,
                 List.of()
