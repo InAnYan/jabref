@@ -50,7 +50,7 @@ public class AiChatJsonExporter implements AiChatExporter {
     @Override
     public String export(AiMetadata metadata, List<BibEntry> entries, BibDatabaseMode mode, List<ChatMessage> messages) {
         Map<String, Object> root = new LinkedHashMap<>();
-        root.put("latest_provider", metadata.aiProvider() != null ? metadata.aiProvider().getDisplayName() : "");
+        root.put("latest_provider", metadata.aiProvider().toString());
         root.put("latest_model", metadata.model());
         root.put("export_timestamp", metadata.timestamp().toString());
 
@@ -72,10 +72,14 @@ public class AiChatJsonExporter implements AiChatExporter {
         List<Map<String, String>> conversationList = new ArrayList<>();
         for (ChatMessage msg : messages) {
             String role = switch (msg.role()) {
-                case USER -> "user";
-                case AI -> "assistant";
-                case ERROR -> "error";
-                case SYSTEM -> null; // System messages are not part of the conversation exchange
+                case USER ->
+                        "user";
+                case AI ->
+                        "assistant";
+                case ERROR ->
+                        "error";
+                case SYSTEM ->
+                        null; // System messages are not part of the conversation exchange
             };
 
             if (role == null) {

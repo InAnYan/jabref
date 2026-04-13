@@ -105,6 +105,7 @@ public class AiChatView extends StackPane {
 
         chatHistoryScrollPane.itemsProperty().bind(viewModel.chatHistoryProperty());
         chatHistoryScrollPane.setRenderer(this::renderChatMessage);
+        chatHistoryScrollPane.setAutoScrollToBottom(true);
 
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
         noFilesErrorPane.managedProperty().bind(noFilesErrorPane.visibleProperty());
