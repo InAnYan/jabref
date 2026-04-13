@@ -126,6 +126,7 @@ public class AiChatComponent extends VBox {
 
     @FXML
     public void initialize() {
+        uiChatHistory.setDialogService(dialogService);
         uiChatHistory.setItems(aiChatLogic.getChatHistory());
         exportButton.disableProperty().bind(Bindings.isEmpty(aiChatLogic.getChatHistory()));
         initializeChatPrompt();
