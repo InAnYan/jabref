@@ -5,6 +5,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
 
 import org.jabref.gui.util.BaseDialog;
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.l10n.Localization;
@@ -25,6 +26,18 @@ public class AiChatStatusWindow extends BaseDialog<Void> {
         ViewLoader.view(this)
                   .load()
                   .setAsDialogPane(this);
+    }
+
+    public void setOnExportJson(Runnable handler) {
+        aiChatStatusView.setOnExportJson(handler);
+    }
+
+    public void setOnExportMarkdown(Runnable handler) {
+        aiChatStatusView.setOnExportMarkdown(handler);
+    }
+
+    public ObjectProperty<ChatModel> chatModelProperty() {
+        return aiChatStatusView.chatModelProperty();
     }
 
     public ListProperty<AnswerEngineKind> answerEngineKindsProperty() {

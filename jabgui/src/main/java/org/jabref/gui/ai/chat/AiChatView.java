@@ -6,7 +6,6 @@ import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
@@ -20,7 +19,6 @@ import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.HistoryTextArea;
 import org.jabref.gui.util.ListScrollPane;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
@@ -48,7 +46,6 @@ public class AiChatView extends StackPane {
     @FXML private Button cancelButton;
 
     @FXML private Button clearButton;
-    @FXML private Label aiModelLabel;
 
     @FXML private VBox followUpQuestionsArea;
     @FXML private FlowPane followUpQuestionsBox;
@@ -65,18 +62,6 @@ public class AiChatView extends StackPane {
         ViewLoader.view(this)
                   .root(this)
                   .load();
-    }
-
-    private static String formatChatModelLabel(ChatModel chatModel) {
-        if (chatModel == null) {
-            return "";
-        }
-
-        return Localization.lang(
-                "Current chat model: %0 %1",
-                chatModel.getAiProvider().getDisplayName(),
-                chatModel.getName()
-        );
     }
 
     @FXML
@@ -102,6 +87,9 @@ public class AiChatView extends StackPane {
         viewModel.answerEngineProperty().bind(aiChatStatusWindow.answerEngineProperty());
         aiChatStatusWindow.entriesProperty().bind(viewModel.entriesProperty());
         aiChatStatusWindow.generateEmbeddingsTasksProperty().bind(viewModel.generateEmbeddingsTasksProperty());
+        aiChatStatusWindow.chatModelProperty().bind(viewModel.chatModelProperty());
+        aiChatStatusWindow.setOnExportJson(() -> viewModel.exportJson());
+        aiChatStatusWindow.setOnExportMarkdown(() -> viewModel.exportMarkdown());
 
         chatHistoryScrollPane.itemsProperty().bind(viewModel.chatHistoryProperty());
         chatHistoryScrollPane.setRenderer(this::renderChatMessage);
@@ -133,8 +121,6 @@ public class AiChatView extends StackPane {
         sendButton.visibleProperty().bind(isIdle);
         retryButton.visibleProperty().bind(isError);
         cancelButton.visibleProperty().bind(isWaiting.or(isError));
-
-        aiModelLabel.textProperty().bind(viewModel.chatModelProperty().map(AiChatView::formatChatModelLabel));
     }
 
     private void setupFollowUpQuestions() {
@@ -205,17 +191,13 @@ public class AiChatView extends StackPane {
 
     @FXML
     private void clearChatHistory() {
-        viewModel.clearChatHistory();
-    }
-
-    @FXML
-    private void exportMarkdown() {
-        viewModel.exportMarkdown();
-    }
-
-    @FXML
-    private void exportJson() {
-        viewModel.exportJson();
+        boolean confirmed = dialogService.showConfirmationDialogAndWait(
+                Localization.lang("Delete chat history"),
+                Localization.lang("Are you sure you want to delete the chat history?")
+        );
+        if (confirmed) {
+            viewModel.clearChatHistory();
+        }
     }
 
     public ListProperty<ChatMessage> chatHistoryProperty() {
