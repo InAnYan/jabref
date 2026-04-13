@@ -1,10 +1,10 @@
-
 package org.jabref.logic.ai.migration;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -22,32 +22,40 @@ import org.jabref.model.ai.summarization.AiSummaryIdentifier;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 import org.jabref.model.database.BibDatabaseContext;
 
+import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
+import org.h2.mvstore.WriteBuffer;
+import org.h2.mvstore.type.BasicDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Migrates summaries from the old v1 MVStore file to the new v2 repository.
  * <p>
- * Old format (v1): Stored in "ai/1/summaries.mv" file
- * Map keys like "summaries-bibDatabasePath" containing Map&lt;String, OldSummary&gt;
- * where OldSummary = record(LocalDateTime timestamp, AiProvider aiProvider, String model, String content)
+ * Old format (v1): Stored in "ai/1/summaries.mv" file.
+ * Map keys like "summaries-bibDatabasePath" containing Map&lt;String, Summary&gt;
+ * where Summary = record(LocalDateTime timestamp, AiProvider aiProvider, String model, String content)
+ * and AiProvider was at org.jabref.model.ai.AiProvider (now moved to org.jabref.model.ai.llm.AiProvider).
  * <p>
- * New format (v2): Stored in "ai/2/summaries.mv" file via repository
- * Uses AiSummaryIdentifier(libraryId, citationKey) to store AiSummary objects
+ * New format (v2): Stored in "ai/2/summaries.mv" file via repository.
+ * Uses AiSummaryIdentifier(libraryId, citationKey) to store AiSummary objects.
  * <p>
- * <b>CHALLENGE:</b> Old Summary used Java serialization with AiProvider at org.jabref.model.ai.AiProvider,
- * but it was moved to org.jabref.model.ai.llm.AiProvider. We use a custom ObjectInputStream to remap the class.
+ * <b>Problem:</b> Both the Summary class and AiProvider enum no longer exist at their old paths,
+ * so MVStore's internal {@code ObjectDataType} fails with {@code ClassNotFoundException} before
+ * our code can intercept it.
  * <p>
- * Migration strategy: Open old v1 file, read with custom deserializer, write to new v2 repository.
+ * <b>Solution:</b> Open the map with a custom {@link RawBytesDataType} that reads MVStore's binary
+ * page format and returns the raw Java-serialized bytes without invoking the standard
+ * {@code ObjectInputStream}. Then a {@link ClassRemappingObjectInputStream} deserializes those
+ * bytes while remapping the two deleted class names to current inner types.
  */
 public class SummariesMigration {
     private static final Logger LOGGER = LoggerFactory.getLogger(SummariesMigration.class);
 
     private static final String OLD_SUMMARIES_FILE_NAME = "summaries.mv";
     private static final String SUMMARIES_MAP_PREFIX = "summaries";
+    private static final String OLD_SUMMARY_CLASS = "org.jabref.logic.ai.summarization.Summary";
     private static final String OLD_AI_PROVIDER_CLASS = "org.jabref.model.ai.AiProvider";
-    private static final String NEW_AI_PROVIDER_CLASS = "org.jabref.model.ai.llm.AiProvider";
 
     private SummariesMigration() {
         // Utility class
@@ -80,30 +88,38 @@ public class SummariesMigration {
 
         // Get path to old v1 MVStore file (in ai/1/ directory)
         Path oldFilePath = Directories.getAiFilesDirectory()
-                .getParent()  // Go from ai/2/ to ai/
-                .resolve("1")  // Go to ai/1/
-                .resolve(OLD_SUMMARIES_FILE_NAME);
+                                      .getParent()  // Go from ai/2/ to ai/
+                                      .resolve("1")  // Go to ai/1/
+                                      .resolve(OLD_SUMMARIES_FILE_NAME);
 
         if (!oldFilePath.toFile().exists()) {
             LOGGER.debug("No old summaries file found at {} - skipping migration", oldFilePath);
             return;
         }
 
-        MVStore oldMvStore = null;
-        try {
+        // Open the old v1 MVStore as read-only to avoid modifying it
+        try (MVStore oldMvStore = new MVStore.Builder()
+                .fileName(oldFilePath.toString())
+                .readOnly()
+                .open()) {
             // Open old v1 MVStore file
-            oldMvStore = new MVStore.Builder()
-                    .fileName(oldFilePath.toString())
-                    .open();
 
-            String oldMapName = SUMMARIES_MAP_PREFIX + "-" + bibDatabasePath.toString();
+            String oldMapName = SUMMARIES_MAP_PREFIX + "-" + bibDatabasePath;
 
             if (!oldMvStore.hasMap(oldMapName)) {
                 LOGGER.debug("No summaries found for this database in old file");
                 return;
             }
 
-            Map<String, byte[]> oldMap = oldMvStore.openMap(oldMapName);
+            // Open the map with RawBytesDataType so we get the raw Java-serialized bytes for each
+            // value, bypassing MVStore's ObjectDataType which would throw ClassNotFoundException
+            // before our remapping code could run.
+            // Maps stored with the default openMap(name) have no "type" entry in their metadata,
+            // so MVStore skips type-validation and accepts our custom DataType here.
+            MVMap<String, byte[]> oldMap = oldMvStore.openMap(
+                    oldMapName,
+                    new MVMap.Builder<String, byte[]>().valueType(new RawBytesDataType())
+            );
 
             if (oldMap.isEmpty()) {
                 LOGGER.debug("Old summaries map is empty");
@@ -144,18 +160,10 @@ public class SummariesMigration {
             }
 
             LOGGER.info("Successfully migrated {} summaries, {} failed", migratedCount, failedCount);
-
         } catch (Exception e) {
             LOGGER.error("Failed to migrate summaries from v1 to v2", e);
             notificationService.notify(Localization.lang("Failed to migrate AI summaries. See logs for details."));
-        } finally {
-            if (oldMvStore != null) {
-                try {
-                    oldMvStore.close();
-                } catch (Exception e) {
-                    LOGGER.error("Error closing old MVStore", e);
-                }
-            }
+            return;
         }
     }
 
@@ -190,7 +198,8 @@ public class SummariesMigration {
     }
 
     /**
-     * Custom ObjectInputStream that remaps the old AiProvider class name to the new one.
+     * Custom ObjectInputStream that remaps the deleted/moved class names to current inner types,
+     * so that Java's serialization machinery can instantiate them from the raw bytes.
      */
     private static class ClassRemappingObjectInputStream extends ObjectInputStream {
         public ClassRemappingObjectInputStream(InputStream in) throws IOException {
@@ -201,12 +210,91 @@ public class SummariesMigration {
         protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
             ObjectStreamClass desc = super.readClassDescriptor();
 
-            // Remap old AiProvider class to new location
+            // Remap the old (deleted) Summary record to our local OldSummary record.
+            // Both are records with the same 4 field names and serialVersionUID = 0 (spec default
+            // for records), so deserialization will match fields by name and call OldSummary's
+            // canonical constructor.
+            if (OLD_SUMMARY_CLASS.equals(desc.getName())) {
+                return ObjectStreamClass.lookup(OldSummary.class);
+            }
+
+            // Remap AiProvider moved from org.jabref.model.ai to org.jabref.model.ai.llm.
+            // Java reads the enum constant by name via Enum.valueOf(remappedClass, name), so as
+            // long as the constant names are the same in both enums this works transparently.
             if (OLD_AI_PROVIDER_CLASS.equals(desc.getName())) {
                 return ObjectStreamClass.lookup(AiProvider.class);
             }
 
             return desc;
+        }
+    }
+
+    /**
+     * Reads raw Java-serialized bytes from MVStore's binary page format without invoking
+     * Java deserialization. MVStore's {@code ObjectDataType} stores each serializable value as:
+     * <ol>
+     *   <li>1 byte: type identifier — {@code 19} ({@code TYPE_SERIALIZED_OBJECT} in H2 2.3.232)</li>
+     *   <li>VarInt: byte length of the serialized payload</li>
+     *   <li>N bytes: the raw Java-serialized payload (starts with {@code 0xACED 0x0005})</li>
+     * </ol>
+     * By returning the raw bytes we defer deserialization to {@link ClassRemappingObjectInputStream},
+     * which can remap deleted/moved class names before they ever reach the class loader.
+     */
+    private static class RawBytesDataType extends BasicDataType<byte[]> {
+
+        // Mirrors the private constant ObjectDataType.TYPE_SERIALIZED_OBJECT in H2 2.3.232.
+        // Verified by inspecting H2 bytecode: ConstantValue int 19 for TYPE_SERIALIZED_OBJECT.
+        private static final int TYPE_SERIALIZED_OBJECT = 19;
+
+        @Override
+        public byte[] read(ByteBuffer buff) {
+            int type = buff.get() & 0xff;
+            if (type != TYPE_SERIALIZED_OBJECT) {
+                throw new IllegalStateException(
+                        "Unexpected MVStore type byte " + type
+                                + " while reading summaries for migration (expected 19 = serialized object).");
+            }
+            int len = readVarInt(buff);
+            byte[] data = new byte[len];
+            buff.get(data);
+            return data;
+        }
+
+        @Override
+        public void write(WriteBuffer buff, byte[] obj) {
+            // Migration opens the store as read-only; this path should never execute.
+            throw new UnsupportedOperationException("RawBytesDataType is read-only (migration use only)");
+        }
+
+        @Override
+        public int getMemory(byte[] obj) {
+            return obj == null ? 0 : (obj.length + 4);
+        }
+
+        @Override
+        public byte[][] createStorage(int size) {
+            return new byte[size][];
+        }
+
+        /**
+         * Reads a variable-length encoded int from {@code buff}, using the same encoding that
+         * H2's {@code DataUtils.readVarInt} writes. Implemented inline to avoid a dependency
+         * on whether {@code org.h2.mvstore.DataUtils} is exported by the H2 module.
+         */
+        private static int readVarInt(ByteBuffer buff) {
+            int b = buff.get() & 0xFF;
+            if (b < 0x80) {
+                return b;
+            }
+            int value = b & 0x7F;
+            for (int shift = 7; ; shift += 7) {
+                b = buff.get() & 0xFF;
+                value |= (b & 0x7F) << shift;
+                if (b < 0x80) {
+                    break;
+                }
+            }
+            return value;
         }
     }
 

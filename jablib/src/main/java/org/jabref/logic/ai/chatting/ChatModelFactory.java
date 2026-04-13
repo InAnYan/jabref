@@ -18,15 +18,13 @@ import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import dev.langchain4j.model.mistralai.MistralAiChatModel;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Static factory for creating {@link ChatModel} instances.
- * <p>
- * Each call creates its own {@link HttpClient} and {@link ExecutorService}.
- * The returned model implements {@link AutoCloseable}; callers should close it
- * when it is no longer needed so the underlying resources are released.
- * <p>
- * Returns {@code null} when AI is disabled or the API key is empty.
- */
+/// Static factory for creating {@link ChatModel} instances.
+///
+/// Each call creates its own {@link HttpClient} and {@link ExecutorService}.
+/// The returned model implements {@link AutoCloseable}; callers should close it
+/// when it is no longer needed so the underlying resources are released.
+///
+/// Returns {@code null} when AI is disabled or the API key is empty.
 public final class ChatModelFactory {
     private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(5);
 
@@ -34,12 +32,8 @@ public final class ChatModelFactory {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
     }
 
-    /**
-     * Creates a {@link ChatModel} from explicit parameters.
-     * <p>
-     * All decisions about provider, model name, API key, etc. must be made by the caller.
-     */
-    @Nullable
+    /// Creates a {@link ChatModel} from explicit parameters.
+    /// All decisions about provider, model name, API key, etc. must be made by the caller.
     public static ChatModel create(
             AiProvider provider,
             String modelName,
@@ -75,21 +69,19 @@ public final class ChatModelFactory {
                                       .build();
             case GEMINI -> // NOTE: GoogleAiGeminiChatModel doesn't support API base URL.
                     GoogleAiGeminiChatModel.builder()
-                                          .apiKey(apiKey)
-                                          .modelName(modelName)
-                                          .temperature(temperature)
-                                          .logRequestsAndResponses(true)
-                                          .build();
+                                           .apiKey(apiKey)
+                                           .modelName(modelName)
+                                           .temperature(temperature)
+                                           .logRequestsAndResponses(true)
+                                           .build();
         };
 
         return new ChatModelImpl(langchainModel, tokenEstimator, provider, modelName, contextWindowSize, httpClient, executorService);
     }
 
-    /**
-     * Convenience overload that reads all parameters from {@link AiPreferences}.
-     *
-     * @return a new {@link ChatModel}, or {@code null} when AI is disabled or the API key is missing.
-     */
+    /// Convenience overload that reads all parameters from {@link AiPreferences}.
+    ///
+    /// @return a new {@link ChatModel}, or {@code null} when AI is disabled or the API key is missing.
     @Nullable
     public static ChatModel create(AiPreferences aiPreferences) {
         if (!aiPreferences.getEnableAi()) {

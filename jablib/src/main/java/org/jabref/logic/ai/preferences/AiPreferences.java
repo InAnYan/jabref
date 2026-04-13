@@ -81,6 +81,10 @@ public class AiPreferences {
     private final StringProperty citationParsingUserMessageTemplate;
     private final StringProperty markdownChatExportTemplate;
 
+    private final BooleanProperty generateFollowUpQuestions;
+    private final IntegerProperty followUpQuestionsCount;
+    private final StringProperty followUpQuestionsTemplate;
+
     private Runnable apiKeyChangeListener;
 
     public AiPreferences(
@@ -118,7 +122,10 @@ public class AiPreferences {
             String summarizationFullDocumentUserMessageTemplate,
             String citationParsingSystemMessageTemplate,
             String citationParsingUserMessageTemplate,
-            String markdownChatExportTemplate
+            String markdownChatExportTemplate,
+            boolean generateFollowUpQuestions,
+            int followUpQuestionsCount,
+            String followUpQuestionsTemplate
     ) {
         this.enableAi = new SimpleBooleanProperty(enableAi);
         this.autoGenerateEmbeddings = new SimpleBooleanProperty(autoGenerateEmbeddings);
@@ -163,6 +170,10 @@ public class AiPreferences {
         this.citationParsingSystemMessageTemplate = new SimpleStringProperty(citationParsingSystemMessageTemplate);
         this.citationParsingUserMessageTemplate = new SimpleStringProperty(citationParsingUserMessageTemplate);
         this.markdownChatExportTemplate = new SimpleStringProperty(markdownChatExportTemplate);
+
+        this.generateFollowUpQuestions = new SimpleBooleanProperty(generateFollowUpQuestions);
+        this.followUpQuestionsCount = new SimpleIntegerProperty(followUpQuestionsCount);
+        this.followUpQuestionsTemplate = new SimpleStringProperty(followUpQuestionsTemplate);
 
         this.apiKeyChangeListener = () -> {
         };
@@ -737,5 +748,41 @@ public class AiPreferences {
 
     public void setMarkdownChatExportTemplate(String template) {
         markdownChatExportTemplate.set(template);
+    }
+
+    public BooleanProperty generateFollowUpQuestionsProperty() {
+        return generateFollowUpQuestions;
+    }
+
+    public boolean getGenerateFollowUpQuestions() {
+        return generateFollowUpQuestions.get();
+    }
+
+    public void setGenerateFollowUpQuestions(boolean generateFollowUpQuestions) {
+        this.generateFollowUpQuestions.set(generateFollowUpQuestions);
+    }
+
+    public IntegerProperty followUpQuestionsCountProperty() {
+        return followUpQuestionsCount;
+    }
+
+    public int getFollowUpQuestionsCount() {
+        return followUpQuestionsCount.get();
+    }
+
+    public void setFollowUpQuestionsCount(int followUpQuestionsCount) {
+        this.followUpQuestionsCount.set(followUpQuestionsCount);
+    }
+
+    public StringProperty followUpQuestionsTemplateProperty() {
+        return followUpQuestionsTemplate;
+    }
+
+    public String getFollowUpQuestionsTemplate() {
+        return followUpQuestionsTemplate.get();
+    }
+
+    public void setFollowUpQuestionsTemplate(String followUpQuestionsTemplate) {
+        this.followUpQuestionsTemplate.set(followUpQuestionsTemplate);
     }
 }

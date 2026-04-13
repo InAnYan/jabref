@@ -47,4 +47,8 @@ public class GenerateSummaryTask extends TrackedBackgroundTask<AiSummary> {
 
         return aiSummary;
     }
+
+    public GenerateSummaryTaskRequest getRequest() {
+        return request;
+    }
 }

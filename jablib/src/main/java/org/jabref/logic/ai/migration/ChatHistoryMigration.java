@@ -1,5 +1,10 @@
 package org.jabref.logic.ai.migration;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -21,28 +26,45 @@ import org.jabref.model.database.BibDatabaseContext;
 
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.UserMessage;
+import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
+import org.h2.mvstore.WriteBuffer;
+import org.h2.mvstore.type.BasicDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Migrates chat history from the old v1 MVStore file to the new v2 repository.
  * <p>
- * Old format (v1): Stored in "chat-history.mv" file (singular)
+ * Old format (v1): Stored in "chat-history.mv" file.
  * Map keys like "bibDatabasePath-entry-citationKey" or "bibDatabasePath-group-groupName"
- * containing Map&lt;Integer, ChatHistoryRecord&gt;
+ * containing Map&lt;Integer, ChatHistoryRecord&gt; where ChatHistoryRecord was a private inner
+ * class of MVStoreChatHistoryStorage (full name:
+ * org.jabref.logic.ai.chatting.chathistory.storages.MVStoreChatHistoryStorage$ChatHistoryRecord).
  * <p>
- * New format (v2): Stored in "chat-histories.mv" file via repository
- * Uses ChatIdentifier(libraryId, chatType, chatName) to store ChatMessage objects
+ * New format (v2): Stored via repository using ChatIdentifier(libraryId, chatType, chatName).
  * <p>
- * Migration strategy: Open old v1 MVStore file, read old data, write to new repository via interface, close old file.
+ * <b>Problem:</b> The old inner class no longer exists, so MVStore's ObjectDataType fails with
+ * ClassNotFoundException before our code can intercept.
+ * <p>
+ * <b>Solution:</b> Open the map with a custom {@link RawBytesDataType} that returns the raw
+ * Java-serialized bytes for each value without invoking standard Java deserialization.
+ * Then a {@link ClassRemappingObjectInputStream} deserializes those bytes while remapping
+ * the deleted inner class name to the current {@link ChatHistoryRecord}.
  */
 public class ChatHistoryMigration {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatHistoryMigration.class);
 
-    private static final String OLD_CHAT_HISTORY_FILE_NAME = "chat-history.mv";  // Old v1 file (singular)
+    private static final String OLD_CHAT_HISTORY_FILE_NAME = "chat-histories.mv";
     private static final String ENTRY_CHAT_HISTORY_INFIX = "-entry-";
     private static final String GROUP_CHAT_HISTORY_INFIX = "-group-";
+
+    /**
+     * Old inner class full name that is no longer in the classpath.
+     * Was: private record ChatHistoryRecord inside MVStoreChatHistoryStorage.
+     */
+    private static final String OLD_CHAT_HISTORY_RECORD_CLASS =
+            "org.jabref.logic.ai.chatting.chathistory.storages.MVStoreChatHistoryStorage$ChatHistoryRecord";
 
     private ChatHistoryMigration() {
         // Utility class
@@ -51,8 +73,8 @@ public class ChatHistoryMigration {
     /**
      * Migrates old chat history data from v1 file to v2 repository.
      *
-     * @param bibDatabaseContext The database context containing the AI library ID
-     * @param repository The new v2 chat history repository to migrate to
+     * @param bibDatabaseContext  The database context containing the AI library ID
+     * @param repository          The new v2 chat history repository to migrate to
      * @param notificationService Service for notifying user of errors
      */
     public static void migrate(
@@ -69,26 +91,22 @@ public class ChatHistoryMigration {
 
         // Get path to old v1 MVStore file (in ai/1/ directory)
         Path oldFilePath = Directories.getAiFilesDirectory()
-                .getParent()  // Go from ai/2/ to ai/
-                .resolve("1")  // Go to ai/1/
-                .resolve(OLD_CHAT_HISTORY_FILE_NAME);
+                                      .getParent()  // Go from ai/2/ to ai/
+                                      .resolve("1")  // Go to ai/1/
+                                      .resolve(OLD_CHAT_HISTORY_FILE_NAME);
 
         if (!oldFilePath.toFile().exists()) {
             LOGGER.debug("No old chat history file found at {} - skipping migration", oldFilePath);
             return;
         }
 
-        MVStore oldMvStore = null;
-        try {
-            // Open old v1 MVStore file
-            oldMvStore = new MVStore.Builder()
-                    .fileName(oldFilePath.toString())
-                    .open();
-
+        try (MVStore oldMvStore = new MVStore.Builder()
+                .fileName(oldFilePath.toString())
+                .readOnly()
+                .open()) {
             List<String> oldMapNames = new ArrayList<>();
             List<String> migratedMapNames = new ArrayList<>();
 
-            // Collect all old map names
             for (String mapName : oldMvStore.getMapNames()) {
                 if (isOldChatHistoryMap(mapName)) {
                     oldMapNames.add(mapName);
@@ -102,10 +120,8 @@ public class ChatHistoryMigration {
 
             LOGGER.info("Starting migration of {} chat history maps from v1 to v2", oldMapNames.size());
 
-            // Migrate each old map
             for (String oldMapName : oldMapNames) {
                 try {
-                    // Read from old v1 MVStore, write through new v2 repository interface
                     if (migrateOldMap(oldMapName, libraryId, bibDatabaseContext, repository, oldMvStore)) {
                         migratedMapNames.add(oldMapName);
                     }
@@ -114,23 +130,12 @@ public class ChatHistoryMigration {
                 }
             }
 
-            LOGGER.info("Successfully migrated {} of {} chat history maps", migratedMapNames.size(), oldMapNames.size());
-
-            // Note: We don't delete the old file here - let the user do it manually after verification
-            LOGGER.info("Old chat history file retained at: {}", oldFilePath);
-            LOGGER.info("You can manually delete it after verifying the migration was successful");
-
+            LOGGER.info("Successfully migrated {} of {} chat history maps",
+                    migratedMapNames.size(), oldMapNames.size());
         } catch (Exception e) {
             LOGGER.error("Failed to migrate chat history from v1 to v2", e);
             notificationService.notify(Localization.lang("Failed to migrate AI chat history. See logs for details."));
-        } finally {
-            if (oldMvStore != null) {
-                try {
-                    oldMvStore.close();
-                } catch (Exception e) {
-                    LOGGER.error("Error closing old MVStore", e);
-                }
-            }
+            return;
         }
     }
 
@@ -168,8 +173,12 @@ public class ChatHistoryMigration {
             return false;
         }
 
-        // Read old chat history records from old v1 MVStore
-        Map<Integer, ChatHistoryRecord> oldMap = oldMvStore.openMap(oldMapName);
+        // Open with RawBytesDataType so values are returned as raw Java-serialized bytes,
+        // bypassing ObjectDataType which would throw ClassNotFoundException for the deleted class.
+        MVMap<Integer, byte[]> oldMap = oldMvStore.openMap(
+                oldMapName,
+                new MVMap.Builder<Integer, byte[]>().valueType(new RawBytesDataType())
+        );
 
         if (oldMap.isEmpty()) {
             LOGGER.debug("Skipping empty chat history map: {}", oldMapName);
@@ -178,18 +187,32 @@ public class ChatHistoryMigration {
 
         ChatIdentifier newIdentifier = new ChatIdentifier(libraryId, chatType, chatName);
 
-        // Check if new format already has data (avoid overwriting)
+        // Skip if new format already has data for this chat
         if (!repository.isEmpty(newIdentifier)) {
             LOGGER.debug("Skipping migration for {} - new format already has data", oldMapName);
             return false;
         }
 
-        // Convert and store messages using new v2 repository interface
-        List<ChatMessage> newMessages = oldMap.entrySet().stream()
-                .sorted(Comparator.comparingInt(Map.Entry::getKey))
-                .map(Map.Entry::getValue)
-                .map(ChatHistoryMigration::convertToNewChatMessage)
-                .toList();
+        List<ChatMessage> newMessages = new ArrayList<>();
+
+        Instant baseTime = Instant.now();
+        int index = 0;
+        for (Map.Entry<Integer, byte[]> entry : oldMap.entrySet()
+                                                      .stream()
+                                                      .sorted(Comparator.comparingInt(Map.Entry::getKey))
+                                                      .toList()) {
+            try {
+                ChatHistoryRecord record = deserializeOldRecord(entry.getValue());
+                if (record != null) {
+                    ChatMessage msg = convertToNewChatMessage(record, baseTime.plusMillis(index));
+                    newMessages.add(msg);
+                    index++;
+                }
+            } catch (Exception e) {
+                LOGGER.warn("Failed to deserialize chat history record at index {}: {}",
+                        entry.getKey(), e.getMessage());
+            }
+        }
 
         for (ChatMessage message : newMessages) {
             repository.addMessage(newIdentifier, message);
@@ -199,7 +222,26 @@ public class ChatHistoryMigration {
         return true;
     }
 
-    private static ChatMessage convertToNewChatMessage(ChatHistoryRecord oldRecord) {
+    /**
+     * Deserializes old ChatHistoryRecord bytes using a remapping ObjectInputStream.
+     * Remaps the deleted inner class name to the current {@link ChatHistoryRecord}.
+     */
+    private static ChatHistoryRecord deserializeOldRecord(byte[] data) {
+        try (ClassRemappingObjectInputStream ois = new ClassRemappingObjectInputStream(
+                new java.io.ByteArrayInputStream(data))) {
+            Object obj = ois.readObject();
+            if (obj instanceof ChatHistoryRecord record) {
+                return record;
+            }
+            LOGGER.warn("Deserialized object is not ChatHistoryRecord: {}", obj.getClass());
+            return null;
+        } catch (Exception e) {
+            LOGGER.warn("Failed to deserialize old chat history record: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    private static ChatMessage convertToNewChatMessage(ChatHistoryRecord oldRecord, Instant timestamp) {
         dev.langchain4j.data.message.ChatMessage langchainMessage = oldRecord.toLangchainMessage();
 
         ChatMessage.Role role;
@@ -227,13 +269,96 @@ public class ChatHistoryMigration {
 
         return new ChatMessage(
                 UUID.randomUUID().toString(),
-                Instant.now(),
+                timestamp,
                 role,
                 content,
                 List.of()
         );
     }
+
+    /**
+     * Custom ObjectInputStream that remaps the deleted old inner class name
+     * to the current {@link ChatHistoryRecord} class.
+     * <p>
+     * The old and new records have identical components (className: String, content: String),
+     * so Java record deserialization will call the canonical constructor successfully.
+     */
+    private static class ClassRemappingObjectInputStream extends ObjectInputStream {
+        public ClassRemappingObjectInputStream(InputStream in) throws IOException {
+            super(in);
+        }
+
+        @Override
+        protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
+            ObjectStreamClass desc = super.readClassDescriptor();
+
+            // Remap the old deleted inner class to the current ChatHistoryRecord.
+            // Both records have identical components (className, content) with serialVersionUID = 0.
+            if (OLD_CHAT_HISTORY_RECORD_CLASS.equals(desc.getName())) {
+                return ObjectStreamClass.lookup(ChatHistoryRecord.class);
+            }
+
+            return desc;
+        }
+    }
+
+    /**
+     * Reads raw Java-serialized bytes from MVStore's binary page format without invoking
+     * Java deserialization. MVStore's ObjectDataType stores each serializable value as:
+     * <ol>
+     *   <li>1 byte: type identifier — {@code 19} (TYPE_SERIALIZED_OBJECT in H2 2.3.232)</li>
+     *   <li>VarInt: byte length of the serialized payload</li>
+     *   <li>N bytes: the raw Java-serialized payload</li>
+     * </ol>
+     */
+    private static class RawBytesDataType extends BasicDataType<byte[]> {
+
+        // TYPE_SERIALIZED_OBJECT = 19, verified from H2 2.3.232 bytecode.
+        private static final int TYPE_SERIALIZED_OBJECT = 19;
+
+        @Override
+        public byte[] read(ByteBuffer buff) {
+            int type = buff.get() & 0xff;
+            if (type != TYPE_SERIALIZED_OBJECT) {
+                throw new IllegalStateException(
+                        "Unexpected MVStore type byte " + type
+                                + " while reading chat history for migration (expected 19 = serialized object).");
+            }
+            int len = readVarInt(buff);
+            byte[] data = new byte[len];
+            buff.get(data);
+            return data;
+        }
+
+        @Override
+        public void write(WriteBuffer buff, byte[] obj) {
+            throw new UnsupportedOperationException("RawBytesDataType is read-only (migration use only)");
+        }
+
+        @Override
+        public int getMemory(byte[] obj) {
+            return obj == null ? 0 : (obj.length + 4);
+        }
+
+        @Override
+        public byte[][] createStorage(int size) {
+            return new byte[size][];
+        }
+
+        private static int readVarInt(ByteBuffer buff) {
+            int b = buff.get() & 0xFF;
+            if (b < 0x80) {
+                return b;
+            }
+            int value = b & 0x7F;
+            for (int shift = 7; ; shift += 7) {
+                b = buff.get() & 0xFF;
+                value |= (b & 0x7F) << shift;
+                if (b < 0x80) {
+                    break;
+                }
+            }
+            return value;
+        }
+    }
 }
-
-
-

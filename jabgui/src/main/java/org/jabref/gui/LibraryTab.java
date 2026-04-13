@@ -344,9 +344,15 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
         });
     }
 
-    static void ensureAiLibraryIdPresent(BibDatabaseContext bibDatabaseContext) {
+    private void ensureAiLibraryIdPresent(BibDatabaseContext bibDatabaseContext) {
         if (bibDatabaseContext.getMetaData().getAiLibraryId().isEmpty()) {
-            bibDatabaseContext.getMetaData().setAiLibraryId(UUID.randomUUID().toString());
+            bibDatabaseContext.getMetaData().setEventPropagation(false);
+            // Adding a `finally` block just in case an error occurs when calling `setLibraryId`.
+            try {
+                bibDatabaseContext.getMetaData().setAiLibraryId(UUID.randomUUID().toString());
+            } finally {
+                bibDatabaseContext.getMetaData().setEventPropagation(true);
+            }
         }
     }
 

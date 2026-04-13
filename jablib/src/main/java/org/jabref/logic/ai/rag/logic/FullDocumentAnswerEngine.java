@@ -25,7 +25,6 @@ public class FullDocumentAnswerEngine implements AnswerEngine {
             String query,
             List<FullBibEntry> entriesFilter
     ) {
-        // Look at this!
         return entriesFilter
                 .stream()
                 .flatMap(entryIdentifier ->

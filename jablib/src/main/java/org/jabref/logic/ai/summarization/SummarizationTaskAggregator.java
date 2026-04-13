@@ -6,6 +6,7 @@ import java.util.TreeMap;
 
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
+import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.entry.BibEntry;
 
@@ -47,25 +48,38 @@ public class SummarizationTaskAggregator {
      * attaching, in case the task already finished before the listener was registered.
      */
     public synchronized GenerateSummaryTask start(GenerateSummaryTaskRequest request) {
-        return tasks.computeIfAbsent(request.fullEntry().entry(), _ -> {
-            GenerateSummaryTask task = new GenerateSummaryTask(request);
+        Optional<GenerateSummaryTask> task = getTask(request.fullEntry().entry());
 
-            // Remove from map when the task finishes (success or failure).
-            // Runs on the JavaFX thread via BackgroundTask.getOnSuccess/getOnException chaining.
-            task.onFinished(() -> tasks.remove(request.fullEntry().entry()));
+        if (task.isEmpty()) {
+            return startNewTask(request);
+        }
 
-            // Write result to RAM cache on success (after onFinished removes from map).
-            // This ensures a view that re-binds to this entry after the task finished can still
-            // retrieve the result via InMemorySummaryCache, even without a citation key.
-            task.onSuccess(result -> {
-                if (result != null) {
-                    inMemoryCache.put(request.fullEntry(), result);
-                }
-            });
+        if (task.get().getStatus() == TrackedBackgroundTask.Status.CANCELLED && request.regenerate()) {
+            tasks.remove(request.fullEntry().entry());
+            return startNewTask(request);
+        }
 
-            taskExecutor.execute(task);
-            return task;
+        return task.get();
+    }
+
+    private synchronized GenerateSummaryTask startNewTask(GenerateSummaryTaskRequest request) {
+        GenerateSummaryTask task = new GenerateSummaryTask(request);
+
+        // Remove from map when the task finishes (success or failure).
+        // Runs on the JavaFX thread via BackgroundTask.getOnSuccess/getOnException chaining.
+        task.onFinished(() -> tasks.remove(request.fullEntry().entry()));
+
+        // Write the result to RAM cache on success (after onFinished removes from map).
+        // This ensures a view that re-binds to this entry after the task finished can still
+        // retrieve the result via InMemorySummaryCache, even without a citation key.
+        task.onSuccess(result -> {
+            if (result != null) {
+                inMemoryCache.put(request.fullEntry(), result);
+            }
         });
+
+        taskExecutor.execute(task);
+        return task;
     }
 
     /**

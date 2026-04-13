@@ -418,6 +418,9 @@ public class JabRefCliPreferences implements CliPreferences {
     private static final String AI_SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE = "aiSummarizationFullDocumentSystemMessageTemplate";
     private static final String AI_SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE_TEMPLATE = "aiSummarizationFullDocumentUserMessageTemplate";
     private static final String AI_MARKDOWN_CHAT_EXPORT_TEMPLATE = "aiMarkdownChatExportTemplate";
+    private static final String AI_GENERATE_FOLLOW_UP_QUESTIONS = "aiGenerateFollowUpQuestions";
+    private static final String AI_FOLLOW_UP_QUESTIONS_COUNT = "aiFollowUpQuestionsCount";
+    private static final String AI_FOLLOW_UP_QUESTIONS_TEMPLATE = "aiFollowUpQuestionsTemplate";
 
     private static final String LAST_USED_DIRECTORY = "lastUsedDirectory";
 
@@ -774,6 +777,9 @@ public class JabRefCliPreferences implements CliPreferences {
         defaults.put(AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.getCitationParsingSystemMessageTemplate());
         defaults.put(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE, AiDefaultTemplates.getCitationParsingUserMessageTemplate());
         defaults.put(AI_MARKDOWN_CHAT_EXPORT_TEMPLATE, AiDefaultTemplates.getMarkdownChatExportTemplate());
+        defaults.put(AI_GENERATE_FOLLOW_UP_QUESTIONS, true);
+        defaults.put(AI_FOLLOW_UP_QUESTIONS_COUNT, 3);
+        defaults.put(AI_FOLLOW_UP_QUESTIONS_TEMPLATE, AiDefaultTemplates.getFollowUpQuestionsTemplate());
         // endregion
 
         // endregion
@@ -2078,7 +2084,10 @@ public class JabRefCliPreferences implements CliPreferences {
                 get(AI_SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE_TEMPLATE),
                 get(AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE),
                 get(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE),
-                get(AI_MARKDOWN_CHAT_EXPORT_TEMPLATE));
+                get(AI_MARKDOWN_CHAT_EXPORT_TEMPLATE),
+                getBoolean(AI_GENERATE_FOLLOW_UP_QUESTIONS),
+                getInt(AI_FOLLOW_UP_QUESTIONS_COUNT),
+                get(AI_FOLLOW_UP_QUESTIONS_TEMPLATE));
 
         EasyBind.listen(aiPreferences.enableAiProperty(), (_, _, newValue) -> putBoolean(AI_ENABLED, newValue));
         EasyBind.listen(aiPreferences.autoGenerateEmbeddingsProperty(), (_, _, newValue) -> putBoolean(AI_AUTO_GENERATE_EMBEDDINGS, newValue));
@@ -2123,6 +2132,10 @@ public class JabRefCliPreferences implements CliPreferences {
         EasyBind.listen(aiPreferences.citationParsingSystemMessageTemplateProperty(), (_, _, newValue) -> put(AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE, newValue));
         EasyBind.listen(aiPreferences.citationParsingUserMessageTemplateProperty(), (_, _, newValue) -> put(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE, newValue));
         EasyBind.listen(aiPreferences.markdownChatExportTemplateProperty(), (_, _, newValue) -> put(AI_MARKDOWN_CHAT_EXPORT_TEMPLATE, newValue));
+
+        EasyBind.listen(aiPreferences.generateFollowUpQuestionsProperty(), (_, _, newValue) -> putBoolean(AI_GENERATE_FOLLOW_UP_QUESTIONS, newValue));
+        EasyBind.listen(aiPreferences.followUpQuestionsCountProperty(), (_, _, newValue) -> putInt(AI_FOLLOW_UP_QUESTIONS_COUNT, newValue));
+        EasyBind.listen(aiPreferences.followUpQuestionsTemplateProperty(), (_, _, newValue) -> put(AI_FOLLOW_UP_QUESTIONS_TEMPLATE, newValue));
 
         return aiPreferences;
     }

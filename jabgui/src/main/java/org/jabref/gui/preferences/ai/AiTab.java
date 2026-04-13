@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
@@ -33,7 +34,9 @@ import org.controlsfx.control.textfield.CustomPasswordField;
 
 public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements PreferencesTab {
     private static final String HUGGING_FACE_CHAT_MODEL_PROMPT = "TinyLlama/TinyLlama_v1.1 (or any other model name)";
+
     private final ControlsFxVisualizer visualizer = new ControlsFxVisualizer();
+
     @FXML private CheckBox enableAi;
     @FXML private CheckBox autoGenerateEmbeddings;
     @FXML private CheckBox autoGenerateSummaries;
@@ -60,6 +63,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private Tab citationParsingSystemMessageTab;
     @FXML private Tab citationParsingUserMessageTab;
     @FXML private Tab markdownChatExportTemplateTab;
+    @FXML private Tab followUpQuestionsTemplateTab;
     @FXML private TextArea systemMessageTextArea;
     @FXML private TextArea userMessageTextArea;
     @FXML private TextArea summarizationChunkSystemMessageTextArea;
@@ -69,11 +73,14 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private TextArea citationParsingSystemMessageTextArea;
     @FXML private TextArea citationParsingUserMessageTextArea;
     @FXML private TextArea markdownChatExportTemplateTextArea;
+    @FXML private TextArea followUpQuestionsTemplateTextArea;
     @FXML private Button generalSettingsHelp;
     @FXML private Button expertSettingsHelp;
     @FXML private Button templatesHelp;
     @FXML private Button resetCurrentTemplateButton;
     @FXML private Button resetTemplatesButton;
+    @FXML private CheckBox generateFollowUpQuestions;
+    @FXML private IntegerInputField followUpQuestionsCountField;
 
     public AiTab() {
         ViewLoader.view(this)
@@ -91,7 +98,21 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         initializeExpertSettings();
         initializeValidations();
         initializeTemplates();
+        initializeFollowUpQuestions();
         initializeHelp();
+    }
+
+    private void initializeFollowUpQuestions() {
+        generateFollowUpQuestions.selectedProperty().bindBidirectional(viewModel.generateFollowUpQuestionsProperty());
+        generateFollowUpQuestions.disableProperty().bind(viewModel.disableBasicSettingsProperty());
+
+        followUpQuestionsCountField.valueProperty().addListener((_, _, newValue) ->
+                viewModel.followUpQuestionsCountProperty().set(newValue == null ? 0 : newValue));
+
+        viewModel.followUpQuestionsCountProperty().addListener((_, _, newValue) ->
+                followUpQuestionsCountField.valueProperty().set(newValue == null ? 0 : newValue.intValue()));
+
+        followUpQuestionsCountField.disableProperty().bind(viewModel.disableBasicSettingsProperty());
     }
 
     private void initializeHelp() {
@@ -111,6 +132,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         citationParsingSystemMessageTextArea.textProperty().bindBidirectional(viewModel.citationParsingSystemMessageTemplateProperty());
         citationParsingUserMessageTextArea.textProperty().bindBidirectional(viewModel.citationParsingUserMessageTemplateProperty());
         markdownChatExportTemplateTextArea.textProperty().bindBidirectional(viewModel.markdownChatExportTemplateProperty());
+        followUpQuestionsTemplateTextArea.textProperty().bindBidirectional(viewModel.followUpQuestionsTemplateProperty());
 
         BooleanBinding aiDisabled = enableAi.selectedProperty().not();
 
@@ -123,6 +145,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         citationParsingSystemMessageTextArea.disableProperty().bind(aiDisabled);
         citationParsingUserMessageTextArea.disableProperty().bind(aiDisabled);
         markdownChatExportTemplateTextArea.disableProperty().bind(aiDisabled);
+        followUpQuestionsTemplateTextArea.disableProperty().bind(aiDisabled);
 
         resetCurrentTemplateButton.disableProperty().bind(aiDisabled);
         resetTemplatesButton.disableProperty().bind(aiDisabled);
@@ -288,6 +311,8 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
             viewModel.resetCitationParsingUserMessageTemplate();
         } else if (selectedTab == markdownChatExportTemplateTab) {
             viewModel.resetMarkdownChatExportTemplate();
+        } else if (selectedTab == followUpQuestionsTemplateTab) {
+            viewModel.resetFollowUpQuestionsTemplate();
         }
     }
 

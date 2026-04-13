@@ -61,6 +61,19 @@ public class AiDefaultTemplates {
 
             #end""";
 
+    private static final String FOLLOW_UP_QUESTIONS_TEMPLATE = """
+            Based on this conversation:
+            User: $userMessage
+            Assistant: $aiResponse
+
+            Generate $count short follow-up questions (maximum 10 words each) that the user might want to ask next.
+            Format your response as a numbered list:
+            1. [question]
+            2. [question]
+            3. [question]
+
+            Only provide the numbered list, nothing else.""";
+
     public static String getChattingSystemMessageTemplate() {
         return CHATTING_SYSTEM_MESSAGE_TEMPLATE;
     }
@@ -92,4 +105,7 @@ public class AiDefaultTemplates {
     public static String getMarkdownChatExportTemplate() {
         return MARKDOWN_CHAT_EXPORT_TEMPLATE;
     }
-}
+
+    public static String getFollowUpQuestionsTemplate() {
+        return FOLLOW_UP_QUESTIONS_TEMPLATE;
+    }
