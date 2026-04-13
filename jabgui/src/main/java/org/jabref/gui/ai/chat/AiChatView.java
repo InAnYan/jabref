@@ -26,6 +26,7 @@ import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
+import org.jabref.model.entry.BibEntryTypesManager;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
@@ -56,6 +57,7 @@ public class AiChatView extends StackPane {
     @Inject private AiService aiService;
     @Inject private DialogService dialogService;
     @Inject private TaskExecutor taskExecutor;
+    @Inject private BibEntryTypesManager entryTypesManager;
 
     private AiChatViewModel viewModel;
 
@@ -82,6 +84,8 @@ public class AiChatView extends StackPane {
         viewModel = new AiChatViewModel(
                 preferences.getAiPreferences(),
                 preferences.getFilePreferences(),
+                entryTypesManager,
+                preferences.getFieldPreferences(),
                 aiService.getIngestionTaskAggregator(),
                 aiService.getIngestedDocumentsRepository(),
                 dialogService,
@@ -202,6 +206,16 @@ public class AiChatView extends StackPane {
     @FXML
     private void clearChatHistory() {
         viewModel.clearChatHistory();
+    }
+
+    @FXML
+    private void exportMarkdown() {
+        viewModel.exportMarkdown();
+    }
+
+    @FXML
+    private void exportJson() {
+        viewModel.exportJson();
     }
 
     public ListProperty<ChatMessage> chatHistoryProperty() {

@@ -15,6 +15,7 @@ import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.NotificationService;
+import org.jabref.model.ai.AiMetadata;
 import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.ai.summarization.AiSummary;
 import org.jabref.model.ai.summarization.AiSummaryIdentifier;
@@ -190,9 +191,7 @@ public class SummariesMigration {
         Instant timestamp = oldSummary.timestamp().atZone(ZoneId.systemDefault()).toInstant();
 
         return new AiSummary(
-                timestamp,
-                oldSummary.aiProvider(),
-                oldSummary.model(),
+                new AiMetadata(oldSummary.aiProvider(), oldSummary.model(), timestamp),
                 SummarizatorKind.CHUNKED,  // Old summaries - assume chunked (default)
                 oldSummary.content()
         );

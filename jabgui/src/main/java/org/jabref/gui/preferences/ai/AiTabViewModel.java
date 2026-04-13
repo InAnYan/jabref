@@ -87,6 +87,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     private final StringProperty citationParsingUserMessageTemplate = new SimpleStringProperty();
     private final StringProperty summarizationFullDocumentSystemMessageTemplate = new SimpleStringProperty();
     private final StringProperty summarizationFullDocumentUserMessageTemplate = new SimpleStringProperty();
+    private final StringProperty markdownChatExportTemplate = new SimpleStringProperty();
     private final StringProperty followUpQuestionsTemplate = new SimpleStringProperty();
 
     private final BooleanProperty generateFollowUpQuestions = new SimpleBooleanProperty();
@@ -335,6 +336,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         citationParsingUserMessageTemplate.set(aiPreferences.getCitationParsingUserMessageTemplate());
         summarizationFullDocumentSystemMessageTemplate.set(aiPreferences.getSummarizationFullDocumentSystemMessageTemplate());
         summarizationFullDocumentUserMessageTemplate.set(aiPreferences.getSummarizationFullDocumentUserMessageTemplate());
+        markdownChatExportTemplate.set(aiPreferences.getMarkdownChatExportTemplate());
 
         generateFollowUpQuestions.set(aiPreferences.getGenerateFollowUpQuestions());
         followUpQuestionsCount.set(aiPreferences.getFollowUpQuestionsCount());
@@ -387,6 +389,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         aiPreferences.setCitationParsingUserMessageTemplate(citationParsingUserMessageTemplate.get());
         aiPreferences.setSummarizationFullDocumentSystemMessageTemplate(summarizationFullDocumentSystemMessageTemplate.get());
         aiPreferences.setSummarizationFullDocumentUserMessageTemplate(summarizationFullDocumentUserMessageTemplate.get());
+        aiPreferences.setMarkdownChatExportTemplate(markdownChatExportTemplate.get());
 
         aiPreferences.setGenerateFollowUpQuestions(generateFollowUpQuestions.get());
         aiPreferences.setFollowUpQuestionsCount(followUpQuestionsCount.get());
@@ -423,6 +426,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         resetCitationParsingSystemMessageTemplate();
         resetCitationParsingUserMessageTemplate();
         resetSummarizationFullDocumentSystemMessageTemplate();
+        resetMarkdownChatExportTemplate();
         resetFollowUpQuestionsTemplate();
     }
 
@@ -452,6 +456,14 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
     public void resetSummarizationFullDocumentSystemMessageTemplate() {
         summarizationFullDocumentSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationFullDocumentSystemMessageTemplate());
+    }
+
+    public void resetMarkdownChatExportTemplate() {
+        markdownChatExportTemplate.set(AiDefaultTemplates.getMarkdownChatExportTemplate());
+    }
+
+    public StringProperty markdownChatExportTemplateProperty() {
+        return markdownChatExportTemplate;
     }
 
     public void resetFollowUpQuestionsTemplate() {

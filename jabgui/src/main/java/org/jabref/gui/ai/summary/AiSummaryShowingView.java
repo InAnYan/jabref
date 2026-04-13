@@ -16,14 +16,19 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 
+import org.jabref.gui.DialogService;
+import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.gui.util.WebViewStore;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.summarization.AiSummary;
+import org.jabref.model.entry.BibEntryTypesManager;
 
 import com.airhacks.afterburner.views.ViewLoader;
+import jakarta.inject.Inject;
 
 public class AiSummaryShowingView extends VBox {
     @FXML private CheckBox markdownCheckbox;
@@ -32,6 +37,10 @@ public class AiSummaryShowingView extends VBox {
     private WebView webView;
 
     private AiSummaryShowingViewModel viewModel;
+
+    @Inject private GuiPreferences preferences;
+    @Inject private DialogService dialogService;
+    @Inject private BibEntryTypesManager entryTypesManager;
 
     public AiSummaryShowingView() {
         ViewLoader.view(this)
@@ -45,8 +54,8 @@ public class AiSummaryShowingView extends VBox {
         }
 
         return Localization.lang("Generated at %0 by %1 (algorithm %2)")
-                           .replaceAll("%0", formatTimestamp(summary.timestamp()))
-                           .replaceAll("%1", summary.aiProvider().getDisplayName() + " " + summary.model())
+                           .replaceAll("%0", formatTimestamp(summary.metadata().timestamp()))
+                           .replaceAll("%1", summary.metadata().aiProvider().getDisplayName() + " " + summary.metadata().model())
                            .replaceAll("%2", summary.summarizationAlgorithm().getDisplayName());
     }
 
@@ -61,9 +70,18 @@ public class AiSummaryShowingView extends VBox {
         return viewModel.summaryProperty();
     }
 
+    public ObjectProperty<FullBibEntry> entryProperty() {
+        return viewModel.entryProperty();
+    }
+
     @FXML
     private void initialize() {
-        viewModel = new AiSummaryShowingViewModel();
+        viewModel = new AiSummaryShowingViewModel(
+                preferences.getAiPreferences(),
+                preferences.getFieldPreferences(),
+                entryTypesManager,
+                dialogService
+        );
         initializeWebView();
 
         setupBindings();
@@ -125,5 +143,15 @@ public class AiSummaryShowingView extends VBox {
     @FXML
     private void regenerateCustom() {
         viewModel.regenerateCustom();
+    }
+
+    @FXML
+    private void exportMarkdown() {
+        viewModel.exportMarkdown();
+    }
+
+    @FXML
+    private void exportJson() {
+        viewModel.exportJson();
     }
 }

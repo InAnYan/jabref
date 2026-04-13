@@ -79,6 +79,7 @@ public class AiPreferences {
     private final StringProperty summarizationFullDocumentUserMessageTemplate;
     private final StringProperty citationParsingSystemMessageTemplate;
     private final StringProperty citationParsingUserMessageTemplate;
+    private final StringProperty markdownChatExportTemplate;
 
     private final BooleanProperty generateFollowUpQuestions;
     private final IntegerProperty followUpQuestionsCount;
@@ -121,6 +122,7 @@ public class AiPreferences {
             String summarizationFullDocumentUserMessageTemplate,
             String citationParsingSystemMessageTemplate,
             String citationParsingUserMessageTemplate,
+            String markdownChatExportTemplate,
             boolean generateFollowUpQuestions,
             int followUpQuestionsCount,
             String followUpQuestionsTemplate
@@ -167,6 +169,7 @@ public class AiPreferences {
         this.summarizationFullDocumentUserMessageTemplate = new SimpleStringProperty(summarizationFullDocumentUserMessageTemplate);
         this.citationParsingSystemMessageTemplate = new SimpleStringProperty(citationParsingSystemMessageTemplate);
         this.citationParsingUserMessageTemplate = new SimpleStringProperty(citationParsingUserMessageTemplate);
+        this.markdownChatExportTemplate = new SimpleStringProperty(markdownChatExportTemplate);
 
         this.generateFollowUpQuestions = new SimpleBooleanProperty(generateFollowUpQuestions);
         this.followUpQuestionsCount = new SimpleIntegerProperty(followUpQuestionsCount);
@@ -733,6 +736,18 @@ public class AiPreferences {
 
     public void setCitationParsingUserMessageTemplate(String template) {
         citationParsingUserMessageTemplate.set(template);
+    }
+
+    public StringProperty markdownChatExportTemplateProperty() {
+        return markdownChatExportTemplate;
+    }
+
+    public String getMarkdownChatExportTemplate() {
+        return markdownChatExportTemplate.get();
+    }
+
+    public void setMarkdownChatExportTemplate(String template) {
+        markdownChatExportTemplate.set(template);
     }
 
     public BooleanProperty generateFollowUpQuestionsProperty() {

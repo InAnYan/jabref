@@ -62,6 +62,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private Tab summarizationCombineUserMessageTab;
     @FXML private Tab citationParsingSystemMessageTab;
     @FXML private Tab citationParsingUserMessageTab;
+    @FXML private Tab markdownChatExportTemplateTab;
     @FXML private Tab followUpQuestionsTemplateTab;
     @FXML private TextArea systemMessageTextArea;
     @FXML private TextArea userMessageTextArea;
@@ -71,6 +72,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private TextArea summarizationCombineUserMessageTextArea;
     @FXML private TextArea citationParsingSystemMessageTextArea;
     @FXML private TextArea citationParsingUserMessageTextArea;
+    @FXML private TextArea markdownChatExportTemplateTextArea;
     @FXML private TextArea followUpQuestionsTemplateTextArea;
     @FXML private Button generalSettingsHelp;
     @FXML private Button expertSettingsHelp;
@@ -129,6 +131,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         summarizationCombineUserMessageTextArea.textProperty().bindBidirectional(viewModel.summarizationCombineUserMessageTemplateProperty());
         citationParsingSystemMessageTextArea.textProperty().bindBidirectional(viewModel.citationParsingSystemMessageTemplateProperty());
         citationParsingUserMessageTextArea.textProperty().bindBidirectional(viewModel.citationParsingUserMessageTemplateProperty());
+        markdownChatExportTemplateTextArea.textProperty().bindBidirectional(viewModel.markdownChatExportTemplateProperty());
         followUpQuestionsTemplateTextArea.textProperty().bindBidirectional(viewModel.followUpQuestionsTemplateProperty());
 
         BooleanBinding aiDisabled = enableAi.selectedProperty().not();
@@ -141,6 +144,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         summarizationCombineUserMessageTextArea.disableProperty().bind(aiDisabled);
         citationParsingSystemMessageTextArea.disableProperty().bind(aiDisabled);
         citationParsingUserMessageTextArea.disableProperty().bind(aiDisabled);
+        markdownChatExportTemplateTextArea.disableProperty().bind(aiDisabled);
         followUpQuestionsTemplateTextArea.disableProperty().bind(aiDisabled);
 
         resetCurrentTemplateButton.disableProperty().bind(aiDisabled);
@@ -305,6 +309,8 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
             viewModel.resetCitationParsingSystemMessageTemplate();
         } else if (selectedTab == citationParsingUserMessageTab) {
             viewModel.resetCitationParsingUserMessageTemplate();
+        } else if (selectedTab == markdownChatExportTemplateTab) {
+            viewModel.resetMarkdownChatExportTemplate();
         } else if (selectedTab == followUpQuestionsTemplateTab) {
             viewModel.resetFollowUpQuestionsTemplate();
         }

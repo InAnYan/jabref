@@ -1,6 +1,5 @@
 package org.jabref.gui.ai.summary;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,10 +25,12 @@ import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
+import org.jabref.logic.bibtex.FieldPreferences;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.summarization.AiSummary;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.BibEntryTypesManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
+    private final BibEntryTypesManager entryTypesManager;
+    private final FieldPreferences fieldPreferences;
     private final SummariesRepository summariesRepository;
     private final InMemorySummaryCache inMemoryCache;
     private final SummarizationTaskAggregator summarizationTaskAggregator;
@@ -70,6 +73,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
     public AiSummaryViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
+            BibEntryTypesManager entryTypesManager,
+            FieldPreferences fieldPreferences,
             SummariesRepository summariesRepository,
             InMemorySummaryCache inMemoryCache,
             SummarizationTaskAggregator summarizationTaskAggregator,
@@ -77,6 +82,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
+        this.entryTypesManager = entryTypesManager;
+        this.fieldPreferences = fieldPreferences;
         this.summariesRepository = summariesRepository;
         this.inMemoryCache = inMemoryCache;
         this.summarizationTaskAggregator = summarizationTaskAggregator;

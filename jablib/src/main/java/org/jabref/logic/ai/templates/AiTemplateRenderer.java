@@ -3,6 +3,8 @@ package org.jabref.logic.ai.templates;
 import java.io.StringWriter;
 import java.util.List;
 
+import org.jabref.model.ai.AiMetadata;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.CanonicalBibEntry;
@@ -55,6 +57,26 @@ public class AiTemplateRenderer {
     public static String renderCitationParsingSystemMessage(String templateSource) {
         VelocityContext context = new VelocityContext(BASE_CONTEXT);
         return render(templateSource, "CITATION_PARSING_SYSTEM_MESSAGE", context);
+    }
+
+    /**
+     * Renders the Markdown chat export template.
+     *
+     * <p>The following variables are available in the template:
+     * <ul>
+     *   <li>{@code $metadata} — {@link AiMetadata} with provider, model, and timestamp</li>
+     *   <li>{@code $bibtex} — pre-rendered BibTeX string for all associated entries</li>
+     *   <li>{@code $messages} — list of {@link ChatMessage} objects (SYSTEM messages excluded).
+     *       Access content via {@code $message.content()} and role via
+     *       {@code $message.role().getDisplayName()}</li>
+     * </ul>
+     */
+    public static String renderMarkdownChatExport(String templateSource, AiMetadata metadata, String bibtex, List<ChatMessage> messages) {
+        VelocityContext context = new VelocityContext(BASE_CONTEXT);
+        context.put("metadata", metadata);
+        context.put("bibtex", bibtex);
+        context.put("messages", messages);
+        return render(templateSource, "MARKDOWN_CHAT_EXPORT", context);
     }
 
     public static String renderFollowUpQuestionsPrompt(String templateSource, String userMessage, String aiResponse, int count) {

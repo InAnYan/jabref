@@ -43,6 +43,24 @@ public class AiDefaultTemplates {
     private static final String CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE = "You are a bot to convert a plain text citation to a BibTeX entry. The user you talk to understands only BibTeX code, so provide it plainly without any wrappings.";
     private static final String CITATION_PARSING_USER_MESSAGE_TEMPLATE = "Please convert this plain text citation to a BibTeX entry:\n$citation\nIn your output, please provide only BibTeX code as your message.";
 
+    private static final String MARKDOWN_CHAT_EXPORT_TEMPLATE = """
+            # AI chat
+
+            ## BibTeX
+
+            ```bibtex
+            $bibtex
+            ```
+
+            ## Conversation
+
+            #foreach( $message in $messages )
+            **$message.role().getDisplayName():**
+
+            $message.content()
+
+            #end""";
+
     private static final String FOLLOW_UP_QUESTIONS_TEMPLATE = """
             Based on this conversation:
             User: $userMessage
@@ -84,7 +102,10 @@ public class AiDefaultTemplates {
         return CITATION_PARSING_USER_MESSAGE_TEMPLATE;
     }
 
+    public static String getMarkdownChatExportTemplate() {
+        return MARKDOWN_CHAT_EXPORT_TEMPLATE;
+    }
+
     public static String getFollowUpQuestionsTemplate() {
         return FOLLOW_UP_QUESTIONS_TEMPLATE;
     }
-}

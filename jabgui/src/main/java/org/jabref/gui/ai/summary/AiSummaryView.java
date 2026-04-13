@@ -16,6 +16,7 @@ import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.identifiers.FullBibEntry;
+import org.jabref.model.entry.BibEntryTypesManager;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
@@ -36,6 +37,7 @@ public class AiSummaryView extends StackPane {
     @Inject private GuiPreferences preferences;
     @Inject private AiService aiService;
     @Inject private DialogService dialogService;
+    @Inject private BibEntryTypesManager entryTypesManager;
 
     private AiSummaryViewModel viewModel;
 
@@ -63,6 +65,8 @@ public class AiSummaryView extends StackPane {
         viewModel = new AiSummaryViewModel(
                 preferences.getAiPreferences(),
                 preferences.getFilePreferences(),
+                entryTypesManager,
+                preferences.getFieldPreferences(),
                 aiService.getSummariesRepository(),
                 aiService.getSummaryCache(),
                 aiService.getSummarizationTaskAggregator(),
@@ -75,6 +79,7 @@ public class AiSummaryView extends StackPane {
     private void setupBindings() {
         errorPane.exceptionProperty().bind(viewModel.errorProperty());
         summaryShowing.summaryProperty().bind(viewModel.summaryProperty());
+        summaryShowing.entryProperty().bind(viewModel.entryProperty());
 
         processingPane.descriptionProperty().bind(BindingsHelper.map(
                 viewModel.summarizatorProperty(), viewModel.chatModelProperty(),
