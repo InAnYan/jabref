@@ -1,5 +1,6 @@
 package org.jabref.gui.ai.summary;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 

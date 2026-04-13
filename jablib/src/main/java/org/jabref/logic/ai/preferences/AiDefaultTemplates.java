@@ -109,3 +109,4 @@ public class AiDefaultTemplates {
     public static String getFollowUpQuestionsTemplate() {
         return FOLLOW_UP_QUESTIONS_TEMPLATE;
     }
+}

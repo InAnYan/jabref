@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
@@ -18,6 +19,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
@@ -88,6 +90,11 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private final TreeMap<List<FullBibEntry>, GenerateRagResponseTask> tasksMap =
             new TreeMap<>(Comparators.lexicographical(Comparator.comparing(id -> id.entry().getId())));
+
+    private final TreeMap<List<FullBibEntry>, List<String>> followUpQuestionsCache =
+            new TreeMap<>(Comparators.lexicographical(Comparator.comparing(id -> id.entry().getId())));
+
+    private List<FullBibEntry> currentEntriesSnapshot = new ArrayList<>();
 
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
@@ -219,6 +226,23 @@ public class AiChatViewModel extends AbstractViewModel {
     }
 
     private void changeEmbeddingTasks() {
+        if (!currentEntriesSnapshot.isEmpty()) {
+            followUpQuestionsCache.put(new ArrayList<>(currentEntriesSnapshot), new ArrayList<>(followUpQuestions));
+        }
+
+        if (generateFollowUpQuestionsTask != null && !generateFollowUpQuestionsTask.isCancelled()) {
+            generateFollowUpQuestionsTask.cancel();
+            generateFollowUpQuestionsTask = null;
+        }
+
+        currentEntriesSnapshot = new ArrayList<>(entries);
+        List<String> cached = followUpQuestionsCache.get(currentEntriesSnapshot);
+        if (cached != null) {
+            followUpQuestions.setAll(cached);
+        } else {
+            followUpQuestions.clear();
+        }
+
         generateEmbeddingsTasks.clear();
         // It's okay to pass null.
         generateRagResponseTask.set(tasksMap.get(entries));
@@ -268,15 +292,17 @@ public class AiChatViewModel extends AbstractViewModel {
 
         List<FullBibEntry> taskEntries = entries.get();
 
+        final ObservableList<ChatMessage> originalChatHistory = chatHistory.get();
+
         task.onSuccess(aiMessage -> {
-            chatHistory.add(aiMessage);
+            originalChatHistory.add(aiMessage);
 
             if (aiPreferences.getGenerateFollowUpQuestions() && chatModel.get() != null) {
                 scheduleFollowUpQuestionsGeneration(userMessage, aiMessage.content());
             }
         });
 
-        task.onFailure(ex -> chatHistory.add(ChatMessage.errorMessage(ex)));
+        task.onFailure(ex -> originalChatHistory.add(ChatMessage.errorMessage(ex)));
 
         task.onFinished(() -> {
             tasksMap.remove(taskEntries);
@@ -300,6 +326,10 @@ public class AiChatViewModel extends AbstractViewModel {
             generateFollowUpQuestionsTask.cancel();
         }
 
+        List<FullBibEntry> entriesSnapshot = new ArrayList<>(entries);
+
+        final ObservableList<String> originalFollowUpQuestions = followUpQuestions.get();
+
         generateFollowUpQuestionsTask = new GenerateFollowUpQuestions(
                 currentChatModel,
                 aiPreferences,
@@ -308,7 +338,10 @@ public class AiChatViewModel extends AbstractViewModel {
         );
 
         generateFollowUpQuestionsTask
-                .onSuccess(followUpQuestions::setAll)
+                .onSuccess(questions -> {
+                    originalFollowUpQuestions.setAll(questions);
+                    followUpQuestionsCache.put(entriesSnapshot, new ArrayList<>(questions));
+                })
                 .onFailure(ex -> LOGGER.warn("Failed to generate follow-up questions", ex))
                 .executeWith(taskExecutor);
     }
@@ -321,6 +354,7 @@ public class AiChatViewModel extends AbstractViewModel {
     public void clearChatHistory() {
         chatHistory.clear();
         followUpQuestions.clear();
+        followUpQuestionsCache.remove(new ArrayList<>(entries));
     }
 
     private void clearGenerateRagResponseTask() {
@@ -438,8 +472,8 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private BibDatabaseMode getDatabaseModeOrDefault() {
         return entries.isEmpty()
-                ? BibDatabaseMode.BIBTEX
-                : entries.getFirst().databaseContext().getMode();
+               ? BibDatabaseMode.BIBTEX
+               : entries.getFirst().databaseContext().getMode();
     }
 
     public ListProperty<FullBibEntry> entriesProperty() {
