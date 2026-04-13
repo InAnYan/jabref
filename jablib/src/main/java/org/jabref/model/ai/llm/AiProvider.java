@@ -4,6 +4,12 @@ import java.io.Serializable;
 
 import org.jabref.logic.l10n.Localization;
 
+// [impl->feat~ai.llms.providers~1]
+// [impl->req~ai.llms.providers.openai~1]
+// [impl->req~ai.llms.providers.huggingface~1]
+// [impl->req~ai.llms.providers.mistral~1]
+// [impl->feat~ai.llms.local~1]
+// [impl->req~ai.llms.local.openai-compatible~1]
 public enum AiProvider implements Serializable {
     OPEN_AI(Localization.lang("OpenAI (or API compatible)"), "https://api.openai.com/v1", "https://openai.com/policies/privacy-policy/"),
     MISTRAL_AI(Localization.lang("Mistral AI"), "https://api.mistral.ai/v1", "https://mistral.ai/terms/#privacy-policy"),

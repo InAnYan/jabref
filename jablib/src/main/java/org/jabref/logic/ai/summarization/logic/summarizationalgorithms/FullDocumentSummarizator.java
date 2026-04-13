@@ -11,6 +11,7 @@ import dev.langchain4j.data.message.UserMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// [impl->feat~ai.summarization.algorithms.full~1]
 public class FullDocumentSummarizator implements Summarizator {
     private static final Logger LOGGER = LoggerFactory.getLogger(FullDocumentSummarizator.class);
 

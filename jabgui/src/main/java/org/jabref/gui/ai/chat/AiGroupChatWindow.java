@@ -30,6 +30,7 @@ public class AiGroupChatWindow extends BaseDialog<Void> {
         ));
     }
 
+    // [impl->req~ai.chat.groups.display-names~1]
     private static String makeWindowTitle(BibDatabaseContext context, GroupNodeViewModel group) {
         if (context == null || group == null) {
             return "";

@@ -11,6 +11,9 @@ import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.ExceptionsUtil;
 import org.jabref.gui.util.PropertiesHelper;
 
+// [impl->req~ai.chat.show-errors~1]
+// [impl->req~ai.chat.retry-error~1]
+// [impl->req~ai.chat.cancel-error-state~1]
 public class ErrorStatusPaneViewModel extends AbstractViewModel {
     private final StringProperty title = new SimpleStringProperty("");
     private final StringProperty description = new SimpleStringProperty("");

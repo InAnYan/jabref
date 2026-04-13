@@ -29,6 +29,7 @@ public class AiChatTab extends EntryEditorTab {
     }
 
     @Override
+    // [impl->req~ai.chat.entries.hide-tab~1]
     public boolean shouldShow(BibEntry entry) {
         return entryEditorPreferences.shouldShowAiChatTab();
     }

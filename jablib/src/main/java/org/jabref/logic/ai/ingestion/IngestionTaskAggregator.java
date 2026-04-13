@@ -16,6 +16,7 @@ import org.jabref.model.entry.LinkedFile;
 
 import com.google.common.collect.Comparators;
 
+// [impl->req~ai.ingestion.trigger-on-demand~1]
 public class IngestionTaskAggregator {
     private final TaskExecutor taskExecutor;
 

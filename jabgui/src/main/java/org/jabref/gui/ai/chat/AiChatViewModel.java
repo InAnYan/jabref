@@ -63,6 +63,8 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// [impl->feat~ai.chatting~1]
+// [impl->feat~ai.chatting.general~1]
 public class AiChatViewModel extends AbstractViewModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiChatViewModel.class);
 
@@ -136,6 +138,7 @@ public class AiChatViewModel extends AbstractViewModel {
     }
 
     private void setupBindings() {
+        // [impl->req~ai.chat.customize-system-prompt~1]
         systemMessageTemplate.bind(aiPreferences.chattingSystemMessageTemplateProperty());
         userMessageTemplate.bind(aiPreferences.chattingUserMessageTemplateProperty());
 
@@ -280,6 +283,8 @@ public class AiChatViewModel extends AbstractViewModel {
         ChatMessage userChatMessage = ChatMessage.userMessage(userMessage);
         chatHistory.add(userChatMessage);
 
+        // [impl->req~ai.chat.uses-answer-engine~1]
+        // [impl->req~ai.chat.context-awareness~1]
         GenerateRagResponseTask task = new GenerateRagResponseTask(
                 chatModel.get(),
                 answerEngine.get(),
@@ -302,6 +307,7 @@ public class AiChatViewModel extends AbstractViewModel {
             }
         });
 
+        // [impl->req~ai.chat.show-errors~1]
         task.onFailure(ex -> originalChatHistory.add(ChatMessage.errorMessage(ex)));
 
         task.onFinished(() -> {
@@ -351,6 +357,7 @@ public class AiChatViewModel extends AbstractViewModel {
         sendMessage(question);
     }
 
+    // [impl->req~ai.chat.clear-history~1]
     public void clearChatHistory() {
         chatHistory.clear();
         followUpQuestions.clear();
@@ -366,6 +373,8 @@ public class AiChatViewModel extends AbstractViewModel {
         }
     }
 
+    // [impl->req~ai.chat.cancel-generation~1]
+    // [impl->req~ai.chat.cancel-error-state~1]
     public void cancel() {
         assert state.get() == State.WAITING_FOR_MESSAGE || state.get() == State.ERROR;
 
@@ -379,11 +388,13 @@ public class AiChatViewModel extends AbstractViewModel {
         followUpQuestions.clear();
     }
 
+    // [impl->req~ai.chat.delete-messages~1]
     public void delete(String id) {
         assert state.get() == State.IDLE;
         ChatHistoryUtils.delete(chatHistory, id);
     }
 
+    // [impl->req~ai.chat.regenerate-response~1]
     public void regenerate(String id) {
         assert state.get() == State.ERROR || state.get() == State.IDLE;
 
@@ -394,6 +405,7 @@ public class AiChatViewModel extends AbstractViewModel {
         }
     }
 
+    // [impl->req~ai.chat.retry-error~1]
     public void regenerate() {
         if (!chatHistory.isEmpty()) {
             regenerate(chatHistory.getLast().id());
@@ -488,6 +500,7 @@ public class AiChatViewModel extends AbstractViewModel {
         return state;
     }
 
+    // [impl->req~ai.chat.model-visibility~1]
     public ObjectProperty<ChatModel> chatModelProperty() {
         return chatModel;
     }

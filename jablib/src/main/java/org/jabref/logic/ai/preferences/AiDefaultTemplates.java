@@ -4,6 +4,17 @@ package org.jabref.logic.ai.preferences;
 ///
 /// This collection is made into a separate class (instead of putting into defaults at [org.jabref.logic.preferences.JabRefCliPreferences]),
 /// because they are too big.
+// [impl->req~ai.chat.customize-system-prompt~1]
+// [impl->req~ai.answer-engines.embeddings-search.prompt~1]
+// [impl->req~ai.answer-engines.full-document.prompt~1]
+// [impl->req~ai.summarization.algorithms.chunked.system-prompt-chunk~1]
+// [impl->req~ai.summarization.algorithms.chunked.user-prompt-chunk~1]
+// [impl->req~ai.summarization.algorithms.chunked.system-prompt-combine~1]
+// [impl->req~ai.summarization.algorithms.chunked.user-prompt-combine~1]
+// [impl->req~ai.summarization.algorithms.full.system-prompt~1]
+// [impl->req~ai.summarization.algorithms.full.user-prompt~1]
+// [impl->req~ai.citation-parsing.system-prompt-config~1]
+// [impl->req~ai.citation-parsing.user-prompt-config~1]
 public class AiDefaultTemplates {
     private static final String CHATTING_SYSTEM_MESSAGE_TEMPLATE = """
             You are an AI assistant that analyses research papers. You answer questions about papers.

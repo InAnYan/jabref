@@ -6,6 +6,7 @@ import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.FullDocum
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
+// [impl->feat~ai.summarization.algorithms~1]
 public final class SummarizatorFactory {
     private SummarizatorFactory() {
         throw new UnsupportedOperationException("cannot instantiate a utility class");

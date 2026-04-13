@@ -17,6 +17,8 @@ import dev.langchain4j.data.segment.TextSegment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// [impl->feat~ai.summarization.algorithms.chunked~1]
+// [impl->req~ai.summarization.general.unlimited-size~1]
 public class ChunkedSummarizator implements Summarizator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChunkedSummarizator.class);
 

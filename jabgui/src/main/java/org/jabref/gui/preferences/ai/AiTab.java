@@ -32,6 +32,10 @@ import de.saxsys.mvvmfx.utils.validation.visualization.ControlsFxVisualizer;
 import org.controlsfx.control.SearchableComboBox;
 import org.controlsfx.control.textfield.CustomPasswordField;
 
+// [impl->feat~ai.expert-settings~1]
+// [impl->req~ai.expert-settings.templates~1]
+// [impl->req~ai.expert-settings.chat-inference-global~1]
+// [impl->req~ai.expert-settings.rag-global~1]
 public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements PreferencesTab {
     private static final String HUGGING_FACE_CHAT_MODEL_PROMPT = "TinyLlama/TinyLlama_v1.1 (or any other model name)";
 

@@ -42,6 +42,7 @@ import javafx.scene.input.KeyEvent;
  * </li>
  * </ul>
  */
+// [impl->req~ai.chat.smart-prompt-field~1]
 public class HistoryTextArea extends TextArea {
 
     private static final int NEW_MESSAGE_INDEX = -1;
@@ -126,6 +127,7 @@ public class HistoryTextArea extends TextArea {
     }
 
     private void handleUpKey(KeyEvent event) {
+        // [impl->req~ai.chat.new-message-based-on-previous~1]
         int caret = getCaretPosition();
         String textBeforeCaret = getText().substring(0, caret);
         if (textBeforeCaret.contains("\n")) {

@@ -22,6 +22,9 @@ import org.jabref.model.entry.LinkedFile;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 
+// [impl->feat~ai.summarization~1]
+// [impl->feat~ai.summarization.general~1]
+// [impl->feat~ai.summarization.entries~1]
 public class BibEntrySummarizator {
     // TODO: Simplify this class.
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(BibEntrySummarizator.class);

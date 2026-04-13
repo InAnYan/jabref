@@ -15,6 +15,8 @@ import org.jabref.model.entry.BibEntry;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 
+// [impl->feat~ai.citation-parsing~1]
+// [impl->req~ai.citation-parsing.llm-execution~1]
 public class ParseCitationsWithLlm {
     private final ImportFormatPreferences importFormatPreferences;
     private final String citationParsingSystemMessageTemplate;

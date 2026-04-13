@@ -31,6 +31,9 @@ import org.jabref.model.entry.BibEntryTypesManager;
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
+// [impl->feat~ai.chatting.general~1]
+// [impl->req~ai.chat.model-visibility~1]
+// [impl->req~ai.chat.ingestion-status~1]
 public class AiChatView extends StackPane {
     private final AiChatStatusWindow aiChatStatusWindow = new AiChatStatusWindow();
 

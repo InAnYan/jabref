@@ -24,6 +24,7 @@ import com.google.common.eventbus.Subscribe;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 
+// [impl->req~ai.ingestion.automatic-trigger~1]
 public class GenerateEmbeddingsAiDatabaseListener implements AiDatabaseListener {
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;

@@ -12,6 +12,7 @@ import org.jabref.model.ai.summarization.SummarizatorKind;
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
+// [impl->req~ai.expert-settings.summarization-local~1]
 public class AiSummaryParametersView extends VBox {
     @FXML private ComboBox<SummarizatorKind> summarizatorCombo;
 

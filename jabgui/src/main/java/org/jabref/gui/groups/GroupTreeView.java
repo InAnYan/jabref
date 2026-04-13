@@ -593,6 +593,7 @@ public class GroupTreeView extends BorderPane {
             removeGroup = factory.createMenuItem(StandardActions.GROUP_REMOVE, new GroupTreeView.ContextAction(StandardActions.GROUP_REMOVE, group));
         }
 
+        // [impl->req~ai.chat.groups.hide-context-menu~1]
         if (preferences.getAiPreferences().getEnableAi()) {
             contextMenu.getItems().add(factory.createMenuItem(StandardActions.GROUP_CHAT, new ContextAction(StandardActions.GROUP_CHAT, group)));
         }

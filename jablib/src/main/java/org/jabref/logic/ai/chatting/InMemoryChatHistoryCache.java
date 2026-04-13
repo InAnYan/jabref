@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
  *
  * Thread-safe: all map operations are protected by synchronization on the cache instance.
  */
+// [impl->req~ai.chat.entries.history-storage~1]
+// [impl->req~ai.chat.groups.history-storage~1]
 public class InMemoryChatHistoryCache {
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryChatHistoryCache.class);
 
