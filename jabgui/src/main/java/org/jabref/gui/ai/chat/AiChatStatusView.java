@@ -81,12 +81,14 @@ public class AiChatStatusView extends VBox {
     }
 
     private void setupChatModelLabel() {
-        chatModelLabel.textProperty().bind(chatModel.map(model -> {
-            if (model == null) {
-                return "";
-            }
-            return Localization.lang("%0 %1", model.getAiProvider().getDisplayName(), model.getName());
-        }));
+        chatModelLabel.textProperty().bind(chatModel.map(AiChatStatusView::formatChatModelLabel));
+    }
+
+    private static String formatChatModelLabel(ChatModel model) {
+        if (model == null) {
+            return "";
+        }
+        return Localization.lang("%0 %1", model.getAiProvider().getDisplayName(), model.getName());
     }
 
     private void setupEntriesTable() {
