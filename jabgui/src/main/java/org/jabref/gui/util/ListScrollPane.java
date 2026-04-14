@@ -73,6 +73,8 @@ public class ListScrollPane<T> extends ScrollPane {
         final Function<T, Node> renderer = getRenderer();
         if (renderer == null) return;
 
+        boolean hadAdditions = false;
+
         while (change.next()) {
             if (change.wasPermutated()) {
                 rebuildView();
@@ -90,6 +92,7 @@ public class ListScrollPane<T> extends ScrollPane {
                     contentContainer.getChildren().remove(change.getFrom(), change.getFrom() + change.getRemovedSize());
                 }
                 if (change.wasAdded()) {
+                    hadAdditions = true;
                     List<Node> newNodes = new ArrayList<>();
                     for (T item : change.getAddedSubList()) {
                         newNodes.add(renderer.apply(item));
@@ -103,7 +106,7 @@ public class ListScrollPane<T> extends ScrollPane {
             }
         }
 
-        if (isAutoScrollToBottom()) {
+        if (isAutoScrollToBottom() && hadAdditions) {
             scrollToBottom();
         }
     }
@@ -127,7 +130,11 @@ public class ListScrollPane<T> extends ScrollPane {
     }
 
     public void scrollToBottom() {
-        Platform.runLater(() -> setVvalue(1.0));
+        // A single Platform.runLater fires before JavaFX's layout pass, so the
+        // content height may not yet reflect the newly added node.
+        // Using a double-runLater ensures we set vvalue=1.0 AFTER the layout
+        // pass in the intermediate pulse has computed the final content height.
+        Platform.runLater(() -> Platform.runLater(() -> setVvalue(1.0)));
     }
 
     public final ObservableList<T> getItems() {

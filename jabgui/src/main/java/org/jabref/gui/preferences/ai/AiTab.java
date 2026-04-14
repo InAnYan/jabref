@@ -8,7 +8,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
@@ -57,9 +56,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private Tab systemMessageForChattingTab;
     @FXML private Tab userMessageForChattingTab;
     @FXML private Tab summarizationChunkSystemMessageTab;
-    @FXML private Tab summarizationChunkUserMessageTab;
     @FXML private Tab summarizationCombineSystemMessageTab;
-    @FXML private Tab summarizationCombineUserMessageTab;
     @FXML private Tab citationParsingSystemMessageTab;
     @FXML private Tab citationParsingUserMessageTab;
     @FXML private Tab markdownChatExportTemplateTab;
