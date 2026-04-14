@@ -1,0 +1,61 @@
+package org.jabref.logic.ai.embedding;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.jabref.logic.util.NotificationService;
+import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
+
+/**
+ * Session-scoped cache for {@link AsyncEmbeddingModel} instances, keyed by {@link EmbeddingModelEnumeration}.
+ *
+ * <p>When multiple components request an embedding model for the same {@link EmbeddingModelEnumeration},
+ * this cache ensures only <em>one</em> {@link AsyncEmbeddingModel} instance—and therefore only one
+ * background download/load task—is ever created for that model kind.
+ *
+ * <p>Without this cache, each caller that independently reacts to preference changes would
+ * instantiate its own {@link AsyncEmbeddingModel}, spawning a duplicate
+ * {@link org.jabref.logic.ai.ingestion.tasks.UpdateEmbeddingModelTask} for every listener.
+ *
+ * <p>Implements {@link AutoCloseable}; call {@link #close()} (e.g. in {@code AiService.close()})
+ * to release all cached model resources.
+ */
+public class EmbeddingModelCache implements AutoCloseable {
+
+    private final Map<EmbeddingModelEnumeration, AsyncEmbeddingModel> cache = new HashMap<>();
+
+    private final NotificationService notificationService;
+    private final TaskExecutor taskExecutor;
+
+    public EmbeddingModelCache(NotificationService notificationService, TaskExecutor taskExecutor) {
+        this.notificationService = notificationService;
+        this.taskExecutor = taskExecutor;
+    }
+
+    /**
+     * Returns the cached {@link AsyncEmbeddingModel} for {@code kind}, creating it on first access.
+     *
+     * <p>Calling this method multiple times with the same {@code kind} always returns the
+     * <em>same</em> instance; no additional background tasks are launched.
+     *
+     * @param kind the requested embedding model kind
+     * @return a (possibly still-loading) {@link AsyncEmbeddingModel} for {@code kind}
+     */
+    public AsyncEmbeddingModel getOrCreate(EmbeddingModelEnumeration kind) {
+        return cache.computeIfAbsent(kind,
+                k -> new AsyncEmbeddingModel(k, notificationService, taskExecutor));
+    }
+
+    /**
+     * Closes all cached {@link AsyncEmbeddingModel} instances and clears the cache.
+     *
+     * <p>Should be called once the AI subsystem is shut down (i.e. from {@code AiService.close()}).
+     */
+    @Override
+    public void close() {
+        cache.values().forEach(AsyncEmbeddingModel::close);
+        cache.clear();
+    }
+}
+

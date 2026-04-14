@@ -4,6 +4,7 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.InMemoryChatHistoryCache;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.chatting.repositories.MVStoreChatHistoryRepository;
+import org.jabref.logic.ai.embedding.EmbeddingModelCache;
 import org.jabref.logic.ai.embedding.MVStoreEmbeddingStore;
 import org.jabref.logic.ai.ingestion.IngestionTaskAggregator;
 import org.jabref.logic.ai.ingestion.listeners.GenerateEmbeddingsAiDatabaseListener;
@@ -39,6 +40,7 @@ public class AiService implements AutoCloseable {
     private final InMemoryChatHistoryCache inMemoryChatHistoryCache;
 
     // Ingestion components
+    private final EmbeddingModelCache embeddingModelCache;
     private final MVStoreEmbeddingStore mvStoreEmbeddingStore;
     private final MVStoreIngestedDocumentsRepository mvStoreIngestedDocumentsRepository;
     private final IngestionTaskAggregator ingestionTaskAggregator;
@@ -65,6 +67,7 @@ public class AiService implements AutoCloseable {
         this.inMemoryChatHistoryCache = new InMemoryChatHistoryCache(mvStoreChatHistoryRepository);
 
         // Ingestion components
+        this.embeddingModelCache = new EmbeddingModelCache(notificationService, taskExecutor);
         this.mvStoreEmbeddingStore = new MVStoreEmbeddingStore(
                 Directories.getAiFilesDirectory().resolve(EMBEDDINGS_FILE_NAME),
                 notificationService
@@ -84,8 +87,7 @@ public class AiService implements AutoCloseable {
                 filePreferences,
                 mvStoreIngestedDocumentsRepository,
                 mvStoreEmbeddingStore,
-                notificationService,
-                taskExecutor,
+                embeddingModelCache,
                 ingestionTaskAggregator
         );
 
@@ -115,6 +117,10 @@ public class AiService implements AutoCloseable {
 
     public InMemoryChatHistoryCache getChatHistoryCache() {
         return inMemoryChatHistoryCache;
+    }
+
+    public EmbeddingModelCache getEmbeddingModelCache() {
+        return embeddingModelCache;
     }
 
     public EmbeddingStore<TextSegment> getEmbeddingsStore() {
@@ -154,6 +160,9 @@ public class AiService implements AutoCloseable {
         // Flush caches to repositories (chat history handles smart transfers)
         inMemoryChatHistoryCache.close();
         inMemorySummaryCache.close();
+
+        // Close embedding model cache
+        embeddingModelCache.close();
 
         // Close repositories
         mvStoreSummariesRepository.close();

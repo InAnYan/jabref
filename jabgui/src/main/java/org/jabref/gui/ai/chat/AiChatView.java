@@ -90,6 +90,7 @@ public class AiChatView extends StackPane {
                 aiService.getIngestedDocumentsRepository(),
                 dialogService,
                 aiService.getEmbeddingsStore(),
+                aiService.getEmbeddingModelCache(),
                 taskExecutor
         );
 

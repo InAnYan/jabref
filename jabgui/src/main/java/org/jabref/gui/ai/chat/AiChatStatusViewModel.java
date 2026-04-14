@@ -19,14 +19,12 @@ import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
-import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
+import org.jabref.logic.ai.embedding.EmbeddingModelCache;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.ai.rag.util.AnswerEngineFactory;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
-import org.jabref.logic.util.NotificationService;
-import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.entry.LinkedFile;
@@ -69,8 +67,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
-    private final NotificationService notificationService;
-    private final TaskExecutor taskExecutor;
+    private final EmbeddingModelCache embeddingModelCache;
     private final EmbeddingStore<TextSegment> embeddingStore;
 
     private AsyncEmbeddingModel embeddingModel;
@@ -78,14 +75,12 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     public AiChatStatusViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            NotificationService notificationService,
-            TaskExecutor taskExecutor,
+            EmbeddingModelCache embeddingModelCache,
             EmbeddingStore<TextSegment> embeddingStore
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
-        this.notificationService = notificationService;
-        this.taskExecutor = taskExecutor;
+        this.embeddingModelCache = embeddingModelCache;
         this.embeddingStore = embeddingStore;
 
         setupListeners();
@@ -106,10 +101,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     }
 
     private void rebuildEmbeddingModel() {
-        if (embeddingModel != null) {
-            embeddingModel.close();
-        }
-        embeddingModel = EmbeddingModelFactory.create(aiPreferences, notificationService, taskExecutor);
+        embeddingModel = embeddingModelCache.getOrCreate(aiPreferences.getEmbeddingModel());
         // Rebuild the answer engine with the new embedding model
         if (selectedAnswerEngineKind.get() != null) {
             updateAnswerEngine(selectedAnswerEngineKind.get());

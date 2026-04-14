@@ -2,17 +2,14 @@ package org.jabref.logic.ai.ingestion.listeners;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiDatabaseListener;
-import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
-import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
+import org.jabref.logic.ai.embedding.EmbeddingModelCache;
 import org.jabref.logic.ai.ingestion.DocumentSplitterFactory;
 import org.jabref.logic.ai.ingestion.IngestionTaskAggregator;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTaskRequest;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.ObservablesHelper;
-import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.database.event.EntriesAddedEvent;
 import org.jabref.model.entry.LinkedFile;
@@ -29,11 +26,9 @@ public class GenerateEmbeddingsAiDatabaseListener implements AiDatabaseListener 
     private final FilePreferences filePreferences;
     private final IngestedDocumentsRepository ingestedDocumentsRepository;
     private final EmbeddingStore<TextSegment> embeddingStore;
-    private final NotificationService notificationService;
-    private final TaskExecutor taskExecutor;
+    private final EmbeddingModelCache embeddingModelCache;
     private final IngestionTaskAggregator ingestionTaskAggregator;
 
-    private volatile AsyncEmbeddingModel embeddingModel;
     private volatile DocumentSplitter documentSplitter;
 
     public GenerateEmbeddingsAiDatabaseListener(
@@ -41,24 +36,15 @@ public class GenerateEmbeddingsAiDatabaseListener implements AiDatabaseListener 
             FilePreferences filePreferences,
             IngestedDocumentsRepository ingestedDocumentsRepository,
             EmbeddingStore<TextSegment> embeddingStore,
-            NotificationService notificationService,
-            TaskExecutor taskExecutor,
+            EmbeddingModelCache embeddingModelCache,
             IngestionTaskAggregator ingestionTaskAggregator
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
         this.ingestedDocumentsRepository = ingestedDocumentsRepository;
         this.embeddingStore = embeddingStore;
-        this.notificationService = notificationService;
-        this.taskExecutor = taskExecutor;
+        this.embeddingModelCache = embeddingModelCache;
         this.ingestionTaskAggregator = ingestionTaskAggregator;
-
-        ObservablesHelper.subscribeToChanges(
-                this::rebuildEmbeddingModel,
-                aiPreferences.enableAiProperty(),
-                aiPreferences.customizeExpertSettingsProperty(),
-                aiPreferences.embeddingModelProperty()
-        );
 
         ObservablesHelper.subscribeToChanges(
                 this::rebuildDocumentSplitter,
@@ -67,13 +53,6 @@ public class GenerateEmbeddingsAiDatabaseListener implements AiDatabaseListener 
                 aiPreferences.documentSplitterChunkSizeProperty(),
                 aiPreferences.documentSplitterOverlapSizeProperty()
         );
-    }
-
-    private void rebuildEmbeddingModel() {
-        if (embeddingModel != null) {
-            embeddingModel.close();
-        }
-        embeddingModel = EmbeddingModelFactory.create(aiPreferences, notificationService, taskExecutor);
     }
 
     private void rebuildDocumentSplitter() {
@@ -87,9 +66,7 @@ public class GenerateEmbeddingsAiDatabaseListener implements AiDatabaseListener 
 
     @Override
     public void close() {
-        if (embeddingModel != null) {
-            embeddingModel.close();
-        }
+        // Embedding model lifecycle is managed by EmbeddingModelCache (owned by AiService).
     }
 
     private class EntriesChangedListener {
@@ -122,7 +99,7 @@ public class GenerateEmbeddingsAiDatabaseListener implements AiDatabaseListener 
                     filePreferences,
                     ingestedDocumentsRepository,
                     embeddingStore,
-                    embeddingModel,
+                    embeddingModelCache.getOrCreate(aiPreferences.getEmbeddingModel()),
                     documentSplitter,
                     context,
                     linkedFile
