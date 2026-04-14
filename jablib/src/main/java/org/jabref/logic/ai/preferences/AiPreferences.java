@@ -29,26 +29,6 @@ import com.github.javakeyring.PasswordAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// [impl->feat~ai.expert-settings~1]
-// [impl->req~ai.expert-settings.templates~1]
-// [impl->req~ai.expert-settings.chat-inference-global~1]
-// [impl->req~ai.expert-settings.rag-global~1]
-// [impl->req~ai.expert-settings.rag-local~1]
-// [impl->req~ai.expert-settings.summarization-global~1]
-// [impl->req~ai.expert-settings.summarization-local~1]
-// [impl->req~ai.chat.customize-system-prompt~1]
-// [impl->req~ai.summarization.entries.toggle-auto~1]
-// [impl->req~ai.llms.local.base-url~1]
-// [impl->req~ai.summarization.algorithms.chunked.system-prompt-chunk~1]
-// [impl->req~ai.summarization.algorithms.chunked.user-prompt-chunk~1]
-// [impl->req~ai.summarization.algorithms.chunked.system-prompt-combine~1]
-// [impl->req~ai.summarization.algorithms.chunked.user-prompt-combine~1]
-// [impl->req~ai.summarization.algorithms.full.system-prompt~1]
-// [impl->req~ai.summarization.algorithms.full.user-prompt~1]
-// [impl->req~ai.citation-parsing.system-prompt-config~1]
-// [impl->req~ai.citation-parsing.user-prompt-config~1]
-// [impl->req~ai.answer-engines.embeddings-search.prompt~1]
-// [impl->req~ai.answer-engines.full-document.prompt~1]
 public class AiPreferences {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiPreferences.class);
 

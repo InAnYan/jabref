@@ -38,6 +38,7 @@ public class AiSummaryParametersViewModel extends AbstractViewModel {
         return summarizatorKind;
     }
 
+    // [impl->req~ai.expert-settings.summarization-local~1]
     public Summarizator constructSummarizator() {
         return SummarizatorFactory.create(
                 summarizatorKind.get(),

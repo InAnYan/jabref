@@ -15,7 +15,6 @@ import org.jabref.model.entry.LinkedFile;
 
 import static org.jabref.gui.actions.ActionHelper.needsDatabase;
 
-// [impl->req~ai.ingestion.clear-cache~1]
 public class ClearEmbeddingsAction extends SimpleCommand {
     private final StateManager stateManager;
     private final DialogService dialogService;

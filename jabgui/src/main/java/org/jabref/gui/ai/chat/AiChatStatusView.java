@@ -28,8 +28,6 @@ import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
-// [impl->req~ai.expert-settings.rag-local~1]
-// [impl->req~ai.chat.ingestion-status~1]
 public class AiChatStatusView extends VBox {
     @FXML private TableView<FullBibEntry> entriesTable;
     @FXML private TableColumn<FullBibEntry, String> libraryColumn;

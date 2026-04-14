@@ -21,7 +21,6 @@ import com.google.common.eventbus.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// [impl->req~ai.summarization.entries.toggle-auto~1]
 public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSummaryAiDatabaseListener.class);
     private final AiPreferences aiPreferences;
@@ -98,6 +97,7 @@ public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
         }
 
         @Subscribe
+        // [impl->req~ai.summarization.entries.toggle-auto~1]
         public void listen(EntriesAddedEvent e) {
             e.getBibEntries().forEach(entry -> {
                 if (aiPreferences.getAutoGenerateSummaries()) {

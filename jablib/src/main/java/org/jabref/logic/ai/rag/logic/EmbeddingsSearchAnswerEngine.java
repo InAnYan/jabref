@@ -25,7 +25,6 @@ import dev.langchain4j.store.embedding.filter.MetadataFilterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// [impl->feat~ai.answer-engines.embeddings-search~1]
 public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmbeddingsSearchAnswerEngine.class);
 
@@ -50,6 +49,7 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
     }
 
     @Override
+    // [impl->req~ai.answer-engines.embeddings-search.prompt~1]
     public List<RelevantInformation> process(
             String query,
             List<FullBibEntry> entriesFilter

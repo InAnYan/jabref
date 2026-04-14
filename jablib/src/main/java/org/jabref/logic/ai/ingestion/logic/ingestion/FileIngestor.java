@@ -14,7 +14,6 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// [impl->feat~ai.ingestion~1]
 public class FileIngestor {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileIngestor.class);
 

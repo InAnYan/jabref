@@ -11,7 +11,6 @@ import dev.langchain4j.data.message.UserMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// [impl->feat~ai.summarization.algorithms.full~1]
 public class FullDocumentSummarizator implements Summarizator {
     private static final Logger LOGGER = LoggerFactory.getLogger(FullDocumentSummarizator.class);
 
@@ -22,6 +21,8 @@ public class FullDocumentSummarizator implements Summarizator {
     }
 
     @Override
+    // [impl->req~ai.summarization.algorithms.full.system-prompt~1]
+    // [impl->req~ai.summarization.algorithms.full.user-prompt~1]
     public String summarize(ChatModel chatModel, String text) throws InterruptedException {
         LOGGER.debug("Summarizing whole document ({} chars)", text.length());
 

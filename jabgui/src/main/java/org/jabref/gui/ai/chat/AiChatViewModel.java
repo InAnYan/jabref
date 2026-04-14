@@ -63,8 +63,6 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// [impl->feat~ai.chatting~1]
-// [impl->feat~ai.chatting.general~1]
 public class AiChatViewModel extends AbstractViewModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiChatViewModel.class);
 
@@ -270,6 +268,8 @@ public class AiChatViewModel extends AbstractViewModel {
         );
     }
 
+    // [impl->req~ai.chat.uses-answer-engine~1]
+    // [impl->req~ai.chat.context-awareness~1]
     public void sendMessage(String userMessage) {
         assert state.get() == State.IDLE;
 
@@ -283,8 +283,6 @@ public class AiChatViewModel extends AbstractViewModel {
         ChatMessage userChatMessage = ChatMessage.userMessage(userMessage);
         chatHistory.add(userChatMessage);
 
-        // [impl->req~ai.chat.uses-answer-engine~1]
-        // [impl->req~ai.chat.context-awareness~1]
         GenerateRagResponseTask task = new GenerateRagResponseTask(
                 chatModel.get(),
                 answerEngine.get(),
@@ -509,6 +507,7 @@ public class AiChatViewModel extends AbstractViewModel {
         return answerEngine;
     }
 
+    // [impl->req~ai.chat.ingestion-status~1]
     public ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasksProperty() {
         return generateEmbeddingsTasks;
     }

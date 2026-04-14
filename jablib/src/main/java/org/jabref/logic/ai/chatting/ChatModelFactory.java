@@ -25,8 +25,6 @@ import org.jspecify.annotations.Nullable;
 /// when it is no longer needed so the underlying resources are released.
 ///
 /// Returns {@code null} when AI is disabled or the API key is empty.
-// [impl->feat~ai.llms~1]
-// [impl->feat~ai.llms.providers~1]
 public final class ChatModelFactory {
     private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(5);
 
@@ -57,7 +55,6 @@ public final class ChatModelFactory {
 
         dev.langchain4j.model.chat.ChatModel langchainModel = switch (provider) {
             // [impl->req~ai.llms.providers.openai~1]
-            // [impl->feat~ai.llms.local~1]
             // [impl->req~ai.llms.local.openai-compatible~1]
             // [impl->req~ai.llms.local.base-url~1]
             case OPEN_AI ->

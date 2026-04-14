@@ -16,8 +16,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.jspecify.annotations.NonNull;
 
-// [impl->req~ai.chat.entries.history-storage~1]
-// [impl->req~ai.chat.groups.history-storage~1]
 public class MVStoreChatHistoryRepository extends MVStoreBase implements ChatHistoryRepository {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 

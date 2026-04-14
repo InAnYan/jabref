@@ -14,8 +14,6 @@ import org.jabref.model.database.BibDatabaseContext;
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
-// [impl->feat~ai.chatting.groups~1]
-// [impl->req~ai.chat.groups.ui~1]
 public class AiGroupChatView extends StackPane {
     @FXML private AiPrivacyNoticeView privacyNotice;
     @FXML private SimpleStatusPaneView emptyDatabasePathPane;

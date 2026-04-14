@@ -10,7 +10,6 @@ import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 import org.jabref.model.entry.BibEntry;
 
-// [impl->feat~ai.answer-engines.full-document~1]
 public class FullDocumentAnswerEngine implements AnswerEngine {
     private final FilePreferences filePreferences;
 
@@ -22,6 +21,7 @@ public class FullDocumentAnswerEngine implements AnswerEngine {
     }
 
     @Override
+    // [impl->req~ai.answer-engines.full-document.prompt~1]
     public List<RelevantInformation> process(
             String query,
             List<FullBibEntry> entriesFilter

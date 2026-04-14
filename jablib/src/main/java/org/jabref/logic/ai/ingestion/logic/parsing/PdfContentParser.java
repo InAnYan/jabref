@@ -12,11 +12,11 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// [impl->req~ai.ingestion.pdf-handling~1]
 public class PdfContentParser implements FileContentParser {
     private static final Logger LOGGER = LoggerFactory.getLogger(PdfContentParser.class);
 
     @Override
+    // [impl->req~ai.ingestion.pdf-handling~1]
     public Optional<String> parse(Path path) {
         try (PDDocument document = Loader.loadPDF(path.toFile())) {
             int lastPage = document.getNumberOfPages();

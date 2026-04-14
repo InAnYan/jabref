@@ -17,8 +17,6 @@ import dev.langchain4j.data.segment.TextSegment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// [impl->feat~ai.summarization.algorithms.chunked~1]
-// [impl->req~ai.summarization.general.unlimited-size~1]
 public class ChunkedSummarizator implements Summarizator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChunkedSummarizator.class);
 
@@ -37,6 +35,11 @@ public class ChunkedSummarizator implements Summarizator {
     }
 
     @Override
+    // [impl->req~ai.summarization.general.unlimited-size~1]
+    // [impl->req~ai.summarization.algorithms.chunked.system-prompt-chunk~1]
+    // [impl->req~ai.summarization.algorithms.chunked.user-prompt-chunk~1]
+    // [impl->req~ai.summarization.algorithms.chunked.system-prompt-combine~1]
+    // [impl->req~ai.summarization.algorithms.chunked.user-prompt-combine~1]
     public String summarize(
             ChatModel chatModel,
             String text

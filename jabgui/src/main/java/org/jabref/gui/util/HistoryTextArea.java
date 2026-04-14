@@ -42,7 +42,6 @@ import javafx.scene.input.KeyEvent;
  * </li>
  * </ul>
  */
-// [impl->req~ai.chat.smart-prompt-field~1]
 public class HistoryTextArea extends TextArea {
 
     private static final int NEW_MESSAGE_INDEX = -1;
@@ -53,6 +52,7 @@ public class HistoryTextArea extends TextArea {
     private boolean isBrowsingHistory = false;
     private final ObjectProperty<EventHandler<ActionEvent>> onSubmit = new SimpleObjectProperty<>();
 
+    // [impl->req~ai.chat.smart-prompt-field~1]
     public HistoryTextArea() {
         super();
         this.setWrapText(true);

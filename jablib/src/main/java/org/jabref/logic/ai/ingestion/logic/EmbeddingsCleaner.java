@@ -13,7 +13,6 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.filter.MetadataFilterBuilder;
 
-// [impl->req~ai.ingestion.clear-cache~1]
 public class EmbeddingsCleaner {
     public static final String FILE_HASH_METADATA_KEY = "fileHash";
 
@@ -43,6 +42,7 @@ public class EmbeddingsCleaner {
         ingestedDocumentsRepository.unmarkDocumentAsFullyIngested(fileHash);
     }
 
+    // [impl->req~ai.ingestion.clear-cache~1]
     public void clearEmbeddingsFor(List<LinkedFile> linkedFiles, BibDatabaseContext bibDatabaseContext, FilePreferences filePreferences) {
         linkedFiles.stream()
                    .flatMap(linkedFile -> linkedFile.findIn(bibDatabaseContext, filePreferences).stream())

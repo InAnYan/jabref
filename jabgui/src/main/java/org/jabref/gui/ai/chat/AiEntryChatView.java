@@ -13,8 +13,6 @@ import org.jabref.model.ai.identifiers.FullBibEntry;
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
-// [impl->feat~ai.chatting.entries~1]
-// [impl->req~ai.chat.entries.ui~1]
 public class AiEntryChatView extends StackPane {
     @FXML private AiPrivacyNoticeView privacyNotice;
     @FXML private SimpleStatusPaneView emptyDatabasePathPane;

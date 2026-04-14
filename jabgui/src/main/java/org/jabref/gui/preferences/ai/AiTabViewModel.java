@@ -351,6 +351,10 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     }
 
     @Override
+    // [impl->req~ai.expert-settings.templates~1]
+    // [impl->req~ai.expert-settings.chat-inference-global~1]
+    // [impl->req~ai.expert-settings.rag-global~1]
+    // [impl->req~ai.expert-settings.summarization-global~1]
     public void storeSettings() {
         aiPreferences.setEnableAi(enableAi.get());
         aiPreferences.setAutoGenerateEmbeddings(autoGenerateEmbeddings.get());

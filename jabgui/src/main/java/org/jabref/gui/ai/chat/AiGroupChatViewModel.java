@@ -60,6 +60,7 @@ public class AiGroupChatViewModel extends AbstractViewModel {
         );
     }
 
+    // [impl->req~ai.chat.groups.ui~1]
     private void loadGroupChat() {
         BibDatabaseContext context = databaseContext.get();
         GroupNodeViewModel group = groupNode.get();

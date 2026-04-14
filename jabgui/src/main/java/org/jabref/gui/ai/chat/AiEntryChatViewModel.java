@@ -87,6 +87,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         );
     }
 
+    // [impl->req~ai.chat.entries.ui~1]
     private void load(FullBibEntry identifier) {
         assert identifier.databaseContext().getMetaData().getAiLibraryId().isPresent();
         assert identifier.entry().getCitationKey().isPresent();

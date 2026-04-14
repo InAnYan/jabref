@@ -34,8 +34,6 @@ import org.slf4j.LoggerFactory;
  *
  * Thread-safe: all map operations are protected by synchronization on the cache instance.
  */
-// [impl->req~ai.chat.entries.history-storage~1]
-// [impl->req~ai.chat.groups.history-storage~1]
 public class InMemoryChatHistoryCache {
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryChatHistoryCache.class);
 
@@ -77,6 +75,7 @@ public class InMemoryChatHistoryCache {
      * @param entry the entry to get chat history for
      * @return the live, mutable chat history
      */
+    // [impl->req~ai.chat.entries.history-storage~1]
     public synchronized ObservableList<ChatMessage> getForEntry(BibDatabaseContext databaseContext, BibEntry entry) {
         return entryChats.computeIfAbsent(entry, _ -> {
             ObservableList<ChatMessage> chatHistory;
@@ -112,6 +111,7 @@ public class InMemoryChatHistoryCache {
      * @param group the group to get chat history for
      * @return the live, mutable chat history
      */
+    // [impl->req~ai.chat.groups.history-storage~1]
     public synchronized ObservableList<ChatMessage> getForGroup(BibDatabaseContext databaseContext, GroupTreeNode group) {
         return groupChats.computeIfAbsent(group, _ -> {
             ObservableList<ChatMessage> chatHistory;

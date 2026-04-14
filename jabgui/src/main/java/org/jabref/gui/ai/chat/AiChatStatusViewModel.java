@@ -179,6 +179,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         });
     }
 
+    // [impl->req~ai.expert-settings.rag-local~1]
     private void updateAnswerEngine(AnswerEngineKind kind) {
         AnswerEngine engine = AnswerEngineFactory.create(
                 kind,

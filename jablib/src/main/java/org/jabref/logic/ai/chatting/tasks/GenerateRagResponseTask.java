@@ -16,8 +16,6 @@ import org.jabref.model.ai.pipeline.RelevantInformation;
 
 import dev.langchain4j.model.chat.response.ChatResponse;
 
-// [impl->req~ai.chat.context-awareness~1]
-// [impl->req~ai.chat.uses-answer-engine~1]
 public class GenerateRagResponseTask extends BackgroundTask<ChatMessage> {
     private final ChatModel chatModel;
     private final AnswerEngine answerEngine;

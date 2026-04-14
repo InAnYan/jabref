@@ -12,7 +12,6 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 
 /// Static factory for creating {@link AnswerEngine} instances.
 /// All parameters are passed explicitly so this class carries no mutable state.
-// [impl->feat~ai.answer-engines~1]
 public final class AnswerEngineFactory {
     private AnswerEngineFactory() {
         throw new UnsupportedOperationException("cannot instantiate a utility class");

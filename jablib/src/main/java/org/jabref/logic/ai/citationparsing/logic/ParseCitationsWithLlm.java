@@ -15,8 +15,6 @@ import org.jabref.model.entry.BibEntry;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 
-// [impl->feat~ai.citation-parsing~1]
-// [impl->req~ai.citation-parsing.llm-execution~1]
 public class ParseCitationsWithLlm {
     private final ImportFormatPreferences importFormatPreferences;
     private final String citationParsingSystemMessageTemplate;
@@ -29,6 +27,9 @@ public class ParseCitationsWithLlm {
         this.citationParsingSystemMessageTemplate = citationParsingSystemMessageTemplate;
     }
 
+    // [impl->req~ai.citation-parsing.llm-execution~1]
+    // [impl->req~ai.citation-parsing.system-prompt-config~1]
+    // [impl->req~ai.citation-parsing.user-prompt-config~1]
     public Result<List<BibEntry>, IOException> parseMultiplePlainCitations(
             ChatModel chatModel,
             String text
