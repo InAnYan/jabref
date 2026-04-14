@@ -31,7 +31,7 @@ import org.jabref.logic.ai.chatting.AiChatMarkdownExporter;
 import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.ChatModelFactory;
 import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
-import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
+import org.jabref.logic.ai.embedding.EmbeddingModelCache;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
@@ -40,7 +40,6 @@ import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.bibtex.FieldPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.StandardFileType;
-import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.AiMetadata;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
@@ -97,7 +96,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     private final FieldPreferences fieldPreferences;
     private final BibEntryTypesManager entryTypesManager;
     private final DialogService dialogService;
-    private final TaskExecutor taskExecutor;
+    private final EmbeddingModelCache embeddingModelCache;
     private final EmbeddingStore<TextSegment> embeddingStore;
 
     private AsyncEmbeddingModel embeddingModel;
@@ -108,7 +107,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
             FieldPreferences fieldPreferences,
             BibEntryTypesManager entryTypesManager,
             DialogService dialogService,
-            TaskExecutor taskExecutor,
+            EmbeddingModelCache embeddingModelCache,
             EmbeddingStore<TextSegment> embeddingStore
     ) {
         this.aiPreferences = aiPreferences;
@@ -116,7 +115,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         this.fieldPreferences = fieldPreferences;
         this.entryTypesManager = entryTypesManager;
         this.dialogService = dialogService;
-        this.taskExecutor = taskExecutor;
+        this.embeddingModelCache = embeddingModelCache;
         this.embeddingStore = embeddingStore;
 
         setupListeners();
@@ -153,10 +152,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     }
 
     private void rebuildEmbeddingModel() {
-        if (embeddingModel != null) {
-            embeddingModel.close();
-        }
-        embeddingModel = EmbeddingModelFactory.create(aiPreferences, dialogService, taskExecutor);
+        embeddingModel = embeddingModelCache.getOrCreate(aiPreferences.getEmbeddingModel());
         // Rebuild the answer engine with the new embedding model
         if (selectedAnswerEngineKind.get() != null) {
             updateAnswerEngine(selectedAnswerEngineKind.get());

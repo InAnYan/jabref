@@ -25,7 +25,7 @@ import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.tasks.GenerateRagResponseTask;
 import org.jabref.logic.ai.chatting.util.ChatHistoryUtils;
 import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
-import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
+import org.jabref.logic.ai.embedding.EmbeddingModelCache;
 import org.jabref.logic.ai.followup.tasks.GenerateFollowUpQuestions;
 import org.jabref.logic.ai.ingestion.DocumentSplitterFactory;
 import org.jabref.logic.ai.ingestion.IngestionTaskAggregator;
@@ -86,6 +86,7 @@ public class AiChatViewModel extends AbstractViewModel {
     private final IngestionTaskAggregator ingestionTaskAggregator;
     private final IngestedDocumentsRepository ingestedDocumentsRepository;
     private final EmbeddingStore<TextSegment> embeddingStore;
+    private final EmbeddingModelCache embeddingModelCache;
     private final TaskExecutor taskExecutor;
 
     private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -99,6 +100,7 @@ public class AiChatViewModel extends AbstractViewModel {
             IngestedDocumentsRepository ingestedDocumentsRepository,
             DialogService dialogService,
             EmbeddingStore<TextSegment> embeddingStore,
+            EmbeddingModelCache embeddingModelCache,
             TaskExecutor taskExecutor
     ) {
         this.aiPreferences = aiPreferences;
@@ -107,6 +109,7 @@ public class AiChatViewModel extends AbstractViewModel {
         this.ingestionTaskAggregator = ingestionTaskAggregator;
         this.ingestedDocumentsRepository = ingestedDocumentsRepository;
         this.embeddingStore = embeddingStore;
+        this.embeddingModelCache = embeddingModelCache;
         this.taskExecutor = taskExecutor;
 
         setupBindings();
@@ -177,10 +180,7 @@ public class AiChatViewModel extends AbstractViewModel {
     }
 
     private void rebuildEmbeddingModel() {
-        if (embeddingModel != null) {
-            embeddingModel.close();
-        }
-        embeddingModel = EmbeddingModelFactory.create(aiPreferences, dialogService, taskExecutor);
+        embeddingModel = embeddingModelCache.getOrCreate(aiPreferences.getEmbeddingModel());
     }
 
     private void rebuildDocumentSplitter() {

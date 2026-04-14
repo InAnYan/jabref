@@ -1,32 +1,30 @@
 package org.jabref.logic.ai.embedding;
 
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.util.NotificationService;
-import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
 
-/// Static factory for creating {@link AsyncEmbeddingModel} instances.
+/// Static factory for creating {@link AsyncEmbeddingModel} instances via an {@link EmbeddingModelCache}.
+/// Always use the cache so that only one instance (and one background download/load task) is ever
+/// created per {@link EmbeddingModelEnumeration}.
 public final class EmbeddingModelFactory {
     private EmbeddingModelFactory() {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
     }
 
-    /// Creates a new {@link AsyncEmbeddingModel} for the given model kind.
-    /// The model immediately schedules an asynchronous task to download / load the underlying DJL model.
+    /// Returns the cached {@link AsyncEmbeddingModel} for the given kind,
+    /// creating it on first access so that only one background task is ever launched per kind.
     public static AsyncEmbeddingModel create(
             EmbeddingModelEnumeration embeddingModelKind,
-            NotificationService notificationService,
-            TaskExecutor taskExecutor
+            EmbeddingModelCache cache
     ) {
-        return new AsyncEmbeddingModel(embeddingModelKind, notificationService, taskExecutor);
+        return cache.getOrCreate(embeddingModelKind);
     }
 
     /// Convenience overload that reads the embedding model kind from {@link AiPreferences}.
     public static AsyncEmbeddingModel create(
             AiPreferences aiPreferences,
-            NotificationService notificationService,
-            TaskExecutor taskExecutor
+            EmbeddingModelCache cache
     ) {
-        return create(aiPreferences.getEmbeddingModel(), notificationService, taskExecutor);
+        return cache.getOrCreate(aiPreferences.getEmbeddingModel());
     }
 }

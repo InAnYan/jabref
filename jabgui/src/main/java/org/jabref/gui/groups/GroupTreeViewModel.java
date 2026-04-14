@@ -33,7 +33,6 @@ import org.jabref.gui.util.CustomLocalDragboard;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.ChatModelFactory;
 import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
-import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
 import org.jabref.logic.ai.ingestion.DocumentSplitterFactory;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral.GenerateEmbeddingsForSeveralTaskRequest;
@@ -137,10 +136,9 @@ public class GroupTreeViewModel extends AbstractViewModel {
     }
 
     private void rebuildEmbeddingModel() {
-        if (embeddingModel != null) {
-            embeddingModel.close();
-        }
-        embeddingModel = EmbeddingModelFactory.create(preferences.getAiPreferences(), dialogService, taskExecutor);
+        embeddingModel = aiService.getEmbeddingModelCache().getOrCreate(
+                preferences.getAiPreferences().getEmbeddingModel()
+        );
     }
 
     private void rebuildDocumentSplitter() {

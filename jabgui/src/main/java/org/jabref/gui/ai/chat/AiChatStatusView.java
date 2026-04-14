@@ -23,7 +23,6 @@ import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
@@ -49,7 +48,6 @@ public class AiChatStatusView extends VBox {
     @Inject private GuiPreferences preferences;
     @Inject private AiService aiService;
     @Inject private DialogService dialogService;
-    @Inject private TaskExecutor taskExecutor;
     @Inject private BibEntryTypesManager entryTypesManager;
 
     private AiChatStatusViewModel viewModel;
@@ -68,7 +66,7 @@ public class AiChatStatusView extends VBox {
                 preferences.getFieldPreferences(),
                 entryTypesManager,
                 dialogService,
-                taskExecutor,
+                aiService.getEmbeddingModelCache(),
                 aiService.getEmbeddingsStore()
         );
 
