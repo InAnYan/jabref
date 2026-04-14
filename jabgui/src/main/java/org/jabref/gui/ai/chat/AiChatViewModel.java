@@ -1,10 +1,5 @@
 package org.jabref.gui.ai.chat;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
@@ -22,13 +17,9 @@ import javafx.collections.FXCollections;
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.util.BindingsHelper;
-import org.jabref.gui.util.FileDialogConfiguration;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.FilePreferences;
-import org.jabref.logic.ai.chatting.AiChatJsonExporter;
-import org.jabref.logic.ai.chatting.AiChatMarkdownExporter;
 import org.jabref.logic.ai.chatting.ChatModel;
-import org.jabref.logic.ai.chatting.ChatModelFactory;
 import org.jabref.logic.ai.chatting.tasks.GenerateRagResponseTask;
 import org.jabref.logic.ai.chatting.util.ChatHistoryUtils;
 import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
@@ -42,18 +33,11 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddings
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTaskRequest;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
-import org.jabref.logic.bibtex.FieldPreferences;
-import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
-import org.jabref.logic.util.StandardFileType;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
-import org.jabref.model.ai.AiMetadata;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
-import org.jabref.model.database.BibDatabaseMode;
-import org.jabref.model.entry.BibEntry;
-import org.jabref.model.entry.BibEntryTypesManager;
 
 import com.google.common.collect.Comparators;
 import dev.langchain4j.data.segment.TextSegment;
@@ -91,8 +75,6 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
-    private final BibEntryTypesManager entryTypesManager;
-    private final FieldPreferences fieldPreferences;
     private final DialogService dialogService;
     private final IngestionTaskAggregator ingestionTaskAggregator;
     private final IngestedDocumentsRepository ingestedDocumentsRepository;
@@ -106,8 +88,6 @@ public class AiChatViewModel extends AbstractViewModel {
     public AiChatViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            BibEntryTypesManager entryTypesManager,
-            FieldPreferences fieldPreferences,
             IngestionTaskAggregator ingestionTaskAggregator,
             IngestedDocumentsRepository ingestedDocumentsRepository,
             DialogService dialogService,
@@ -116,8 +96,6 @@ public class AiChatViewModel extends AbstractViewModel {
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
-        this.entryTypesManager = entryTypesManager;
-        this.fieldPreferences = fieldPreferences;
         this.dialogService = dialogService;
         this.ingestionTaskAggregator = ingestionTaskAggregator;
         this.ingestedDocumentsRepository = ingestedDocumentsRepository;
@@ -173,18 +151,6 @@ public class AiChatViewModel extends AbstractViewModel {
                 systemMessageTemplate
         );
 
-        // Rebuild chat model when relevant preferences change (also calls immediately)
-        BindingsHelper.subscribeToChanges(
-                this::rebuildChatModel,
-                aiPreferences.enableAiProperty(),
-                aiPreferences.aiProviderProperty(),
-                aiPreferences.customizeExpertSettingsProperty(),
-                aiPreferences.temperatureProperty()
-        );
-        aiPreferences.addListenerToChatModels(this::rebuildChatModel);
-        aiPreferences.addListenerToApiBaseUrls(this::rebuildChatModel);
-        aiPreferences.setApiKeyChangeListener(this::rebuildChatModel);
-
         // Rebuild embedding model when relevant preferences change (also calls immediately)
         BindingsHelper.subscribeToChanges(
                 this::rebuildEmbeddingModel,
@@ -201,10 +167,6 @@ public class AiChatViewModel extends AbstractViewModel {
                 aiPreferences.documentSplitterChunkSizeProperty(),
                 aiPreferences.documentSplitterOverlapSizeProperty()
         );
-    }
-
-    private void rebuildChatModel() {
-        chatModel.set(ChatModelFactory.create(aiPreferences));
     }
 
     private void rebuildEmbeddingModel() {
@@ -364,82 +326,6 @@ public class AiChatViewModel extends AbstractViewModel {
         if (!chatHistory.isEmpty()) {
             regenerate(chatHistory.getLast().id());
         }
-    }
-
-    public void exportMarkdown() {
-        List<ChatMessage> messages = chatHistoryProperty().get();
-
-        if (messages == null || messages.isEmpty()) {
-            dialogService.notify(Localization.lang("No chat history available to export"));
-            return;
-        }
-
-        FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
-                .addExtensionFilter(StandardFileType.MARKDOWN)
-                .withDefaultExtension(StandardFileType.MARKDOWN)
-                .withInitialDirectory(Path.of(System.getProperty("user.home")))
-                .build();
-
-        dialogService.showFileSaveDialog(fileDialogConfiguration)
-                     .ifPresent(path -> {
-                         try {
-                             AiChatMarkdownExporter exporter = new AiChatMarkdownExporter(entryTypesManager, fieldPreferences, aiPreferences.getMarkdownChatExportTemplate());
-                             String content = exporter.export(buildMetadata(), getBibEntriesFromFullEntries(), getDatabaseModeOrDefault(), messages);
-                             Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-                             dialogService.notify(Localization.lang("Export operation finished successfully."));
-                         } catch (IOException e) {
-                             LOGGER.error("Problem occurred while writing the export file", e);
-                             dialogService.showErrorDialogAndWait(Localization.lang("Problem occurred while writing the export file"), e);
-                         }
-                     });
-    }
-
-    public void exportJson() {
-        List<ChatMessage> messages = chatHistoryProperty().get();
-
-        if (messages == null || messages.isEmpty()) {
-            dialogService.notify(Localization.lang("No chat history available to export"));
-            return;
-        }
-
-        FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
-                .addExtensionFilter(StandardFileType.JSON)
-                .withDefaultExtension(StandardFileType.JSON)
-                .withInitialDirectory(Path.of(System.getProperty("user.home")))
-                .build();
-
-        dialogService.showFileSaveDialog(fileDialogConfiguration)
-                     .ifPresent(path -> {
-                         try {
-                             AiChatJsonExporter exporter = new AiChatJsonExporter(entryTypesManager, fieldPreferences);
-                             String content = exporter.export(buildMetadata(), getBibEntriesFromFullEntries(), getDatabaseModeOrDefault(), messages);
-                             Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-                             dialogService.notify(Localization.lang("Export operation finished successfully."));
-                         } catch (IOException e) {
-                             LOGGER.error("Problem occurred while writing the export file", e);
-                             dialogService.showErrorDialogAndWait(Localization.lang("Problem occurred while writing the export file"), e);
-                         }
-                     });
-    }
-
-    private AiMetadata buildMetadata() {
-        ChatModel model = chatModel.get();
-        if (model == null) {
-            return new AiMetadata(null, "", Instant.now());
-        }
-        return new AiMetadata(model.getAiProvider(), model.getName(), Instant.now());
-    }
-
-    private List<BibEntry> getBibEntriesFromFullEntries() {
-        return entries.stream()
-                      .map(FullBibEntry::entry)
-                      .toList();
-    }
-
-    private BibDatabaseMode getDatabaseModeOrDefault() {
-        return entries.isEmpty()
-                ? BibDatabaseMode.BIBTEX
-                : entries.getFirst().databaseContext().getMode();
     }
 
     public ListProperty<FullBibEntry> entriesProperty() {

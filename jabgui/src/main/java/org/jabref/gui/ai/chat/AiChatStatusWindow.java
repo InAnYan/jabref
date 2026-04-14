@@ -9,6 +9,7 @@ import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 
@@ -28,16 +29,12 @@ public class AiChatStatusWindow extends BaseDialog<Void> {
                   .setAsDialogPane(this);
     }
 
-    public void setOnExportJson(Runnable handler) {
-        aiChatStatusView.setOnExportJson(handler);
-    }
-
-    public void setOnExportMarkdown(Runnable handler) {
-        aiChatStatusView.setOnExportMarkdown(handler);
-    }
-
     public ObjectProperty<ChatModel> chatModelProperty() {
         return aiChatStatusView.chatModelProperty();
+    }
+
+    public ListProperty<ChatMessage> chatHistoryProperty() {
+        return aiChatStatusView.chatHistoryProperty();
     }
 
     public ListProperty<AnswerEngineKind> answerEngineKindsProperty() {

@@ -6,12 +6,10 @@ import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
@@ -26,8 +24,10 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddings
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
+import org.jabref.model.entry.BibEntryTypesManager;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
@@ -46,15 +46,11 @@ public class AiChatStatusView extends VBox {
 
     @FXML private ComboBox<AnswerEngineKind> answerEngineComboBox;
 
-    @FXML private MenuItem exportJsonMenuItem;
-    @FXML private MenuItem exportMarkdownMenuItem;
-
     @Inject private GuiPreferences preferences;
     @Inject private AiService aiService;
     @Inject private DialogService dialogService;
     @Inject private TaskExecutor taskExecutor;
-
-    private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
+    @Inject private BibEntryTypesManager entryTypesManager;
 
     private AiChatStatusViewModel viewModel;
 
@@ -69,6 +65,8 @@ public class AiChatStatusView extends VBox {
         viewModel = new AiChatStatusViewModel(
                 preferences.getAiPreferences(),
                 preferences.getFilePreferences(),
+                preferences.getFieldPreferences(),
+                entryTypesManager,
                 dialogService,
                 taskExecutor,
                 aiService.getEmbeddingsStore()
@@ -81,7 +79,7 @@ public class AiChatStatusView extends VBox {
     }
 
     private void setupChatModelLabel() {
-        chatModelLabel.textProperty().bind(chatModel.map(AiChatStatusView::formatChatModelLabel));
+        chatModelLabel.textProperty().bind(viewModel.chatModelProperty().map(AiChatStatusView::formatChatModelLabel));
     }
 
     private static String formatChatModelLabel(ChatModel model) {
@@ -160,16 +158,22 @@ public class AiChatStatusView extends VBox {
         answerEngineComboBox.valueProperty().bindBidirectional(viewModel.selectedAnswerEngineKindProperty());
     }
 
-    public void setOnExportJson(Runnable handler) {
-        exportJsonMenuItem.setOnAction(_ -> handler.run());
+    @FXML
+    private void exportJson() {
+        viewModel.exportJson();
     }
 
-    public void setOnExportMarkdown(Runnable handler) {
-        exportMarkdownMenuItem.setOnAction(_ -> handler.run());
+    @FXML
+    private void exportMarkdown() {
+        viewModel.exportMarkdown();
     }
 
     public ObjectProperty<ChatModel> chatModelProperty() {
-        return chatModel;
+        return viewModel.chatModelProperty();
+    }
+
+    public ListProperty<ChatMessage> chatHistoryProperty() {
+        return viewModel.chatHistoryProperty();
     }
 
     public ListProperty<AnswerEngineKind> answerEngineKindsProperty() {

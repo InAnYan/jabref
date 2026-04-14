@@ -1,6 +1,12 @@
 package org.jabref.gui.ai.chat;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javafx.beans.Observable;
@@ -14,10 +20,16 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import org.jabref.gui.AbstractViewModel;
+import org.jabref.gui.DialogService;
 import org.jabref.gui.util.BindingsHelper;
+import org.jabref.gui.util.FileDialogConfiguration;
 import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.FilePreferences;
+import org.jabref.logic.ai.chatting.AiChatJsonExporter;
+import org.jabref.logic.ai.chatting.AiChatMarkdownExporter;
+import org.jabref.logic.ai.chatting.ChatModel;
+import org.jabref.logic.ai.chatting.ChatModelFactory;
 import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
 import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
@@ -25,16 +37,27 @@ import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.ai.rag.util.AnswerEngineFactory;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
-import org.jabref.logic.util.NotificationService;
+import org.jabref.logic.bibtex.FieldPreferences;
+import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.StandardFileType;
 import org.jabref.logic.util.TaskExecutor;
+import org.jabref.model.ai.AiMetadata;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
+import org.jabref.model.database.BibDatabaseMode;
+import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.BibEntryTypesManager;
 import org.jabref.model.entry.LinkedFile;
 
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AiChatStatusViewModel extends AbstractViewModel {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatStatusViewModel.class);
+
     public enum FileStatus {
         PENDING,
         PROCESSING,
@@ -67,9 +90,13 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     private final ListProperty<AnswerEngineKind> answerEngineKinds = new SimpleListProperty<>(FXCollections.observableArrayList(AnswerEngineKind.values()));
     private final ObjectProperty<AnswerEngineKind> selectedAnswerEngineKind = new SimpleObjectProperty<>();
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
+    private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
+    private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
-    private final NotificationService notificationService;
+    private final FieldPreferences fieldPreferences;
+    private final BibEntryTypesManager entryTypesManager;
+    private final DialogService dialogService;
     private final TaskExecutor taskExecutor;
     private final EmbeddingStore<TextSegment> embeddingStore;
 
@@ -78,13 +105,17 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     public AiChatStatusViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            NotificationService notificationService,
+            FieldPreferences fieldPreferences,
+            BibEntryTypesManager entryTypesManager,
+            DialogService dialogService,
             TaskExecutor taskExecutor,
             EmbeddingStore<TextSegment> embeddingStore
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
-        this.notificationService = notificationService;
+        this.fieldPreferences = fieldPreferences;
+        this.entryTypesManager = entryTypesManager;
+        this.dialogService = dialogService;
         this.taskExecutor = taskExecutor;
         this.embeddingStore = embeddingStore;
 
@@ -96,6 +127,18 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         ListenersHelper.onChangeNonNull(selectedAnswerEngineKind, this::updateAnswerEngine);
         ListenersHelper.onListContentsChange(generateEmbeddingsTasks, this::wireTask, this::unwireTask);
 
+        // Rebuild chat model when relevant preferences change (also calls immediately)
+        BindingsHelper.subscribeToChanges(
+                this::rebuildChatModel,
+                aiPreferences.enableAiProperty(),
+                aiPreferences.aiProviderProperty(),
+                aiPreferences.customizeExpertSettingsProperty(),
+                aiPreferences.temperatureProperty()
+        );
+        aiPreferences.addListenerToChatModels(this::rebuildChatModel);
+        aiPreferences.addListenerToApiBaseUrls(this::rebuildChatModel);
+        aiPreferences.setApiKeyChangeListener(this::rebuildChatModel);
+
         // Rebuild embedding model when relevant preferences change (also calls immediately)
         BindingsHelper.subscribeToChanges(
                 this::rebuildEmbeddingModel,
@@ -105,11 +148,15 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         );
     }
 
+    private void rebuildChatModel() {
+        chatModel.set(ChatModelFactory.create(aiPreferences));
+    }
+
     private void rebuildEmbeddingModel() {
         if (embeddingModel != null) {
             embeddingModel.close();
         }
-        embeddingModel = EmbeddingModelFactory.create(aiPreferences, notificationService, taskExecutor);
+        embeddingModel = EmbeddingModelFactory.create(aiPreferences, dialogService, taskExecutor);
         // Rebuild the answer engine with the new embedding model
         if (selectedAnswerEngineKind.get() != null) {
             updateAnswerEngine(selectedAnswerEngineKind.get());
@@ -191,6 +238,82 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         answerEngine.set(engine);
     }
 
+    public void exportMarkdown() {
+        List<ChatMessage> messages = chatHistory.get();
+
+        if (messages == null || messages.isEmpty()) {
+            dialogService.notify(Localization.lang("No chat history available to export"));
+            return;
+        }
+
+        FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
+                .addExtensionFilter(StandardFileType.MARKDOWN)
+                .withDefaultExtension(StandardFileType.MARKDOWN)
+                .withInitialDirectory(Path.of(System.getProperty("user.home")))
+                .build();
+
+        dialogService.showFileSaveDialog(fileDialogConfiguration)
+                     .ifPresent(path -> {
+                         try {
+                             AiChatMarkdownExporter exporter = new AiChatMarkdownExporter(entryTypesManager, fieldPreferences, aiPreferences.getMarkdownChatExportTemplate());
+                             String content = exporter.export(buildMetadata(), getBibEntriesFromFullEntries(), getDatabaseModeOrDefault(), messages);
+                             Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                             dialogService.notify(Localization.lang("Export operation finished successfully."));
+                         } catch (IOException e) {
+                             LOGGER.error("Problem occurred while writing the export file", e);
+                             dialogService.showErrorDialogAndWait(Localization.lang("Problem occurred while writing the export file"), e);
+                         }
+                     });
+    }
+
+    public void exportJson() {
+        List<ChatMessage> messages = chatHistory.get();
+
+        if (messages == null || messages.isEmpty()) {
+            dialogService.notify(Localization.lang("No chat history available to export"));
+            return;
+        }
+
+        FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
+                .addExtensionFilter(StandardFileType.JSON)
+                .withDefaultExtension(StandardFileType.JSON)
+                .withInitialDirectory(Path.of(System.getProperty("user.home")))
+                .build();
+
+        dialogService.showFileSaveDialog(fileDialogConfiguration)
+                     .ifPresent(path -> {
+                         try {
+                             AiChatJsonExporter exporter = new AiChatJsonExporter(entryTypesManager, fieldPreferences);
+                             String content = exporter.export(buildMetadata(), getBibEntriesFromFullEntries(), getDatabaseModeOrDefault(), messages);
+                             Files.writeString(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                             dialogService.notify(Localization.lang("Export operation finished successfully."));
+                         } catch (IOException e) {
+                             LOGGER.error("Problem occurred while writing the export file", e);
+                             dialogService.showErrorDialogAndWait(Localization.lang("Problem occurred while writing the export file"), e);
+                         }
+                     });
+    }
+
+    private AiMetadata buildMetadata() {
+        ChatModel model = chatModel.get();
+        if (model == null) {
+            return new AiMetadata(null, "", Instant.now());
+        }
+        return new AiMetadata(model.getAiProvider(), model.getName(), Instant.now());
+    }
+
+    private List<BibEntry> getBibEntriesFromFullEntries() {
+        return entries.stream()
+                      .map(FullBibEntry::entry)
+                      .toList();
+    }
+
+    private BibDatabaseMode getDatabaseModeOrDefault() {
+        return entries.isEmpty()
+                ? BibDatabaseMode.BIBTEX
+                : entries.getFirst().databaseContext().getMode();
+    }
+
     public ObservableList<IngestionStatusRow> getIngestionStatuses() {
         return ingestionStatuses;
     }
@@ -213,6 +336,14 @@ public class AiChatStatusViewModel extends AbstractViewModel {
 
     public ObjectProperty<AnswerEngineKind> selectedAnswerEngineKindProperty() {
         return selectedAnswerEngineKind;
+    }
+
+    public ObjectProperty<ChatModel> chatModelProperty() {
+        return chatModel;
+    }
+
+    public ListProperty<ChatMessage> chatHistoryProperty() {
+        return chatHistory;
     }
 
     public static class IngestionStatusRow {

@@ -104,10 +104,10 @@
             <JabRefIconView glyph="SAVE"/>
         </graphic>
         <items>
-            <MenuItem fx:id="exportJsonMenuItem"
-                      text="%Export to JSON..."/>
-            <MenuItem fx:id="exportMarkdownMenuItem"
-                      text="%Export to Markdown..."/>
+            <MenuItem text="%Export to JSON..."
+                      onAction="#exportJson"/>
+            <MenuItem text="%Export to Markdown..."
+                      onAction="#exportMarkdown"/>
         </items>
     </MenuButton>
 
