@@ -34,7 +34,12 @@ public class EmbeddingsCleaner {
     }
 
     private void setupListeningToPreferencesChanges() {
-        aiPreferences.addListenerToEmbeddingsParametersChange(embeddingStore::removeAll);
+        aiPreferences.addListenerToEmbeddingsParametersChange(this::removeAll);
+    }
+
+    public void removeAll() {
+        embeddingStore.removeAll();
+        ingestedDocumentsRepository.removeAll();
     }
 
     public void removeDocument(String fileHash) {

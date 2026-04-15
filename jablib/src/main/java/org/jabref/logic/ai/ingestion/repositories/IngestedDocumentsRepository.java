@@ -27,4 +27,6 @@ public interface IngestedDocumentsRepository extends AutoCloseable {
      * @param fileHash the SHA-256 hash of the file
      */
     void unmarkDocumentAsFullyIngested(String fileHash);
+
+    void removeAll();
 }

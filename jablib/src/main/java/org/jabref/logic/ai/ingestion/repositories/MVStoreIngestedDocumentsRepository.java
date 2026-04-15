@@ -43,6 +43,10 @@ public class MVStoreIngestedDocumentsRepository extends MVStoreBase implements I
         ingestedMap.remove(fileHash);
     }
 
+    public void removeAll() {
+        ingestedMap.clear();
+    }
+
     @Override
     protected String errorMessageForOpening() {
         return "An error occurred while opening the fully ingested documents cache file. Fully ingested documents will not be stored in the next session.";
