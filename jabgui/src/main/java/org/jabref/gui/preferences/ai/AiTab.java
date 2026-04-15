@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Spinner;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
@@ -77,7 +78,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private Button resetCurrentTemplateButton;
     @FXML private Button resetTemplatesButton;
     @FXML private CheckBox generateFollowUpQuestions;
-    @FXML private IntegerInputField followUpQuestionsCountField;
+    @FXML private Spinner<Integer> followUpQuestionsCountSpinner;
 
     public AiTab() {
         ViewLoader.view(this)
@@ -103,13 +104,9 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         generateFollowUpQuestions.selectedProperty().bindBidirectional(viewModel.generateFollowUpQuestionsProperty());
         generateFollowUpQuestions.disableProperty().bind(viewModel.disableBasicSettingsProperty());
 
-        followUpQuestionsCountField.valueProperty().addListener((_, _, newValue) ->
-                viewModel.followUpQuestionsCountProperty().set(newValue == null ? 0 : newValue));
-
-        viewModel.followUpQuestionsCountProperty().addListener((_, _, newValue) ->
-                followUpQuestionsCountField.valueProperty().set(newValue == null ? 0 : newValue.intValue()));
-
-        followUpQuestionsCountField.disableProperty().bind(viewModel.disableBasicSettingsProperty());
+        followUpQuestionsCountSpinner.setValueFactory(AiTabViewModel.followUpQuestionsCountValueFactory);
+        followUpQuestionsCountSpinner.getValueFactory().valueProperty().bindBidirectional(viewModel.followUpQuestionsCountProperty().asObject());
+        followUpQuestionsCountSpinner.disableProperty().bind(generateFollowUpQuestions.selectedProperty().not());
     }
 
     private void initializeHelp() {

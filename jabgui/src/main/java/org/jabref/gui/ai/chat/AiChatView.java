@@ -187,13 +187,7 @@ public class AiChatView extends StackPane {
 
     @FXML
     private void clearChatHistory() {
-        boolean confirmed = dialogService.showConfirmationDialogAndWait(
-                Localization.lang("Delete chat history"),
-                Localization.lang("Are you sure you want to delete the chat history?")
-        );
-        if (confirmed) {
-            viewModel.clearChatHistory();
-        }
+        viewModel.clearChatHistory();
     }
 
     public ListProperty<ChatMessage> chatHistoryProperty() {

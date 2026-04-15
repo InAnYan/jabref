@@ -328,9 +328,16 @@ public class AiChatViewModel extends AbstractViewModel {
     }
 
     public void clearChatHistory() {
-        chatHistory.clear();
-        followUpQuestions.clear();
-        followUpQuestionsCache.remove(new ArrayList<>(entries));
+        boolean confirmed = dialogService.showConfirmationDialogAndWait(
+                Localization.lang("Clear chat history"),
+                Localization.lang("Are you sure you want to clear the chat history?")
+        );
+
+        if (confirmed) {
+            chatHistory.clear();
+            followUpQuestions.clear();
+            followUpQuestionsCache.remove(new ArrayList<>(entries));
+        }
     }
 
     private void clearGenerateRagResponseTask() {
