@@ -3,8 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.MenuButton?>
-<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.BorderPane?>
@@ -136,7 +134,7 @@
                             onAction="#clearChatHistory"
                             styleClass="icon-button,narrow"
                             textAlignment="CENTER"
-                            StackPane.alignment="CENTER_LEFT">
+                            StackPane.alignment="CENTER_RIGHT">
                         <graphic>
                             <JabRefIconView
                                     glyph="DELETE_ENTRY"/>
@@ -146,24 +144,6 @@
                                     text="%Clear chat history"/>
                         </tooltip>
                     </Button>
-
-                    <Label fx:id="aiModelLabel"
-                           text="%Current chat model: %0 %1"
-                           StackPane.alignment="CENTER"/>
-
-                    <MenuButton mnemonicParsing="false"
-                                text="%Export"
-                                StackPane.alignment="CENTER_RIGHT">
-                        <graphic>
-                            <JabRefIconView glyph="SAVE"/>
-                        </graphic>
-                        <items>
-                            <MenuItem text="%Export to JSON..."
-                                      onAction="#exportJson"/>
-                            <MenuItem text="%Export to Markdown..."
-                                      onAction="#exportMarkdown"/>
-                        </items>
-                    </MenuButton>
                 </StackPane>
             </VBox>
         </bottom>

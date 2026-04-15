@@ -9,6 +9,7 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
@@ -18,16 +19,21 @@ import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.ValueTableCellFactory;
 import org.jabref.gui.util.ViewModelListCellFactory;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
+import org.jabref.model.entry.BibEntryTypesManager;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
 public class AiChatStatusView extends VBox {
+    @FXML private Label chatModelLabel;
+
     @FXML private TableView<FullBibEntry> entriesTable;
     @FXML private TableColumn<FullBibEntry, String> libraryColumn;
     @FXML private TableColumn<FullBibEntry, String> citationKeyColumn;
@@ -42,6 +48,7 @@ public class AiChatStatusView extends VBox {
     @Inject private GuiPreferences preferences;
     @Inject private AiService aiService;
     @Inject private DialogService dialogService;
+    @Inject private BibEntryTypesManager entryTypesManager;
 
     private AiChatStatusViewModel viewModel;
 
@@ -56,13 +63,28 @@ public class AiChatStatusView extends VBox {
         viewModel = new AiChatStatusViewModel(
                 preferences.getAiPreferences(),
                 preferences.getFilePreferences(),
+                preferences.getFieldPreferences(),
+                entryTypesManager,
+                dialogService,
                 aiService.getEmbeddingModelCache(),
                 aiService.getEmbeddingsStore()
         );
 
+        setupChatModelLabel();
         setupEntriesTable();
         setupIngestionTable();
         setupParameters();
+    }
+
+    private void setupChatModelLabel() {
+        chatModelLabel.textProperty().bind(viewModel.chatModelProperty().map(AiChatStatusView::formatChatModelLabel));
+    }
+
+    private static String formatChatModelLabel(ChatModel model) {
+        if (model == null) {
+            return "";
+        }
+        return Localization.lang("%0 %1", model.getAiProvider().getDisplayName(), model.getName());
     }
 
     private void setupEntriesTable() {
@@ -132,6 +154,24 @@ public class AiChatStatusView extends VBox {
                 .install(answerEngineComboBox);
         answerEngineComboBox.setItems(viewModel.answerEngineKindsProperty());
         answerEngineComboBox.valueProperty().bindBidirectional(viewModel.selectedAnswerEngineKindProperty());
+    }
+
+    @FXML
+    private void exportJson() {
+        viewModel.exportJson();
+    }
+
+    @FXML
+    private void exportMarkdown() {
+        viewModel.exportMarkdown();
+    }
+
+    public ObjectProperty<ChatModel> chatModelProperty() {
+        return viewModel.chatModelProperty();
+    }
+
+    public ListProperty<ChatMessage> chatHistoryProperty() {
+        return viewModel.chatHistoryProperty();
     }
 
     public ListProperty<AnswerEngineKind> answerEngineKindsProperty() {

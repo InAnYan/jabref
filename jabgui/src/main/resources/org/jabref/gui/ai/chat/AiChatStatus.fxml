@@ -3,10 +3,13 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import org.jabref.gui.icon.JabRefIconView?>
 <fx:root
         type="VBox"
         xmlns="http://javafx.com/javafx"
@@ -23,6 +26,12 @@
 
     <Label text="%Chat Status"
            style="-fx-font-size: 1.2em; -fx-font-weight: bold;"/>
+
+    <VBox spacing="5">
+        <Label text="%Current chat model:"
+               style="-fx-font-weight: bold;"/>
+        <Label fx:id="chatModelLabel"/>
+    </VBox>
 
     <VBox spacing="5"
           VBox.vgrow="ALWAYS">
@@ -88,5 +97,18 @@
                     prefWidth="200"/>
         </HBox>
     </VBox>
+
+    <MenuButton mnemonicParsing="false"
+                text="%Export">
+        <graphic>
+            <JabRefIconView glyph="SAVE"/>
+        </graphic>
+        <items>
+            <MenuItem text="%Export to JSON..."
+                      onAction="#exportJson"/>
+            <MenuItem text="%Export to Markdown..."
+                      onAction="#exportMarkdown"/>
+        </items>
+    </MenuButton>
 
 </fx:root>
