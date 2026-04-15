@@ -35,6 +35,7 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddings
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTaskRequest;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
+import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
@@ -49,6 +50,10 @@ import org.slf4j.LoggerFactory;
 
 public class AiChatViewModel extends AbstractViewModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiChatViewModel.class);
+
+    private static final String EXAMPLE_QUESTION_1 = Localization.lang("What is the goal of the paper?");
+    private static final String EXAMPLE_QUESTION_2 = Localization.lang("Which methods were used in the research?");
+    private static final String EXAMPLE_QUESTION_3 = Localization.lang("What are the key findings?");
 
     public enum State {
         AI_TURNED_OFF,
@@ -65,7 +70,11 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private final ObjectProperty<GenerateRagResponseTask> generateRagResponseTask = new SimpleObjectProperty<>();
 
-    private final ListProperty<String> followUpQuestions = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final ListProperty<String> followUpQuestions = new SimpleListProperty<>(FXCollections.observableArrayList(
+            EXAMPLE_QUESTION_1,
+            EXAMPLE_QUESTION_2,
+            EXAMPLE_QUESTION_3
+    ));
     private BackgroundTask<List<String>> generateFollowUpQuestionsTask;
 
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
@@ -203,6 +212,11 @@ public class AiChatViewModel extends AbstractViewModel {
             followUpQuestions.setAll(cached);
         } else {
             followUpQuestions.clear();
+            followUpQuestions.addAll(
+                    EXAMPLE_QUESTION_1,
+                    EXAMPLE_QUESTION_2,
+                    EXAMPLE_QUESTION_3
+            );
         }
 
         generateEmbeddingsTasks.clear();

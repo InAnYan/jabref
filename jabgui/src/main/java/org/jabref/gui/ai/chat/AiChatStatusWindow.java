@@ -11,7 +11,6 @@ import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
-import org.jabref.model.ai.pipeline.AnswerEngineKind;
 
 import com.airhacks.afterburner.views.ViewLoader;
 
@@ -36,15 +35,7 @@ public class AiChatStatusWindow extends BaseDialog<Void> {
     public ListProperty<ChatMessage> chatHistoryProperty() {
         return aiChatStatusView.chatHistoryProperty();
     }
-
-    public ListProperty<AnswerEngineKind> answerEngineKindsProperty() {
-        return aiChatStatusView.answerEngineKindsProperty();
-    }
-
-    public ObjectProperty<AnswerEngineKind> selectedAnswerEngineKindProperty() {
-        return aiChatStatusView.selectedAnswerEngineKindProperty();
-    }
-
+    
     public ObjectProperty<AnswerEngine> answerEngineProperty() {
         return aiChatStatusView.answerEngineProperty();
     }

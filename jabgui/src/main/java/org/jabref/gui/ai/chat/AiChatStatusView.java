@@ -174,14 +174,6 @@ public class AiChatStatusView extends VBox {
         return viewModel.chatHistoryProperty();
     }
 
-    public ListProperty<AnswerEngineKind> answerEngineKindsProperty() {
-        return viewModel.answerEngineKindsProperty();
-    }
-
-    public ObjectProperty<AnswerEngineKind> selectedAnswerEngineKindProperty() {
-        return viewModel.selectedAnswerEngineKindProperty();
-    }
-
     public ObjectProperty<AnswerEngine> answerEngineProperty() {
         return viewModel.answerEngineProperty();
     }

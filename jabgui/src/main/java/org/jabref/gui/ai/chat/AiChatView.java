@@ -2,15 +2,14 @@ package org.jabref.gui.ai.chat;
 
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ListProperty;
-import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 
 import org.jabref.gui.DialogService;
 import org.jabref.gui.ai.AiPrivacyNoticeView;
@@ -18,7 +17,9 @@ import org.jabref.gui.ai.statuspane.SimpleStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.HistoryTextArea;
 import org.jabref.gui.util.ListScrollPane;
+import org.jabref.gui.util.SimpleListView;
 import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
@@ -38,6 +39,9 @@ public class AiChatView extends StackPane {
     @FXML private ProgressIndicator loadingIndicator;
     @FXML private ListScrollPane<ChatMessage> chatHistoryScrollPane;
 
+    @FXML private HBox followUpQuestionsArea;
+    @FXML private SimpleListView<String> followUpQuestionsSimpleListView;
+
     @FXML private Button infoButton;
     @FXML private HistoryTextArea userMessageTextArea;
     @FXML private Button sendButton;
@@ -45,9 +49,7 @@ public class AiChatView extends StackPane {
     @FXML private Button cancelButton;
 
     @FXML private Button clearButton;
-
-    @FXML private VBox followUpQuestionsArea;
-    @FXML private FlowPane followUpQuestionsBox;
+    @FXML private Label noticeText;
 
     @Inject private GuiPreferences preferences;
     @Inject private AiService aiService;
@@ -118,29 +120,26 @@ public class AiChatView extends StackPane {
         sendButton.visibleProperty().bind(isIdle);
         retryButton.visibleProperty().bind(isError);
         cancelButton.visibleProperty().bind(isWaiting.or(isError));
+        noticeText.textProperty().bind(viewModel.chatModelProperty().map(this::formatNoticeText));
+    }
+
+    private String formatNoticeText(ChatModel model) {
+        String modelName = model.getAiProvider().getDisplayName() + " " + model.getName();
+        return Localization.lang("Current AI model: %0. The AI may generate inaccurate or inappropriate responses. Please verify any information provided", modelName);
     }
 
     private void setupFollowUpQuestions() {
-        followUpQuestionsArea.setVisible(false);
+        followUpQuestionsArea.visibleProperty().bind(
+                viewModel.followUpQuestionsProperty().emptyProperty().not()
+                         .and(preferences.getAiPreferences().generateFollowUpQuestionsProperty())
+        );
 
-        viewModel.followUpQuestionsProperty().addListener((ListChangeListener<String>) change -> {
-            followUpQuestionsBox.getChildren().clear();
-
-            if (viewModel.followUpQuestionsProperty().isEmpty()
-                    || !preferences.getAiPreferences().getGenerateFollowUpQuestions()) {
-                followUpQuestionsArea.setVisible(false);
-                return;
-            }
-
-            for (String question : viewModel.followUpQuestionsProperty()) {
-                Button chip = new Button(question);
-                chip.getStyleClass().addAll("outlined-button");
-                chip.setWrapText(true);
-                chip.setOnAction(_ -> viewModel.sendFollowUpMessage(question));
-                followUpQuestionsBox.getChildren().add(chip);
-            }
-
-            followUpQuestionsArea.setVisible(true);
+        followUpQuestionsSimpleListView.itemsProperty().bind(viewModel.followUpQuestionsProperty());
+        followUpQuestionsSimpleListView.setRenderer(question -> {
+            Button button = new Button(question);
+            button.getStyleClass().add("exampleQuestionStyle");
+            button.setOnAction(_ -> viewModel.sendFollowUpMessage(question));
+            return button;
         });
     }
 

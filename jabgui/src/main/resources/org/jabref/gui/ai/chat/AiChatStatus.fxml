@@ -25,18 +25,33 @@
     </padding>
 
     <Label text="%Chat Status"
-           style="-fx-font-size: 1.2em; -fx-font-weight: bold;"/>
+           styleClass="titleHeader"/>
 
-    <VBox spacing="5">
-        <Label text="%Current chat model:"
-               style="-fx-font-weight: bold;"/>
-        <Label fx:id="chatModelLabel"/>
+    <VBox spacing="10">
+        <Label text="%Chatting parameters"
+               styleClass="sectionHeader"/>
+
+        <HBox spacing="10"
+              alignment="CENTER_LEFT">
+            <Label text="%Chat model:"/>
+            <Label fx:id="chatModelLabel"/>
+        </HBox>
+
+        <HBox spacing="10"
+              alignment="CENTER_LEFT">
+            <Label text="%Answer engine:"/>
+            <ComboBox
+                    fx:id="answerEngineComboBox"
+                    prefWidth="200"/>
+        </HBox>
+
+
     </VBox>
 
-    <VBox spacing="5"
+    <VBox spacing="10"
           VBox.vgrow="ALWAYS">
-        <Label text="%Chatting with entries:"
-               style="-fx-font-weight: bold;"/>
+        <Label text="%Entries in the chat"
+               styleClass="sectionHeader"/>
         <TableView
                 fx:id="entriesTable"
                 VBox.vgrow="ALWAYS"
@@ -56,10 +71,10 @@
         </TableView>
     </VBox>
 
-    <VBox spacing="5"
+    <VBox spacing="10"
           VBox.vgrow="ALWAYS">
-        <Label text="%Ingestion status:"
-               style="-fx-font-weight: bold;"/>
+        <Label text="%Ingestion status"
+               styleClass="sectionHeader"/>
         <TableView
                 fx:id="ingestionTable"
                 VBox.vgrow="ALWAYS"
@@ -86,28 +101,20 @@
         </TableView>
     </VBox>
 
-    <VBox spacing="5">
-        <Label text="%Chatting parameters:"
-               style="-fx-font-weight: bold;"/>
-        <HBox spacing="10"
-              alignment="CENTER_LEFT">
-            <Label text="%Answer Engine:"/>
-            <ComboBox
-                    fx:id="answerEngineComboBox"
-                    prefWidth="200"/>
-        </HBox>
-    </VBox>
-
-    <MenuButton mnemonicParsing="false"
-                text="%Export">
+    <MenuButton
+            mnemonicParsing="false"
+            text="%Export chat history">
         <graphic>
-            <JabRefIconView glyph="SAVE"/>
+            <JabRefIconView
+                    glyph="SAVE"/>
         </graphic>
         <items>
-            <MenuItem text="%Export to JSON..."
-                      onAction="#exportJson"/>
-            <MenuItem text="%Export to Markdown..."
-                      onAction="#exportMarkdown"/>
+            <MenuItem
+                    text="%Export to JSON..."
+                    onAction="#exportJson"/>
+            <MenuItem
+                    text="%Export to Markdown..."
+                    onAction="#exportMarkdown"/>
         </items>
     </MenuButton>
 
