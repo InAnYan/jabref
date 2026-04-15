@@ -2,7 +2,6 @@ package org.jabref.gui.ai.chat;
 
 import java.time.Instant;
 
-import javafx.beans.binding.StringExpression;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -18,10 +17,6 @@ import javafx.event.EventHandler;
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.PropertiesHelper;
 import org.jabref.model.ai.chatting.ChatMessage;
-import org.jabref.model.ai.chatting.ErrorMessage;
-
-import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.data.message.UserMessage;
 
 public class AiChatMessageViewModel extends AbstractViewModel {
     private final ObjectProperty<ChatMessage> chatMessage = new SimpleObjectProperty<>();
@@ -51,9 +46,7 @@ public class AiChatMessageViewModel extends AbstractViewModel {
         messageContent.bind(chatMessage.map(ChatMessage::content).map(s -> s == null ? "" : s));
         timestamp.bind(chatMessage.map(ChatMessage::timestamp));
 
-        StringExpression messageType = StringExpression.stringExpression(chatMessage.map(ChatMessage::role).map(ChatMessage.Role::getDisplayName));
-        showEdit.bind(messageType.isEqualTo(UserMessage.class.getName()));
-        showRegenerate.bind(messageType.isEqualTo(AiMessage.class.getName()).or(messageType.isEqualTo(ErrorMessage.class.getName())));
+        showRegenerate.bind(chatMessage.map(ChatMessage::role).map(ChatMessage.Role::canRegenerate));
     }
 
     public void delete() {

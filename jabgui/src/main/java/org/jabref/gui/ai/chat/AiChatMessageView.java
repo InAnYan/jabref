@@ -26,8 +26,10 @@ public class AiChatMessageView extends HBox {
     private static final PseudoClass ERROR_PSEUDO_CLASS = PseudoClass.getPseudoClass("error");
 
     @FXML private VBox vBox;
+
     @FXML private Label sourceLabel;
     @FXML private StackPane markdownContentPane;
+
     @FXML private VBox buttonsVBox;
     @FXML private Button regenerateButton;
     @FXML private Button deleteButton;

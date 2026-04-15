@@ -33,6 +33,10 @@ public record ChatMessage(String id, Instant timestamp, Role role, String conten
                         Localization.lang("Error");
             };
         }
+
+        public boolean canRegenerate() {
+            return this == AI || this == ERROR;
+        }
     }
 
     @JsonCreator
