@@ -819,71 +819,6 @@ public class JabRefCliPreferences implements CliPreferences {
         // endregion
     }
 
-    /**
-     * @deprecated Never ever add a call to this method. There should be only one
-     * caller. All other usages should get the preferences passed (or injected). The
-     * JabRef team leaves the {@code @deprecated} annotation to have IntelliJ listing
-     * this method with a strike-through.
-     */
-    @Deprecated
-    public static JabRefCliPreferences getInstance() {
-        if (JabRefCliPreferences.singleton == null) {
-            JabRefCliPreferences.singleton = new JabRefCliPreferences();
-        }
-        return JabRefCliPreferences.singleton;
-    }
-
-    // region PushToApplicationPreferences
-
-    @VisibleForTesting
-    static String convertListToString(List<String> value) {
-        return value.stream().map(val -> StringUtil.quote(val, STRINGLIST_DELIMITER.toString(), '\\')).collect(Collectors.joining(STRINGLIST_DELIMITER.toString()));
-    }
-
-    @VisibleForTesting
-    static List<String> convertStringToList(String toConvert) {
-        if (StringUtil.isBlank(toConvert)) {
-            return List.of();
-        }
-
-        return Splitter.on(STRINGLIST_DELIMITER).splitToList(toConvert);
-    }
-    // endregion
-
-    private static Preferences getPrefsNodeForCustomizedEntryTypes(BibDatabaseMode mode) {
-        return mode == BibDatabaseMode.BIBTEX
-               ? PREFS_NODE.node(CUSTOMIZED_BIBTEX_TYPES)
-               : PREFS_NODE.node(CUSTOMIZED_BIBLATEX_TYPES);
-    }
-
-    //*************************************************************************************************************
-    // Common serializer logic
-    //*************************************************************************************************************
-
-    private static EnumSet<CleanupPreferences.CleanupStep> getDefaultCleanupJobs() {
-        EnumSet<CleanupPreferences.CleanupStep> activeJobs = EnumSet.allOf(CleanupPreferences.CleanupStep.class);
-        activeJobs.removeAll(EnumSet.of(
-                CleanupPreferences.CleanupStep.CLEAN_UP_UPGRADE_EXTERNAL_LINKS,
-                CleanupPreferences.CleanupStep.MOVE_PDF,
-                CleanupPreferences.CleanupStep.RENAME_PDF_ONLY_RELATIVE_PATHS,
-                CleanupPreferences.CleanupStep.CONVERT_TO_BIBLATEX,
-                CleanupPreferences.CleanupStep.CONVERT_TO_BIBTEX,
-                CleanupPreferences.CleanupStep.CONVERT_MSC_CODES));
-        return activeJobs;
-    }
-
-    private static void deleteGitHubPat() {
-        try (final Keyring keyring = Keyring.create()) {
-            keyring.deletePassword("org.jabref", "github");
-        } catch (Exception ex) {
-            LOGGER.warn("Unable to remove GitHub credentials", ex);
-        }
-    }
-
-    //*************************************************************************************************************
-    // Backingstore access logic
-    //*************************************************************************************************************
-
     public void setLanguageDependentDefaultValues() {
         // Entry editor tab 0:
         defaults.put(CUSTOM_TAB_NAME + "_def0", Localization.lang("General"));
@@ -894,6 +829,8 @@ public class JabRefCliPreferences implements CliPreferences {
         defaults.put(CUSTOM_TAB_FIELDS + "_def1", StandardField.ABSTRACT.getName());
         defaults.put(CUSTOM_TAB_NAME + "_def1", Localization.lang("Abstract"));
     }
+
+    // region PushToApplicationPreferences
 
     public PushToApplicationPreferences getPushToApplicationPreferences() {
         if (pushToApplicationPreferences != null) {
@@ -957,6 +894,43 @@ public class JabRefCliPreferences implements CliPreferences {
             }
         });
     }
+    // endregion
+
+    /**
+     * @deprecated Never ever add a call to this method. There should be only one
+     * caller. All other usages should get the preferences passed (or injected). The
+     * JabRef team leaves the {@code @deprecated} annotation to have IntelliJ listing
+     * this method with a strike-through.
+     */
+    @Deprecated
+    public static JabRefCliPreferences getInstance() {
+        if (JabRefCliPreferences.singleton == null) {
+            JabRefCliPreferences.singleton = new JabRefCliPreferences();
+        }
+        return JabRefCliPreferences.singleton;
+    }
+
+    //*************************************************************************************************************
+    // Common serializer logic
+    //*************************************************************************************************************
+
+    @VisibleForTesting
+    static String convertListToString(List<String> value) {
+        return value.stream().map(val -> StringUtil.quote(val, STRINGLIST_DELIMITER.toString(), '\\')).collect(Collectors.joining(STRINGLIST_DELIMITER.toString()));
+    }
+
+    @VisibleForTesting
+    static List<String> convertStringToList(String toConvert) {
+        if (StringUtil.isBlank(toConvert)) {
+            return List.of();
+        }
+
+        return Splitter.on(STRINGLIST_DELIMITER).splitToList(toConvert);
+    }
+
+    //*************************************************************************************************************
+    // Backingstore access logic
+    //*************************************************************************************************************
 
     /**
      * Check whether a key is set (differently from null).
@@ -1185,10 +1159,6 @@ public class JabRefCliPreferences implements CliPreferences {
         return series;
     }
 
-    //*************************************************************************************************************
-    // ToDo: Cleanup
-    //*************************************************************************************************************
-
     /**
      * Removes all entries keyed by prefix+number, where number is equal to or higher
      * than the given number.
@@ -1222,10 +1192,6 @@ public class JabRefCliPreferences implements CliPreferences {
         }
     }
 
-    //*************************************************************************************************************
-    // CustomEntryTypes
-    //*************************************************************************************************************
-
     /**
      * Imports Preferences from an XML file.
      *
@@ -1245,6 +1211,10 @@ public class JabRefCliPreferences implements CliPreferences {
                     ex);
         }
     }
+
+    //*************************************************************************************************************
+    // ToDo: Cleanup
+    //*************************************************************************************************************
 
     @Override
     public LayoutFormatterPreferences getLayoutFormatterPreferences() {
@@ -1271,6 +1241,10 @@ public class JabRefCliPreferences implements CliPreferences {
 
         return journalAbbreviationPreferences;
     }
+
+    //*************************************************************************************************************
+    // CustomEntryTypes
+    //*************************************************************************************************************
 
     @Override
     public BibEntryTypesManager getCustomEntryTypesRepository() {
@@ -1310,10 +1284,6 @@ public class JabRefCliPreferences implements CliPreferences {
         }
     }
 
-    //*************************************************************************************************************
-    // Misc
-    //*************************************************************************************************************
-
     @Override
     public void storeCustomEntryTypesRepository(BibEntryTypesManager entryTypesManager) {
         clearAllBibEntryTypes();
@@ -1336,6 +1306,16 @@ public class JabRefCliPreferences implements CliPreferences {
             LOGGER.info("Updating stored custom entry types failed.", e);
         }
     }
+
+    private static Preferences getPrefsNodeForCustomizedEntryTypes(BibDatabaseMode mode) {
+        return mode == BibDatabaseMode.BIBTEX
+               ? PREFS_NODE.node(CUSTOMIZED_BIBTEX_TYPES)
+               : PREFS_NODE.node(CUSTOMIZED_BIBLATEX_TYPES);
+    }
+
+    //*************************************************************************************************************
+    // Misc
+    //*************************************************************************************************************
 
     @Override
     public LibraryPreferences getLibraryPreferences() {
@@ -1374,10 +1354,6 @@ public class JabRefCliPreferences implements CliPreferences {
 
         return doiPreferences;
     }
-
-    //*************************************************************************************************************
-    // Network preferences
-    //*************************************************************************************************************
 
     @Override
     public OwnerPreferences getOwnerPreferences() {
@@ -1422,6 +1398,10 @@ public class JabRefCliPreferences implements CliPreferences {
 
         return timestampPreferences;
     }
+
+    //*************************************************************************************************************
+    // Network preferences
+    //*************************************************************************************************************
 
     @Override
     public RemotePreferences getRemotePreferences() {
@@ -1498,10 +1478,6 @@ public class JabRefCliPreferences implements CliPreferences {
         return (String) defaults.get(PROXY_PASSWORD);
     }
 
-    //*************************************************************************************************************
-    // CitationKeyPatternPreferences
-    //*************************************************************************************************************
-
     private void setProxyPassword(String password) {
         if (getProxyPreferences().shouldPersistPassword()) {
             try (final Keyring keyring = Keyring.create()) {
@@ -1531,6 +1507,10 @@ public class JabRefCliPreferences implements CliPreferences {
 
         return sslPreferences;
     }
+
+    //*************************************************************************************************************
+    // CitationKeyPatternPreferences
+    //*************************************************************************************************************
 
     private GlobalCitationKeyPatterns getGlobalCitationKeyPattern() {
         GlobalCitationKeyPatterns citationKeyPattern = GlobalCitationKeyPatterns.fromPattern(get(DEFAULT_CITATION_KEY_PATTERN));
@@ -1580,10 +1560,6 @@ public class JabRefCliPreferences implements CliPreferences {
         getCitationKeyPatternPreferences().setKeyPatterns(getGlobalCitationKeyPattern());
     }
 
-    //*************************************************************************************************************
-    // BibEntryPreferences
-    //*************************************************************************************************************
-
     @Override
     public CitationKeyPatternPreferences getCitationKeyPatternPreferences() {
         if (citationKeyPatternPreferences != null) {
@@ -1627,10 +1603,6 @@ public class JabRefCliPreferences implements CliPreferences {
         return citationKeyPatternPreferences;
     }
 
-    //*************************************************************************************************************
-    // InternalPreferences
-    //*************************************************************************************************************
-
     private CitationKeyPatternPreferences.KeySuffix getKeySuffix() {
         CitationKeyPatternPreferences.KeySuffix keySuffix =
                 CitationKeyPatternPreferences.KeySuffix.SECOND_WITH_B;
@@ -1641,6 +1613,10 @@ public class JabRefCliPreferences implements CliPreferences {
         }
         return keySuffix;
     }
+
+    //*************************************************************************************************************
+    // BibEntryPreferences
+    //*************************************************************************************************************
 
     @Override
     public BibEntryPreferences getBibEntryPreferences() {
@@ -1656,6 +1632,10 @@ public class JabRefCliPreferences implements CliPreferences {
 
         return bibEntryPreferences;
     }
+
+    //*************************************************************************************************************
+    // InternalPreferences
+    //*************************************************************************************************************
 
     protected Path getDefaultPath() {
         return Path.of("/");
@@ -1703,10 +1683,6 @@ public class JabRefCliPreferences implements CliPreferences {
         return userAndHost;
     }
 
-    //*************************************************************************************************************
-    // Linked files preferences
-    //*************************************************************************************************************
-
     protected Language getLanguage() {
         return Language.getLanguageFor(get(LANGUAGE));
     }
@@ -1734,6 +1710,10 @@ public class JabRefCliPreferences implements CliPreferences {
 
         return fieldPreferences;
     }
+
+    //*************************************************************************************************************
+    // Linked files preferences
+    //*************************************************************************************************************
 
     protected boolean moveToTrashSupported() {
         return false;
@@ -1787,10 +1767,6 @@ public class JabRefCliPreferences implements CliPreferences {
         return filePreferences;
     }
 
-    //*************************************************************************************************************
-    // Import/Export preferences
-    //*************************************************************************************************************
-
     @Override
     public AutoLinkPreferences getAutoLinkPreferences() {
         if (autoLinkPreferences != null) {
@@ -1826,6 +1802,10 @@ public class JabRefCliPreferences implements CliPreferences {
         }
         return citationKeyDependency;
     }
+
+    //*************************************************************************************************************
+    // Import/Export preferences
+    //*************************************************************************************************************
 
     @Override
     public ExportPreferences getExportPreferences() {
@@ -1913,8 +1893,6 @@ public class JabRefCliPreferences implements CliPreferences {
                 .shouldAlwaysReformatOnSave());
     }
 
-    // region Cleanup preferences
-
     private List<TemplateExporter> getCustomExportFormats() {
         LayoutFormatterPreferences layoutPreferences = getLayoutFormatterPreferences();
         SelfContainedSaveConfiguration saveConfiguration = getSelfContainedExportConfiguration();
@@ -1950,6 +1928,8 @@ public class JabRefCliPreferences implements CliPreferences {
         }
     }
 
+    // region Cleanup preferences
+
     @Override
     public CleanupPreferences getCleanupPreferences() {
         if (cleanupPreferences != null) {
@@ -1975,10 +1955,6 @@ public class JabRefCliPreferences implements CliPreferences {
         return cleanupPreferences;
     }
 
-    // endregion
-
-    // region last files opened
-
     @Override
     public CleanupPreferences getDefaultCleanupPreset() {
         return new CleanupPreferences(
@@ -1988,6 +1964,22 @@ public class JabRefCliPreferences implements CliPreferences {
                         FieldFormatterCleanups.parse((String) defaults.get(CLEANUP_FIELD_FORMATTERS))
                 ));
     }
+
+    private static EnumSet<CleanupPreferences.CleanupStep> getDefaultCleanupJobs() {
+        EnumSet<CleanupPreferences.CleanupStep> activeJobs = EnumSet.allOf(CleanupPreferences.CleanupStep.class);
+        activeJobs.removeAll(EnumSet.of(
+                CleanupPreferences.CleanupStep.CLEAN_UP_UPGRADE_EXTERNAL_LINKS,
+                CleanupPreferences.CleanupStep.MOVE_PDF,
+                CleanupPreferences.CleanupStep.RENAME_PDF_ONLY_RELATIVE_PATHS,
+                CleanupPreferences.CleanupStep.CONVERT_TO_BIBLATEX,
+                CleanupPreferences.CleanupStep.CONVERT_TO_BIBTEX,
+                CleanupPreferences.CleanupStep.CONVERT_MSC_CODES));
+        return activeJobs;
+    }
+
+    // endregion
+
+    // region last files opened
 
     @Override
     public LastFilesOpenedPreferences getLastFilesOpenedPreferences() {
@@ -2030,16 +2022,16 @@ public class JabRefCliPreferences implements CliPreferences {
                                                              .toList());
     }
 
-    // endregion
-
-    // region other preferences
-
     private void storeFileHistory(FileHistory history) {
         putStringList(RECENT_DATABASES, history.stream()
                                                .map(Path::toAbsolutePath)
                                                .map(Path::toString)
                                                .toList());
     }
+
+    // endregion
+
+    // region other preferences
 
     @Override
     public AiPreferences getAiPreferences() {
@@ -2228,10 +2220,6 @@ public class JabRefCliPreferences implements CliPreferences {
         return mrDlibPreferences;
     }
 
-    //*************************************************************************************************************
-    // Importer preferences
-    //*************************************************************************************************************
-
     @Override
     public ProtectedTermsPreferences getProtectedTermsPreferences() {
         if (protectedTermsPreferences != null) {
@@ -2256,6 +2244,10 @@ public class JabRefCliPreferences implements CliPreferences {
 
         return protectedTermsPreferences;
     }
+
+    //*************************************************************************************************************
+    // Importer preferences
+    //*************************************************************************************************************
 
     @Override
     public ImporterPreferences getImporterPreferences() {
@@ -2462,8 +2454,6 @@ public class JabRefCliPreferences implements CliPreferences {
         return grobidPreferences;
     }
 
-    // endregion
-
     @Override
     public ImportFormatPreferences getImportFormatPreferences() {
         return new ImportFormatPreferences(
@@ -2475,6 +2465,8 @@ public class JabRefCliPreferences implements CliPreferences {
                 getGrobidPreferences(),
                 getFilePreferences());
     }
+
+    // endregion
 
     @Override
     public OpenOfficePreferences getOpenOfficePreferences(JournalAbbreviationRepository journalAbbreviationRepository) {
@@ -2557,6 +2549,14 @@ public class JabRefCliPreferences implements CliPreferences {
         });
 
         return gitPreferences;
+    }
+
+    private static void deleteGitHubPat() {
+        try (final Keyring keyring = Keyring.create()) {
+            keyring.deletePassword("org.jabref", "github");
+        } catch (Exception ex) {
+            LOGGER.warn("Unable to remove GitHub credentials", ex);
+        }
     }
 
     private String getGitHubPat() {
