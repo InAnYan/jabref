@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.summarization;
+package org.jabref.logic.ai.summarization.exporters;
 
 import org.jabref.model.ai.AiMetadata;
 import org.jabref.model.ai.summarization.AiSummary;

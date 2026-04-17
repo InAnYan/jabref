@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.chatting;
+package org.jabref.logic.ai.chatting.exporters;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -47,8 +47,8 @@ public class AiChatMarkdownExporter implements AiChatExporter {
         String bibtex = concatenateBibtexEntries(entries, mode);
 
         List<ChatMessage> filteredMessages = messages.stream()
-                .filter(msg -> msg.role() != ChatMessage.Role.SYSTEM)
-                .toList();
+                                                     .filter(msg -> msg.role() != ChatMessage.Role.SYSTEM)
+                                                     .toList();
 
         return AiTemplateRenderer.renderMarkdownChatExport(markdownExportTemplate, metadata, bibtex, filteredMessages);
     }

@@ -1,8 +1,8 @@
-package org.jabref.logic.ai.summarization;
+package org.jabref.logic.ai.summarization.exporters;
 
 import java.util.List;
 
-import org.jabref.logic.ai.chatting.AiChatMarkdownExporter;
+import org.jabref.logic.ai.chatting.exporters.AiChatJsonExporter;
 import org.jabref.logic.bibtex.FieldPreferences;
 import org.jabref.model.ai.AiMetadata;
 import org.jabref.model.ai.chatting.ChatMessage;
@@ -12,16 +12,16 @@ import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.BibEntryTypesManager;
 
 /**
- * Exports an AI summary to Markdown format.
+ * Exports an AI summary to JSON format.
  *
  * <p>Internally constructs a single-message dummy chat containing the summary content
- * and delegates to {@link AiChatMarkdownExporter}.
+ * and delegates to {@link AiChatJsonExporter}.
  */
-public class AiSummaryMarkdownExporter implements AiSummaryExporter {
-    private final AiChatMarkdownExporter chatExporter;
+public class AiSummaryJsonExporter implements AiSummaryExporter {
+    private final AiChatJsonExporter chatExporter;
 
-    public AiSummaryMarkdownExporter(BibEntryTypesManager entryTypesManager, FieldPreferences fieldPreferences, String markdownExportTemplate) {
-        this.chatExporter = new AiChatMarkdownExporter(entryTypesManager, fieldPreferences, markdownExportTemplate);
+    public AiSummaryJsonExporter(BibEntryTypesManager entryTypesManager, FieldPreferences fieldPreferences) {
+        this.chatExporter = new AiChatJsonExporter(entryTypesManager, fieldPreferences);
     }
 
     @Override
