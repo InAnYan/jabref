@@ -16,7 +16,7 @@ import org.jabref.gui.frame.ExternalApplicationsPreferences;
 import org.jabref.gui.groups.GroupsPreferences;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
+import org.jabref.model.ai.embeddings.PredefinedEmbeddingModel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +67,7 @@ public class AiPrivacyNoticeViewModel extends AbstractViewModel {
 
     private void setupBindings() {
         privacyDisagreeButtonText.bind(disagreeBehaviour.map(DisagreeBehaviour::toLocalizedString));
-        embeddingModelSize.bind(aiPreferences.embeddingModelProperty().map(EmbeddingModelEnumeration::sizeInfo));
+        embeddingModelSize.bind(aiPreferences.embeddingModelProperty().map(PredefinedEmbeddingModel::sizeInfo));
     }
 
     public void onPrivacyAgree() {

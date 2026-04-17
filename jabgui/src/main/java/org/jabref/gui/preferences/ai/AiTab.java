@@ -23,7 +23,7 @@ import org.jabref.gui.preferences.PreferencesTab;
 import org.jabref.gui.util.ViewModelListCellFactory;
 import org.jabref.logic.help.HelpFile;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
+import org.jabref.model.ai.embeddings.PredefinedEmbeddingModel;
 import org.jabref.model.ai.llm.AiProvider;
 
 import com.airhacks.afterburner.views.ViewLoader;
@@ -46,7 +46,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private CheckBox customizeExpertSettingsCheckbox;
     @FXML private VBox expertSettingsPane;
     @FXML private TextField apiBaseUrlTextField;
-    @FXML private SearchableComboBox<EmbeddingModelEnumeration> embeddingModelComboBox;
+    @FXML private SearchableComboBox<PredefinedEmbeddingModel> embeddingModelComboBox;
     @FXML private TextField temperatureTextField;
     @FXML private IntegerInputField contextWindowSizeTextField;
     @FXML private IntegerInputField documentSplitterChunkSizeTextField;
@@ -169,8 +169,8 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         expertSettingsPane.visibleProperty().bind(customizeExpertSettingsCheckbox.selectedProperty());
         expertSettingsPane.managedProperty().bind(customizeExpertSettingsCheckbox.selectedProperty());
 
-        new ViewModelListCellFactory<EmbeddingModelEnumeration>()
-                .withText(EmbeddingModelEnumeration::fullInfo)
+        new ViewModelListCellFactory<PredefinedEmbeddingModel>()
+                .withText(PredefinedEmbeddingModel::fullInfo)
                 .install(embeddingModelComboBox);
         embeddingModelComboBox.setItems(viewModel.embeddingModelsProperty());
         embeddingModelComboBox.valueProperty().bindBidirectional(viewModel.selectedEmbeddingModelProperty());

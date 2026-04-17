@@ -11,7 +11,7 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.ProgressCounter;
 import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
+import org.jabref.model.ai.embeddings.PredefinedEmbeddingModel;
 
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public class AsyncEmbeddingModel implements EmbeddingModel, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AsyncEmbeddingModel.class);
 
-    private final EmbeddingModelEnumeration embeddingModelKind;
+    private final PredefinedEmbeddingModel embeddingModelKind;
     private final NotificationService notificationService;
     private final TaskExecutor taskExecutor;
 
@@ -45,7 +45,7 @@ public class AsyncEmbeddingModel implements EmbeddingModel, AutoCloseable {
     private String errorWhileBuildingModel = "";
 
     public AsyncEmbeddingModel(
-            EmbeddingModelEnumeration embeddingModelKind,
+            PredefinedEmbeddingModel embeddingModelKind,
             NotificationService notificationService,
             TaskExecutor taskExecutor
     ) {

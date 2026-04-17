@@ -97,7 +97,7 @@ import org.jabref.logic.util.io.AutoLinkPreferences;
 import org.jabref.logic.util.io.FileHistory;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.logic.xmp.XmpPreferences;
-import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
+import org.jabref.model.ai.embeddings.PredefinedEmbeddingModel;
 import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.ai.llm.PredefinedChatModel;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
@@ -2065,7 +2065,7 @@ public class JabRefCliPreferences implements CliPreferences {
                 get(AI_HUGGING_FACE_API_BASE_URL),
                 SummarizatorKind.valueOf(get(AI_SUMMARIZATOR_KIND)),
                 TokenEstimatorKind.valueOf(get(AI_TOKEN_ESTIMATOR_KIND)),
-                EmbeddingModelEnumeration.valueOf(get(AI_EMBEDDING_MODEL)),
+                PredefinedEmbeddingModel.valueOf(get(AI_EMBEDDING_MODEL)),
                 getDouble(AI_TEMPERATURE),
                 getInt(AI_CONTEXT_WINDOW_SIZE),
                 DocumentSplitterKind.valueOf(get(AI_DOCUMENT_SPLITTER_KIND)),

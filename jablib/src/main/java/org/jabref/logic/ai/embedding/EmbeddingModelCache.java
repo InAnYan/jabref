@@ -5,12 +5,12 @@ import java.util.Map;
 
 import org.jabref.logic.util.NotificationService;
 import org.jabref.logic.util.TaskExecutor;
-import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
+import org.jabref.model.ai.embeddings.PredefinedEmbeddingModel;
 
 /**
- * Session-scoped cache for {@link AsyncEmbeddingModel} instances, keyed by {@link EmbeddingModelEnumeration}.
+ * Session-scoped cache for {@link AsyncEmbeddingModel} instances, keyed by {@link PredefinedEmbeddingModel}.
  *
- * <p>When multiple components request an embedding model for the same {@link EmbeddingModelEnumeration},
+ * <p>When multiple components request an embedding model for the same {@link PredefinedEmbeddingModel},
  * this cache ensures only <em>one</em> {@link AsyncEmbeddingModel} instance—and therefore only one
  * background download/load task—is ever created for that model kind.
  *
@@ -23,7 +23,7 @@ import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
  */
 public class EmbeddingModelCache implements AutoCloseable {
 
-    private final Map<EmbeddingModelEnumeration, AsyncEmbeddingModel> cache = new HashMap<>();
+    private final Map<PredefinedEmbeddingModel, AsyncEmbeddingModel> cache = new HashMap<>();
 
     private final NotificationService notificationService;
     private final TaskExecutor taskExecutor;
@@ -42,7 +42,7 @@ public class EmbeddingModelCache implements AutoCloseable {
      * @param kind the requested embedding model kind
      * @return a (possibly still-loading) {@link AsyncEmbeddingModel} for {@code kind}
      */
-    public AsyncEmbeddingModel getOrCreate(EmbeddingModelEnumeration kind) {
+    public AsyncEmbeddingModel getOrCreate(PredefinedEmbeddingModel kind) {
         return cache.computeIfAbsent(kind,
                 k -> new AsyncEmbeddingModel(k, notificationService, taskExecutor));
     }

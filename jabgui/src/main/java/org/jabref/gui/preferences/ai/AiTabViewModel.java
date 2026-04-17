@@ -25,7 +25,7 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.preferences.CliPreferences;
 import org.jabref.logic.util.LocalizedNumbers;
 import org.jabref.logic.util.strings.StringUtil;
-import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
+import org.jabref.model.ai.embeddings.PredefinedEmbeddingModel;
 import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.ai.llm.PredefinedChatModel;
 
@@ -36,7 +36,7 @@ import de.saxsys.mvvmfx.utils.validation.Validator;
 
 public class AiTabViewModel implements PreferenceTabViewModel {
     protected static SpinnerValueFactory<Integer> followUpQuestionsCountValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 3);
-    
+
     private final Locale oldLocale;
 
     private final BooleanProperty enableAi = new SimpleBooleanProperty();
@@ -68,9 +68,9 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
     private final BooleanProperty customizeExpertSettings = new SimpleBooleanProperty();
 
-    private final ListProperty<EmbeddingModelEnumeration> embeddingModelsList =
-            new SimpleListProperty<>(FXCollections.observableArrayList(EmbeddingModelEnumeration.values()));
-    private final ObjectProperty<EmbeddingModelEnumeration> selectedEmbeddingModel = new SimpleObjectProperty<>();
+    private final ListProperty<PredefinedEmbeddingModel> embeddingModelsList =
+            new SimpleListProperty<>(FXCollections.observableArrayList(PredefinedEmbeddingModel.values()));
+    private final ObjectProperty<PredefinedEmbeddingModel> selectedEmbeddingModel = new SimpleObjectProperty<>();
 
     private final StringProperty currentApiBaseUrl = new SimpleStringProperty();
     private final BooleanProperty disableApiBaseUrl = new SimpleBooleanProperty(true); // {@link HuggingFaceChatModel} and {@link GoogleAiGeminiChatModel} doesn't support setting API base URL
@@ -556,11 +556,11 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         return customizeExpertSettings;
     }
 
-    public ReadOnlyListProperty<EmbeddingModelEnumeration> embeddingModelsProperty() {
+    public ReadOnlyListProperty<PredefinedEmbeddingModel> embeddingModelsProperty() {
         return embeddingModelsList;
     }
 
-    public ObjectProperty<EmbeddingModelEnumeration> selectedEmbeddingModelProperty() {
+    public ObjectProperty<PredefinedEmbeddingModel> selectedEmbeddingModelProperty() {
         return selectedEmbeddingModel;
     }
 

@@ -16,7 +16,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.util.strings.StringUtil;
-import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
+import org.jabref.model.ai.embeddings.PredefinedEmbeddingModel;
 import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.ai.llm.PredefinedChatModel;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
@@ -57,7 +57,7 @@ public class AiPreferences {
 
     private final ObjectProperty<SummarizatorKind> summarizatorKind;
     private final ObjectProperty<TokenEstimatorKind> tokenEstimatorKind;
-    private final ObjectProperty<EmbeddingModelEnumeration> embeddingModel;
+    private final ObjectProperty<PredefinedEmbeddingModel> embeddingModel;
     private final DoubleProperty temperature;
     private final IntegerProperty contextWindowSize;
 
@@ -103,7 +103,7 @@ public class AiPreferences {
             String huggingFaceApiBaseUrl,
             SummarizatorKind summarizatorKind,
             TokenEstimatorKind tokenEstimatorKind,
-            EmbeddingModelEnumeration embeddingModel,
+            PredefinedEmbeddingModel embeddingModel,
             double temperature,
             int contextWindowSize,
             DocumentSplitterKind documentSplitterKind,
@@ -339,11 +339,11 @@ public class AiPreferences {
         this.tokenEstimatorKind.set(tokenEstimatorKind);
     }
 
-    public ObjectProperty<EmbeddingModelEnumeration> embeddingModelProperty() {
+    public ObjectProperty<PredefinedEmbeddingModel> embeddingModelProperty() {
         return embeddingModel;
     }
 
-    public EmbeddingModelEnumeration getEmbeddingModel() {
+    public PredefinedEmbeddingModel getEmbeddingModel() {
         if (getCustomizeExpertSettings()) {
             return embeddingModel.get();
         } else {
@@ -351,7 +351,7 @@ public class AiPreferences {
         }
     }
 
-    public void setEmbeddingModel(EmbeddingModelEnumeration embeddingModel) {
+    public void setEmbeddingModel(PredefinedEmbeddingModel embeddingModel) {
         this.embeddingModel.set(embeddingModel);
     }
 

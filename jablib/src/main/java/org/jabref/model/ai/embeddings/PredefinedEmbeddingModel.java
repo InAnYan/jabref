@@ -6,7 +6,7 @@ import org.apache.commons.io.FileUtils;
  * This enumeration was formed by <a href="https://docs.djl.ai/master/docs/load_model.html#list-available-models-using-djl-command-line">listing available embeddings model from Model Zoo of DJL</a>
  * and by using a script that would rewrite the output in Java syntax + calculate size information by finding the models on Hugging Face.
  */
-public enum EmbeddingModelEnumeration {
+public enum PredefinedEmbeddingModel {
     ZEROHELL_TINYDPR_ACC_0_315_BS_307("zerohell/tinydpr-acc_0.315-bs_307", 45821255L),
     OMARELSAYEED_SEARCH_MODEL_PRECHATS_AUGMENTED("omarelsayeed/Search_Model_PRECHATS_AUGMENTED", 47407976L),
     DDOBOKKI_ELECTRA_SMALL_NLI_STS("ddobokki/electra-small-nli-sts", 55621715L),
@@ -321,7 +321,7 @@ public enum EmbeddingModelEnumeration {
     private final String name;
     private final long sizeInBytes;
 
-    EmbeddingModelEnumeration(String name, long sizeInBytes) {
+    PredefinedEmbeddingModel(String name, long sizeInBytes) {
         this.name = name;
         this.sizeInBytes = sizeInBytes;
     }

@@ -1,6 +1,6 @@
 package org.jabref.logic.ai.preferences;
 
-import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
+import org.jabref.model.ai.embeddings.PredefinedEmbeddingModel;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.DocumentSplitterKind;
 import org.jabref.model.ai.summarization.SummarizatorKind;
@@ -11,7 +11,7 @@ import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 /// This collection was made because "Expert settings" in the AI settings is resettable.
 /// There are facilities in JabRef codebase to reset either all settings or 1 section, but not a part of a section.
 public class AiDefaultExpertSettings {
-    public static final EmbeddingModelEnumeration EMBEDDING_MODEL = EmbeddingModelEnumeration.SENTENCE_TRANSFORMERS_ALL_MINILM_L12_V2;
+    public static final PredefinedEmbeddingModel EMBEDDING_MODEL = PredefinedEmbeddingModel.SENTENCE_TRANSFORMERS_ALL_MINILM_L12_V2;
     public static final SummarizatorKind SUMMARIZATOR_KIND = SummarizatorKind.CHUNKED;
     public static final TokenEstimatorKind TOKEN_ESTIMATOR_KIND = TokenEstimatorKind.MAX;
     public static final float TEMPERATURE = 0.7f;
