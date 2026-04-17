@@ -1,0 +1,114 @@
+package org.jabref.logic.ai.util;
+
+import jakarta.annotation.Nullable;
+
+/**
+ * Cleans raw LLM response strings by extracting content from the last
+ * fenced code block (``` ... ```) if present, or simply trimming whitespace.
+ *
+ * <p>Rules:
+ * <ol>
+ *   <li>If the response contains no ``` fences → return the string stripped of
+ *       leading/trailing whitespace.</li>
+ *   <li>If one or more ``` fences exist → find the <em>last</em> complete block,
+ *       strip the optional language label on the opening fence (e.g. {@code ```json},
+ *       {@code ```markdown}), and return the inner content trimmed.</li>
+ *   <li>If the last fence is unclosed (no matching closing {@code ```}) → treat
+ *       everything after the opening fence line as the content.</li>
+ * </ol>
+ */
+public class LlmResponseCleaner {
+    private static final String FENCE = "```";
+
+    /**
+     * Cleans the given LLM response string according to the rules above.
+     *
+     * @param response the raw LLM response; may be {@code null}
+     * @return the cleaned string, never {@code null}
+     */
+    public static String clean(@Nullable String response) {
+        if (response == null) {
+            return "";
+        }
+
+        // No fences at all, then just trim.
+        int firstFence = response.indexOf(FENCE);
+        if (firstFence == -1) {
+            return response.strip();
+        }
+
+        // Find the *last* opening fence.
+        // An "opening" fence is any ``` that starts a block; we scan from the end.
+        // Strategy: collect all fence positions, then walk them in reverse to find
+        // the last one that acts as an opener (i.e. followed by content or a closer).
+        int lastOpenerStart = findLastOpener(response);
+        if (lastOpenerStart == -1) {
+            // Shouldn't happen after the firstFence check, but be safe.
+            return response.strip();
+        }
+
+        // Skip the opening fence marker itself (3 chars).
+        int afterFenceMarker = lastOpenerStart + FENCE.length();
+
+        // Skip optional language label: everything up to (but not including) the
+        // first newline after the opening ```.
+        int newlineAfterLabel = response.indexOf('\n', afterFenceMarker);
+        int contentStart;
+        if (newlineAfterLabel == -1) {
+            // No newline, then no content inside the fence.
+            contentStart = afterFenceMarker;
+        } else {
+            contentStart = newlineAfterLabel + 1; // character right after the '\n'
+        }
+
+        // Look for a closing ``` after the content start.
+        int closingFence = response.indexOf(FENCE, contentStart);
+
+        String content;
+        if (closingFence == -1) {
+            // Unclosed fence, then take everything from contentStart to end.
+            content = response.substring(contentStart);
+        } else {
+            content = response.substring(contentStart, closingFence);
+        }
+
+        return content.strip();
+    }
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns the start index of the last "opening" ``` in the string.
+     *
+     * <p>We treat every ``` as a potential opener/closer pair. Walking through the
+     * string we toggle a flag: the first ``` opens a block, the next closes it, etc.
+     * We remember the start index of each opener and return the last one seen.
+     */
+    private static int findLastOpener(String s) {
+        int lastOpener = -1;
+        boolean inBlock = false;
+        int pos = 0;
+
+        while (pos < s.length()) {
+            int fencePos = s.indexOf(FENCE, pos);
+            if (fencePos == -1) {
+                break;
+            }
+
+            if (!inBlock) {
+                // This ``` opens a block.
+                lastOpener = fencePos;
+                inBlock = true;
+            } else {
+                // This ``` closes the current block.
+                inBlock = false;
+            }
+
+            pos = fencePos + FENCE.length();
+        }
+
+        return lastOpener;
+    }
+}
