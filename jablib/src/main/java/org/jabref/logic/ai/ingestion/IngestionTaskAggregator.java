@@ -15,7 +15,6 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral.Generate
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.entry.LinkedFile;
 
-
 public class IngestionTaskAggregator {
     private final TaskExecutor taskExecutor;
 
