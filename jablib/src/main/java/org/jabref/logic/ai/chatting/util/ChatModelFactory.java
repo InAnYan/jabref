@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.chatting;
+package org.jabref.logic.ai.chatting.util;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.jabref.logic.ai.chatting.ChatModel;
+import org.jabref.logic.ai.chatting.JvmOpenAiChatLanguageModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.tokenization.TokenEstimatorFactory;
 import org.jabref.logic.ai.tokenization.logic.TokenEstimator;
+import org.jabref.logic.ai.tokenization.util.TokenEstimatorFactory;
 import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 

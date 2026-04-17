@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.summarization.logic;
+package org.jabref.logic.ai.summarization.util;
 
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.ChunkedSummarizator;

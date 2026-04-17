@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.tokenization;
+package org.jabref.logic.ai.tokenization.util;
 
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.tokenization.logic.AverageTokenEstimator;
@@ -9,7 +9,7 @@ import org.jabref.logic.ai.tokenization.logic.MinimumTokenEstimator;
 import org.jabref.logic.ai.tokenization.logic.TokenEstimator;
 import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
-public class TokenEstimatorFactory {
+public final class TokenEstimatorFactory {
     private TokenEstimatorFactory() {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
     }

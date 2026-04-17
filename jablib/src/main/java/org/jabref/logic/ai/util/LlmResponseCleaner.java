@@ -17,8 +17,12 @@ import jakarta.annotation.Nullable;
  *       everything after the opening fence line as the content.</li>
  * </ol>
  */
-public class LlmResponseCleaner {
+public final class LlmResponseCleaner {
     private static final String FENCE = "```";
+
+    private LlmResponseCleaner() {
+        throw new UnsupportedOperationException("cannot instantiate a utility class");
+    }
 
     /**
      * Cleans the given LLM response string according to the rules above.
@@ -74,11 +78,7 @@ public class LlmResponseCleaner {
 
         return content.strip();
     }
-
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
-
+    
     /**
      * Returns the start index of the last "opening" ``` in the string.
      *

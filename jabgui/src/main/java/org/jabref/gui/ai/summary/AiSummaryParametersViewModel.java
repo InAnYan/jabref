@@ -8,8 +8,8 @@ import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
+import org.jabref.logic.ai.summarization.util.SummarizatorFactory;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 
 public class AiSummaryParametersViewModel extends AbstractViewModel {

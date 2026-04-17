@@ -12,7 +12,7 @@ import org.jabref.model.entry.CanonicalBibEntry;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 
-public class AiTemplateRenderer {
+public final class AiTemplateRenderer {
     private static final VelocityEngine VELOCITY_ENGINE = new VelocityEngine();
     private static final VelocityContext BASE_CONTEXT = new VelocityContext();
 

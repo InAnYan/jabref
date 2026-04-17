@@ -19,12 +19,12 @@ public abstract class TrackedBackgroundTask<V> extends BackgroundTask<V> {
             return this == SUCCESS || this == ERROR || this == CANCELLED;
         }
     }
+    
+    protected final ProgressCounter progressCounter = new ProgressCounter();
 
     private final ObjectProperty<Status> status = new SimpleObjectProperty<>(Status.PENDING);
     private final ObjectProperty<V> result = new SimpleObjectProperty<>();
     private final ObjectProperty<Exception> exception = new SimpleObjectProperty<>();
-
-    protected final ProgressCounter progressCounter = new ProgressCounter();
 
     public TrackedBackgroundTask() {
         super();

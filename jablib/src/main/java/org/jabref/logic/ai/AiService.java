@@ -2,6 +2,7 @@ package org.jabref.logic.ai;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.InMemoryChatHistoryCache;
+import org.jabref.logic.ai.chatting.migrations.ChatHistoryMigrationV1;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.chatting.repositories.MVStoreChatHistoryRepository;
 import org.jabref.logic.ai.embedding.EmbeddingModelCache;
@@ -15,6 +16,7 @@ import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.InMemorySummaryCache;
 import org.jabref.logic.ai.summarization.SummarizationTaskAggregator;
 import org.jabref.logic.ai.summarization.listeners.GenerateSummaryAiDatabaseListener;
+import org.jabref.logic.ai.summarization.migration.SummariesMigrationV1;
 import org.jabref.logic.ai.summarization.repositories.MVStoreSummariesRepository;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.util.Directories;
@@ -24,11 +26,15 @@ import org.jabref.model.database.BibDatabaseContext;
 
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /// The main class for the AI functionality.
 /// Holds all the AI components: LLM and embedding model, chat history and embedding cache.
 public class AiService implements AutoCloseable {
     public static final String VERSION = "2";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiService.class);
 
     private static final String CHAT_HISTORY_FILE_NAME = "chat-histories.mv";
     private static final String EMBEDDINGS_FILE_NAME = "embeddings.mv";
@@ -108,6 +114,24 @@ public class AiService implements AutoCloseable {
     public void setupDatabase(BibDatabaseContext context) {
         generateEmbeddingsAiDatabaseListener.setupDatabase(context);
         generateSummaryAiDatabaseListener.setupDatabase(context);
+    }
+
+    public void migrateDatabase(NotificationService notificationService, BibDatabaseContext context) {
+        try {
+            ChatHistoryMigrationV1.migrate(
+                    context,
+                    mvStoreChatHistoryRepository,
+                    notificationService
+            );
+
+            SummariesMigrationV1.migrate(
+                    context,
+                    mvStoreSummariesRepository,
+                    notificationService
+            );
+        } catch (Exception e) {
+            LOGGER.error("Error during AI data migration", e);
+        }
     }
 
     public ChatHistoryRepository getChatHistoryRepository() {

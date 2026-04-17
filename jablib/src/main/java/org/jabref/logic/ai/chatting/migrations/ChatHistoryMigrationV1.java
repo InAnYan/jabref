@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.migration;
+package org.jabref.logic.ai.chatting.migrations;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,8 +52,8 @@ import org.slf4j.LoggerFactory;
  * Then a {@link ClassRemappingObjectInputStream} deserializes those bytes while remapping
  * the deleted inner class name to the current {@link ChatHistoryRecord}.
  */
-public class ChatHistoryMigration {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChatHistoryMigration.class);
+public final class ChatHistoryMigrationV1 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChatHistoryMigrationV1.class);
 
     private static final String OLD_CHAT_HISTORY_FILE_NAME = "chat-histories.mv";
     private static final String ENTRY_CHAT_HISTORY_INFIX = "-entry-";
@@ -66,8 +66,8 @@ public class ChatHistoryMigration {
     private static final String OLD_CHAT_HISTORY_RECORD_CLASS =
             "org.jabref.logic.ai.chatting.chathistory.storages.MVStoreChatHistoryStorage$ChatHistoryRecord";
 
-    private ChatHistoryMigration() {
-        // Utility class
+    private ChatHistoryMigrationV1() {
+        throw new UnsupportedOperationException("cannot instantiate a utility class");
     }
 
     /**

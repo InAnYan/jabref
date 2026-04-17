@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.ingestion;
+package org.jabref.logic.ai.ingestion.util;
 
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.SlidingWindowDocumentSplitter;

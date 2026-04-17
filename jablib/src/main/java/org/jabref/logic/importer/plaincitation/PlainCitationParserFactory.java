@@ -1,6 +1,6 @@
 package org.jabref.logic.importer.plaincitation;
 
-import org.jabref.logic.ai.chatting.ChatModelFactory;
+import org.jabref.logic.ai.chatting.util.ChatModelFactory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
 import org.jabref.logic.importer.ImportFormatPreferences;

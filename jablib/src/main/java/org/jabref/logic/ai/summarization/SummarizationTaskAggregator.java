@@ -4,8 +4,8 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.TreeMap;
 
-import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
-import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
+import org.jabref.logic.ai.summarization.tasks.GenerateSummaryTask;
+import org.jabref.logic.ai.summarization.tasks.GenerateSummaryTaskRequest;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.entry.BibEntry;

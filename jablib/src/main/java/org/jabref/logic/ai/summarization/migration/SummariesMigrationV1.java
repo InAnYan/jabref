@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.migration;
+package org.jabref.logic.ai.summarization.migration;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,16 +49,16 @@ import org.slf4j.LoggerFactory;
  * {@code ObjectInputStream}. Then a {@link ClassRemappingObjectInputStream} deserializes those
  * bytes while remapping the two deleted class names to current inner types.
  */
-public class SummariesMigration {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SummariesMigration.class);
+public final class SummariesMigrationV1 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SummariesMigrationV1.class);
 
     private static final String OLD_SUMMARIES_FILE_NAME = "summaries.mv";
     private static final String SUMMARIES_MAP_PREFIX = "summaries";
     private static final String OLD_SUMMARY_CLASS = "org.jabref.logic.ai.summarization.Summary";
     private static final String OLD_AI_PROVIDER_CLASS = "org.jabref.model.ai.AiProvider";
 
-    private SummariesMigration() {
-        // Utility class
+    private SummariesMigrationV1() {
+        throw new UnsupportedOperationException("cannot instantiate a utility class");
     }
 
     /**

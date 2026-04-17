@@ -1,4 +1,4 @@
-package org.jabref.logic.ai.summarization.tasks.generatesummary;
+package org.jabref.logic.ai.summarization.tasks;
 
 import org.jabref.logic.ai.summarization.logic.BibEntrySummarizator;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;

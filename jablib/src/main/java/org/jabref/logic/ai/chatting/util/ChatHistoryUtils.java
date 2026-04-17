@@ -5,26 +5,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
-import org.jabref.model.ai.chatting.ChatIdentifier;
 import org.jabref.model.ai.chatting.ChatMessage;
 
-public class ChatHistoryUtils {
+public final class ChatHistoryUtils {
     private ChatHistoryUtils() {
         throw new UnsupportedOperationException("unable to instantiate a utility class");
-    }
-
-    public static void transferChatHistory(
-            ChatHistoryRepository chatHistoryRepository,
-            ChatIdentifier oldIdentifier,
-            ChatIdentifier newIdentifier
-    ) {
-        List<ChatMessage> chatHistory = chatHistoryRepository.getAllMessages(oldIdentifier);
-
-        chatHistoryRepository.clear(oldIdentifier);
-        chatHistoryRepository.clear(newIdentifier);
-
-        chatHistory.forEach(record -> chatHistoryRepository.addMessage(newIdentifier, record));
     }
 
     /// Removes the message with the specified ID from history.

@@ -10,7 +10,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FileHasher {
+public final class FileHasher {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileHasher.class);
     private static final String ALGORITHM = "SHA-256";
     private static final int BUFFER_SIZE = 8192;
