@@ -2,7 +2,7 @@ package org.jabref.model.ai.tokenization;
 
 /// Idea taken from: <https://community.openai.com/t/what-is-the-openai-algorithm-to-calculate-tokens/58237/4>.
 public enum TokenEstimatorKind {
-    /// Average between (word count / 0.75) and (character count / 4).
+    /// Average between [TokenEstimatorKind#WORDS] and [TokenEstimatorKind#CHARS].
     AVERAGE,
 
     /// 0.75 words = 1 token.
@@ -11,9 +11,9 @@ public enum TokenEstimatorKind {
     /// 4 characters = 1 token.
     CHARS,
 
-    /// Maximum between (word count / 0.75) and (character count / 4).
+    /// Maximum between [TokenEstimatorKind#WORDS] and [TokenEstimatorKind#CHARS].
     MAX,
 
-    /// Minimum between (word count / 0.75) and (character count / 4).
+    /// Minimum between [TokenEstimatorKind#WORDS] and [TokenEstimatorKind#CHARS].
     MIN
 }
