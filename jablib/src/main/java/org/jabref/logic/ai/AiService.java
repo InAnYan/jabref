@@ -101,7 +101,6 @@ public class AiService implements AutoCloseable {
         this.generateSummaryAiDatabaseListener = new GenerateSummaryAiDatabaseListener(
                 aiPreferences,
                 filePreferences,
-                mvStoreSummariesRepository,
                 summarizationTaskAggregator
         );
     }

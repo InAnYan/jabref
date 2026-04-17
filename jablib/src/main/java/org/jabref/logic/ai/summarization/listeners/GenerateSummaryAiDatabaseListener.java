@@ -1,5 +1,8 @@
 package org.jabref.logic.ai.summarization.listeners;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiDatabaseListener;
 import org.jabref.logic.ai.chatting.ChatModel;
@@ -8,7 +11,6 @@ import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.SummarizationTaskAggregator;
 import org.jabref.logic.ai.summarization.logic.SummarizatorFactory;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
-import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
 import org.jabref.logic.util.ObservablesHelper;
 import org.jabref.model.ai.identifiers.FullBibEntry;
@@ -23,57 +25,36 @@ import org.slf4j.LoggerFactory;
 
 public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSummaryAiDatabaseListener.class);
+
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
-    private final SummariesRepository summariesRepository;
     private final SummarizationTaskAggregator summarizationTaskAggregator;
 
-    private volatile ChatModel chatModel;
-    private volatile Summarizator summarizator;
+    private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
+    private final ObjectProperty<Summarizator> summarizator = new SimpleObjectProperty<>();
 
     public GenerateSummaryAiDatabaseListener(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            SummariesRepository summariesRepository,
             SummarizationTaskAggregator summarizationTaskAggregator
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
-        this.summariesRepository = summariesRepository;
         this.summarizationTaskAggregator = summarizationTaskAggregator;
 
-        ObservablesHelper.subscribeToChanges(
-                this::rebuildChatModel,
-                aiPreferences.enableAiProperty(),
-                aiPreferences.aiProviderProperty(),
-                aiPreferences.customizeExpertSettingsProperty(),
-                aiPreferences.temperatureProperty()
-        );
-        aiPreferences.addListenerToChatModels(this::rebuildChatModel);
-        aiPreferences.addListenerToApiBaseUrls(this::rebuildChatModel);
-
-        ObservablesHelper.subscribeToChanges(
-                this::rebuildSummarizator,
-                aiPreferences.summarizatorKindProperty(),
-                aiPreferences.summarizationChunkSystemMessageTemplateProperty(),
-                aiPreferences.summarizationCombineSystemMessageTemplateProperty(),
-                aiPreferences.summarizationFullDocumentSystemMessageTemplateProperty()
-        );
+        setupBindings();
     }
 
-    private void rebuildChatModel() {
-        if (chatModel instanceof AutoCloseable closeable) {
-            try {
-                closeable.close();
-            } catch (Exception e) {
-                LOGGER.warn("Error closing previous chat model", e);
-            }
-        }
-        chatModel = ChatModelFactory.create(aiPreferences);
-    }
+    private void setupBindings() {
+        this.summarizator.bind(ObservablesHelper.createObjectBinding(
+                () -> SummarizatorFactory.create(aiPreferences),
+                aiPreferences.getSummarizatorProperties()
+        ));
 
-    private void rebuildSummarizator() {
-        summarizator = SummarizatorFactory.create(aiPreferences);
+        this.chatModel.bind(ObservablesHelper.createObjectBinding(
+                () -> ChatModelFactory.create(aiPreferences),
+                aiPreferences.getChatProperties()
+        ));
     }
 
     @Override
@@ -102,8 +83,8 @@ public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
                 if (aiPreferences.getAutoGenerateSummaries()) {
                     summarizationTaskAggregator.start(new GenerateSummaryTaskRequest(
                             filePreferences,
-                            chatModel,
-                            summarizator,
+                            chatModel.get(),
+                            summarizator.get(),
                             new FullBibEntry(context, entry),
                             false
                     ));
@@ -116,8 +97,8 @@ public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
             if (e.getField() == StandardField.FILE && aiPreferences.getAutoGenerateSummaries()) {
                 summarizationTaskAggregator.start(new GenerateSummaryTaskRequest(
                         filePreferences,
-                        chatModel,
-                        summarizator,
+                        chatModel.get(),
+                        summarizator.get(),
                         new FullBibEntry(context, e.getBibEntry()),
                         false
                 ));

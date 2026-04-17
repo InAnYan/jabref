@@ -1,6 +1,11 @@
 package org.jabref.logic.util;
 
+import java.util.List;
+import java.util.concurrent.Callable;
+
 import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 
 /**
  * Utility methods for working with JavaFX {@link Observable} objects in non-GUI logic code.
@@ -12,24 +17,16 @@ public final class ObservablesHelper {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
     }
 
-    /**
-     * Registers {@code runnable} as an invalidation listener on every one of the given
-     * {@code observables} and also invokes it once immediately (to initialise state).
-     *
-     * <p>Example usage:
-     * <pre>{@code
-     * ObservablesHelper.subscribeToChanges(
-     *         this::rebuild,
-     *         aiPreferences.enableAiProperty(),
-     *         aiPreferences.embeddingModelProperty()
-     * );
-     * }</pre>
-     */
-    public static void subscribeToChanges(Runnable runnable, Observable... observables) {
-        for (Observable observable : observables) {
-            observable.addListener(_ -> runnable.run());
-        }
-        runnable.run();
+    public static <T> ObjectBinding<T> createObjectBinding(final Callable<T> func, final List<? extends Observable> dependencies) {
+        return Bindings.createObjectBinding(func, dependencies.toArray(Observable[]::new));
+    }
+
+    public static <T> void onChange(List<? extends Observable> observables, Runnable... actions) {
+        observables.forEach(obs -> obs.addListener(_ -> {
+            for (var action : actions) {
+                action.run();
+            }
+        }));
     }
 }
 

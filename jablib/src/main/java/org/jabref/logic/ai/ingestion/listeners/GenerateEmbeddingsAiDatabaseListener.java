@@ -1,5 +1,9 @@
 package org.jabref.logic.ai.ingestion.listeners;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.AiDatabaseListener;
 import org.jabref.logic.ai.embedding.EmbeddingModelCache;
@@ -9,7 +13,6 @@ import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTaskRequest;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.util.ObservablesHelper;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.database.event.EntriesAddedEvent;
 import org.jabref.model.entry.LinkedFile;
@@ -29,7 +32,7 @@ public class GenerateEmbeddingsAiDatabaseListener implements AiDatabaseListener 
     private final EmbeddingModelCache embeddingModelCache;
     private final IngestionTaskAggregator ingestionTaskAggregator;
 
-    private volatile DocumentSplitter documentSplitter;
+    private final ObjectProperty<DocumentSplitter> documentSplitter = new SimpleObjectProperty<>();
 
     public GenerateEmbeddingsAiDatabaseListener(
             AiPreferences aiPreferences,
@@ -46,17 +49,17 @@ public class GenerateEmbeddingsAiDatabaseListener implements AiDatabaseListener 
         this.embeddingModelCache = embeddingModelCache;
         this.ingestionTaskAggregator = ingestionTaskAggregator;
 
-        ObservablesHelper.subscribeToChanges(
-                this::rebuildDocumentSplitter,
+        setupBindings();
+    }
+
+    private void setupBindings() {
+        this.documentSplitter.bind(Bindings.createObjectBinding(
+                () -> DocumentSplitterFactory.create(aiPreferences),
                 aiPreferences.customizeExpertSettingsProperty(),
                 aiPreferences.documentSplitterKindProperty(),
                 aiPreferences.documentSplitterChunkSizeProperty(),
                 aiPreferences.documentSplitterOverlapSizeProperty()
-        );
-    }
-
-    private void rebuildDocumentSplitter() {
-        this.documentSplitter = DocumentSplitterFactory.create(aiPreferences);
+        ));
     }
 
     @Override
@@ -66,7 +69,7 @@ public class GenerateEmbeddingsAiDatabaseListener implements AiDatabaseListener 
 
     @Override
     public void close() {
-        // Embedding model lifecycle is managed by EmbeddingModelCache (owned by AiService).
+        // Nothing to close.
     }
 
     private class EntriesChangedListener {
@@ -100,7 +103,7 @@ public class GenerateEmbeddingsAiDatabaseListener implements AiDatabaseListener 
                     ingestedDocumentsRepository,
                     embeddingStore,
                     embeddingModelCache.getOrCreate(aiPreferences.getEmbeddingModel()),
-                    documentSplitter,
+                    documentSplitter.get(),
                     context,
                     linkedFile
             ));

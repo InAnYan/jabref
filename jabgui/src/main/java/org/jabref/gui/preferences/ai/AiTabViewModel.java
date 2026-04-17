@@ -370,8 +370,6 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         aiPreferences.storeAiApiKeyInKeyring(AiProvider.MISTRAL_AI, mistralAiApiKey.get() == null ? "" : mistralAiApiKey.get());
         aiPreferences.storeAiApiKeyInKeyring(AiProvider.GEMINI, geminiAiApiKey.get() == null ? "" : geminiAiApiKey.get());
         aiPreferences.storeAiApiKeyInKeyring(AiProvider.HUGGING_FACE, huggingFaceApiKey.get() == null ? "" : huggingFaceApiKey.get());
-        // We notify in all cases without a real check if something was changed
-        aiPreferences.apiKeyUpdated();
 
         aiPreferences.setCustomizeExpertSettings(customizeExpertSettings.get());
 

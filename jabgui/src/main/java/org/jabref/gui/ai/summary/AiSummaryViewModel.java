@@ -25,12 +25,11 @@ import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTask;
 import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTaskRequest;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
-import org.jabref.logic.bibtex.FieldPreferences;
+import org.jabref.logic.util.ObservablesHelper;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.summarization.AiSummary;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
-import org.jabref.model.entry.BibEntryTypesManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,8 +62,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
-    private final BibEntryTypesManager entryTypesManager;
-    private final FieldPreferences fieldPreferences;
     private final SummariesRepository summariesRepository;
     private final InMemorySummaryCache inMemoryCache;
     private final SummarizationTaskAggregator summarizationTaskAggregator;
@@ -73,8 +70,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
     public AiSummaryViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
-            BibEntryTypesManager entryTypesManager,
-            FieldPreferences fieldPreferences,
             SummariesRepository summariesRepository,
             InMemorySummaryCache inMemoryCache,
             SummarizationTaskAggregator summarizationTaskAggregator,
@@ -82,8 +77,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
-        this.entryTypesManager = entryTypesManager;
-        this.fieldPreferences = fieldPreferences;
         this.summariesRepository = summariesRepository;
         this.inMemoryCache = inMemoryCache;
         this.summarizationTaskAggregator = summarizationTaskAggregator;
@@ -112,6 +105,20 @@ public class AiSummaryViewModel extends AbstractViewModel {
                 GenerateSummaryTask::statusProperty,
                 taskStateListener
         );
+
+        this.chatModel.bind(ObservablesHelper.createObjectBinding(
+                () -> ChatModelFactory.create(aiPreferences),
+                aiPreferences.getChatProperties()
+        ));
+
+        setupSummarizatorBinding();
+    }
+
+    private void setupSummarizatorBinding() {
+        summarizator.bind(ObservablesHelper.createObjectBinding(
+                () -> SummarizatorFactory.create(aiPreferences),
+                aiPreferences.getSummarizatorProperties()
+        ));
     }
 
     private void setupListeners() {
@@ -125,38 +132,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
                 state.isEqualTo(State.READY),
                 this::processEntry
         );
-
-        // Rebuild chat model when relevant preferences change (also calls immediately)
-        BindingsHelper.subscribeToChanges(
-                this::rebuildChatModel,
-                aiPreferences.enableAiProperty(),
-                aiPreferences.aiProviderProperty(),
-                aiPreferences.customizeExpertSettingsProperty(),
-                aiPreferences.temperatureProperty()
-        );
-        aiPreferences.addListenerToChatModels(this::rebuildChatModel);
-        aiPreferences.addListenerToApiBaseUrls(this::rebuildChatModel);
-        aiPreferences.setApiKeyChangeListener(this::rebuildChatModel);
-
-        // Rebuild summarizator when relevant preferences change (also calls immediately)
-        BindingsHelper.subscribeToChanges(
-                this::rebuildSummarizator,
-                aiPreferences.summarizatorKindProperty(),
-                aiPreferences.summarizationChunkSystemMessageTemplateProperty(),
-                aiPreferences.summarizationChunkUserMessageTemplateProperty(),
-                aiPreferences.summarizationCombineSystemMessageTemplateProperty(),
-                aiPreferences.summarizationCombineUserMessageTemplateProperty(),
-                aiPreferences.summarizationFullDocumentSystemMessageTemplateProperty(),
-                aiPreferences.summarizationFullDocumentUserMessageTemplateProperty()
-        );
-    }
-
-    private void rebuildChatModel() {
-        chatModel.set(ChatModelFactory.create(aiPreferences));
-    }
-
-    private void rebuildSummarizator() {
-        summarizator.set(SummarizatorFactory.create(aiPreferences));
     }
 
     /**
@@ -165,8 +140,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
      * (as opposed to a custom summarizator set by {@link #regenerateCustom()}).
      */
     private void setDefaultModels() {
-        rebuildChatModel();
-        rebuildSummarizator();
+        summarizator.unbind();
+        setupSummarizatorBinding();
     }
 
     private void clearTask() {
@@ -260,6 +235,7 @@ public class AiSummaryViewModel extends AbstractViewModel {
             return;
         }
 
+        summarizator.unbind();
         summarizator.set(customSummarizator.get());
 
         clearSummary(identifier);

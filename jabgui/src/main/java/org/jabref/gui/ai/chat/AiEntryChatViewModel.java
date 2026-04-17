@@ -13,7 +13,6 @@ import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.logic.ai.chatting.InMemoryChatHistoryCache;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.util.CitationKeyCheck;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
@@ -64,9 +63,10 @@ public class AiEntryChatViewModel extends AbstractViewModel {
                 .orElse(false);
 
         ObservableValue<Boolean> isCitationKeyNotUnique = selectedEntry
-                .map(CitationKeyCheck::citationKeyIsUnique)
-                .map(unique -> !unique)
-                .orElse(false);
+                .map(fullBibEntry -> {
+                    Optional<String> citationKey = fullBibEntry.entry().getCitationKey();
+                    return citationKey.filter(s -> fullBibEntry.databaseContext().getDatabase().isDuplicateCitationKeyExisting(s)).isPresent();
+                });
 
         BindingsHelper.bindEnum(
                 state,

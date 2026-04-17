@@ -1,7 +1,7 @@
 package org.jabref.logic.ai.preferences;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Stream;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -84,8 +84,6 @@ public class AiPreferences {
     private final BooleanProperty generateFollowUpQuestions;
     private final IntegerProperty followUpQuestionsCount;
     private final StringProperty followUpQuestionsTemplate;
-
-    private Runnable apiKeyChangeListener;
 
     public AiPreferences(
             boolean enableAi,
@@ -174,9 +172,6 @@ public class AiPreferences {
         this.generateFollowUpQuestions = new SimpleBooleanProperty(generateFollowUpQuestions);
         this.followUpQuestionsCount = new SimpleIntegerProperty(followUpQuestionsCount);
         this.followUpQuestionsTemplate = new SimpleStringProperty(followUpQuestionsTemplate);
-
-        this.apiKeyChangeListener = () -> {
-        };
     }
 
     public String getApiKeyForAiProvider(AiProvider aiProvider) {
@@ -532,49 +527,37 @@ public class AiPreferences {
         this.ragMinScore.set(ragMinScore);
     }
 
-    /**
-     * Listen to changes of preferences that are related to embeddings generation.
-     *
-     * @param runnable The runnable that should be executed when the preferences change.
-     */
-    public void addListenerToEmbeddingsParametersChange(Runnable runnable) {
-        embeddingModel.addListener((observableValue, oldValue, newValue) -> {
-            if (newValue != oldValue) {
-                runnable.run();
-            }
-        });
-
-        documentSplitterChunkSize.addListener((observableValue, oldValue, newValue) -> {
-            if (!Objects.equals(newValue, oldValue)) {
-                runnable.run();
-            }
-        });
-
-        documentSplitterOverlapSize.addListener((observableValue, oldValue, newValue) -> {
-            if (!Objects.equals(newValue, oldValue)) {
-                runnable.run();
-            }
-        });
+    public List<Property<?>> getEmbeddingsProperties() {
+        return List.of(
+                embeddingModel,
+                documentSplitterKind,
+                documentSplitterChunkSize,
+                documentSplitterOverlapSize
+        );
     }
 
-    public void addListenerToChatModels(Runnable runnable) {
-        List<Property<?>> observables = List.of(openAiChatModel, mistralAiChatModel, huggingFaceChatModel, geminiChatModel);
-
-        observables.forEach(obs -> obs.addListener((observableValue, oldValue, newValue) -> {
-            if (!newValue.equals(oldValue)) {
-                runnable.run();
-            }
-        }));
+    private List<Property<?>> getChatModelNamesProperties() {
+        return List.of(openAiChatModel, mistralAiChatModel, huggingFaceChatModel, geminiChatModel);
     }
 
-    public void addListenerToApiBaseUrls(Runnable runnable) {
-        List<Property<?>> observables = List.of(openAiApiBaseUrl, mistralAiApiBaseUrl, huggingFaceApiBaseUrl, geminiApiBaseUrl);
+    private List<Property<?>> getApiBaseUrlsProperties() {
+        return List.of(openAiApiBaseUrl, mistralAiApiBaseUrl, huggingFaceApiBaseUrl, geminiApiBaseUrl);
+    }
 
-        observables.forEach(obs -> obs.addListener((observableValue, oldValue, newValue) -> {
-            if (!newValue.equals(oldValue)) {
-                runnable.run();
-            }
-        }));
+    public List<? extends Property<?>> getChatProperties() {
+        return Stream.of(
+                List.of(enableAi, aiProvider, customizeExpertSettings, temperature, contextWindowSize, tokenEstimatorKind),
+                getChatModelNamesProperties(),
+                getApiBaseUrlsProperties()
+        ).flatMap(List::stream).toList();
+    }
+
+    public List<? extends Property<?>> getSummarizatorProperties() {
+        return Stream.of(
+                List.of(enableAi, customizeExpertSettings, summarizatorKind),
+                List.of(summarizationChunkSystemMessageTemplate, summarizationChunkUserMessageTemplate, summarizationCombineSystemMessageTemplate,
+                        summarizationCombineUserMessageTemplate, summarizationFullDocumentSystemMessageTemplate, summarizationFullDocumentUserMessageTemplate)
+        ).flatMap(List::stream).toList();
     }
 
     public String getSelectedChatModel() {
@@ -605,17 +588,6 @@ public class AiPreferences {
         } else {
             return aiProvider.get().getApiUrl();
         }
-    }
-
-    public void setApiKeyChangeListener(Runnable apiKeyChangeListener) {
-        this.apiKeyChangeListener = apiKeyChangeListener;
-    }
-
-    /**
-     * Notify that the API key has been updated.
-     */
-    public void apiKeyUpdated() {
-        apiKeyChangeListener.run();
     }
 
     public StringProperty chattingSystemMessageTemplateProperty() {

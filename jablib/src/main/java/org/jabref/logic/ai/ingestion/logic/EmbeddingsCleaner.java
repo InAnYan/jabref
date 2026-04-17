@@ -6,6 +6,7 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
 import org.jabref.logic.ai.ingestion.util.FileHasher;
 import org.jabref.logic.ai.preferences.AiPreferences;
+import org.jabref.logic.util.ObservablesHelper;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.LinkedFile;
 
@@ -30,11 +31,11 @@ public class EmbeddingsCleaner {
         this.embeddingStore = embeddingStore;
         this.ingestedDocumentsRepository = ingestedDocumentsRepository;
 
-        setupListeningToPreferencesChanges();
+        setupListeners();
     }
 
-    private void setupListeningToPreferencesChanges() {
-        aiPreferences.addListenerToEmbeddingsParametersChange(this::removeAll);
+    private void setupListeners() {
+        ObservablesHelper.onChange(aiPreferences.getEmbeddingsProperties(), this::removeAll);
     }
 
     public void removeAll() {

@@ -38,6 +38,7 @@ import org.jabref.logic.ai.rag.util.AnswerEngineFactory;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.bibtex.FieldPreferences;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.ObservablesHelper;
 import org.jabref.logic.util.StandardFileType;
 import org.jabref.model.ai.AiMetadata;
 import org.jabref.model.ai.chatting.ChatMessage;
@@ -125,17 +126,10 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         BindingsHelper.onChangeNonNull(selectedAnswerEngineKind, this::updateAnswerEngine);
         BindingsHelper.onListContentsChange(generateEmbeddingsTasks, this::wireTask, this::unwireTask);
 
-        // Rebuild chat model when relevant preferences change (also calls immediately)
-        BindingsHelper.subscribeToChanges(
-                this::rebuildChatModel,
-                aiPreferences.enableAiProperty(),
-                aiPreferences.aiProviderProperty(),
-                aiPreferences.customizeExpertSettingsProperty(),
-                aiPreferences.temperatureProperty()
-        );
-        aiPreferences.addListenerToChatModels(this::rebuildChatModel);
-        aiPreferences.addListenerToApiBaseUrls(this::rebuildChatModel);
-        aiPreferences.setApiKeyChangeListener(this::rebuildChatModel);
+        this.chatModel.bind(ObservablesHelper.createObjectBinding(
+                () -> ChatModelFactory.create(aiPreferences),
+                aiPreferences.getChatProperties()
+        ));
 
         // Rebuild embedding model when relevant preferences change (also calls immediately)
         BindingsHelper.subscribeToChanges(
