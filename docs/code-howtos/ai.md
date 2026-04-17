@@ -1,70 +1,101 @@
-- ai package organization
-- gui / logic / model
-- how to make ui -> view view-model pattern
-- currents
-- task organization
-- generic classess
-- long task and shutdown signal
-- ensure to use ChatModel from jabref
+---
+parent: Code Howtos
+---
 
+# AI
 
-how to use MVStores:
-general dissection:
-1. MVStore - for different repositories. 
-2. MVMap - (for entry chats) - one for "databasePath + entryID".
-3. Entry - specific chunks and chathistory records with their ID (UUID).
-Messages/Chunks should be distinct/separate/atomic. E.g. we don't store a List of messages in an entry.
+The JabRef has next AI features:
 
-I would like a forth layer: to distrinct database and entry, but it is what it is.
+- Chatting with entries,
+- Chatting with groups,
+- Summarization of entries,
+- Parsing of plain citations using LLMs
+- Extracting "References" section from PDFs with the help of LLMs.
 
-try to group repositories for one type of data. No: entry and group chat history repostiory, yes: single chat history repository.
+The initial AI features were made in the [GSoC 2024 Project "AI-Powered Summarization and “Interaction” with Academic Papers"](https://github.com/InAnYan/gsoc).
 
+The features are built on [LangChain4j](https://github.com/langchain4j/langchain4j) and [Deep Java Library](https://djl.ai/).
 
-explain how messages are stored (v1 and v2).
+The RAG (Retrieval Augmented Generation) is explained in [ADR 0037](./../0037-rag-architecture-implementation.md).
 
+## Features
 
+### Chatting with entries
 
-logical flaw in task aggregation: yoou need to add status listeners BEFORE executing.
+### Chatting with groups
+
+### Summarization of entries
+
+### Parsing of plain citations
+
+### Extracting "References" section
+
+## Code organization
+
+As every JabRef feature, AI is divided into 3 layers: GUI, logic, and model. Inside the `logic` package the AI code is split by feature (each feature has its own package).
+
+The GUI code strongly follows [MVVM pattern](./javafx.md). Though, the GUI code is a bit complicated as:
+
+1. Most of the core GUI components (chat and summary components) are designed as a state machine. Typical states include: loading, presenting the result, error, etc.
+2. These core GUI components are also made that way so it would be possible to rebind them to another `BibEntry`. This feature is highly important, but its implementation is complex. For the details, take a look at the section [How to add a new AI feature](## How to add a new AI feature).
+
+## Internal model (v2)
+
+There are 3 core models in the AI features:
+
+1. Chat history.
+2. Summaries.
+3. Embeddings.
+
+The code strictly follows the repository idiom, where an interface is created to access the internal storage for the purpose of abstraction. At the moment of writing, all of these models are implemented by using the [`MVStore`](https://www.h2database.com/html/mvstore.html). For the details of this decisions take a look at the [ADR 0033](./../0033-store-chats-in-mvstore.md). A helper class was made `MVStoreBase` so that it would be possible to use an in-memory `MVStore` in case there are some errors while opening on-disk storage.
+
+A note needs to be made for embeddings: the embeddings storage is also implementing the internal LangChain4j interface for embeddings so that it could be used in LangChain4j algorithms.
+
+Because JabRef is not build around one global database, but rather it is a `.bib` file editor, a problem of identifying a `BibEntry` arose and it was solved in a somewhat complicated way:
+
+- In order to uniquely identify a library, an "AI library ID" was introduced (as a metadata field), which is just a UUID. An alternative would be to use the library path, but if the library moves, the path changes, but AI library ID is not.
+- In order to uniquely identify an entry, the citation key is used, but only if it is non-empty and unique.
+- In some cases (that arise potentially often), the conditions above are not met (for example, a library is not saved - it does not have a path, or an entry does not have a citation key), however user is actively working on an entry. In this case the AI features have an *in-memory cache layer*. So whenever a chat or a summary is created for an entry, it is firstly interacted with the in-memory storage layer. The cache is flushed to the on-disk storage at the close of the JabRef.
+- In order to uniquely identify a file, we use the file hash. An alternative would be to use the file path, but the file could be moved, or defined by a relative path. This is also useful when several libraries cite the same paper, and instead of ingesting 
+
+## [OLD] Internal model (v1)
+
+The model v1 differs from v2 by:
+
+1. Fields of the chat messages and summaries were differently organized in the `MVStore`.
+2. A `LinkedFile#getLink()` was used to identify a file.
+
+To migrate from v1 to v2, the classes `ChatHistoryMigrationV1` and `SummariesMigrationV2` were made.
 
 ---
 
 ## How to add a new AI feature
 
-This section describes the standard pattern used for AI features like summarization.
-Follow these layers, in order from bottom to top.
+This section describes the standard pattern used for AI features. Summarization (`AiSummary`, `InMemorySummaryCache`, etc.) is used throughout as a reference implementation.
 
 ---
 
 ### Layer 1 — Domain model (`model/` package)
 
-- Create a pure data record for the result, e.g. `AiSummary`.
-- Create a stable *identifier* record for persistent keying, e.g. `AiSummaryIdentifier(libraryId, citationKey)`.
-  The identifier requires both an AI library ID (from `BibDatabaseContext` metadata) and a citation key.
-  Provide a safe factory: `Optional<Identifier> from(ctx, entry)` that returns `Optional.empty()` when
-  either part is absent.
-- Use `FullBibEntry(databaseContext, entry)` to group a `BibEntry` with its `BibDatabaseContext` — this
-  eliminates error-prone parameter pairs and provides utility methods like `toAiSummaryIdentifier()`.
+- Create a pure data record for the result, e.g. `AiFeatureResult` (e.g. `AiSummary`).
+- Create a stable *identifier* record for persistent keying, e.g. `AiFeatureIdentifier(libraryId, citationKey)`.
+  The identifier requires both an AI library ID (from `BibDatabaseContext` metadata) and a citation key (or group name, depending on which entity you're building the feature for).
 
 ---
 
 ### Layer 2 — Background task (`TrackedBackgroundTask<Result>`)
 
+`TrackedBackgroundTask` exposes `statusProperty()`, `resultProperty()`, and `exceptionProperty()`
+as JavaFX `ObjectProperty` fields — the result and exception are stored permanently, so they can be read even after the task has finished.
+
 - Extend `TrackedBackgroundTask<Result>` and implement `perform()` for the long-running work.
-- `TrackedBackgroundTask` exposes `statusProperty()`, `resultProperty()`, and `exceptionProperty()`
-  as JavaFX `ObjectProperty` fields — the result and exception are stored permanently, so they can be
-  read even after the task has finished.
-- Call `showToUser(true)` in the constructor to show the task in the progress UI.
-- **Critical ordering rule:** attach all status listeners to the task object *before* submitting it
-  to `TaskExecutor`. If you attach listeners after `taskExecutor.execute(task)`, the task may already
-  be done and no listener notification will ever fire.
-- Use `task.onFinished(runnable)` and `task.onSuccess(consumer)` callbacks (both run on the JavaFX
-  thread) for post-task housekeeping.
-- **Do NOT write to the persistent repository directly** — the task should only generate the result.
-  Persistence is handled by the RAM cache on application close.
+- **Critical ordering rule:** attach all status listeners to the task object *before* submitting it to `TaskExecutor`. If you attach listeners after `taskExecutor.execute(task)`, the task may already be done and no listener notification will ever fire.
+- Use `task.onFinished(runnable)` and `task.onSuccess(consumer)` callbacks (both run on the JavaFX thread) for post-task housekeeping.
+- **Do NOT write to the persistent repository directly** — the task should only generate the result. Persistence is handled by the RAM cache on application close.
 
 ---
 
-### Layer 3 — RAM cache (`InMemorySummaryCache` pattern)
+### Layer 3 — RAM cache (e.g. `InMemoryFeatureCache`)
 
 Some entries may lack a citation key, making persistent storage impossible. The RAM cache fills this gap.
 
@@ -75,24 +106,17 @@ private final Map<BibEntry, CachedEntry> cache =
         Collections.synchronizedMap(new IdentityHashMap<>());
 ```
 
-- The cache stores a `FullBibEntry` internally, not just the entry, so it can flush correctly.
-- Put the result in the cache inside `task.onSuccess(result -> cache.put(fullEntry, result))`.
-  This runs on the JavaFX thread, after `onFinished` has already removed the task from the aggregator map.
+- The cache stores a `CachedEntry` internally, which includes all necessary information to work with the result and to flush it to on-disk storage at the end. Use `FullBibEntry` (which pairs a `BibEntry` with a `BibDatabaseContext`) as the key carrier.
+- Put the result in the cache inside `task.onSuccess(result -> cache.put(fullEntry, result))`, which runs on the JavaFX thread after `onFinished` has already removed the task from the aggregator map.
 - On library or application close, call `cache.close()` to persist valid entries.
-  The flush uses `fullEntry.toAiSummaryIdentifier()` — entries without a valid identifier are
-  silently skipped.
-- **All persistence happens here** — background tasks do NOT write directly to the repository.
-  This ensures a single source of truth for when and how data is persisted.
+- **All persistence happens here** — background tasks do NOT write directly to the repository. This ensures a single source of truth for when and how data is persisted.
 
 ---
 
-### Layer 4 — Persistent repository (`MVStoreSummariesRepository`)
+### Layer 4 — Persistent repository (e.g. `MVStoreFeatureRepository`)
 
-- Implement `SummariesRepository` backed by `MVStoreBase`.
-- Keyed by `AiSummaryIdentifier` (library ID + citation key).
-- Use `ObjectMapper` with `JavaTimeModule` to serialize the result record to JSON.
-- Survives restarts; **only written to by the RAM cache's `close()` method** — background tasks
-  do NOT write directly to the repository.
+- Implement a `FeatureRepository` interface backed by `MVStoreBase`.
+- Keyed by the feature's identifier (library ID + citation key).
 
 ---
 
@@ -117,12 +141,9 @@ public synchronized Optional<Task> getTask(BibEntry entry) {
 ```
 
 - Use `FullBibEntry` in the request to keep `BibEntry` and `BibDatabaseContext` together.
-- `computeIfAbsent` is the deduplication mechanism. A second call for the same key while a task is
-  running returns the existing task, not a new one.
-- Mark all methods `synchronized` — `start` may be called from background threads
-  (e.g. from a batch task or database listener).
-- The callbacks `onFinished` and `onSuccess` are chained by `BackgroundTask.getOnSuccess()`:
-  `onFinished` runs first, then `onSuccess`. Both run on the JavaFX thread.
+- `computeIfAbsent` is the deduplication mechanism — a second call for the same key while a task is running returns the existing task, not a new one.
+- Mark all methods `synchronized`; `start` may be called from background threads (e.g. from a batch task or database listener).
+- The callbacks `onFinished` and `onSuccess` are chained by `BackgroundTask.getOnSuccess()`: `onFinished` runs first, then `onSuccess`. Both run on the JavaFX thread.
 
 ---
 
@@ -136,15 +157,14 @@ public synchronized Optional<Task> getTask(BibEntry entry) {
 BindingsHelper.bindEnum(
     state,
     State.PRECONDITION_NOT_MET, someCondition,
-    State.DONE,       summary.isNotNull(),
+    State.DONE,       result.isNotNull(),
     State.PROCESSING, currentTask.isNotNull(),
     State.ERROR,      error.isNotNull(),
     State.READY       // fallback — triggers processEntry()
 );
 ```
 
-`bindEnum` evaluates conditions top-to-bottom; the first truthy one wins.
-`READY` is the "otherwise" fallback that triggers actual processing.
+`bindEnum` evaluates conditions top-to-bottom; the first truthy one wins. `READY` is the "otherwise" fallback that triggers actual processing.
 
 #### 6b. Entry switching
 
@@ -156,31 +176,30 @@ ListenersHelper.onChangeNonNull(entry, this::prepareForEntry);
 ListenersHelper.onChangeNonNullWhen(entry, state.isEqualTo(State.READY), this::processEntry);
 ```
 
-`prepareForEntry()` always clears `currentTask`, `summary`, and `error` so the state resets cleanly.
-`processEntry()` runs only when all preconditions are satisfied.
+`prepareForEntry()` always clears `currentTask`, the result, and `error` so the state resets cleanly. `processEntry()` runs only when all preconditions are satisfied.
 
 #### 6c. Three-layer lookup in `processEntry()`
 
 ```java
 private void processEntry(FullBibEntry fullEntry) {
     // 1. Persistent storage — fast path for entries with a valid citation key
-    Optional<AiSummary> persisted = fullEntry.toAiSummaryIdentifier()
-                                             .flatMap(repository::get);
-    if (persisted.isPresent()) { summary.set(persisted.get()); return; }
+    Optional<AiFeatureResult> persisted = fullEntry.toAiFeatureIdentifier()
+                                                   .flatMap(repository::get);
+    if (persisted.isPresent()) { result.set(persisted.get()); return; }
 
     // 2. RAM cache — handles entries without a citation key and the "task finished
     //    while this view was switched away" race condition
-    Optional<AiSummary> cached = inMemoryCache.get(fullEntry.entry());
-    if (cached.isPresent()) { summary.set(cached.get()); return; }
+    Optional<AiFeatureResult> cached = inMemoryCache.get(fullEntry.entry());
+    if (cached.isPresent()) { result.set(cached.get()); return; }
 
     // 3. Reconnect to a running task (no duplicate starts)
-    Optional<GenerateSummaryTask> running = aggregator.getTask(fullEntry.entry());
+    Optional<GenerateFeatureTask> running = aggregator.getTask(fullEntry.entry());
     if (running.isPresent()) {
-        GenerateSummaryTask task = running.get();
+        GenerateFeatureTask task = running.get();
         currentTask.set(task);
         // Immediate check: task may have finished in the window before the listener attached
         switch (task.getStatus()) {
-            case SUCCESS -> { summary.set(task.getResult()); clearTask(); }
+            case SUCCESS -> { result.set(task.getResult()); clearTask(); }
             case ERROR   -> { error.set(task.getException()); clearTask(); }
             default      -> {} // PENDING/PROCESSING: taskStateListener handles it
         }
@@ -194,39 +213,19 @@ private void processEntry(FullBibEntry fullEntry) {
 
 #### 6d. Detaching from a finished task
 
-In `updateByTaskState`, capture the task reference *before* `runInJavaFXThread` to avoid a null-pointer
-race (another entry switch may have called `clearTask()` between the background thread notification and
-the FX thread runnable executing):
+In `updateByTaskState`, capture the task reference *before* `runInJavaFXThread` to avoid a null-pointer race (another entry switch may have called `clearTask()` between the background thread notification and the FX thread runnable executing):
 
 ```java
 private void updateByTaskState(TrackedBackgroundTask.Status value) {
-    GenerateSummaryTask task = currentTask.get(); // capture before FX handoff
+    GenerateFeatureTask task = currentTask.get(); // capture before FX handoff
     if (task == null) { return; }
     UiTaskExecutor.runInJavaFXThread(() -> {
         switch (value) {
-            case SUCCESS -> { summary.set(task.getResult()); clearTask(); }
+            case SUCCESS -> { result.set(task.getResult()); clearTask(); }
             case ERROR   -> { error.set(task.getException()); clearTask(); }
         }
     });
 }
 ```
 
-`clearTask()` sets `currentTask = null`, which causes `BindingsHelper.bindInternalListener` to
-automatically remove `taskStateListener` from the old task's `statusProperty`. The task is then free
-for GC.
-
----
-
-### Ownership summary
-
-| Class | Lives in | Owns |
-|---|---|---|
-| `AiSummary` | `model/` | pure data |
-| `AiSummaryIdentifier` | `model/` | persistent key |
-| `GenerateSummaryTask` | `logic/.../tasks/` | background work |
-| `InMemorySummaryCache` | `logic/.../summarization/` | session RAM storage |
-| `MVStoreSummariesRepository` | `logic/.../repositories/` | persistent storage |
-| `SummarizationTaskAggregator` | `logic/.../summarization/` | deduplication + RAM write-back |
-| `SummarizationAiFeature` | `logic/ai/` | wires layers together, owns lifecycle |
-| `AiSummaryViewModel` | `gui/.../summary/` | state machine, lookup chain |
-| `AiSummaryView` | `gui/.../summary/` | JavaFX bindings to ViewModel |
+`clearTask()` sets `currentTask = null`, which causes `BindingsHelper.bindInternalListener` to automatically remove `taskStateListener` from the old task's `statusProperty`. The task is then free for GC.
