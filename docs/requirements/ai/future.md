@@ -38,12 +38,12 @@ Needs: impl
 
 Covers: `feat~ai.chatting~1`
 
-## Generalize the notion of the answer engine
-`req~ai.chatting.answer-engine-generalization~1`
+## Introduce AI profiles
+`req~ai.chatting.ai-profiles~1`
 
-Rationale: currently answer engine is an algorithm that supplies context to LLM, however, a more powerful abstraction would be to govern how AI finds an answer. This opens up to agents
+Rationale: currently it is hard to test other chat model in an AI chat, because the model setting is global and only one.
 
-Needs: impl, dsn
+Needs: impl, dsn, utest
 
 Covers: `feat~ai.chatting~1`
 
