@@ -35,74 +35,102 @@ public class ChunkedSummarizator implements Summarizator {
     }
 
     @Override
-    public String summarize(
-            ChatModel chatModel,
-            String text
-    ) throws InterruptedException {
-        // TODO: Simplify.
+    public String summarize(ChatModel chatModel, String text) throws InterruptedException {
         LOGGER.debug("Summarizing text ({} chars)", text.length());
 
-        DocumentSplitter documentSplitter = DocumentSplitters.recursive(
-                chatModel.getContextWindowSize() - MAX_OVERLAP_SIZE_IN_CHARS * 2 - chatModel.getTokenizer().estimate(
-                        ChatMessage.Role.SYSTEM,
-                        summarizationChunkSystemMessageTemplate
-                ),
-                MAX_OVERLAP_SIZE_IN_CHARS
-        );
-
-        List<String> chunkSummaries = documentSplitter.split(new DefaultDocument(text)).stream().map(TextSegment::text).toList();
-
-        LOGGER.debug("Text was split into {} chunks", chunkSummaries.size());
+        List<String> summaries = splitTextIntoChunks(chatModel, text);
+        LOGGER.debug("Text was split into {} chunks", summaries.size());
 
         int passes = 0;
 
-        do {
+        do
+        {
             passes++;
-            LOGGER.debug("Summarizing {} chunk (of {}", passes, chunkSummaries.size());
+            LOGGER.debug("Summarizing pass {} ({} chunks)", passes, summaries.size());
 
-            List<String> list = new ArrayList<>();
+            summaries = summarizeChunks(chatModel, summaries, passes);
+        } while (needsAnotherPass(chatModel, summaries));
 
-            for (String chunkSummary : chunkSummaries) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException();
-                }
+        return combineFinalSummaries(chatModel, summaries);
+    }
 
-                String systemMessage = AiTemplateRenderer.renderSummarizationChunkSystemMessage(summarizationChunkSystemMessageTemplate);
+    private List<String> splitTextIntoChunks(ChatModel chatModel, String text) {
+        int chunkSystemMessageTokens = chatModel.getTokenizer().estimate(
+                ChatMessage.Role.SYSTEM,
+                summarizationChunkSystemMessageTemplate
+        );
 
-                LOGGER.debug("Sending request to AI provider to summarize a chunk");
-                String chunk = chatModel.chat(List.of(
-                        new SystemMessage(systemMessage),
-                        new UserMessage(chunkSummary)
-                )).aiMessage().text();
-                LOGGER.debug("Chunk {} summary was generated successfully", passes);
+        int maxChunkSize = chatModel.getContextWindowSize() - MAX_OVERLAP_SIZE_IN_CHARS * 2 - chunkSystemMessageTokens;
 
-                list.add(chunk);
-            }
+        DocumentSplitter splitter = DocumentSplitters.recursive(maxChunkSize, MAX_OVERLAP_SIZE_IN_CHARS);
 
-            chunkSummaries = list;
-        } while (chatModel.getTokenizer().estimate(chunkSummaries.stream().map(ChatMessage::userMessage).toList()) > chatModel.getContextWindowSize() - chatModel.getTokenizer().estimate(
+        return splitter.split(new DefaultDocument(text)).stream()
+                       .map(TextSegment::text)
+                       .toList();
+    }
+
+    private boolean needsAnotherPass(ChatModel chatModel, List<String> summaries) {
+        int combineSystemMessageTokens = chatModel.getTokenizer().estimate(
                 ChatMessage.Role.SYSTEM,
                 summarizationCombineSystemMessageTemplate
-        ));
+        );
 
-        if (chunkSummaries.size() == 1) {
-            LOGGER.debug("BibEntrySummary of the text was generated successfully");
-            return chunkSummaries.getFirst();
+        int summariesTokens = chatModel.getTokenizer().estimate(
+                summaries.stream().map(ChatMessage::userMessage).toList()
+        );
+
+        return summariesTokens > chatModel.getContextWindowSize() - combineSystemMessageTokens;
+    }
+
+    private List<String> summarizeChunks(ChatModel chatModel, List<String> chunks, int passNumber) throws InterruptedException {
+        List<String> summarizedChunks = new ArrayList<>();
+
+        for (String chunk : chunks) {
+            checkInterrupted();
+
+            String summary = summarizeChunk(chatModel, chunk);
+            summarizedChunks.add(summary);
+
+            LOGGER.debug("Chunk summary (pass {}) generated successfully", passNumber);
         }
+
+        return summarizedChunks;
+    }
+
+    private String summarizeChunk(ChatModel chatModel, String chunk) {
+        String systemMessage = AiTemplateRenderer.renderSummarizationChunkSystemMessage(summarizationChunkSystemMessageTemplate);
+
+        LOGGER.debug("Sending request to AI provider to summarize a chunk");
+        return chatModel.chat(List.of(
+                new SystemMessage(systemMessage),
+                new UserMessage(chunk)
+        )).aiMessage().text();
+    }
+
+    private String combineFinalSummaries(ChatModel chatModel, List<String> summaries) throws InterruptedException {
+        if (summaries.size() == 1) {
+            LOGGER.debug("BibEntrySummary of the text was generated successfully");
+            return summaries.getFirst();
+        }
+
+        checkInterrupted();
 
         String systemMessage = AiTemplateRenderer.renderSummarizationCombineSystemMessage(summarizationCombineSystemMessageTemplate);
-
-        if (Thread.currentThread().isInterrupted()) {
-            throw new InterruptedException();
-        }
 
         LOGGER.debug("Sending request to AI provider to combine summary chunks");
         String result = chatModel.chat(List.of(
                 new SystemMessage(systemMessage),
-                new UserMessage(String.join("\n\n", chunkSummaries))
+                new UserMessage(String.join("\n\n", summaries))
         )).aiMessage().text();
+
         LOGGER.debug("BibEntrySummary of the text was generated successfully");
         return result;
+    }
+
+    private void checkInterrupted() throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
     }
 
     @Override
