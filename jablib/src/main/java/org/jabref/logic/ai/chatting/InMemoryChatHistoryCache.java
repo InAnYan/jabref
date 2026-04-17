@@ -170,93 +170,88 @@ public class InMemoryChatHistoryCache {
         LOGGER.debug("Finished flushing chat histories to repository");
     }
 
-    /// Flush a single entry's chat history to the repository
-    private void flushEntryChat(BibEntry entry, CachedEntryChat cached) {
-        // If the BibEntry was deleted from the database, the chat history must not be saved.
-        if (!cached.databaseContext.getDatabase().getEntries().contains(entry)) {
+    /// Generic flush logic for both entry and group chats
+    private void flushChat(
+            boolean entityExists,
+            ChatIdentifier currentIdentifier,
+            String originalName,
+            String currentName,
+            ObservableList<ChatMessage> chatHistory,
+            String entityType
+    ) {
+        // If the entity was deleted from the database, the chat history must not be saved.
+        if (!entityExists) {
             return;
         }
 
-        Optional<ChatIdentifier> currentIdentifierOpt = ChatIdentifier.from(cached.databaseContext(), entry);
+        boolean nameChanged = !originalName.equals(currentName);
 
-        // 1. If current citation key is invalid: skip with warning
-        if (currentIdentifierOpt.isEmpty()) {
-            LOGGER.warn("Skipped flushing chat history for entry {} (no valid identifier)",
-                    entry.getCitationKey().orElse("<no key>"));
-            return;
-        }
-
-        ChatIdentifier currentIdentifier = currentIdentifierOpt.get();
-        Optional<String> currentCitationKey = entry.getCitationKey();
-        boolean keyChanged = !cached.originalCitationKey().equals(currentCitationKey);
-
-        // 2. If citation key changed: clear old location first
-        if (keyChanged && cached.originalCitationKey().isPresent()) {
+        // If name/key changed: clear old location first (only if old location was valid, not a placeholder)
+        if (nameChanged && !originalName.equals("<empty>")) {
             ChatIdentifier oldIdentifier = new ChatIdentifier(
                     currentIdentifier.libraryId(),
                     currentIdentifier.chatType(),
-                    cached.originalCitationKey().get()
+                    originalName
             );
+
             repository.clear(oldIdentifier);
-            LOGGER.debug("Cleared old chat history for entry with old key: {}", cached.originalCitationKey().get());
+
+            LOGGER.debug("Cleared old chat history for {} with old {}: {}",
+                    entityType,
+                    entityType.equals("entry") ? "key" : "name",
+                    originalName);
         }
 
-        // 3. Write to current location (whether key changed or not)
+        // Write to current location (whether name/key changed or not)
         repository.clear(currentIdentifier);
-        cached.chatHistory().forEach(message -> repository.addMessage(currentIdentifier, message));
+        chatHistory.forEach(message -> repository.addMessage(currentIdentifier, message));
 
-        if (keyChanged) {
-            LOGGER.debug("Transferred chat history from {} to {} ({} messages)",
-                    cached.originalCitationKey().orElse("<empty>"),
-                    currentCitationKey.orElse("<no key>"),
-                    cached.chatHistory().size());
+        if (nameChanged) {
+            if (entityType.equals("entry")) {
+                LOGGER.debug("Transferred chat history from {} to {} ({} messages)",
+                        originalName, currentName, chatHistory.size());
+            } else {
+                LOGGER.debug("Transferred chat history from {} '{}' to '{}' ({} messages)",
+                        entityType, originalName, currentName, chatHistory.size());
+            }
         } else {
-            LOGGER.debug("Flushed chat history for entry {} ({} messages)",
-                    currentCitationKey.orElse("<no key>"),
-                    cached.chatHistory().size());
+            LOGGER.debug("Flushed chat history for {} {} ({} messages)",
+                    entityType, currentName, chatHistory.size());
         }
+    }
+
+    /// Flush a single entry's chat history to the repository
+    private void flushEntryChat(BibEntry entry, CachedEntryChat cached) {
+        Optional<ChatIdentifier> currentIdentifierOpt = ChatIdentifier.from(cached.databaseContext(), entry);
+        if (currentIdentifierOpt.isEmpty()) {
+            return;
+        }
+
+        flushChat(
+                cached.databaseContext.getDatabase().getEntries().contains(entry),
+                currentIdentifierOpt.get(),
+                cached.originalCitationKey().orElse("<empty>"),
+                entry.getCitationKey().orElse("<no key>"),
+                cached.chatHistory(),
+                "entry"
+        );
     }
 
     /// Flush a single group's chat history to the repository
     private void flushGroupChat(GroupTreeNode group, CachedGroupChat cached) {
-        // If the group was deleted from the database, the chat history must not be saved.
-        if (!cached.databaseContext.getMetaData().getGroups().map(g -> g.containsGroup(group.getGroup())).orElse(false)) {
-            return;
-        }
-
         Optional<ChatIdentifier> currentIdentifierOpt = ChatIdentifier.from(cached.databaseContext(), cached.group());
-
         if (currentIdentifierOpt.isEmpty()) {
-            LOGGER.warn("Skipped flushing chat history for group {} (no valid identifier)", group.getName());
             return;
         }
 
-        ChatIdentifier currentIdentifier = currentIdentifierOpt.get();
-        String currentGroupName = group.getName();
-        boolean nameChanged = !cached.originalGroupName().equals(currentGroupName);
-
-        // If group name changed: clear old location first
-        if (nameChanged) {
-            ChatIdentifier oldIdentifier = new ChatIdentifier(
-                    currentIdentifier.libraryId(),
-                    currentIdentifier.chatType(),
-                    cached.originalGroupName()
-            );
-            repository.clear(oldIdentifier);
-            LOGGER.debug("Cleared old chat history for group with old name: {}", cached.originalGroupName());
-        }
-
-        // Write to current location (whether name changed or not)
-        repository.clear(currentIdentifier);
-        cached.chatHistory().forEach(message -> repository.addMessage(currentIdentifier, message));
-
-        if (nameChanged) {
-            LOGGER.debug("Transferred chat history from group '{}' to '{}' ({} messages)",
-                    cached.originalGroupName(), currentGroupName, cached.chatHistory().size());
-        } else {
-            LOGGER.debug("Flushed chat history for group {} ({} messages)",
-                    currentGroupName, cached.chatHistory().size());
-        }
+        flushChat(
+                cached.databaseContext.getMetaData().getGroups().map(g -> g.containsGroup(group.getGroup())).orElse(false),
+                currentIdentifierOpt.get(),
+                cached.originalGroupName(),
+                group.getName(),
+                cached.chatHistory(),
+                "group"
+        );
     }
 }
 
