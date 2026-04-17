@@ -242,29 +242,20 @@ public class ChatHistoryMigration {
     }
 
     private static ChatMessage convertToNewChatMessage(ChatHistoryRecord oldRecord, Instant timestamp) {
-        dev.langchain4j.data.message.ChatMessage langchainMessage = oldRecord.toLangchainMessage();
+        String className = oldRecord.className();
+        String content = oldRecord.content();
 
         ChatMessage.Role role;
-        String content;
 
-        switch (langchainMessage) {
-            case AiMessage aiMessage -> {
-                role = ChatMessage.Role.AI;
-                content = aiMessage.text();
-            }
-            case UserMessage userMessage -> {
-                role = ChatMessage.Role.USER;
-                content = userMessage.singleText();
-            }
-            case ErrorMessage errorMessage -> {
-                role = ChatMessage.Role.ERROR;
-                content = errorMessage.getText();
-            }
-            default -> {
-                LOGGER.warn("Unknown message type during migration: {}", langchainMessage.getClass().getName());
-                role = ChatMessage.Role.AI;
-                content = "";
-            }
+        if (className.equals(AiMessage.class.getName())) {
+            role = ChatMessage.Role.AI;
+        } else if (className.equals(UserMessage.class.getName())) {
+            role = ChatMessage.Role.USER;
+        } else if (className.equals(ErrorMessage.class.getName())) {
+            role = ChatMessage.Role.ERROR;
+        } else {
+            LOGGER.warn("Unknown message type during migration: {}", className);
+            role = ChatMessage.Role.AI;
         }
 
         return new ChatMessage(
