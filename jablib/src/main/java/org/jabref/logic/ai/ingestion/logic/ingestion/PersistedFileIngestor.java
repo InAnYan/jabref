@@ -34,10 +34,7 @@ public class PersistedFileIngestor {
         );
     }
 
-    public void ingest(
-            Metadata metadata,
-            Path path
-    ) throws InterruptedException {
+    public void ingest(Metadata metadata, Path path) throws InterruptedException {
         Optional<String> currentFileHash = FileHasher.computeHash(path);
         boolean shouldIngest = true;
 

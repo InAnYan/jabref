@@ -33,10 +33,7 @@ public class FileIngestor {
         );
     }
 
-    public void ingest(
-            Metadata metadata,
-            Path path
-    ) throws InterruptedException {
+    public void ingest(Metadata metadata, Path path) throws InterruptedException {
         Optional<String> document = universalFileParser.parse(path);
 
         if (Thread.currentThread().isInterrupted()) {

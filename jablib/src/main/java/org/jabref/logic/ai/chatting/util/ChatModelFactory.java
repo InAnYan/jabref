@@ -81,9 +81,6 @@ public final class ChatModelFactory {
         return new ChatModelImpl(langchainModel, tokenEstimator, provider, modelName, contextWindowSize, httpClient, executorService);
     }
 
-    /// Convenience overload that reads all parameters from {@link AiPreferences}.
-    ///
-    /// @return a new {@link ChatModel}, or {@code null} when AI is disabled or the API key is missing.
     @Nullable
     public static ChatModel create(AiPreferences aiPreferences) {
         if (!aiPreferences.getEnableAi()) {
@@ -105,9 +102,7 @@ public final class ChatModelFactory {
                 aiPreferences.getTokenEstimatorKind()
         );
     }
-
-    // -------------------------------------------------------------------------
-
+    
     private static class ChatModelImpl implements ChatModel, AutoCloseable {
         private final dev.langchain4j.model.chat.ChatModel delegate;
         private final TokenEstimator tokenEstimator;

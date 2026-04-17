@@ -24,17 +24,13 @@ public class TextIngestor {
                 .builder()
                 .embeddingStore(embeddingStore)
                 .embeddingModel(embeddingModel)
-                // TODO: remove this stub.
                 .documentSplitter(document -> List.of(new TextSegment(document.text(), document.metadata())))
                 .build();
 
         this.documentSplitter = documentSplitter;
     }
 
-    public void ingest(
-            Metadata metadata,
-            String text
-    ) throws InterruptedException {
+    public void ingest(Metadata metadata, String text) throws InterruptedException {
         List<String> chunks = documentSplitter.split(text).toList();
 
         for (String documentPart : chunks) {

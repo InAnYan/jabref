@@ -40,10 +40,7 @@ public class LinkedFileIngestor {
         );
     }
 
-    public void ingest(
-            BibDatabaseContext bibDatabaseContext,
-            LinkedFile linkedFile
-    ) throws InterruptedException {
+    public void ingest(BibDatabaseContext bibDatabaseContext, LinkedFile linkedFile) throws InterruptedException {
         LOGGER.debug("Generating embeddings for file \"{}\"", linkedFile.getLink());
 
         Optional<Path> path = linkedFile.findIn(bibDatabaseContext, filePreferences);
