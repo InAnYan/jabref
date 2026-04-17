@@ -1,8 +1,9 @@
 package org.jabref.logic.ai.ingestion;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 import javafx.util.Pair;
@@ -14,18 +15,15 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral.Generate
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.entry.LinkedFile;
 
-import com.google.common.collect.Comparators;
 
 public class IngestionTaskAggregator {
     private final TaskExecutor taskExecutor;
 
-    // TODO: It's wrong to compare by links, as links might be relative.
-    private final TreeMap<LinkedFile, Pair<Future<Void>, GenerateEmbeddingsTask>> generateEmbeddingsTasks =
-            new TreeMap<>(Comparator.comparing(LinkedFile::getLink));
+    private final Map<LinkedFile, Pair<Future<Void>, GenerateEmbeddingsTask>> generateEmbeddingsTasks =
+            Collections.synchronizedMap(new IdentityHashMap<>());
 
-    // TODO: It's also wrong to compare by list of files, as the group might change, and this will lead to change of the bib entry list.
-    private final TreeMap<List<LinkedFile>, Pair<Future<Void>, GenerateEmbeddingsForSeveralTask>> generateEmbeddingsForSeveralTasks =
-            new TreeMap<>(Comparators.lexicographical(Comparator.comparing(LinkedFile::getLink)));
+    private final Map<GenerateEmbeddingsForSeveralTaskRequest, Pair<Future<Void>, GenerateEmbeddingsForSeveralTask>> generateEmbeddingsForSeveralTasks =
+            Collections.synchronizedMap(new HashMap<>());
 
     public IngestionTaskAggregator(TaskExecutor taskExecutor) {
         this.taskExecutor = taskExecutor;
@@ -45,9 +43,9 @@ public class IngestionTaskAggregator {
     }
 
     public synchronized Pair<Future<Void>, GenerateEmbeddingsForSeveralTask> start(GenerateEmbeddingsForSeveralTaskRequest request) {
-        return generateEmbeddingsForSeveralTasks.computeIfAbsent(request.linkedFiles(), _ -> {
+        return generateEmbeddingsForSeveralTasks.computeIfAbsent(request, _ -> {
             GenerateEmbeddingsForSeveralTask task = new GenerateEmbeddingsForSeveralTask(this, request);
-            task.onFinished(() -> generateEmbeddingsForSeveralTasks.remove(request.linkedFiles()));
+            task.onFinished(() -> generateEmbeddingsForSeveralTasks.remove(request));
             Future<Void> future = taskExecutor.execute(task);
             return new Pair<>(future, task);
         });

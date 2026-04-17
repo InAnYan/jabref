@@ -6,7 +6,6 @@ import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.model.ai.pipeline.DocumentSplitterKind;
 
 /// Static factory for creating {@link DocumentSplitter} instances.
-/// All parameters are passed explicitly so this class carries no mutable state.
 public final class DocumentSplitterFactory {
     private DocumentSplitterFactory() {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
@@ -19,7 +18,6 @@ public final class DocumentSplitterFactory {
         };
     }
 
-    /// Convenience overload that reads all parameters from {@link AiPreferences}.
     public static DocumentSplitter create(AiPreferences aiPreferences) {
         return create(
                 aiPreferences.getDocumentSplitterKind(),
