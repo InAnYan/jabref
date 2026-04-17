@@ -23,7 +23,8 @@ import org.jabref.model.entry.BibEntry;
  */
 public class InMemorySummaryCache {
 
-    private record CachedEntry(AiSummary summary, FullBibEntry fullEntry) { }
+    private record CachedEntry(AiSummary summary, FullBibEntry fullEntry) {
+    }
 
     // IdentityHashMap: compares keys by reference (==), NOT by equals()/hashCode().
     // This is exactly what we need — two BibEntry objects with the same citation key are distinct
@@ -68,10 +69,13 @@ public class InMemorySummaryCache {
      */
     public void close() {
         cache.forEach((bibEntry, cached) -> {
-            // toAiSummaryIdentifier() checks for a valid AI library ID and a present,
-            // unique citation key — entries that do not satisfy all conditions are skipped.
+            // If the BibEntry was deleted from the database, the summary must not be saved.
+            if (!cached.fullEntry.databaseContext().getDatabase().getEntries().contains(bibEntry)) {
+                return;
+            }
+
             cached.fullEntry().toAiSummaryIdentifier()
-                              .ifPresent(id -> repository.set(id, cached.summary()));
+                  .ifPresent(id -> repository.set(id, cached.summary()));
         });
     }
 }

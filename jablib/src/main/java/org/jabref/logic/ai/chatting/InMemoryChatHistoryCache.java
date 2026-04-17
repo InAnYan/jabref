@@ -172,6 +172,11 @@ public class InMemoryChatHistoryCache {
 
     /// Flush a single entry's chat history to the repository
     private void flushEntryChat(BibEntry entry, CachedEntryChat cached) {
+        // If the BibEntry was deleted from the database, the chat history must not be saved.
+        if (!cached.databaseContext.getDatabase().getEntries().contains(entry)) {
+            return;
+        }
+
         Optional<ChatIdentifier> currentIdentifierOpt = ChatIdentifier.from(cached.databaseContext(), entry);
 
         // 1. If current citation key is invalid: skip with warning
@@ -214,6 +219,11 @@ public class InMemoryChatHistoryCache {
 
     /// Flush a single group's chat history to the repository
     private void flushGroupChat(GroupTreeNode group, CachedGroupChat cached) {
+        // If the group was deleted from the database, the chat history must not be saved.
+        if (!cached.databaseContext.getMetaData().getGroups().map(g -> g.containsGroup(group.getGroup())).orElse(false)) {
+            return;
+        }
+
         Optional<ChatIdentifier> currentIdentifierOpt = ChatIdentifier.from(cached.databaseContext(), cached.group());
 
         if (currentIdentifierOpt.isEmpty()) {
