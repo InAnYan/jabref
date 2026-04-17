@@ -16,22 +16,19 @@ import dev.langchain4j.data.message.UserMessage;
 
 public record ChatMessage(String id, Instant timestamp, Role role, String content, List<RelevantInformation> relevantInformation) {
     public enum Role {
-        SYSTEM,
-        USER,
-        AI,
-        ERROR;
+        SYSTEM(Localization.lang("System")),
+        USER(Localization.lang("User")),
+        AI(Localization.lang("AI")),
+        ERROR(Localization.lang("Error"));
+
+        private final String displayName;
+
+        Role(String displayName) {
+            this.displayName = displayName;
+        }
 
         public String getDisplayName() {
-            return switch (this) {
-                case SYSTEM ->
-                        Localization.lang("System");
-                case USER ->
-                        Localization.lang("User");
-                case AI ->
-                        Localization.lang("AI");
-                case ERROR ->
-                        Localization.lang("Error");
-            };
+            return displayName;
         }
 
         public boolean canRegenerate() {
