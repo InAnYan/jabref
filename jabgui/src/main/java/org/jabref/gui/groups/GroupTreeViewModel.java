@@ -41,7 +41,6 @@ import org.jabref.logic.ai.summarization.tasks.generatesummary.GenerateSummaryTa
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.identifiers.FullBibEntry;
-import org.jabref.model.ai.identifiers.ResolvedGroup;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
@@ -499,13 +498,9 @@ public class GroupTreeViewModel extends AbstractViewModel {
         assert currentDatabase.isPresent();
 
         BibDatabaseContext context = currentDatabase.get();
+        String groupName = group.getGroupNode().getGroup().getName();
 
-        ResolvedGroup groupIdentifier = new ResolvedGroup(
-                context.getDatabasePath().orElse(null),
-                group.getGroupNode().getGroup().getName()
-        );
-
-        Optional<AiGroupChatWindow> existingWindow = stateManager.getAiChatWindowForGroup(groupIdentifier);
+        Optional<AiGroupChatWindow> existingWindow = stateManager.getAiChatWindowForGroup(context, groupName);
 
         if (existingWindow.isPresent()) {
             BaseDialog.bringToFront(existingWindow.get());
@@ -518,10 +513,10 @@ public class GroupTreeViewModel extends AbstractViewModel {
 
         aiChatWindow.getDialogPane().getScene().getWindow().addEventHandler(
                 WindowEvent.WINDOW_CLOSE_REQUEST,
-                _ -> stateManager.removeAiChatWindowForGroup(groupIdentifier)
+                _ -> stateManager.removeAiChatWindowForGroup(context, groupName)
         );
 
-        stateManager.setAiChatWindowForGroup(groupIdentifier, aiChatWindow);
+        stateManager.setAiChatWindowForGroup(context, groupName, aiChatWindow);
 
         dialogService.showCustomDialogModal(aiChatWindow);
         BaseDialog.bringToFront(aiChatWindow);

@@ -38,7 +38,6 @@ import org.jabref.logic.command.CommandSelectionTab;
 import org.jabref.logic.search.IndexManager;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.OptionalObjectProperty;
-import org.jabref.model.ai.identifiers.ResolvedGroup;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.groups.GroupTreeNode;
@@ -90,7 +89,7 @@ public class JabRefGuiStateManager implements StateManager {
     private final ObservableList<SidePaneType> visibleSidePanes = FXCollections.observableArrayList();
     private final ObjectProperty<LastAutomaticFieldEditorEdit> lastAutomaticFieldEditorEdit = new SimpleObjectProperty<>();
     private final ObservableList<String> searchHistory = FXCollections.observableArrayList();
-    private final Map<ResolvedGroup, AiGroupChatWindow> groupAiChatWindows = new HashMap<>();
+    private final Map<BibDatabaseContext, Map<String, AiGroupChatWindow>> groupAiChatWindows = new HashMap<>();
     private final BooleanProperty editorShowing = new SimpleBooleanProperty(false);
     private final OptionalObjectProperty<Walkthrough> activeWalkthrough = OptionalObjectProperty.empty();
     private final BooleanProperty canGoBack = new SimpleBooleanProperty(false);
@@ -293,18 +292,26 @@ public class JabRefGuiStateManager implements StateManager {
     }
 
     @Override
-    public Optional<AiGroupChatWindow> getAiChatWindowForGroup(ResolvedGroup groupIdentifier) {
-        return Optional.ofNullable(groupAiChatWindows.get(groupIdentifier));
+    public Optional<AiGroupChatWindow> getAiChatWindowForGroup(BibDatabaseContext context, String groupName) {
+        return Optional.ofNullable(groupAiChatWindows.get(context))
+                       .flatMap(innerMap -> Optional.ofNullable(innerMap.get(groupName)));
     }
 
     @Override
-    public void setAiChatWindowForGroup(ResolvedGroup groupIdentifier, AiGroupChatWindow aiGroupChatWindow) {
-        groupAiChatWindows.put(groupIdentifier, aiGroupChatWindow);
+    public void setAiChatWindowForGroup(BibDatabaseContext context, String groupName, AiGroupChatWindow aiGroupChatWindow) {
+        groupAiChatWindows.computeIfAbsent(context, k -> new HashMap<>())
+                          .put(groupName, aiGroupChatWindow);
     }
 
     @Override
-    public void removeAiChatWindowForGroup(ResolvedGroup groupIdentifier) {
-        groupAiChatWindows.remove(groupIdentifier);
+    public void removeAiChatWindowForGroup(BibDatabaseContext context, String groupName) {
+        Map<String, AiGroupChatWindow> innerMap = groupAiChatWindows.get(context);
+        if (innerMap != null) {
+            innerMap.remove(groupName);
+            if (innerMap.isEmpty()) {
+                groupAiChatWindows.remove(context);
+            }
+        }
     }
 
     @Override
