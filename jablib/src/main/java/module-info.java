@@ -132,7 +132,6 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.tokenization;
     exports org.jabref.logic.ai.chatting.tasks;
     exports org.jabref.logic.ai.chatting.repositories;
-    exports org.jabref.logic.ai.citationparsing.logic;
     exports org.jabref.logic.ai.preferences;
     exports org.jabref.model.ai.chatting;
     exports org.jabref.model.ai.pipeline;
