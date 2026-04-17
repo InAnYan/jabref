@@ -99,11 +99,9 @@ import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.logic.xmp.XmpPreferences;
 import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
 import org.jabref.model.ai.llm.AiProvider;
-import org.jabref.model.ai.llm.PredefinedChatModel;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.DocumentSplitterKind;
 import org.jabref.model.ai.summarization.SummarizatorKind;
-import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 import org.jabref.model.database.BibDatabaseMode;
 import org.jabref.model.entry.BibEntryPreferences;
 import org.jabref.model.entry.BibEntryType;
@@ -385,21 +383,28 @@ public class JabRefCliPreferences implements CliPreferences {
     private static final String AI_ENABLED = "aiEnabled";
     private static final String AI_AUTO_GENERATE_EMBEDDINGS = "aiAutoGenerateEmbeddings";
     private static final String AI_AUTO_GENERATE_SUMMARIES = "aiAutoGenerateSummaries";
+
+    private static final String AI_PROFILE_NAMES = "aiProfileName";
+    private static final String AI_PROFILE_PROVIDERS = "aiProfileProvider";
+    private static final String AI_PROFILE_CHAT_MODELS = "aiProfileChatModel";
+    private static final String AI_PROFILE_API_BASE_URLS = "aiProfileApiBaseUrl";
+    private static final String AI_PROFILE_TEMPERATURES = "aiProfileTemperature";
+    private static final String AI_PROFILE_CONTEXT_WINDOW_SIZES = "aiProfileContextWindowSize";
+    private static final String AI_PROFILE_TOKEN_ESTIMATORS = "aiProfileTokenEstimator";
+    private static final String AI_SELECTED_PROFILE_INDEX = "aiSelectedProfileIndex";
+
     private static final String AI_PROVIDER = "aiProvider";
     private static final String AI_OPEN_AI_CHAT_MODEL = "aiOpenAiChatModel";
     private static final String AI_MISTRAL_AI_CHAT_MODEL = "aiMistralAiChatModel";
     private static final String AI_GEMINI_CHAT_MODEL = "aiGeminiChatModel";
     private static final String AI_HUGGING_FACE_CHAT_MODEL = "aiHuggingFaceChatModel";
-    private static final String AI_CUSTOMIZE_SETTINGS = "aiCustomizeSettings";
-    private static final String AI_EMBEDDING_MODEL = "aiEmbeddingModel";
     private static final String AI_OPEN_AI_API_BASE_URL = "aiOpenAiApiBaseUrl";
     private static final String AI_MISTRAL_AI_API_BASE_URL = "aiMistralAiApiBaseUrl";
     private static final String AI_GEMINI_API_BASE_URL = "aiGeminiApiBaseUrl";
     private static final String AI_HUGGING_FACE_API_BASE_URL = "aiHuggingFaceApiBaseUrl";
+
+    private static final String AI_EMBEDDING_MODEL = "aiEmbeddingModel";
     private static final String AI_SUMMARIZATOR_KIND = "aiSummarizatorKind";
-    private static final String AI_TOKEN_ESTIMATOR_KIND = "aiTokenEstimatorKind";
-    private static final String AI_TEMPERATURE = "aiTemperature";
-    private static final String AI_CONTEXT_WINDOW_SIZE = "aiMessageWindowSize";
     private static final String AI_DOCUMENT_SPLITTER_KIND = "aiDocumentSplitterKind";
     private static final String AI_DOCUMENT_SPLITTER_CHUNK_SIZE = "aiDocumentSplitterChunkSize";
     private static final String AI_DOCUMENT_SPLITTER_OVERLAP_SIZE = "aiDocumentSplitterOverlapSize";
@@ -741,26 +746,19 @@ public class JabRefCliPreferences implements CliPreferences {
         defaults.put(AI_ENABLED, false);
         defaults.put(AI_AUTO_GENERATE_EMBEDDINGS, false);
         defaults.put(AI_AUTO_GENERATE_SUMMARIES, false);
+        defaults.put(AI_SELECTED_PROFILE_INDEX, 0);
+        // Legacy per-provider defaults (used only for one-time migration of existing installations)
         defaults.put(AI_PROVIDER, AiProvider.OPEN_AI.name());
         defaults.put(AI_OPEN_AI_CHAT_MODEL, AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.OPEN_AI).getName());
         defaults.put(AI_MISTRAL_AI_CHAT_MODEL, AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.MISTRAL_AI).getName());
         defaults.put(AI_GEMINI_CHAT_MODEL, AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.GEMINI).getName());
         defaults.put(AI_HUGGING_FACE_CHAT_MODEL, AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.HUGGING_FACE).getName());
-        defaults.put(AI_CUSTOMIZE_SETTINGS, false);
-        defaults.put(AI_EMBEDDING_MODEL, AiDefaultExpertSettings.EMBEDDING_MODEL.name());
         defaults.put(AI_OPEN_AI_API_BASE_URL, AiProvider.OPEN_AI.getApiUrl());
         defaults.put(AI_MISTRAL_AI_API_BASE_URL, AiProvider.MISTRAL_AI.getApiUrl());
         defaults.put(AI_GEMINI_API_BASE_URL, AiProvider.GEMINI.getApiUrl());
         defaults.put(AI_HUGGING_FACE_API_BASE_URL, AiProvider.HUGGING_FACE.getApiUrl());
+        defaults.put(AI_EMBEDDING_MODEL, AiDefaultExpertSettings.EMBEDDING_MODEL.name());
         defaults.put(AI_SUMMARIZATOR_KIND, AiDefaultExpertSettings.SUMMARIZATOR_KIND.name());
-        defaults.put(AI_TOKEN_ESTIMATOR_KIND, AiDefaultExpertSettings.TOKEN_ESTIMATOR_KIND.name());
-        defaults.put(AI_TEMPERATURE, AiDefaultExpertSettings.TEMPERATURE);
-        defaults.put(AI_CONTEXT_WINDOW_SIZE,
-                PredefinedChatModel.getContextWindowSize(
-                        AiProvider.valueOf((String) defaults.get(AI_PROVIDER)),
-                        AiProviderDefaultChatModels.getDefaultChatModel(AiProvider.valueOf((String) defaults.get(AI_PROVIDER))).getName()
-                )
-        );
         defaults.put(AI_DOCUMENT_SPLITTER_KIND, AiDefaultExpertSettings.DOCUMENT_SPLITTER_KIND.name());
         defaults.put(AI_DOCUMENT_SPLITTER_CHUNK_SIZE, AiDefaultExpertSettings.DOCUMENT_SPLITTER_CHUNK_SIZE);
         defaults.put(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE, AiDefaultExpertSettings.DOCUMENT_SPLITTER_OVERLAP_SIZE);
@@ -1188,6 +1186,16 @@ public class JabRefCliPreferences implements CliPreferences {
     //*************************************************************************************************************
     // ToDo: Cleanup
     //*************************************************************************************************************
+
+    /**
+     * Stores a list of Strings under key+N with N being an incrementing number, replacing any previous series.
+     */
+    protected void putSeries(String key, List<String> values) {
+        purgeSeries(key, 0);
+        for (int i = 0; i < values.size(); i++) {
+            put(key + i, values.get(i));
+        }
+    }
 
     /**
      * Removes all entries keyed by prefix+number, where number is equal to or higher
@@ -2047,27 +2055,39 @@ public class JabRefCliPreferences implements CliPreferences {
             return aiPreferences;
         }
 
-        boolean aiEnabled = getBoolean(AI_ENABLED);
+        List<String> profileNames = new java.util.ArrayList<>(getSeries(AI_PROFILE_NAMES));
+        List<String> profileProviders = new java.util.ArrayList<>(getSeries(AI_PROFILE_PROVIDERS));
+        List<String> profileChatModels = new java.util.ArrayList<>(getSeries(AI_PROFILE_CHAT_MODELS));
+        List<String> profileApiBaseUrls = new java.util.ArrayList<>(getSeries(AI_PROFILE_API_BASE_URLS));
+        List<String> profileTemperatures = new java.util.ArrayList<>(getSeries(AI_PROFILE_TEMPERATURES));
+        List<Integer> profileContextWindowSizes = getIntSeries(AI_PROFILE_CONTEXT_WINDOW_SIZES);
+        List<String> profileTokenEstimators = new java.util.ArrayList<>(getSeries(AI_PROFILE_TOKEN_ESTIMATORS));
+
+        int selectedProfileIndex;
+
+        if (profileProviders.isEmpty()) {
+            selectedProfileIndex = 0;
+        } else {
+            selectedProfileIndex = getInt(AI_SELECTED_PROFILE_INDEX);
+        }
+
+        List<String> profileApiKeys = getApiKeysForProfiles(profileProviders.size());
 
         aiPreferences = new AiPreferences(
-                aiEnabled,
+                getBoolean(AI_ENABLED),
                 getBoolean(AI_AUTO_GENERATE_EMBEDDINGS),
                 getBoolean(AI_AUTO_GENERATE_SUMMARIES),
-                AiProvider.valueOf(get(AI_PROVIDER)),
-                get(AI_OPEN_AI_CHAT_MODEL),
-                get(AI_MISTRAL_AI_CHAT_MODEL),
-                get(AI_GEMINI_CHAT_MODEL),
-                get(AI_HUGGING_FACE_CHAT_MODEL),
-                getBoolean(AI_CUSTOMIZE_SETTINGS),
-                get(AI_OPEN_AI_API_BASE_URL),
-                get(AI_MISTRAL_AI_API_BASE_URL),
-                get(AI_GEMINI_API_BASE_URL),
-                get(AI_HUGGING_FACE_API_BASE_URL),
+                selectedProfileIndex,
+                profileNames,
+                profileProviders,
+                profileChatModels,
+                profileApiBaseUrls,
+                profileApiKeys,
+                profileTemperatures,
+                profileContextWindowSizes,
+                profileTokenEstimators,
                 SummarizatorKind.valueOf(get(AI_SUMMARIZATOR_KIND)),
-                TokenEstimatorKind.valueOf(get(AI_TOKEN_ESTIMATOR_KIND)),
                 EmbeddingModelEnumeration.valueOf(get(AI_EMBEDDING_MODEL)),
-                getDouble(AI_TEMPERATURE),
-                getInt(AI_CONTEXT_WINDOW_SIZE),
                 DocumentSplitterKind.valueOf(get(AI_DOCUMENT_SPLITTER_KIND)),
                 getInt(AI_DOCUMENT_SPLITTER_CHUNK_SIZE),
                 getInt(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE),
@@ -2093,25 +2113,27 @@ public class JabRefCliPreferences implements CliPreferences {
         EasyBind.listen(aiPreferences.autoGenerateEmbeddingsProperty(), (_, _, newValue) -> putBoolean(AI_AUTO_GENERATE_EMBEDDINGS, newValue));
         EasyBind.listen(aiPreferences.autoGenerateSummariesProperty(), (_, _, newValue) -> putBoolean(AI_AUTO_GENERATE_SUMMARIES, newValue));
 
-        EasyBind.listen(aiPreferences.aiProviderProperty(), (_, _, newValue) -> put(AI_PROVIDER, newValue.name()));
-
-        EasyBind.listen(aiPreferences.openAiChatModelProperty(), (_, _, newValue) -> put(AI_OPEN_AI_CHAT_MODEL, newValue));
-        EasyBind.listen(aiPreferences.mistralAiChatModelProperty(), (_, _, newValue) -> put(AI_MISTRAL_AI_CHAT_MODEL, newValue));
-        EasyBind.listen(aiPreferences.geminiChatModelProperty(), (_, _, newValue) -> put(AI_GEMINI_CHAT_MODEL, newValue));
-        EasyBind.listen(aiPreferences.huggingFaceChatModelProperty(), (_, _, newValue) -> put(AI_HUGGING_FACE_CHAT_MODEL, newValue));
-
-        EasyBind.listen(aiPreferences.customizeExpertSettingsProperty(), (_, _, newValue) -> putBoolean(AI_CUSTOMIZE_SETTINGS, newValue));
-
-        EasyBind.listen(aiPreferences.openAiApiBaseUrlProperty(), (_, _, newValue) -> put(AI_OPEN_AI_API_BASE_URL, newValue));
-        EasyBind.listen(aiPreferences.mistralAiApiBaseUrlProperty(), (_, _, newValue) -> put(AI_MISTRAL_AI_API_BASE_URL, newValue));
-        EasyBind.listen(aiPreferences.geminiApiBaseUrlProperty(), (_, _, newValue) -> put(AI_GEMINI_API_BASE_URL, newValue));
-        EasyBind.listen(aiPreferences.huggingFaceApiBaseUrlProperty(), (_, _, newValue) -> put(AI_HUGGING_FACE_API_BASE_URL, newValue));
+        aiPreferences.getProfileNames().addListener((javafx.collections.ListChangeListener<String>) _ ->
+                putSeries(AI_PROFILE_NAMES, aiPreferences.getProfileNames()));
+        aiPreferences.getProfileProviders().addListener((javafx.collections.ListChangeListener<String>) _ ->
+                putSeries(AI_PROFILE_PROVIDERS, aiPreferences.getProfileProviders()));
+        aiPreferences.getProfileChatModels().addListener((javafx.collections.ListChangeListener<String>) _ ->
+                putSeries(AI_PROFILE_CHAT_MODELS, aiPreferences.getProfileChatModels()));
+        aiPreferences.getProfileApiBaseUrls().addListener((javafx.collections.ListChangeListener<String>) _ ->
+                putSeries(AI_PROFILE_API_BASE_URLS, aiPreferences.getProfileApiBaseUrls()));
+        aiPreferences.getProfileApiKeys().addListener((javafx.collections.ListChangeListener<String>) _ ->
+                storeApiKeysForProfiles(aiPreferences.getProfileApiKeys()));
+        aiPreferences.getProfileTemperatures().addListener((javafx.collections.ListChangeListener<String>) _ ->
+                putSeries(AI_PROFILE_TEMPERATURES, aiPreferences.getProfileTemperatures()));
+        aiPreferences.getProfileContextWindowSizes().addListener((javafx.collections.ListChangeListener<Integer>) _ ->
+                putIntSeries(AI_PROFILE_CONTEXT_WINDOW_SIZES, aiPreferences.getProfileContextWindowSizes()));
+        aiPreferences.getProfileTokenEstimators().addListener((javafx.collections.ListChangeListener<String>) _ ->
+                putSeries(AI_PROFILE_TOKEN_ESTIMATORS, aiPreferences.getProfileTokenEstimators()));
+        EasyBind.listen(aiPreferences.selectedProfileIndexProperty(), (_, _, newValue) ->
+                putInt(AI_SELECTED_PROFILE_INDEX, newValue.intValue()));
 
         EasyBind.listen(aiPreferences.summarizatorKindProperty(), (_, _, newValue) -> put(AI_SUMMARIZATOR_KIND, newValue.name()));
-        EasyBind.listen(aiPreferences.tokenEstimatorKindProperty(), (_, _, newValue) -> put(AI_TOKEN_ESTIMATOR_KIND, newValue.name()));
         EasyBind.listen(aiPreferences.embeddingModelProperty(), (_, _, newValue) -> put(AI_EMBEDDING_MODEL, newValue.name()));
-        EasyBind.listen(aiPreferences.temperatureProperty(), (_, _, newValue) -> putDouble(AI_TEMPERATURE, newValue.doubleValue()));
-        EasyBind.listen(aiPreferences.contextWindowSizeProperty(), (_, _, newValue) -> putInt(AI_CONTEXT_WINDOW_SIZE, newValue));
 
         EasyBind.listen(aiPreferences.documentSplitterKindProperty(), (_, _, newValue) -> put(AI_DOCUMENT_SPLITTER_KIND, newValue.name()));
         EasyBind.listen(aiPreferences.documentSplitterChunkSizeProperty(), (_, _, newValue) -> putInt(AI_DOCUMENT_SPLITTER_CHUNK_SIZE, newValue));
@@ -2138,6 +2160,65 @@ public class JabRefCliPreferences implements CliPreferences {
         EasyBind.listen(aiPreferences.followUpQuestionsTemplateProperty(), (_, _, newValue) -> put(AI_FOLLOW_UP_QUESTIONS_TEMPLATE, newValue));
 
         return aiPreferences;
+    }
+
+    private List<String> getApiKeysForProfiles(int count) {
+        List<String> keys = new ArrayList<>();
+        try (final com.github.javakeyring.Keyring keyring = com.github.javakeyring.Keyring.create()) {
+            for (int i = 0; i < count; i++) {
+                try {
+                    keys.add(keyring.getPassword("org.jabref.ai", "apiKey-profile-" + i));
+                } catch (com.github.javakeyring.PasswordAccessException ex) {
+                    LOGGER.debug("No API key stored for profile {}.", i);
+                    keys.add("");
+                }
+            }
+        } catch (Exception ex) {
+            LOGGER.warn("JabRef could not open keyring for reading AI API keys");
+        }
+        return keys;
+    }
+
+    private void storeApiKeysForProfiles(List<String> keys) {
+        try (final com.github.javakeyring.Keyring keyring = com.github.javakeyring.Keyring.create()) {
+            for (int i = 0; i < keys.size(); i++) {
+                String key = keys.get(i);
+                if (org.jabref.logic.util.strings.StringUtil.isBlank(key)) {
+                    try {
+                        keyring.deletePassword("org.jabref.ai", "apiKey-profile-" + i);
+                    } catch (com.github.javakeyring.PasswordAccessException ex) {
+                        LOGGER.debug("API key for profile {} not stored in keyring.", i);
+                    }
+                } else {
+                    keyring.setPassword("org.jabref.ai", "apiKey-profile-" + i, key);
+                }
+            }
+        } catch (Exception ex) {
+            LOGGER.warn("JabRef could not open keyring for storing AI API keys");
+        }
+    }
+
+    private List<Integer> getIntSeries(String key) {
+        int i = 0;
+        List<Integer> series = new ArrayList<>();
+        String item;
+        while (!StringUtil.isBlank(item = get(key + i))) {
+            try {
+                series.add(Integer.parseInt(item));
+            } catch (NumberFormatException e) {
+                LOGGER.warn("Could not parse integer from preference key {}{}:  {}", key, i, item);
+                series.add(0);
+            }
+            i++;
+        }
+        return series;
+    }
+
+    private void putIntSeries(String key, List<Integer> values) {
+        purgeSeries(key, 0);
+        for (int i = 0; i < values.size(); i++) {
+            put(key + i, String.valueOf(values.get(i)));
+        }
     }
 
     @Override

@@ -64,7 +64,6 @@ public class AiChatViewModel extends AbstractViewModel {
     }
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.IDLE);
-    private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
     private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
 
@@ -78,6 +77,7 @@ public class AiChatViewModel extends AbstractViewModel {
     private BackgroundTask<List<String>> generateFollowUpQuestionsTask;
 
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
+    private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
     private AsyncEmbeddingModel embeddingModel;
     private final ObjectProperty<DocumentSplitter> documentSplitter = new SimpleObjectProperty<>();
 
@@ -174,14 +174,12 @@ public class AiChatViewModel extends AbstractViewModel {
         BindingsHelper.subscribeToChanges(
                 this::rebuildEmbeddingModel,
                 aiPreferences.enableAiProperty(),
-                aiPreferences.customizeExpertSettingsProperty(),
                 aiPreferences.embeddingModelProperty()
         );
 
         // Rebuild document splitter when relevant preferences change (also calls immediately)
         BindingsHelper.subscribeToChanges(
                 this::rebuildDocumentSplitter,
-                aiPreferences.customizeExpertSettingsProperty(),
                 aiPreferences.documentSplitterKindProperty(),
                 aiPreferences.documentSplitterChunkSizeProperty(),
                 aiPreferences.documentSplitterOverlapSizeProperty()

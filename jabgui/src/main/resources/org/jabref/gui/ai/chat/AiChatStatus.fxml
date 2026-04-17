@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.ComboBox?>
@@ -10,6 +10,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import org.jabref.gui.icon.JabRefIconView?>
+<?import org.jabref.gui.ai.chatmodelconfig.ChatModelConfigView?>
+<?import org.jabref.gui.ai.summaryconfig.AiSummaryConfigView?>
 <fx:root
         type="VBox"
         xmlns="http://javafx.com/javafx"
@@ -31,11 +33,7 @@
         <Label text="%Chatting parameters"
                styleClass="sectionHeader"/>
 
-        <HBox spacing="10"
-              alignment="CENTER_LEFT">
-            <Label text="%Chat model:"/>
-            <Label fx:id="chatModelLabel"/>
-        </HBox>
+        <ChatModelConfigView fx:id="chatModelConfigView"/>
 
         <HBox spacing="10"
               alignment="CENTER_LEFT">
@@ -44,8 +42,13 @@
                     fx:id="answerEngineComboBox"
                     prefWidth="200"/>
         </HBox>
+    </VBox>
 
+    <VBox spacing="10">
+        <Label text="%Summarization parameters"
+               styleClass="sectionHeader"/>
 
+        <AiSummaryConfigView fx:id="aiSummaryConfigView"/>
     </VBox>
 
     <VBox spacing="10"
@@ -119,3 +122,4 @@
     </MenuButton>
 
 </fx:root>
+

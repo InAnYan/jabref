@@ -88,7 +88,7 @@ public final class ChatModelFactory {
             return null;
         }
 
-        String apiKey = aiPreferences.getApiKeyForAiProvider(aiPreferences.getAiProvider());
+        String apiKey = aiPreferences.getSelectedApiKey();
         if (apiKey.isEmpty()) {
             return null;
         }

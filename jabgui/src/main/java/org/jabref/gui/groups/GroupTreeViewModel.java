@@ -114,14 +114,12 @@ public class GroupTreeViewModel extends AbstractViewModel {
         BindingsHelper.subscribeToChanges(
                 this::rebuildEmbeddingModel,
                 preferences.getAiPreferences().enableAiProperty(),
-                preferences.getAiPreferences().customizeExpertSettingsProperty(),
                 preferences.getAiPreferences().embeddingModelProperty()
         );
 
         // Rebuild document splitter when relevant AI preferences change (also calls immediately)
         BindingsHelper.subscribeToChanges(
                 this::rebuildDocumentSplitter,
-                preferences.getAiPreferences().customizeExpertSettingsProperty(),
                 preferences.getAiPreferences().documentSplitterKindProperty(),
                 preferences.getAiPreferences().documentSplitterChunkSizeProperty(),
                 preferences.getAiPreferences().documentSplitterOverlapSizeProperty()

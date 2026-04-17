@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.Tab?>
@@ -20,7 +19,7 @@
 <?import com.dlsc.gemsfx.Spacer?>
 <?import com.dlsc.unitfx.IntegerInputField?>
 <?import org.controlsfx.control.SearchableComboBox?>
-<?import org.controlsfx.control.textfield.CustomPasswordField?>
+<?import org.jabref.gui.ai.chatmodelconfig.ChatModelConfigView?>
 <fx:root
         spacing="10.0"
         type="VBox"
@@ -87,195 +86,105 @@
     </Label>
 
     <Label styleClass="sectionHeader"
-           text="%Connection"/>
+           text="%Chat model configuration"/>
 
-    <HBox alignment="CENTER_LEFT"
-          spacing="10.0">
-        <Label alignment="BASELINE_CENTER"
-               text="%AI provider"/>
-        <ComboBox
-                fx:id="aiProviderComboBox"
-                maxWidth="1.7976931348623157E308"
-                HBox.hgrow="ALWAYS"/>
-    </HBox>
-
-    <GridPane
-            hgap="10"
-            vgap="10">
-        <columnConstraints>
-            <ColumnConstraints
-                    halignment="LEFT"/>
-            <ColumnConstraints
-                    hgrow="ALWAYS"/>
-        </columnConstraints>
-        <padding>
-            <Insets left="20.0"/>
-        </padding>
-
-        <Label alignment="BASELINE_CENTER"
-               text="%Chat model"
-               GridPane.rowIndex="0"
-               GridPane.columnIndex="0"/>
-        <ComboBox
-                fx:id="chatModelComboBox"
-                editable="true"
-                maxWidth="1.7976931348623157E308"
-                HBox.hgrow="ALWAYS"
-                GridPane.rowIndex="0"
-                GridPane.columnIndex="1"/>
-
-        <Label alignment="BASELINE_CENTER"
-               text="%API key"
-               GridPane.rowIndex="1"
-               GridPane.columnIndex="0"/>
-        <CustomPasswordField
-                fx:id="apiKeyTextField"
-                HBox.hgrow="ALWAYS"
-                GridPane.rowIndex="1"
-                GridPane.columnIndex="1"/>
-    </GridPane>
+    <ChatModelConfigView fx:id="chatModelConfigView"/>
 
     <HBox alignment="BASELINE_LEFT">
         <Label styleClass="sectionHeader"
-               text="%Expert settings"
+               text="%Advanced settings"
                maxWidth="Infinity"
                HBox.hgrow="ALWAYS"/>
         <Button fx:id="expertSettingsHelp"
                 prefWidth="20.0"/>
     </HBox>
 
-    <CheckBox
-            fx:id="customizeExpertSettingsCheckbox"
-            maxWidth="1.7976931348623157E308"
-            mnemonicParsing="false"
-            text="%Customize expert settings"/>
+    <HBox alignment="CENTER_LEFT"
+          spacing="10.0">
+        <Label alignment="BASELINE_CENTER"
+               text="%Embedding model"/>
+        <SearchableComboBox
+                fx:id="embeddingModelComboBox"
+                maxWidth="1.7976931348623157E308"
+                HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <HBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label text="%The size of the embedding model could be smaller than written in the list."
+               style="-fx-font-style: italic;"/>
+    </HBox>
 
     <Spacer/>
 
-    <VBox spacing="10"
-          fx:id="expertSettingsPane">
-        <HBox alignment="CENTER_LEFT"
-              spacing="10.0">
-            <Label alignment="BASELINE_CENTER"
-                   text="%API base URL (used only for LLM)"/>
+    <GridPane
+            hgap="10"
+            vgap="10">
+        <columnConstraints>
+            <ColumnConstraints
+                    hgrow="ALWAYS"
+                    percentWidth="50"/>
+            <ColumnConstraints
+                    hgrow="ALWAYS"
+                    percentWidth="50"/>
+        </columnConstraints>
+
+        <VBox spacing="10"
+              GridPane.columnIndex="0"
+              GridPane.rowIndex="0">
+            <Label HBox.hgrow="ALWAYS"
+                   maxWidth="Infinity"
+                   text="%RAG - maximum results count"/>
+            <IntegerInputField
+                    fx:id="ragMaxResultsCountTextField"
+                    HBox.hgrow="ALWAYS"/>
+        </VBox>
+
+        <VBox spacing="10"
+              GridPane.columnIndex="1"
+              GridPane.rowIndex="0">
+            <Label HBox.hgrow="ALWAYS"
+                   maxWidth="Infinity"
+                   text="%RAG - minimum score"/>
             <TextField
-                    fx:id="apiBaseUrlTextField"
-                    disable="true"
-                    maxWidth="1.7976931348623157E308"
+                    fx:id="ragMinScoreTextField"
                     HBox.hgrow="ALWAYS"/>
-        </HBox>
+        </VBox>
 
-        <Spacer/>
-
-        <HBox alignment="CENTER_LEFT"
-              spacing="10.0">
-            <Label alignment="BASELINE_CENTER"
-                   text="%Embedding model"/>
-            <SearchableComboBox
-                    fx:id="embeddingModelComboBox"
-                    maxWidth="1.7976931348623157E308"
+        <VBox spacing="10"
+              GridPane.columnIndex="0"
+              GridPane.rowIndex="1">
+            <Label HBox.hgrow="ALWAYS"
+                   maxWidth="Infinity"
+                   text="%Document splitter - chunk size"/>
+            <IntegerInputField
+                    fx:id="documentSplitterChunkSizeTextField"
                     HBox.hgrow="ALWAYS"/>
-        </HBox>
+        </VBox>
 
-        <HBox>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Label text="%The size of the embedding model could be smaller than written in the list."
-                   style="-fx-font-style: italic;"/>
-        </HBox>
+        <VBox spacing="10"
+              GridPane.columnIndex="1"
+              GridPane.rowIndex="1">
+            <Label HBox.hgrow="ALWAYS"
+                   maxWidth="Infinity"
+                   text="%Document splitter - overlap size"/>
+            <IntegerInputField
+                    fx:id="documentSplitterOverlapSizeTextField"
+                    HBox.hgrow="ALWAYS"/>
+        </VBox>
 
-        <Spacer/>
+    </GridPane>
 
-        <GridPane
-                hgap="10"
-                vgap="10">
-            <columnConstraints>
-                <ColumnConstraints
-                        hgrow="ALWAYS"
-                        percentWidth="50"/>
-                <ColumnConstraints
-                        hgrow="ALWAYS"
-                        percentWidth="50"/>
-            </columnConstraints>
+    <Spacer/>
 
-            <VBox spacing="10"
-                  GridPane.columnIndex="0"
-                  GridPane.rowIndex="0">
-                <Label HBox.hgrow="ALWAYS"
-                       maxWidth="Infinity"
-                       text="%Context window size"/>
-                <IntegerInputField
-                        fx:id="contextWindowSizeTextField"
-                        HBox.hgrow="ALWAYS"/>
-            </VBox>
+    <Button onAction="#onResetAdvancedSettingsButtonClick"
+            text="%Reset advanced settings to default">
+        <graphic>
+            <JabRefIconView
+                    glyph="REFRESH"/>
+        </graphic>
+    </Button>
 
-            <VBox spacing="10"
-                  GridPane.columnIndex="1"
-                  GridPane.rowIndex="0">
-                <Label HBox.hgrow="ALWAYS"
-                       maxWidth="Infinity"
-                       text="%Temperature"/>
-                <TextField
-                        fx:id="temperatureTextField"
-                        HBox.hgrow="ALWAYS"/>
-            </VBox>
-
-            <VBox spacing="10"
-                  GridPane.columnIndex="0"
-                  GridPane.rowIndex="1">
-                <Label HBox.hgrow="ALWAYS"
-                       maxWidth="Infinity"
-                       text="%RAG - maximum results count"/>
-                <IntegerInputField
-                        fx:id="ragMaxResultsCountTextField"
-                        HBox.hgrow="ALWAYS"/>
-            </VBox>
-
-            <VBox spacing="10"
-                  GridPane.columnIndex="1"
-                  GridPane.rowIndex="1">
-                <Label HBox.hgrow="ALWAYS"
-                       maxWidth="Infinity"
-                       text="%RAG - minimum score"/>
-                <TextField
-                        fx:id="ragMinScoreTextField"
-                        HBox.hgrow="ALWAYS"/>
-            </VBox>
-
-            <VBox spacing="10"
-                  GridPane.columnIndex="0"
-                  GridPane.rowIndex="2">
-                <Label HBox.hgrow="ALWAYS"
-                       maxWidth="Infinity"
-                       text="%Document splitter - chunk size"/>
-                <IntegerInputField
-                        fx:id="documentSplitterChunkSizeTextField"
-                        HBox.hgrow="ALWAYS"/>
-            </VBox>
-
-            <VBox spacing="10"
-                  GridPane.columnIndex="1"
-                  GridPane.rowIndex="2">
-                <Label HBox.hgrow="ALWAYS"
-                       maxWidth="Infinity"
-                       text="%Document splitter - overlap size"/>
-                <IntegerInputField
-                        fx:id="documentSplitterOverlapSizeTextField"
-                        HBox.hgrow="ALWAYS"/>
-            </VBox>
-
-        </GridPane>
-
-        <Spacer/>
-
-        <Button onAction="#onResetExpertSettingsButtonClick"
-                text="%Reset expert settings to default">
-            <graphic>
-                <JabRefIconView
-                        glyph="REFRESH"/>
-            </graphic>
-        </Button>
-
-    </VBox>
 
     <HBox alignment="BASELINE_CENTER">
         <Label styleClass="sectionHeader"

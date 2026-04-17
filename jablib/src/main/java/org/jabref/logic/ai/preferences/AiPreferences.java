@@ -7,59 +7,40 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 
-import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.embeddings.EmbeddingModelEnumeration;
 import org.jabref.model.ai.llm.AiProvider;
-import org.jabref.model.ai.llm.PredefinedChatModel;
 import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.DocumentSplitterKind;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
-import com.github.javakeyring.Keyring;
-import com.github.javakeyring.PasswordAccessException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class AiPreferences {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AiPreferences.class);
-
-    private static final String KEYRING_AI_SERVICE = "org.jabref.ai";
-    private static final String KEYRING_AI_SERVICE_ACCOUNT = "apiKey";
-
     private final BooleanProperty enableAi;
     private final BooleanProperty autoGenerateEmbeddings;
     private final BooleanProperty autoGenerateSummaries;
 
-    private final ObjectProperty<AiProvider> aiProvider;
-
-    // TODO: Add chat model property.
-
-    private final StringProperty openAiChatModel;
-    private final StringProperty mistralAiChatModel;
-    private final StringProperty geminiChatModel;
-    private final StringProperty huggingFaceChatModel;
-
-    private final BooleanProperty customizeExpertSettings;
-
-    private final StringProperty openAiApiBaseUrl;
-    private final StringProperty mistralAiApiBaseUrl;
-    private final StringProperty geminiApiBaseUrl;
-    private final StringProperty huggingFaceApiBaseUrl;
+    private final IntegerProperty selectedProfileIndex;
+    private final ObservableList<String> profileNames;
+    private final ObservableList<String> profileProviders;
+    private final ObservableList<String> profileChatModels;
+    private final ObservableList<String> profileApiBaseUrls;
+    private final ObservableList<String> profileApiKeys;
+    private final ObservableList<String> profileTemperatures;
+    private final ObservableList<Integer> profileContextWindowSizes;
+    private final ObservableList<String> profileTokenEstimators;
 
     private final ObjectProperty<SummarizatorKind> summarizatorKind;
-    private final ObjectProperty<TokenEstimatorKind> tokenEstimatorKind;
     private final ObjectProperty<EmbeddingModelEnumeration> embeddingModel;
-    private final DoubleProperty temperature;
-    private final IntegerProperty contextWindowSize;
 
     private final ObjectProperty<DocumentSplitterKind> documentSplitterKind;
     private final IntegerProperty documentSplitterChunkSize;
@@ -85,27 +66,21 @@ public class AiPreferences {
     private final IntegerProperty followUpQuestionsCount;
     private final StringProperty followUpQuestionsTemplate;
 
-    private Runnable apiKeyChangeListener;
-
     public AiPreferences(
             boolean enableAi,
             boolean autoGenerateEmbeddings,
             boolean autoGenerateSummaries,
-            AiProvider aiProvider,
-            String openAiChatModel,
-            String mistralAiChatModel,
-            String geminiChatModel,
-            String huggingFaceChatModel,
-            boolean customizeExpertSettings,
-            String openAiApiBaseUrl,
-            String mistralAiApiBaseUrl,
-            String geminiApiBaseUrl,
-            String huggingFaceApiBaseUrl,
+            int selectedProfileIndex,
+            List<String> profileNames,
+            List<String> profileProviders,
+            List<String> profileChatModels,
+            List<String> profileApiBaseUrls,
+            List<String> profileApiKeys,
+            List<String> profileTemperatures,
+            List<Integer> profileContextWindowSizes,
+            List<String> profileTokenEstimators,
             SummarizatorKind summarizatorKind,
-            TokenEstimatorKind tokenEstimatorKind,
             EmbeddingModelEnumeration embeddingModel,
-            double temperature,
-            int contextWindowSize,
             DocumentSplitterKind documentSplitterKind,
             int documentSplitterChunkSize,
             int documentSplitterOverlapSize,
@@ -131,25 +106,18 @@ public class AiPreferences {
         this.autoGenerateEmbeddings = new SimpleBooleanProperty(autoGenerateEmbeddings);
         this.autoGenerateSummaries = new SimpleBooleanProperty(autoGenerateSummaries);
 
-        this.aiProvider = new SimpleObjectProperty<>(aiProvider);
-
-        this.openAiChatModel = new SimpleStringProperty(openAiChatModel);
-        this.mistralAiChatModel = new SimpleStringProperty(mistralAiChatModel);
-        this.geminiChatModel = new SimpleStringProperty(geminiChatModel);
-        this.huggingFaceChatModel = new SimpleStringProperty(huggingFaceChatModel);
-
-        this.customizeExpertSettings = new SimpleBooleanProperty(customizeExpertSettings);
-
-        this.openAiApiBaseUrl = new SimpleStringProperty(openAiApiBaseUrl);
-        this.mistralAiApiBaseUrl = new SimpleStringProperty(mistralAiApiBaseUrl);
-        this.geminiApiBaseUrl = new SimpleStringProperty(geminiApiBaseUrl);
-        this.huggingFaceApiBaseUrl = new SimpleStringProperty(huggingFaceApiBaseUrl);
+        this.selectedProfileIndex = new SimpleIntegerProperty(selectedProfileIndex);
+        this.profileNames = FXCollections.observableArrayList(profileNames);
+        this.profileProviders = FXCollections.observableArrayList(profileProviders);
+        this.profileChatModels = FXCollections.observableArrayList(profileChatModels);
+        this.profileApiBaseUrls = FXCollections.observableArrayList(profileApiBaseUrls);
+        this.profileApiKeys = FXCollections.observableArrayList(profileApiKeys);
+        this.profileTemperatures = FXCollections.observableArrayList(profileTemperatures);
+        this.profileContextWindowSizes = FXCollections.observableArrayList(profileContextWindowSizes);
+        this.profileTokenEstimators = FXCollections.observableArrayList(profileTokenEstimators);
 
         this.summarizatorKind = new SimpleObjectProperty<>(summarizatorKind);
-        this.tokenEstimatorKind = new SimpleObjectProperty<>(tokenEstimatorKind);
         this.embeddingModel = new SimpleObjectProperty<>(embeddingModel);
-        this.temperature = new SimpleDoubleProperty(temperature);
-        this.contextWindowSize = new SimpleIntegerProperty(contextWindowSize);
 
         this.documentSplitterKind = new SimpleObjectProperty<>(documentSplitterKind);
         this.documentSplitterChunkSize = new SimpleIntegerProperty(documentSplitterChunkSize);
@@ -174,38 +142,55 @@ public class AiPreferences {
         this.generateFollowUpQuestions = new SimpleBooleanProperty(generateFollowUpQuestions);
         this.followUpQuestionsCount = new SimpleIntegerProperty(followUpQuestionsCount);
         this.followUpQuestionsTemplate = new SimpleStringProperty(followUpQuestionsTemplate);
-
-        this.apiKeyChangeListener = () -> {
-        };
     }
 
-    public String getApiKeyForAiProvider(AiProvider aiProvider) {
-        try (final Keyring keyring = Keyring.create()) {
-            return keyring.getPassword(KEYRING_AI_SERVICE, KEYRING_AI_SERVICE_ACCOUNT + "-" + aiProvider.name());
-        } catch (PasswordAccessException e) {
-            LOGGER.debug("No API key stored for provider {}. Returning an empty string", aiProvider.getDisplayName());
-            return "";
-        } catch (Exception e) {
-            LOGGER.warn("JabRef could not open keyring for retrieving {} API token", aiProvider.getDisplayName(), e);
-            return "";
-        }
+    public IntegerProperty selectedProfileIndexProperty() {
+        return selectedProfileIndex;
     }
 
-    public void storeAiApiKeyInKeyring(AiProvider aiProvider, String newKey) {
-        try (final Keyring keyring = Keyring.create()) {
-            if (StringUtil.isNullOrEmpty(newKey)) {
-                try {
-                    keyring.deletePassword(KEYRING_AI_SERVICE, KEYRING_AI_SERVICE_ACCOUNT + "-" + aiProvider.name());
-                } catch (PasswordAccessException ex) {
-                    LOGGER.debug("API key for provider {} not stored in keyring. JabRef does not store an empty key.", aiProvider.getDisplayName());
-                }
-            } else {
-                keyring.setPassword(KEYRING_AI_SERVICE, KEYRING_AI_SERVICE_ACCOUNT + "-" + aiProvider.name(), newKey);
-            }
-        } catch (Exception e) {
-            LOGGER.warn("JabRef could not open keyring for storing {} API token", aiProvider.getDisplayName(), e);
-        }
+    public int getSelectedProfileIndex() {
+        return selectedProfileIndex.get();
     }
+
+    public void setSelectedProfileIndex(int index) {
+        selectedProfileIndex.set(index);
+    }
+
+    public ObservableList<String> getProfileNames() {
+        return profileNames;
+    }
+
+    public ObservableList<String> getProfileProviders() {
+        return profileProviders;
+    }
+
+    public ObservableList<String> getProfileChatModels() {
+        return profileChatModels;
+    }
+
+    public ObservableList<String> getProfileApiBaseUrls() {
+        return profileApiBaseUrls;
+    }
+
+    public ObservableList<String> getProfileApiKeys() {
+        return profileApiKeys;
+    }
+
+    public ObservableList<String> getProfileTemperatures() {
+        return profileTemperatures;
+    }
+
+    public ObservableList<Integer> getProfileContextWindowSizes() {
+        return profileContextWindowSizes;
+    }
+
+    public ObservableList<String> getProfileTokenEstimators() {
+        return profileTokenEstimators;
+    }
+
+    // -------------------------------------------------------------------------
+    // Enable AI / Auto-generate
+    // -------------------------------------------------------------------------
 
     public BooleanProperty enableAiProperty() {
         return enableAi;
@@ -243,77 +228,9 @@ public class AiPreferences {
         this.autoGenerateSummaries.set(autoGenerateSummaries);
     }
 
-    public ObjectProperty<AiProvider> aiProviderProperty() {
-        return aiProvider;
-    }
-
-    public AiProvider getAiProvider() {
-        return aiProvider.get();
-    }
-
-    public void setAiProvider(AiProvider aiProvider) {
-        this.aiProvider.set(aiProvider);
-    }
-
-    public StringProperty openAiChatModelProperty() {
-        return openAiChatModel;
-    }
-
-    public String getOpenAiChatModel() {
-        return openAiChatModel.get();
-    }
-
-    public void setOpenAiChatModel(String openAiChatModel) {
-        this.openAiChatModel.set(openAiChatModel);
-    }
-
-    public StringProperty mistralAiChatModelProperty() {
-        return mistralAiChatModel;
-    }
-
-    public String getMistralAiChatModel() {
-        return mistralAiChatModel.get();
-    }
-
-    public void setMistralAiChatModel(String mistralAiChatModel) {
-        this.mistralAiChatModel.set(mistralAiChatModel);
-    }
-
-    public StringProperty geminiChatModelProperty() {
-        return geminiChatModel;
-    }
-
-    public String getGeminiChatModel() {
-        return geminiChatModel.get();
-    }
-
-    public void setGeminiChatModel(String geminiChatModel) {
-        this.geminiChatModel.set(geminiChatModel);
-    }
-
-    public StringProperty huggingFaceChatModelProperty() {
-        return huggingFaceChatModel;
-    }
-
-    public String getHuggingFaceChatModel() {
-        return huggingFaceChatModel.get();
-    }
-
-    public void setHuggingFaceChatModel(String huggingFaceChatModel) {
-        this.huggingFaceChatModel.set(huggingFaceChatModel);
-    }
-
-    public BooleanProperty customizeExpertSettingsProperty() {
-        return customizeExpertSettings;
-    }
-
-    public boolean getCustomizeExpertSettings() {
-        return customizeExpertSettings.get();
-    }
-
-    public void setCustomizeExpertSettings(boolean customizeExpertSettings) {
-        this.customizeExpertSettings.set(customizeExpertSettings);
-    }
+    // -------------------------------------------------------------------------
+    // Expert settings
+    // -------------------------------------------------------------------------
 
     public ObjectProperty<SummarizatorKind> summarizatorKindProperty() {
         return summarizatorKind;
@@ -327,121 +244,16 @@ public class AiPreferences {
         this.summarizatorKind.set(summarizatorKind);
     }
 
-    public ObjectProperty<TokenEstimatorKind> tokenEstimatorKindProperty() {
-        return tokenEstimatorKind;
-    }
-
-    public TokenEstimatorKind getTokenEstimatorKind() {
-        return tokenEstimatorKind.get();
-    }
-
-    public void setTokenEstimatorKind(TokenEstimatorKind tokenEstimatorKind) {
-        this.tokenEstimatorKind.set(tokenEstimatorKind);
-    }
-
     public ObjectProperty<EmbeddingModelEnumeration> embeddingModelProperty() {
         return embeddingModel;
     }
 
     public EmbeddingModelEnumeration getEmbeddingModel() {
-        if (getCustomizeExpertSettings()) {
-            return embeddingModel.get();
-        } else {
-            return AiDefaultExpertSettings.EMBEDDING_MODEL;
-        }
+        return embeddingModel.get();
     }
 
     public void setEmbeddingModel(EmbeddingModelEnumeration embeddingModel) {
         this.embeddingModel.set(embeddingModel);
-    }
-
-    public StringProperty openAiApiBaseUrlProperty() {
-        return openAiApiBaseUrl;
-    }
-
-    public String getOpenAiApiBaseUrl() {
-        return openAiApiBaseUrl.get();
-    }
-
-    public void setOpenAiApiBaseUrl(String openAiApiBaseUrl) {
-        this.openAiApiBaseUrl.set(openAiApiBaseUrl);
-    }
-
-    public StringProperty mistralAiApiBaseUrlProperty() {
-        return mistralAiApiBaseUrl;
-    }
-
-    public String getMistralAiApiBaseUrl() {
-        return mistralAiApiBaseUrl.get();
-    }
-
-    public void setMistralAiApiBaseUrl(String mistralAiApiBaseUrl) {
-        this.mistralAiApiBaseUrl.set(mistralAiApiBaseUrl);
-    }
-
-    public StringProperty geminiApiBaseUrlProperty() {
-        return geminiApiBaseUrl;
-    }
-
-    public String getGeminiApiBaseUrl() {
-        return geminiApiBaseUrl.get();
-    }
-
-    public void setGeminiApiBaseUrl(String geminiApiBaseUrl) {
-        this.geminiApiBaseUrl.set(geminiApiBaseUrl);
-    }
-
-    public StringProperty huggingFaceApiBaseUrlProperty() {
-        return huggingFaceApiBaseUrl;
-    }
-
-    public String getHuggingFaceApiBaseUrl() {
-        return huggingFaceApiBaseUrl.get();
-    }
-
-    public void setHuggingFaceApiBaseUrl(String huggingFaceApiBaseUrl) {
-        this.huggingFaceApiBaseUrl.set(huggingFaceApiBaseUrl);
-    }
-
-    public DoubleProperty temperatureProperty() {
-        return temperature;
-    }
-
-    public double getTemperature() {
-        if (getCustomizeExpertSettings()) {
-            return temperature.get();
-        } else {
-            return AiDefaultExpertSettings.TEMPERATURE;
-        }
-    }
-
-    public void setTemperature(double temperature) {
-        this.temperature.set(temperature);
-    }
-
-    public IntegerProperty contextWindowSizeProperty() {
-        return contextWindowSize;
-    }
-
-    public int getContextWindowSize() {
-        if (getCustomizeExpertSettings()) {
-            return contextWindowSize.get();
-        } else {
-            return switch (aiProvider.get()) {
-                case OPEN_AI ->
-                        PredefinedChatModel.getContextWindowSize(AiProvider.OPEN_AI, openAiChatModel.get());
-                case MISTRAL_AI ->
-                        PredefinedChatModel.getContextWindowSize(AiProvider.MISTRAL_AI, mistralAiChatModel.get());
-                case HUGGING_FACE ->
-                        PredefinedChatModel.getContextWindowSize(AiProvider.HUGGING_FACE, huggingFaceChatModel.get());
-                case GEMINI ->
-                        PredefinedChatModel.getContextWindowSize(AiProvider.GEMINI, geminiChatModel.get());
-            };
-        }
-    }
-
-    public void setContextWindowSize(int contextWindowSize) {
-        this.contextWindowSize.set(contextWindowSize);
     }
 
     public ObjectProperty<DocumentSplitterKind> documentSplitterKindProperty() {
@@ -461,11 +273,7 @@ public class AiPreferences {
     }
 
     public int getDocumentSplitterChunkSize() {
-        if (getCustomizeExpertSettings()) {
-            return documentSplitterChunkSize.get();
-        } else {
-            return AiDefaultExpertSettings.DOCUMENT_SPLITTER_CHUNK_SIZE;
-        }
+        return documentSplitterChunkSize.get();
     }
 
     public void setDocumentSplitterChunkSize(int documentSplitterChunkSize) {
@@ -477,11 +285,7 @@ public class AiPreferences {
     }
 
     public int getDocumentSplitterOverlapSize() {
-        if (getCustomizeExpertSettings()) {
-            return documentSplitterOverlapSize.get();
-        } else {
-            return AiDefaultExpertSettings.DOCUMENT_SPLITTER_OVERLAP_SIZE;
-        }
+        return documentSplitterOverlapSize.get();
     }
 
     public void setDocumentSplitterOverlapSize(int documentSplitterOverlapSize) {
@@ -505,11 +309,7 @@ public class AiPreferences {
     }
 
     public int getRagMaxResultsCount() {
-        if (getCustomizeExpertSettings()) {
-            return ragMaxResultsCount.get();
-        } else {
-            return AiDefaultExpertSettings.RAG_MAX_RESULTS_COUNT;
-        }
+        return ragMaxResultsCount.get();
     }
 
     public void setRagMaxResultsCount(int ragMaxResultsCount) {
@@ -521,21 +321,19 @@ public class AiPreferences {
     }
 
     public double getRagMinScore() {
-        if (getCustomizeExpertSettings()) {
-            return ragMinScore.get();
-        } else {
-            return AiDefaultExpertSettings.RAG_MIN_SCORE;
-        }
+        return ragMinScore.get();
     }
 
     public void setRagMinScore(double ragMinScore) {
         this.ragMinScore.set(ragMinScore);
     }
 
+    // -------------------------------------------------------------------------
+    // Listeners for chat model / API base-URL changes (used by background workers)
+    // -------------------------------------------------------------------------
+
     /**
      * Listen to changes of preferences that are related to embeddings generation.
-     *
-     * @param runnable The runnable that should be executed when the preferences change.
      */
     public void addListenerToEmbeddingsParametersChange(Runnable runnable) {
         embeddingModel.addListener((observableValue, oldValue, newValue) -> {
@@ -558,65 +356,23 @@ public class AiPreferences {
     }
 
     public void addListenerToChatModels(Runnable runnable) {
-        List<Property<?>> observables = List.of(openAiChatModel, mistralAiChatModel, huggingFaceChatModel, geminiChatModel);
-
-        observables.forEach(obs -> obs.addListener((observableValue, oldValue, newValue) -> {
-            if (!newValue.equals(oldValue)) {
-                runnable.run();
-            }
-        }));
+        profileChatModels.addListener((ListChangeListener<String>) _ -> runnable.run());
+        selectedProfileIndex.addListener((_, _, _) -> runnable.run());
     }
 
     public void addListenerToApiBaseUrls(Runnable runnable) {
-        List<Property<?>> observables = List.of(openAiApiBaseUrl, mistralAiApiBaseUrl, huggingFaceApiBaseUrl, geminiApiBaseUrl);
-
-        observables.forEach(obs -> obs.addListener((observableValue, oldValue, newValue) -> {
-            if (!newValue.equals(oldValue)) {
-                runnable.run();
-            }
-        }));
+        profileApiBaseUrls.addListener((ListChangeListener<String>) _ -> runnable.run());
+        selectedProfileIndex.addListener((_, _, _) -> runnable.run());
     }
 
-    public String getSelectedChatModel() {
-        return switch (aiProvider.get()) {
-            case OPEN_AI ->
-                    openAiChatModel.get();
-            case MISTRAL_AI ->
-                    mistralAiChatModel.get();
-            case HUGGING_FACE ->
-                    huggingFaceChatModel.get();
-            case GEMINI ->
-                    geminiChatModel.get();
-        };
+    public void addListenerToApiKeys(Runnable runnable) {
+        profileApiKeys.addListener((ListChangeListener<String>) _ -> runnable.run());
+        selectedProfileIndex.addListener((_, _, _) -> runnable.run());
     }
 
-    public String getSelectedApiBaseUrl() {
-        if (customizeExpertSettings.get()) {
-            return switch (aiProvider.get()) {
-                case OPEN_AI ->
-                        openAiApiBaseUrl.get();
-                case MISTRAL_AI ->
-                        mistralAiApiBaseUrl.get();
-                case HUGGING_FACE ->
-                        huggingFaceApiBaseUrl.get();
-                case GEMINI ->
-                        geminiApiBaseUrl.get();
-            };
-        } else {
-            return aiProvider.get().getApiUrl();
-        }
-    }
-
-    public void setApiKeyChangeListener(Runnable apiKeyChangeListener) {
-        this.apiKeyChangeListener = apiKeyChangeListener;
-    }
-
-    /**
-     * Notify that the API key has been updated.
-     */
-    public void apiKeyUpdated() {
-        apiKeyChangeListener.run();
-    }
+    // -------------------------------------------------------------------------
+    // Templates
+    // -------------------------------------------------------------------------
 
     public StringProperty chattingSystemMessageTemplateProperty() {
         return chattingSystemMessageTemplate;
@@ -626,8 +382,8 @@ public class AiPreferences {
         return chattingSystemMessageTemplate.get();
     }
 
-    public void setChattingSystemMessageTemplate(String template) {
-        chattingSystemMessageTemplate.set(template);
+    public void setChattingSystemMessageTemplate(String chattingSystemMessageTemplate) {
+        this.chattingSystemMessageTemplate.set(chattingSystemMessageTemplate);
     }
 
     public StringProperty chattingUserMessageTemplateProperty() {
@@ -638,8 +394,8 @@ public class AiPreferences {
         return chattingUserMessageTemplate.get();
     }
 
-    public void setChattingUserMessageTemplate(String template) {
-        chattingUserMessageTemplate.set(template);
+    public void setChattingUserMessageTemplate(String chattingUserMessageTemplate) {
+        this.chattingUserMessageTemplate.set(chattingUserMessageTemplate);
     }
 
     public StringProperty summarizationChunkSystemMessageTemplateProperty() {
@@ -650,8 +406,8 @@ public class AiPreferences {
         return summarizationChunkSystemMessageTemplate.get();
     }
 
-    public void setSummarizationChunkSystemMessageTemplate(String template) {
-        summarizationChunkSystemMessageTemplate.set(template);
+    public void setSummarizationChunkSystemMessageTemplate(String summarizationChunkSystemMessageTemplate) {
+        this.summarizationChunkSystemMessageTemplate.set(summarizationChunkSystemMessageTemplate);
     }
 
     public StringProperty summarizationChunkUserMessageTemplateProperty() {
@@ -662,8 +418,8 @@ public class AiPreferences {
         return summarizationChunkUserMessageTemplate.get();
     }
 
-    public void setSummarizationChunkUserMessageTemplate(String template) {
-        summarizationChunkUserMessageTemplate.set(template);
+    public void setSummarizationChunkUserMessageTemplate(String summarizationChunkUserMessageTemplate) {
+        this.summarizationChunkUserMessageTemplate.set(summarizationChunkUserMessageTemplate);
     }
 
     public StringProperty summarizationCombineSystemMessageTemplateProperty() {
@@ -674,8 +430,8 @@ public class AiPreferences {
         return summarizationCombineSystemMessageTemplate.get();
     }
 
-    public void setSummarizationCombineSystemMessageTemplate(String template) {
-        summarizationCombineSystemMessageTemplate.set(template);
+    public void setSummarizationCombineSystemMessageTemplate(String summarizationCombineSystemMessageTemplate) {
+        this.summarizationCombineSystemMessageTemplate.set(summarizationCombineSystemMessageTemplate);
     }
 
     public StringProperty summarizationCombineUserMessageTemplateProperty() {
@@ -686,8 +442,8 @@ public class AiPreferences {
         return summarizationCombineUserMessageTemplate.get();
     }
 
-    public void setSummarizationCombineUserMessageTemplate(String template) {
-        summarizationCombineUserMessageTemplate.set(template);
+    public void setSummarizationCombineUserMessageTemplate(String summarizationCombineUserMessageTemplate) {
+        this.summarizationCombineUserMessageTemplate.set(summarizationCombineUserMessageTemplate);
     }
 
     public StringProperty summarizationFullDocumentSystemMessageTemplateProperty() {
@@ -699,7 +455,7 @@ public class AiPreferences {
     }
 
     public void setSummarizationFullDocumentSystemMessageTemplate(String template) {
-        summarizationFullDocumentSystemMessageTemplate.set(template);
+        this.summarizationFullDocumentSystemMessageTemplate.set(template);
     }
 
     public StringProperty summarizationFullDocumentUserMessageTemplateProperty() {
@@ -711,7 +467,7 @@ public class AiPreferences {
     }
 
     public void setSummarizationFullDocumentUserMessageTemplate(String template) {
-        summarizationFullDocumentUserMessageTemplate.set(template);
+        this.summarizationFullDocumentUserMessageTemplate.set(template);
     }
 
     public StringProperty citationParsingSystemMessageTemplateProperty() {
@@ -722,8 +478,8 @@ public class AiPreferences {
         return citationParsingSystemMessageTemplate.get();
     }
 
-    public void setCitationParsingSystemMessageTemplate(String template) {
-        citationParsingSystemMessageTemplate.set(template);
+    public void setCitationParsingSystemMessageTemplate(String citationParsingSystemMessageTemplate) {
+        this.citationParsingSystemMessageTemplate.set(citationParsingSystemMessageTemplate);
     }
 
     public StringProperty citationParsingUserMessageTemplateProperty() {
@@ -734,8 +490,8 @@ public class AiPreferences {
         return citationParsingUserMessageTemplate.get();
     }
 
-    public void setCitationParsingUserMessageTemplate(String template) {
-        citationParsingUserMessageTemplate.set(template);
+    public void setCitationParsingUserMessageTemplate(String citationParsingUserMessageTemplate) {
+        this.citationParsingUserMessageTemplate.set(citationParsingUserMessageTemplate);
     }
 
     public StringProperty markdownChatExportTemplateProperty() {
@@ -746,9 +502,13 @@ public class AiPreferences {
         return markdownChatExportTemplate.get();
     }
 
-    public void setMarkdownChatExportTemplate(String template) {
-        markdownChatExportTemplate.set(template);
+    public void setMarkdownChatExportTemplate(String markdownChatExportTemplate) {
+        this.markdownChatExportTemplate.set(markdownChatExportTemplate);
     }
+
+    // -------------------------------------------------------------------------
+    // Follow-up questions
+    // -------------------------------------------------------------------------
 
     public BooleanProperty generateFollowUpQuestionsProperty() {
         return generateFollowUpQuestions;
@@ -784,5 +544,347 @@ public class AiPreferences {
 
     public void setFollowUpQuestionsTemplate(String followUpQuestionsTemplate) {
         this.followUpQuestionsTemplate.set(followUpQuestionsTemplate);
+    }
+
+    // -------------------------------------------------------------------------
+    // Convenience methods for selected profile
+    // -------------------------------------------------------------------------
+
+    public ObjectProperty<AiProvider> aiProviderProperty() {
+        int index = getSelectedProfileIndex();
+        if (index >= 0 && index < profileProviders.size()) {
+            try {
+                return new SimpleObjectProperty<>(AiProvider.valueOf(profileProviders.get(index)));
+            } catch (IllegalArgumentException e) {
+                return new SimpleObjectProperty<>(AiProvider.OPEN_AI);
+            }
+        }
+        return new SimpleObjectProperty<>(AiProvider.OPEN_AI);
+    }
+
+    public AiProvider getAiProvider() {
+        int index = getSelectedProfileIndex();
+        if (index >= 0 && index < profileProviders.size()) {
+            try {
+                return AiProvider.valueOf(profileProviders.get(index));
+            } catch (IllegalArgumentException e) {
+                return AiProvider.OPEN_AI;
+            }
+        }
+        return AiProvider.OPEN_AI;
+    }
+
+    public String getSelectedChatModel() {
+        int index = getSelectedProfileIndex();
+        if (index >= 0 && index < profileChatModels.size()) {
+            return profileChatModels.get(index);
+        }
+        return "";
+    }
+
+    public String getSelectedApiBaseUrl() {
+        int index = getSelectedProfileIndex();
+        if (index >= 0 && index < profileApiBaseUrls.size()) {
+            return profileApiBaseUrls.get(index);
+        }
+        return "";
+    }
+
+    public String getSelectedApiKey() {
+        int index = getSelectedProfileIndex();
+        if (index >= 0 && index < profileApiKeys.size()) {
+            return profileApiKeys.get(index);
+        }
+        return "";
+    }
+
+    public DoubleProperty temperatureProperty() {
+        int index = getSelectedProfileIndex();
+        if (index >= 0 && index < profileTemperatures.size()) {
+            try {
+                return new SimpleDoubleProperty(Double.parseDouble(profileTemperatures.get(index)));
+            } catch (NumberFormatException e) {
+                return new SimpleDoubleProperty(0.0);
+            }
+        }
+        return new SimpleDoubleProperty(0.0);
+    }
+
+    public double getTemperature() {
+        int index = getSelectedProfileIndex();
+        if (index >= 0 && index < profileTemperatures.size()) {
+            try {
+                return Double.parseDouble(profileTemperatures.get(index));
+            } catch (NumberFormatException e) {
+                return 0.0;
+            }
+        }
+        return 0.0;
+    }
+
+    public int getContextWindowSize() {
+        int index = getSelectedProfileIndex();
+        if (index >= 0 && index < profileContextWindowSizes.size()) {
+            return profileContextWindowSizes.get(index);
+        }
+        return 0;
+    }
+
+    public TokenEstimatorKind getTokenEstimatorKind() {
+        int index = getSelectedProfileIndex();
+        if (index >= 0 && index < profileTokenEstimators.size()) {
+            try {
+                return TokenEstimatorKind.valueOf(profileTokenEstimators.get(index));
+            } catch (IllegalArgumentException e) {
+                return TokenEstimatorKind.AVERAGE;
+            }
+        }
+        return TokenEstimatorKind.AVERAGE;
+    }
+
+    public String getApiKeyForProfile(int index) {
+        if (index >= 0 && index < profileApiKeys.size()) {
+            return profileApiKeys.get(index);
+        }
+        return "";
+    }
+
+    public void storeApiKeyForProfile(int index, String apiKey) {
+        if (index >= 0 && index < profileApiKeys.size()) {
+            profileApiKeys.set(index, apiKey);
+        }
+    }
+
+    public void setApiKeyChangeListener(Runnable listener) {
+        addListenerToApiKeys(listener);
+    }
+
+    public void setAiProvider(AiProvider provider) {
+        int index = getSelectedProfileIndex();
+        if (index >= 0 && index < profileProviders.size()) {
+            profileProviders.set(index, provider.name());
+        }
+    }
+
+    public void setTemperature(double temperature) {
+        int index = getSelectedProfileIndex();
+        if (index >= 0 && index < profileTemperatures.size()) {
+            profileTemperatures.set(index, String.valueOf(temperature));
+        }
+    }
+
+    public void setContextWindowSize(int size) {
+        int index = getSelectedProfileIndex();
+        if (index >= 0 && index < profileContextWindowSizes.size()) {
+            profileContextWindowSizes.set(index, size);
+        }
+    }
+
+    public void setTokenEstimatorKind(TokenEstimatorKind kind) {
+        int index = getSelectedProfileIndex();
+        if (index >= 0 && index < profileTokenEstimators.size()) {
+            profileTokenEstimators.set(index, kind.name());
+        }
+    }
+
+    // These methods are deprecated placeholders for backwards compatibility
+    // The new profile-based system doesn't have per-provider chat models at the preferences level
+    // Instead, users should use profiles
+    @Deprecated
+    public String getOpenAiChatModel() {
+        // Return the chat model of the first profile with OPEN_AI provider
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("OPEN_AI".equals(profileProviders.get(i)) && i < profileChatModels.size()) {
+                return profileChatModels.get(i);
+            }
+        }
+        return "";
+    }
+
+    @Deprecated
+    public String getMistralAiChatModel() {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("MISTRAL_AI".equals(profileProviders.get(i)) && i < profileChatModels.size()) {
+                return profileChatModels.get(i);
+            }
+        }
+        return "";
+    }
+
+    @Deprecated
+    public String getGeminiChatModel() {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("GEMINI".equals(profileProviders.get(i)) && i < profileChatModels.size()) {
+                return profileChatModels.get(i);
+            }
+        }
+        return "";
+    }
+
+    @Deprecated
+    public String getHuggingFaceChatModel() {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("HUGGING_FACE".equals(profileProviders.get(i)) && i < profileChatModels.size()) {
+                return profileChatModels.get(i);
+            }
+        }
+        return "";
+    }
+
+    @Deprecated
+    public void setOpenAiChatModel(String model) {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("OPEN_AI".equals(profileProviders.get(i)) && i < profileChatModels.size()) {
+                profileChatModels.set(i, model);
+                return;
+            }
+        }
+    }
+
+    @Deprecated
+    public void setMistralAiChatModel(String model) {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("MISTRAL_AI".equals(profileProviders.get(i)) && i < profileChatModels.size()) {
+                profileChatModels.set(i, model);
+                return;
+            }
+        }
+    }
+
+    @Deprecated
+    public void setGeminiChatModel(String model) {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("GEMINI".equals(profileProviders.get(i)) && i < profileChatModels.size()) {
+                profileChatModels.set(i, model);
+                return;
+            }
+        }
+    }
+
+    @Deprecated
+    public void setHuggingFaceChatModel(String model) {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("HUGGING_FACE".equals(profileProviders.get(i)) && i < profileChatModels.size()) {
+                profileChatModels.set(i, model);
+                return;
+            }
+        }
+    }
+
+    @Deprecated
+    public String getApiKeyForAiProvider(AiProvider provider) {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if (provider.name().equals(profileProviders.get(i)) && i < profileApiKeys.size()) {
+                return profileApiKeys.get(i);
+            }
+        }
+        return "";
+    }
+
+    @Deprecated
+    public void storeAiApiKeyInKeyring(AiProvider provider, String apiKey) {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if (provider.name().equals(profileProviders.get(i)) && i < profileApiKeys.size()) {
+                profileApiKeys.set(i, apiKey);
+                return;
+            }
+        }
+    }
+
+    @Deprecated
+    public void apiKeyUpdated() {
+        // Placeholder for compatibility - in the old system this triggered listeners
+        // In the new profile system, listeners are already attached to profileApiKeys
+    }
+
+    @Deprecated
+    public boolean getCustomizeExpertSettings() {
+        // This was a UI-only setting - return true by default
+        return true;
+    }
+
+    @Deprecated
+    public void setCustomizeExpertSettings(boolean customize) {
+        // Placeholder for compatibility - this was a UI-only setting
+    }
+
+    @Deprecated
+    public String getOpenAiApiBaseUrl() {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("OPEN_AI".equals(profileProviders.get(i)) && i < profileApiBaseUrls.size()) {
+                return profileApiBaseUrls.get(i);
+            }
+        }
+        return AiProvider.OPEN_AI.getApiUrl();
+    }
+
+    @Deprecated
+    public String getMistralAiApiBaseUrl() {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("MISTRAL_AI".equals(profileProviders.get(i)) && i < profileApiBaseUrls.size()) {
+                return profileApiBaseUrls.get(i);
+            }
+        }
+        return AiProvider.MISTRAL_AI.getApiUrl();
+    }
+
+    @Deprecated
+    public String getGeminiApiBaseUrl() {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("GEMINI".equals(profileProviders.get(i)) && i < profileApiBaseUrls.size()) {
+                return profileApiBaseUrls.get(i);
+            }
+        }
+        return AiProvider.GEMINI.getApiUrl();
+    }
+
+    @Deprecated
+    public String getHuggingFaceApiBaseUrl() {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("HUGGING_FACE".equals(profileProviders.get(i)) && i < profileApiBaseUrls.size()) {
+                return profileApiBaseUrls.get(i);
+            }
+        }
+        return AiProvider.HUGGING_FACE.getApiUrl();
+    }
+
+    @Deprecated
+    public void setOpenAiApiBaseUrl(String url) {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("OPEN_AI".equals(profileProviders.get(i)) && i < profileApiBaseUrls.size()) {
+                profileApiBaseUrls.set(i, url);
+                return;
+            }
+        }
+    }
+
+    @Deprecated
+    public void setMistralAiApiBaseUrl(String url) {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("MISTRAL_AI".equals(profileProviders.get(i)) && i < profileApiBaseUrls.size()) {
+                profileApiBaseUrls.set(i, url);
+                return;
+            }
+        }
+    }
+
+    @Deprecated
+    public void setGeminiApiBaseUrl(String url) {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("GEMINI".equals(profileProviders.get(i)) && i < profileApiBaseUrls.size()) {
+                profileApiBaseUrls.set(i, url);
+                return;
+            }
+        }
+    }
+
+    @Deprecated
+    public void setHuggingFaceApiBaseUrl(String url) {
+        for (int i = 0; i < profileProviders.size(); i++) {
+            if ("HUGGING_FACE".equals(profileProviders.get(i)) && i < profileApiBaseUrls.size()) {
+                profileApiBaseUrls.set(i, url);
+                return;
+            }
+        }
     }
 }

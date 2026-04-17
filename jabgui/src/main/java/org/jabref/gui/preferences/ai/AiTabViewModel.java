@@ -36,7 +36,7 @@ import de.saxsys.mvvmfx.utils.validation.Validator;
 
 public class AiTabViewModel implements PreferenceTabViewModel {
     protected static SpinnerValueFactory<Integer> followUpQuestionsCountValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 3);
-    
+
     private final Locale oldLocale;
 
     private final BooleanProperty enableAi = new SimpleBooleanProperty();
@@ -265,8 +265,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
                 temp -> LocalizedNumbers.stringToDouble(temp).isPresent(),
                 ValidationMessage.error(Localization.lang("Temperature must be a number")));
 
-        // Source: https://platform.openai.com/docs/api-reference/chat/create#chat-create-temperature
-        this.temperatureRangeValidator = new FunctionBasedValidator<>(
+        temperatureRangeValidator = new FunctionBasedValidator<>(
                 temperature,
                 temp -> LocalizedNumbers.stringToDouble(temp).map(t -> t >= 0 && t <= 2).orElse(false),
                 ValidationMessage.error(Localization.lang("Temperature must be between 0 and 2")));
@@ -422,13 +421,17 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     }
 
     public void resetTemplates() {
+        // Reset all templates to their defaults
         resetChattingSystemMessageTemplate();
         resetChattingUserMessageTemplate();
         resetSummarizationChunkSystemMessageTemplate();
+        resetSummarizationChunkUserMessageTemplate();
         resetSummarizationCombineSystemMessageTemplate();
+        resetSummarizationCombineUserMessageTemplate();
         resetCitationParsingSystemMessageTemplate();
         resetCitationParsingUserMessageTemplate();
         resetSummarizationFullDocumentSystemMessageTemplate();
+        resetSummarizationFullDocumentUserMessageTemplate();
         resetMarkdownChatExportTemplate();
         resetFollowUpQuestionsTemplate();
     }
@@ -445,8 +448,16 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         summarizationChunkSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationChunkSystemMessageTemplate());
     }
 
+    public void resetSummarizationChunkUserMessageTemplate() {
+        summarizationChunkUserMessageTemplate.set("You can provide document text here to get a summary of it.");
+    }
+
     public void resetSummarizationCombineSystemMessageTemplate() {
         summarizationCombineSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationCombineSystemMessageTemplate());
+    }
+
+    public void resetSummarizationCombineUserMessageTemplate() {
+        summarizationCombineUserMessageTemplate.set("Here are the notes I collected:\n#foreach( $note in $notes )\n${note}\n#end");
     }
 
     public void resetCitationParsingSystemMessageTemplate() {
@@ -461,16 +472,32 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         summarizationFullDocumentSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationFullDocumentSystemMessageTemplate());
     }
 
+    public void resetSummarizationFullDocumentUserMessageTemplate() {
+        summarizationFullDocumentUserMessageTemplate.set("$document");
+    }
+
     public void resetMarkdownChatExportTemplate() {
         markdownChatExportTemplate.set(AiDefaultTemplates.getMarkdownChatExportTemplate());
     }
 
-    public StringProperty markdownChatExportTemplateProperty() {
-        return markdownChatExportTemplate;
-    }
-
     public void resetFollowUpQuestionsTemplate() {
         followUpQuestionsTemplate.set(AiDefaultTemplates.getFollowUpQuestionsTemplate());
+    }
+
+    // Additional methods required by AiTab
+    public BooleanProperty disableSettingsProperty() {
+        BooleanProperty disabled = new SimpleBooleanProperty();
+        disabled.bind(enableAi.not());
+        return disabled;
+    }
+
+    public void resetAdvancedSettings() {
+        // Reset all advanced/expert settings to defaults
+        selectedEmbeddingModel.set(EmbeddingModelEnumeration.values()[0]);
+        documentSplitterChunkSize.set(500);
+        documentSplitterOverlapSize.set(100);
+        ragMaxResultsCount.set(5);
+        ragMinScore.set(LocalizedNumbers.doubleToString(0.0));
     }
 
     @Override
@@ -694,5 +721,17 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
     public StringProperty followUpQuestionsTemplateProperty() {
         return followUpQuestionsTemplate;
+    }
+
+    public StringProperty summarizationFullDocumentSystemMessageTemplateProperty() {
+        return summarizationFullDocumentSystemMessageTemplate;
+    }
+
+    public StringProperty summarizationFullDocumentUserMessageTemplateProperty() {
+        return summarizationFullDocumentUserMessageTemplate;
+    }
+
+    public StringProperty markdownChatExportTemplateProperty() {
+        return markdownChatExportTemplate;
     }
 }

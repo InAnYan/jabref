@@ -132,7 +132,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
                 this::rebuildChatModel,
                 aiPreferences.enableAiProperty(),
                 aiPreferences.aiProviderProperty(),
-                aiPreferences.customizeExpertSettingsProperty(),
                 aiPreferences.temperatureProperty()
         );
         aiPreferences.addListenerToChatModels(this::rebuildChatModel);
@@ -255,13 +254,16 @@ public class AiSummaryViewModel extends AbstractViewModel {
         }
 
         AiSummaryParametersDialog parametersDialog = new AiSummaryParametersDialog();
-        Optional<Summarizator> customSummarizator = dialogService.showCustomDialogAndWait(parametersDialog);
+        Optional<AiSummaryParametersDialog.SummaryCustomConfig> customConfig = dialogService.showCustomDialogAndWait(parametersDialog);
 
-        if (customSummarizator.isEmpty()) {
+        if (customConfig.isEmpty()) {
             return;
         }
 
-        summarizator.set(customSummarizator.get());
+        summarizator.set(customConfig.get().summarizator());
+        if (customConfig.get().chatModel() != null) {
+            chatModel.set(customConfig.get().chatModel());
+        }
 
         clearSummary(identifier);
         startSummarization(identifier);

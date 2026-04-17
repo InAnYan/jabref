@@ -29,7 +29,6 @@ import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.AiChatJsonExporter;
 import org.jabref.logic.ai.chatting.AiChatMarkdownExporter;
 import org.jabref.logic.ai.chatting.ChatModel;
-import org.jabref.logic.ai.chatting.ChatModelFactory;
 import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
 import org.jabref.logic.ai.embedding.EmbeddingModelCache;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
@@ -89,7 +88,9 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     private final ListProperty<AnswerEngineKind> answerEngineKinds = new SimpleListProperty<>(FXCollections.observableArrayList(AnswerEngineKind.values()));
     private final ObjectProperty<AnswerEngineKind> selectedAnswerEngineKind = new SimpleObjectProperty<>();
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
-    private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
+    // The active ChatModel is set from outside (by AiChatView/AiChatStatusView) after the
+    // user configures and applies settings. It is only used here for export metadata.
+    private ChatModel activeChatModel;
     private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
@@ -126,30 +127,14 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         ListenersHelper.onChangeNonNull(selectedAnswerEngineKind, this::updateAnswerEngine);
         ListenersHelper.onListContentsChange(generateEmbeddingsTasks, this::wireTask, this::unwireTask);
 
-        // Rebuild chat model when relevant preferences change (also calls immediately)
-        BindingsHelper.subscribeToChanges(
-                this::rebuildChatModel,
-                aiPreferences.enableAiProperty(),
-                aiPreferences.aiProviderProperty(),
-                aiPreferences.customizeExpertSettingsProperty(),
-                aiPreferences.temperatureProperty()
-        );
-        aiPreferences.addListenerToChatModels(this::rebuildChatModel);
-        aiPreferences.addListenerToApiBaseUrls(this::rebuildChatModel);
-        aiPreferences.setApiKeyChangeListener(this::rebuildChatModel);
-
         // Rebuild embedding model when relevant preferences change (also calls immediately)
         BindingsHelper.subscribeToChanges(
                 this::rebuildEmbeddingModel,
                 aiPreferences.enableAiProperty(),
-                aiPreferences.customizeExpertSettingsProperty(),
                 aiPreferences.embeddingModelProperty()
         );
     }
 
-    private void rebuildChatModel() {
-        chatModel.set(ChatModelFactory.create(aiPreferences));
-    }
 
     private void rebuildEmbeddingModel() {
         embeddingModel = embeddingModelCache.getOrCreate(aiPreferences.getEmbeddingModel());
@@ -291,11 +276,10 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     }
 
     private AiMetadata buildMetadata() {
-        ChatModel model = chatModel.get();
-        if (model == null) {
+        if (activeChatModel == null) {
             return new AiMetadata(null, "", Instant.now());
         }
-        return new AiMetadata(model.getAiProvider(), model.getName(), Instant.now());
+        return new AiMetadata(activeChatModel.getAiProvider(), activeChatModel.getName(), Instant.now());
     }
 
     private List<BibEntry> getBibEntriesFromFullEntries() {
@@ -334,8 +318,9 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         return selectedAnswerEngineKind;
     }
 
-    public ObjectProperty<ChatModel> chatModelProperty() {
-        return chatModel;
+    /// Sets the chat model used for export metadata. Call this whenever a new model is constructed.
+    public void setActiveChatModel(ChatModel chatModel) {
+        this.activeChatModel = chatModel;
     }
 
     public ListProperty<ChatMessage> chatHistoryProperty() {

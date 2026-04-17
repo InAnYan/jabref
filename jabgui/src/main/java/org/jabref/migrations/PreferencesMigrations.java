@@ -71,6 +71,7 @@ public class PreferencesMigrations {
         removeCommentsFromCustomEditorTabs(preferences);
         addICORERankingFieldToGeneralTab(preferences);
         upgradeResolveBibTeXStringsFields(preferences);
+        upgradeAiProvidersToProfiles(preferences);
     }
 
     /**
@@ -614,5 +615,103 @@ public class PreferencesMigrations {
      */
     static void removeCommentsFromCustomEditorTabs(GuiPreferences preferences) {
         preferences.getEntryEditorPreferences().getEntryEditorTabs().remove("Comments");
+    }
+
+    static void upgradeAiProvidersToProfiles(JabRefCliPreferences preferences) {
+        List<String> existingProfileNames = preferences.getStringList("aiProfileName0");
+        if (!existingProfileNames.isEmpty()) {
+            LOGGER.debug("AI profiles already exist, skipping migration");
+            //return;
+        }
+
+        LOGGER.info("Migrating AI provider-based preferences to profile-based preferences");
+
+        List<String> profileNames = new ArrayList<>();
+        List<String> profileProviders = new ArrayList<>();
+        List<String> profileChatModels = new ArrayList<>();
+        List<String> profileApiBaseUrls = new ArrayList<>();
+        List<String> profileTemperatures = new ArrayList<>();
+        List<Integer> profileContextWindowSizes = new ArrayList<>();
+        List<String> profileTokenEstimators = new ArrayList<>();
+
+        String selectedProviderName = preferences.get("aiProvider");
+        if (selectedProviderName == null || selectedProviderName.isEmpty()) {
+            LOGGER.debug("No AI provider configured, skipping migration");
+            return;
+        }
+
+        int selectedProfileIndex = 0;
+        int profileIndex = 0;
+
+        String[] providerNames = {"OPEN_AI", "MISTRAL_AI", "GEMINI", "HUGGING_FACE"};
+        String[] profileLabels = {"OpenAI", "Mistral AI", "Gemini", "Hugging Face"};
+        String[] chatModelKeys = {"aiOpenAiChatModel", "aiMistralAiChatModel", "aiGeminiChatModel", "aiHuggingFaceChatModel"};
+        String[] apiBaseUrlKeys = {"aiOpenAiApiBaseUrl", "aiMistralAiApiBaseUrl", "aiGeminiApiBaseUrl", "aiHuggingFaceApiBaseUrl"};
+
+        for (int i = 0; i < providerNames.length; i++) {
+            String providerName = providerNames[i];
+            String chatModel = preferences.get(chatModelKeys[i]);
+            String apiBaseUrl = preferences.get(apiBaseUrlKeys[i]);
+
+            if (chatModel != null && !chatModel.isEmpty()) {
+                profileNames.add(profileLabels[i]);
+                profileProviders.add(providerName);
+                profileChatModels.add(chatModel);
+                profileApiBaseUrls.add(apiBaseUrl != null ? apiBaseUrl : "");
+                profileTemperatures.add("0.7");
+                profileContextWindowSizes.add(4096);
+                profileTokenEstimators.add("CHARACTER_COUNT");
+
+                if (providerName.equals(selectedProviderName)) {
+                    selectedProfileIndex = profileIndex;
+                }
+                profileIndex++;
+            }
+        }
+
+        if (profileNames.isEmpty()) {
+            LOGGER.info("No configured AI models found, creating default OpenAI profile");
+            profileNames.add("OpenAI");
+            profileProviders.add("OPEN_AI");
+            profileChatModels.add("gpt-4o-mini");
+            profileApiBaseUrls.add("https://api.openai.com/v1");
+            profileTemperatures.add("0.7");
+            profileContextWindowSizes.add(4096);
+            profileTokenEstimators.add("CHARACTER_COUNT");
+        }
+
+        preferences.putStringList("aiProfileName", profileNames);
+        preferences.putStringList("aiProfileProvider", profileProviders);
+        preferences.putStringList("aiProfileChatModel", profileChatModels);
+        preferences.putStringList("aiProfileApiBaseUrl", profileApiBaseUrls);
+        preferences.putStringList("aiProfileTemperature", profileTemperatures);
+
+        for (int i = 0; i < profileContextWindowSizes.size(); i++) {
+            preferences.put("aiProfileContextWindowSize" + i, String.valueOf(profileContextWindowSizes.get(i)));
+        }
+
+        preferences.putStringList("aiProfileTokenEstimator", profileTokenEstimators);
+        preferences.putInt("aiSelectedProfileIndex", selectedProfileIndex);
+
+        try (final Keyring keyring = Keyring.create()) {
+            for (int i = 0; i < profileProviders.size(); i++) {
+                String provider = profileProviders.get(i);
+                try {
+                    String oldAccountName = "apiKey-" + provider;
+                    String newAccountName = "apiKey-profile-" + i;
+                    String apiKey = keyring.getPassword("org.jabref.ai", oldAccountName);
+                    if (apiKey != null && !apiKey.isEmpty()) {
+                        keyring.setPassword("org.jabref.ai", newAccountName, apiKey);
+                        LOGGER.info("Migrated API key for {} from {} to {}", provider, oldAccountName, newAccountName);
+                    }
+                } catch (Exception ex) {
+                    LOGGER.debug("No API key found for provider {} in keyring", provider);
+                }
+            }
+        } catch (Exception ex) {
+            LOGGER.warn("Could not migrate API keys from keyring", ex);
+        }
+
+        LOGGER.info("Successfully migrated {} AI profile(s), selected profile index: {}", profileNames.size(), selectedProfileIndex);
     }
 }

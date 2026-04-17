@@ -1,9 +1,12 @@
 package org.jabref.gui.ai.summary;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
@@ -18,12 +21,20 @@ public class AiSummaryParametersViewModel extends AbstractViewModel {
     );
     private final ObjectProperty<SummarizatorKind> summarizatorKind = new SimpleObjectProperty<>();
 
+    // Reactive binding that rebuilds the Summarizator whenever summarizatorKind changes.
+    private final ObjectBinding<Summarizator> summarizatorBinding;
+
     private final AiPreferences aiPreferences;
 
     public AiSummaryParametersViewModel(AiPreferences aiPreferences) {
         this.aiPreferences = aiPreferences;
 
         setupValues();
+
+        summarizatorBinding = Bindings.createObjectBinding(
+                this::constructSummarizator,
+                summarizatorKind
+        );
     }
 
     private void setupValues() {
@@ -36,6 +47,12 @@ public class AiSummaryParametersViewModel extends AbstractViewModel {
 
     public ObjectProperty<SummarizatorKind> summarizatorKindProperty() {
         return summarizatorKind;
+    }
+
+    /// Returns a reactive binding that always reflects the {@link Summarizator} built from the
+    /// current summarization kind. Recomputes lazily whenever {@code summarizatorKind} changes.
+    public ObservableValue<Summarizator> summarizatorProperty() {
+        return summarizatorBinding;
     }
 
     public Summarizator constructSummarizator() {

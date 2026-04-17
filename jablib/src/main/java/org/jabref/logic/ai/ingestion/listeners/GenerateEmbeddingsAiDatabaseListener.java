@@ -48,7 +48,6 @@ public class GenerateEmbeddingsAiDatabaseListener implements AiDatabaseListener 
 
         ObservablesHelper.subscribeToChanges(
                 this::rebuildDocumentSplitter,
-                aiPreferences.customizeExpertSettingsProperty(),
                 aiPreferences.documentSplitterKindProperty(),
                 aiPreferences.documentSplitterChunkSizeProperty(),
                 aiPreferences.documentSplitterOverlapSizeProperty()

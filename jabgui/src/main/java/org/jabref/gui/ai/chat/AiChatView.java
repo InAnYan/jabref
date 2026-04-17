@@ -28,9 +28,13 @@ import org.jabref.model.ai.identifiers.FullBibEntry;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AiChatView extends StackPane {
-    private final AiChatStatusWindow aiChatStatusWindow = new AiChatStatusWindow();
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatView.class);
+
+    private final AiChatStatusWindow chatStatusWindow = new AiChatStatusWindow();
 
     @FXML private AiPrivacyNoticeView privacyNotice;
     @FXML private SimpleStatusPaneView noFilesErrorPane;
@@ -83,11 +87,15 @@ public class AiChatView extends StackPane {
     }
 
     private void setupBindings() {
-        viewModel.answerEngineProperty().bind(aiChatStatusWindow.answerEngineProperty());
-        aiChatStatusWindow.entriesProperty().bind(viewModel.entriesProperty());
-        aiChatStatusWindow.generateEmbeddingsTasksProperty().bind(viewModel.generateEmbeddingsTasksProperty());
-        viewModel.chatModelProperty().bind(aiChatStatusWindow.chatModelProperty());
-        aiChatStatusWindow.chatHistoryProperty().bind(viewModel.chatHistoryProperty());
+        viewModel.chatModelProperty().addListener((_, oldModel, newModel) -> {
+            if (oldModel instanceof AutoCloseable closeable && oldModel != newModel) {
+                try {
+                    closeable.close();
+                } catch (Exception e) {
+                    LOGGER.error("Could not close previous chat model", e);
+                }
+            }
+        });
 
         chatHistoryScrollPane.itemsProperty().bind(viewModel.chatHistoryProperty());
         chatHistoryScrollPane.setRenderer(this::renderChatMessage);
@@ -121,6 +129,13 @@ public class AiChatView extends StackPane {
         retryButton.visibleProperty().bind(isError);
         cancelButton.visibleProperty().bind(isWaiting.or(isError));
         noticeText.textProperty().bind(viewModel.chatModelProperty().map(this::formatNoticeText));
+
+        chatStatusWindow.entriesProperty().bind(viewModel.entriesProperty());
+        chatStatusWindow.generateEmbeddingsTasksProperty().bind(viewModel.generateEmbeddingsTasksProperty());
+        chatStatusWindow.chatHistoryProperty().bind(viewModel.chatHistoryProperty());
+
+        viewModel.answerEngineProperty().bind(chatStatusWindow.answerEngineProperty());
+        viewModel.chatModelProperty().bind(chatStatusWindow.chatModelProperty());
     }
 
     private String formatNoticeText(ChatModel model) {
@@ -166,7 +181,7 @@ public class AiChatView extends StackPane {
 
     @FXML
     private void showInfo() {
-        dialogService.showCustomDialogAndWait(aiChatStatusWindow);
+        dialogService.showCustomDialogAndWait(chatStatusWindow);
     }
 
     @FXML

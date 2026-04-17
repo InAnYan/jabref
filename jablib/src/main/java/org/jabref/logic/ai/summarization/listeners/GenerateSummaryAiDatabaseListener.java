@@ -46,7 +46,6 @@ public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
                 this::rebuildChatModel,
                 aiPreferences.enableAiProperty(),
                 aiPreferences.aiProviderProperty(),
-                aiPreferences.customizeExpertSettingsProperty(),
                 aiPreferences.temperatureProperty()
         );
         aiPreferences.addListenerToChatModels(this::rebuildChatModel);
