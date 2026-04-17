@@ -7,10 +7,7 @@ import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 
 public interface AnswerEngine {
-    List<RelevantInformation> process(
-            String query,
-            List<FullBibEntry> entriesFilter
-    );
+    List<RelevantInformation> process(String query, List<FullBibEntry> entriesFilter);
 
     AnswerEngineKind getKind();
 }

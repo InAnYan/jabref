@@ -1,7 +1,6 @@
 package org.jabref.logic.ai.rag.logic;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.ingestion.logic.parsing.UniversalContentParser;
@@ -32,14 +31,13 @@ public class FullDocumentAnswerEngine implements AnswerEngine {
                                 .entry()
                                 .getFiles()
                                 .stream()
-                                .map(linkedFile ->
+                                .flatMap(linkedFile ->
                                         linkedFile
                                                 .findIn(entryIdentifier.databaseContext(), filePreferences)
                                                 .flatMap(universalContentParser::parse)
                                                 .map(c -> new RelevantInformation(FullBibEntry.findEntryByLink(entryIdentifier, linkedFile.getLink()).flatMap(BibEntry::getCitationKey).orElse(null), c))
+                                                .stream()
                                 )
-                                .filter(Optional::isPresent)
-                                .map(Optional::get)
                 )
                 .toList();
     }

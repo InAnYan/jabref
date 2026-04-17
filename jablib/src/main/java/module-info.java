@@ -129,7 +129,6 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.ingestion.tasks;
     exports org.jabref.logic.ai.ingestion.repositories;
     exports org.jabref.logic.ai.ingestion.logic;
-    exports org.jabref.logic.ai.tokenization;
     exports org.jabref.logic.ai.chatting.tasks;
     exports org.jabref.logic.ai.chatting.repositories;
     exports org.jabref.logic.ai.preferences;
@@ -148,7 +147,6 @@ open module org.jabref.jablib {
     exports org.jabref.logic.ai.rag.util;
     exports org.jabref.logic.ai.tokenization.logic;
     exports org.jabref.logic.ai.ingestion.util;
-    exports org.jabref.logic.ai.migration;
     exports org.jabref.logic.ai.followup.tasks;
     exports org.jabref.model.ai;
     exports org.jabref.logic.ai.chatting.exporters;
