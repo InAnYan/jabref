@@ -13,7 +13,7 @@ import com.tobiasdiez.easybind.PreboundBinding;
  */
 public class OptionalObjectProperty<T> extends SimpleObjectProperty<Optional<T>> {
 
-    public OptionalObjectProperty(Optional<T> initialValue) {
+    private OptionalObjectProperty(Optional<T> initialValue) {
         super(initialValue);
     }
 
