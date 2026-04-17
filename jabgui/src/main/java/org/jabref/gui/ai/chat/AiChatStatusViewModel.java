@@ -23,7 +23,6 @@ import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.FileDialogConfiguration;
-import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.AiChatJsonExporter;
@@ -123,8 +122,8 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     }
 
     private void setupListeners() {
-        ListenersHelper.onChangeNonNull(selectedAnswerEngineKind, this::updateAnswerEngine);
-        ListenersHelper.onListContentsChange(generateEmbeddingsTasks, this::wireTask, this::unwireTask);
+        BindingsHelper.onChangeNonNull(selectedAnswerEngineKind, this::updateAnswerEngine);
+        BindingsHelper.onListContentsChange(generateEmbeddingsTasks, this::wireTask, this::unwireTask);
 
         // Rebuild chat model when relevant preferences change (also calls immediately)
         BindingsHelper.subscribeToChanges(
@@ -306,8 +305,8 @@ public class AiChatStatusViewModel extends AbstractViewModel {
 
     private BibDatabaseMode getDatabaseModeOrDefault() {
         return entries.isEmpty()
-                ? BibDatabaseMode.BIBTEX
-                : entries.getFirst().databaseContext().getMode();
+               ? BibDatabaseMode.BIBTEX
+               : entries.getFirst().databaseContext().getMode();
     }
 
     public ObservableList<IngestionStatusRow> getIngestionStatuses() {

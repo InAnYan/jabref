@@ -14,7 +14,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import org.jabref.gui.util.BindingsHelper;
-import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.MarkdownTextFlow;
 import org.jabref.model.ai.chatting.ChatMessage;
 
@@ -90,8 +89,8 @@ public class AiChatMessageView extends HBox {
     }
 
     private void setupListeners() {
-        ListenersHelper.onChangeNonNull(viewModel.chatMessageProperty(), this::updateOrder);
-        ListenersHelper.onChangeNonNull(viewModel.chatMessageProperty(), this::updateContent);
+        BindingsHelper.onChangeNonNull(viewModel.chatMessageProperty(), this::updateOrder);
+        BindingsHelper.onChangeNonNull(viewModel.chatMessageProperty(), this::updateContent);
     }
 
     private void updateOrder(ChatMessage chatMessage) {

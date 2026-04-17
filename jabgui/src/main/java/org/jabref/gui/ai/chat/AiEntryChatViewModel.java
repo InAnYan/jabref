@@ -11,7 +11,6 @@ import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.BindingsHelper;
-import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.ai.chatting.InMemoryChatHistoryCache;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.util.CitationKeyCheck;
@@ -80,7 +79,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
     }
 
     private void setupListeners() {
-        ListenersHelper.onChangeNonNullWhen(
+        BindingsHelper.onChangeNonNullWhen(
                 selectedEntry,
                 selectedEntry.isNotNull().and(state.isEqualTo(State.CHATTING)),
                 this::load

@@ -19,7 +19,6 @@ import javafx.collections.ObservableList;
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.util.BindingsHelper;
-import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.tasks.GenerateRagResponseTask;
@@ -158,7 +157,7 @@ public class AiChatViewModel extends AbstractViewModel {
     private void setupListeners() {
         BooleanBinding entriesPresent = entries.isNotNull().and(entries.emptyProperty().not());
 
-        ListenersHelper.runWhenListChangesWithPrecondition(
+        BindingsHelper.runWhenListChangesWithPrecondition(
                 entries,
                 aiPreferences.enableAiProperty().and(entriesPresent),
                 this::changeEmbeddingTasks

@@ -19,7 +19,6 @@ import javafx.scene.web.WebView;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.BindingsHelper;
-import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.gui.util.WebViewStore;
 import org.jabref.logic.l10n.Localization;
@@ -105,7 +104,7 @@ public class AiSummaryShowingView extends VBox {
     }
 
     private void setupListeners() {
-        ListenersHelper.onChangeNonNull(
+        BindingsHelper.onChangeNonNull(
                 viewModel.webViewSourceProperty(),
                 value -> UiTaskExecutor.runInJavaFXThread(() -> webView.getEngine().loadContent(value))
         );

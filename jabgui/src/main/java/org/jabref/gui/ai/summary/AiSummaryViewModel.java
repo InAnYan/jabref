@@ -11,7 +11,6 @@ import javafx.beans.value.ChangeListener;
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.util.BindingsHelper;
-import org.jabref.gui.util.ListenersHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.ChatModel;
@@ -116,12 +115,12 @@ public class AiSummaryViewModel extends AbstractViewModel {
     }
 
     private void setupListeners() {
-        ListenersHelper.onChangeNonNull(
+        BindingsHelper.onChangeNonNull(
                 entry,
                 this::prepareForEntry
         );
 
-        ListenersHelper.onChangeNonNullWhen(
+        BindingsHelper.onChangeNonNullWhen(
                 entry,
                 state.isEqualTo(State.READY),
                 this::processEntry

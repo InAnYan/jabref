@@ -13,7 +13,6 @@ import javafx.collections.FXCollections;
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.groups.GroupNodeViewModel;
 import org.jabref.gui.util.BindingsHelper;
-import org.jabref.gui.util.ListenersHelper;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.InMemoryChatHistoryCache;
 import org.jabref.logic.ai.preferences.AiPreferences;
@@ -53,7 +52,7 @@ public class AiGroupChatViewModel extends AbstractViewModel {
                 State.CHATTING
         );
 
-        ListenersHelper.onChangeNonNullWhen(
+        BindingsHelper.onChangeNonNullWhen(
                 groupNode, databaseContext,
                 aiPreferences.enableAiProperty().and(databasePathPresent),
                 this::loadGroupChat
