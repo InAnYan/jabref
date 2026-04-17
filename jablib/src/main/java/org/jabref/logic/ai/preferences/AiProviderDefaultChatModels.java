@@ -5,8 +5,6 @@ import java.util.Map;
 import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.ai.llm.PredefinedChatModel;
 
-// Chat model depends on ai provider. E.g. to not have cycles
-// TODO: Improve comment above.
 public class AiProviderDefaultChatModels {
     private static final Map<AiProvider, PredefinedChatModel> CHAT_MODELS = Map.of(
             AiProvider.OPEN_AI, PredefinedChatModel.GPT_4O_MINI,
