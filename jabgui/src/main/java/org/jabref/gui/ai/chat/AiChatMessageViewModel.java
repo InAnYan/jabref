@@ -46,7 +46,7 @@ public class AiChatMessageViewModel extends AbstractViewModel {
 
         showRegenerate.bind(chatMessage.map(ChatMessage::role).map(ChatMessage.Role::canRegenerate));
     }
-
+    
     public void delete() {
         BindingsHelper.handle(onDelete);
     }

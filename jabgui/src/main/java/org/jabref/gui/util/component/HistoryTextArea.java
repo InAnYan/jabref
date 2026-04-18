@@ -1,4 +1,4 @@
-package org.jabref.gui.util;
+package org.jabref.gui.util.component;
 
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;

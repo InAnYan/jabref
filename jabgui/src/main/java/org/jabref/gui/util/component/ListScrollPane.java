@@ -1,4 +1,4 @@
-package org.jabref.gui.util;
+package org.jabref.gui.util.component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +71,8 @@ public class ListScrollPane<T> extends ScrollPane {
 
     private void handleListContentChange(ListChangeListener.Change<? extends T> change) {
         final Function<T, Node> renderer = getRenderer();
-        if (renderer == null) return;
+        if (renderer == null)
+            return;
 
         boolean hadAdditions = false;
 
@@ -168,7 +169,8 @@ public class ListScrollPane<T> extends ScrollPane {
 
     public final void setAutoScrollToBottom(boolean value) {
         autoScrollToBottomProperty.set(value);
-        if (value) scrollToBottom();
+        if (value)
+            scrollToBottom();
     }
 
     public final BooleanProperty autoScrollToBottomProperty() {

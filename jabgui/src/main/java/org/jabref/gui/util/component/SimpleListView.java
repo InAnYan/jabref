@@ -1,4 +1,4 @@
-package org.jabref.gui.util;
+package org.jabref.gui.util.component;
 
 import java.util.function.Function;
 

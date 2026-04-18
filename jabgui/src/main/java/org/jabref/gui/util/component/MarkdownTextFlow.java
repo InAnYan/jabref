@@ -1,4 +1,4 @@
-package org.jabref.gui.util;
+package org.jabref.gui.util.component;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -13,6 +13,7 @@ import org.jabref.gui.ClipBoardManager;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.edit.OpenBrowserAction;
 import org.jabref.gui.preferences.GuiPreferences;
+import org.jabref.gui.util.SelectableTextFlow;
 
 import com.airhacks.afterburner.injection.Injector;
 import com.vladsch.flexmark.ast.BlockQuote;

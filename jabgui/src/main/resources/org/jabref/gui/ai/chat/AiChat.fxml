@@ -13,9 +13,9 @@
 <?import org.jabref.gui.ai.AiPrivacyNoticeView?>
 <?import org.jabref.gui.ai.statuspane.UniversalStatusPaneView?>
 <?import org.jabref.gui.icon.JabRefIconView?>
-<?import org.jabref.gui.util.HistoryTextArea?>
-<?import org.jabref.gui.util.ListScrollPane?>
-<?import org.jabref.gui.util.SimpleListView?>
+<?import org.jabref.gui.util.component.HistoryTextArea?>
+<?import org.jabref.gui.util.component.ListScrollPane?>
+<?import org.jabref.gui.util.component.SimpleListView?>
 <fx:root
         type="StackPane"
         xmlns="http://javafx.com/javafx"

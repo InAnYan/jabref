@@ -9,12 +9,14 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import org.jabref.gui.util.BindingsHelper;
-import org.jabref.gui.util.MarkdownTextFlow;
+import org.jabref.gui.util.LocaleUtil;
+import org.jabref.gui.util.component.MarkdownTextFlow;
 import org.jabref.model.ai.chatting.ChatMessage;
 
 import com.airhacks.afterburner.views.ViewLoader;
@@ -33,7 +35,10 @@ public class AiChatMessageView extends HBox {
     @FXML private Button regenerateButton;
     @FXML private Button deleteButton;
 
+    // Tooltip for the whole component.
+    private Tooltip tooltip = new Tooltip();
     private MarkdownTextFlow markdownTextFlow;
+
     private AiChatMessageViewModel viewModel;
 
     public AiChatMessageView() {
@@ -42,20 +47,14 @@ public class AiChatMessageView extends HBox {
                   .load();
     }
 
-    private static Pos determineAlignment(ChatMessage chatMessage) {
-        if (chatMessage.role() == ChatMessage.Role.USER) {
-            return Pos.TOP_RIGHT;
-        } else {
-            return Pos.TOP_LEFT;
-        }
-    }
-
     @FXML
     private void initialize() {
         this.viewModel = new AiChatMessageViewModel();
 
         markdownTextFlow = new MarkdownTextFlow(markdownContentPane);
         markdownContentPane.getChildren().add(markdownTextFlow);
+
+        Tooltip.install(vBox, tooltip);
 
         setupBindings();
         setupListeners();
@@ -66,6 +65,7 @@ public class AiChatMessageView extends HBox {
         deleteButton.managedProperty().bind(deleteButton.visibleProperty());
 
         sourceLabel.textProperty().bind(viewModel.sourceProperty());
+        tooltip.textProperty().bind(viewModel.timestampProperty().map(LocaleUtil::formatInstant));
 
         this.alignmentProperty().bind(viewModel.chatMessageProperty().map(AiChatMessageView::determineAlignment));
         buttonsVBox.visibleProperty().bind(this.hoverProperty());
@@ -105,6 +105,14 @@ public class AiChatMessageView extends HBox {
 
     private void updateContent(ChatMessage chatMessage) {
         markdownTextFlow.setMarkdown(chatMessage.content());
+    }
+
+    private static Pos determineAlignment(ChatMessage chatMessage) {
+        if (chatMessage.role() == ChatMessage.Role.USER) {
+            return Pos.TOP_RIGHT;
+        } else {
+            return Pos.TOP_LEFT;
+        }
     }
 
     @FXML
