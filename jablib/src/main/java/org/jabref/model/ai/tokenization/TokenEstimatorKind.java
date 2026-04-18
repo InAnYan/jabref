@@ -1,5 +1,7 @@
 package org.jabref.model.ai.tokenization;
 
+import org.jabref.model.ai.AiDefaultEnums;
+
 /// Idea taken from: <https://community.openai.com/t/what-is-the-openai-algorithm-to-calculate-tokens/58237/4>.
 public enum TokenEstimatorKind {
     /// Average between [TokenEstimatorKind#WORDS] and [TokenEstimatorKind#CHARS].
@@ -15,5 +17,13 @@ public enum TokenEstimatorKind {
     MAX,
 
     /// Minimum between [TokenEstimatorKind#WORDS] and [TokenEstimatorKind#CHARS].
-    MIN
+    MIN;
+
+    public static TokenEstimatorKind safeValueOf(String name) {
+        try {
+            return TokenEstimatorKind.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            return AiDefaultEnums.TOKEN_ESTIMATOR_KIND;
+        }
+    }
 }

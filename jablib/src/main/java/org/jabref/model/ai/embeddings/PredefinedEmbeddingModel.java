@@ -1,6 +1,7 @@
 package org.jabref.model.ai.embeddings;
 
 import org.apache.commons.io.FileUtils;
+import org.jabref.model.ai.AiDefaultEnums;
 
 /**
  * This enumeration was formed by <a href="https://docs.djl.ai/master/docs/load_model.html#list-available-models-using-djl-command-line">listing available embeddings model from Model Zoo of DJL</a>
@@ -344,5 +345,13 @@ public enum PredefinedEmbeddingModel {
 
     public String sizeInfo() {
         return FileUtils.byteCountToDisplaySize(sizeInBytes);
+    }
+
+    public static PredefinedEmbeddingModel safeValueOf(String name) {
+        try {
+            return PredefinedEmbeddingModel.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            return AiDefaultEnums.EMBEDDING_MODEL;
+        }
     }
 }

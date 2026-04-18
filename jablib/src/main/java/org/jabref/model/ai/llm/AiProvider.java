@@ -3,6 +3,7 @@ package org.jabref.model.ai.llm;
 import java.io.Serializable;
 
 import org.jabref.logic.l10n.Localization;
+import org.jabref.model.ai.AiDefaultEnums;
 
 public enum AiProvider implements Serializable {
     OPEN_AI(Localization.lang("OpenAI (or API compatible)"), "https://api.openai.com/v1", "https://openai.com/policies/privacy-policy/"),
@@ -34,6 +35,14 @@ public enum AiProvider implements Serializable {
 
     public String toString() {
         return displayName;
+    }
+
+    public static AiProvider safeValueOf(String name) {
+        try {
+            return AiProvider.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            return AiDefaultEnums.AI_PROVIDER;
+        }
     }
 }
 

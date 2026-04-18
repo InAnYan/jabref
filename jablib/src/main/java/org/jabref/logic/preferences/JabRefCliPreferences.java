@@ -769,17 +769,17 @@ public class JabRefCliPreferences implements CliPreferences {
         defaults.put(AI_RAG_MIN_SCORE, AiDefaultExpertSettings.RAG_MIN_SCORE);
 
         // region:AI templates
-        defaults.put(AI_CHATTING_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.getChattingSystemMessageTemplate());
-        defaults.put(AI_CHATTING_USER_MESSAGE_TEMPLATE, AiDefaultTemplates.getChattingUserMessageTemplate());
-        defaults.put(AI_SUMMARIZATION_CHUNK_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.getSummarizationChunkSystemMessageTemplate());
-        defaults.put(AI_SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.getSummarizationCombineSystemMessageTemplate());
-        defaults.put(AI_SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.getSummarizationFullDocumentSystemMessageTemplate());
-        defaults.put(AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.getCitationParsingSystemMessageTemplate());
-        defaults.put(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE, AiDefaultTemplates.getCitationParsingUserMessageTemplate());
-        defaults.put(AI_MARKDOWN_CHAT_EXPORT_TEMPLATE, AiDefaultTemplates.getMarkdownChatExportTemplate());
+        defaults.put(AI_CHATTING_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.CHATTING_SYSTEM_MESSAGE_TEMPLATE);
+        defaults.put(AI_CHATTING_USER_MESSAGE_TEMPLATE, AiDefaultTemplates.CHATTING_USER_MESSAGE_TEMPLATE);
+        defaults.put(AI_SUMMARIZATION_CHUNK_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE_TEMPLATE);
+        defaults.put(AI_SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE);
+        defaults.put(AI_SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE);
+        defaults.put(AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE);
+        defaults.put(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE, AiDefaultTemplates.CITATION_PARSING_USER_MESSAGE_TEMPLATE);
+        defaults.put(AI_MARKDOWN_CHAT_EXPORT_TEMPLATE, AiDefaultTemplates.MARKDOWN_CHAT_EXPORT_TEMPLATE);
         defaults.put(AI_GENERATE_FOLLOW_UP_QUESTIONS, true);
         defaults.put(AI_FOLLOW_UP_QUESTIONS_COUNT, 3);
-        defaults.put(AI_FOLLOW_UP_QUESTIONS_TEMPLATE, AiDefaultTemplates.getFollowUpQuestionsTemplate());
+        defaults.put(AI_FOLLOW_UP_QUESTIONS_TEMPLATE, AiDefaultTemplates.FOLLOW_UP_QUESTIONS_TEMPLATE);
         // endregion
 
         // endregion
@@ -2040,12 +2040,12 @@ public class JabRefCliPreferences implements CliPreferences {
         }
 
         boolean aiEnabled = getBoolean(AI_ENABLED);
-        
+
         aiPreferences = new AiPreferences(
                 aiEnabled,
                 getBoolean(AI_AUTO_GENERATE_EMBEDDINGS),
                 getBoolean(AI_AUTO_GENERATE_SUMMARIES),
-                AiProvider.valueOf(get(AI_PROVIDER)),
+                AiProvider.safeValueOf(get(AI_PROVIDER)),
                 get(AI_OPEN_AI_CHAT_MODEL),
                 get(AI_MISTRAL_AI_CHAT_MODEL),
                 get(AI_GEMINI_CHAT_MODEL),
@@ -2055,15 +2055,15 @@ public class JabRefCliPreferences implements CliPreferences {
                 get(AI_MISTRAL_AI_API_BASE_URL),
                 get(AI_GEMINI_API_BASE_URL),
                 get(AI_HUGGING_FACE_API_BASE_URL),
-                SummarizatorKind.valueOf(get(AI_SUMMARIZATOR_KIND)),
-                TokenEstimatorKind.valueOf(get(AI_TOKEN_ESTIMATOR_KIND)),
-                PredefinedEmbeddingModel.valueOf(get(AI_EMBEDDING_MODEL)),
+                SummarizatorKind.safeValueOf(get(AI_SUMMARIZATOR_KIND)),
+                TokenEstimatorKind.safeValueOf(get(AI_TOKEN_ESTIMATOR_KIND)),
+                PredefinedEmbeddingModel.safeValueOf(get(AI_EMBEDDING_MODEL)),
                 getDouble(AI_TEMPERATURE),
                 getInt(AI_CONTEXT_WINDOW_SIZE),
-                DocumentSplitterKind.valueOf(get(AI_DOCUMENT_SPLITTER_KIND)),
+                DocumentSplitterKind.safeValueOf(get(AI_DOCUMENT_SPLITTER_KIND)),
                 getInt(AI_DOCUMENT_SPLITTER_CHUNK_SIZE),
                 getInt(AI_DOCUMENT_SPLITTER_OVERLAP_SIZE),
-                AnswerEngineKind.valueOf(get(AI_ANSWER_ENGINE_KIND)),
+                AnswerEngineKind.safeValueOf(get(AI_ANSWER_ENGINE_KIND)),
                 getInt(AI_RAG_MAX_RESULTS_COUNT),
                 getDouble(AI_RAG_MIN_SCORE),
                 get(AI_CHATTING_SYSTEM_MESSAGE_TEMPLATE),

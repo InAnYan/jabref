@@ -432,35 +432,35 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     }
 
     public void resetChattingSystemMessageTemplate() {
-        chattingSystemMessageTemplate.set(AiDefaultTemplates.getChattingSystemMessageTemplate());
+        chattingSystemMessageTemplate.set(AiDefaultTemplates.CHATTING_SYSTEM_MESSAGE_TEMPLATE);
     }
 
     public void resetChattingUserMessageTemplate() {
-        chattingUserMessageTemplate.set(AiDefaultTemplates.getChattingUserMessageTemplate());
+        chattingUserMessageTemplate.set(AiDefaultTemplates.CHATTING_USER_MESSAGE_TEMPLATE);
     }
 
     public void resetSummarizationChunkSystemMessageTemplate() {
-        summarizationChunkSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationChunkSystemMessageTemplate());
+        summarizationChunkSystemMessageTemplate.set(AiDefaultTemplates.SUMMARIZATION_CHUNK_SYSTEM_MESSAGE_TEMPLATE);
     }
 
     public void resetSummarizationCombineSystemMessageTemplate() {
-        summarizationCombineSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationCombineSystemMessageTemplate());
+        summarizationCombineSystemMessageTemplate.set(AiDefaultTemplates.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE);
     }
 
     public void resetCitationParsingSystemMessageTemplate() {
-        citationParsingSystemMessageTemplate.set(AiDefaultTemplates.getCitationParsingSystemMessageTemplate());
+        citationParsingSystemMessageTemplate.set(AiDefaultTemplates.CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE);
     }
 
     public void resetCitationParsingUserMessageTemplate() {
-        citationParsingUserMessageTemplate.set(AiDefaultTemplates.getCitationParsingUserMessageTemplate());
+        citationParsingUserMessageTemplate.set(AiDefaultTemplates.CITATION_PARSING_USER_MESSAGE_TEMPLATE);
     }
 
     public void resetSummarizationFullDocumentSystemMessageTemplate() {
-        summarizationFullDocumentSystemMessageTemplate.set(AiDefaultTemplates.getSummarizationFullDocumentSystemMessageTemplate());
+        summarizationFullDocumentSystemMessageTemplate.set(AiDefaultTemplates.SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE);
     }
 
     public void resetMarkdownChatExportTemplate() {
-        markdownChatExportTemplate.set(AiDefaultTemplates.getMarkdownChatExportTemplate());
+        markdownChatExportTemplate.set(AiDefaultTemplates.MARKDOWN_CHAT_EXPORT_TEMPLATE);
     }
 
     public StringProperty markdownChatExportTemplateProperty() {
@@ -468,7 +468,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     }
 
     public void resetFollowUpQuestionsTemplate() {
-        followUpQuestionsTemplate.set(AiDefaultTemplates.getFollowUpQuestionsTemplate());
+        followUpQuestionsTemplate.set(AiDefaultTemplates.FOLLOW_UP_QUESTIONS_TEMPLATE);
     }
 
     @Override
