@@ -8,7 +8,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
 import org.jabref.gui.AbstractViewModel;
-import org.jabref.gui.util.PropertiesHelper;
+import org.jabref.gui.util.BindingsHelper;
 
 public class LoadingStatusPaneViewModel extends AbstractViewModel {
     private final StringProperty title = new SimpleStringProperty("");
@@ -17,7 +17,7 @@ public class LoadingStatusPaneViewModel extends AbstractViewModel {
     private final ObjectProperty<EventHandler<ActionEvent>> onCancel = new SimpleObjectProperty<>();
 
     public void cancel() {
-        PropertiesHelper.handle(onCancel);
+        BindingsHelper.handle(onCancel);
     }
 
     public StringProperty titleProperty() {

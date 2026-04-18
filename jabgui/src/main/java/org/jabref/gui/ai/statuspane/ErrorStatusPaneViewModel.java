@@ -8,8 +8,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
 import org.jabref.gui.AbstractViewModel;
+import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ExceptionsUtil;
-import org.jabref.gui.util.PropertiesHelper;
 
 public class ErrorStatusPaneViewModel extends AbstractViewModel {
     private final StringProperty title = new SimpleStringProperty("");
@@ -29,11 +29,11 @@ public class ErrorStatusPaneViewModel extends AbstractViewModel {
     }
 
     public void restart() {
-        PropertiesHelper.handle(onRestart);
+        BindingsHelper.handle(onRestart);
     }
 
     public void cancel() {
-        PropertiesHelper.handle(onCancel);
+        BindingsHelper.handle(onCancel);
     }
 
     public StringProperty titleProperty() {

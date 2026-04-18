@@ -18,7 +18,6 @@ import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.FileDialogConfiguration;
-import org.jabref.gui.util.PropertiesHelper;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.exporters.AiSummaryJsonExporter;
 import org.jabref.logic.ai.summarization.exporters.AiSummaryMarkdownExporter;
@@ -91,11 +90,11 @@ public class AiSummaryShowingViewModel extends AbstractViewModel {
     }
 
     public void regenerate() {
-        PropertiesHelper.handle(onRegenerate);
+        BindingsHelper.handle(onRegenerate);
     }
 
     public void regenerateCustom() {
-        PropertiesHelper.handle(onRegenerateCustom);
+        BindingsHelper.handle(onRegenerateCustom);
     }
 
     public void exportMarkdown() {

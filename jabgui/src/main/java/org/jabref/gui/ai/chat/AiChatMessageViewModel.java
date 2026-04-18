@@ -15,7 +15,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
 import org.jabref.gui.AbstractViewModel;
-import org.jabref.gui.util.PropertiesHelper;
+import org.jabref.gui.util.BindingsHelper;
 import org.jabref.model.ai.chatting.ChatMessage;
 
 public class AiChatMessageViewModel extends AbstractViewModel {
@@ -48,11 +48,11 @@ public class AiChatMessageViewModel extends AbstractViewModel {
     }
 
     public void delete() {
-        PropertiesHelper.handle(onDelete);
+        BindingsHelper.handle(onDelete);
     }
 
     public void regenerate() {
-        PropertiesHelper.handle(onRegenerate);
+        BindingsHelper.handle(onRegenerate);
     }
 
     public ObjectProperty<ChatMessage> chatMessageProperty() {

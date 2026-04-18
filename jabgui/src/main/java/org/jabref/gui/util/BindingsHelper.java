@@ -13,6 +13,7 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ListProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableBooleanValue;
@@ -23,6 +24,8 @@ import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.css.PseudoClass;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Tab;
 
@@ -505,6 +508,12 @@ public class BindingsHelper {
                 }
             }
         });
+    }
+
+    public static void handle(ObjectProperty<EventHandler<ActionEvent>> handler) {
+        if (handler.get() != null) {
+            handler.get().handle(null);
+        }
     }
 
     private static class BidirectionalBinding<A, B> {
