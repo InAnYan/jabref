@@ -14,7 +14,7 @@ import javafx.scene.layout.StackPane;
 
 import org.jabref.gui.DialogService;
 import org.jabref.gui.ai.AiPrivacyNoticeView;
-import org.jabref.gui.ai.statuspane.SimpleStatusPaneView;
+import org.jabref.gui.ai.statuspane.UniversalStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.HistoryTextArea;
 import org.jabref.gui.util.ListScrollPane;
@@ -34,7 +34,7 @@ public class AiChatView extends StackPane {
     private final AiChatStatusWindow aiChatStatusWindow = new AiChatStatusWindow();
 
     @FXML private AiPrivacyNoticeView privacyNotice;
-    @FXML private SimpleStatusPaneView noFilesErrorPane;
+    @FXML private UniversalStatusPaneView noFilesErrorPane;
     @FXML private BorderPane mainContainer;
 
     @FXML private ListScrollPane<ChatMessage> chatHistoryScrollPane;

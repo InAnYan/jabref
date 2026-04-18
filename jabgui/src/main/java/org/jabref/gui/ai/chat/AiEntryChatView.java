@@ -5,7 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.layout.StackPane;
 
 import org.jabref.gui.ai.AiPrivacyNoticeView;
-import org.jabref.gui.ai.statuspane.SimpleStatusPaneView;
+import org.jabref.gui.ai.statuspane.UniversalStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
 import org.jabref.model.ai.identifiers.FullBibEntry;
@@ -15,9 +15,9 @@ import jakarta.inject.Inject;
 
 public class AiEntryChatView extends StackPane {
     @FXML private AiPrivacyNoticeView privacyNotice;
-    @FXML private SimpleStatusPaneView emptyDatabasePathPane;
-    @FXML private SimpleStatusPaneView emptyCitationKeyPane;
-    @FXML private SimpleStatusPaneView nonUniqueCitationKeyPane;
+    @FXML private UniversalStatusPaneView emptyDatabasePathPane;
+    @FXML private UniversalStatusPaneView emptyCitationKeyPane;
+    @FXML private UniversalStatusPaneView nonUniqueCitationKeyPane;
     @FXML private AiChatView aiChatView;
 
     @Inject private GuiPreferences preferences;

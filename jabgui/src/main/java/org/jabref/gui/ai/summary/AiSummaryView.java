@@ -6,11 +6,10 @@ import javafx.scene.layout.StackPane;
 
 import org.jabref.gui.DialogService;
 import org.jabref.gui.ai.AiPrivacyNoticeView;
-import org.jabref.gui.ai.statuspane.ErrorStatusPaneView;
-import org.jabref.gui.ai.statuspane.LoadingStatusPaneView;
-import org.jabref.gui.ai.statuspane.SimpleStatusPaneView;
+import org.jabref.gui.ai.statuspane.UniversalStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.BindingsHelper;
+import org.jabref.gui.util.ExceptionsUtil;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
@@ -24,13 +23,13 @@ import jakarta.inject.Inject;
 public class AiSummaryView extends StackPane {
     @FXML private AiPrivacyNoticeView privacyNotice;
 
-    @FXML private LoadingStatusPaneView processingPane;
-    @FXML private ErrorStatusPaneView errorPane;
-    @FXML private ErrorStatusPaneView cancelledPane;
+    @FXML private UniversalStatusPaneView processingPane;
+    @FXML private UniversalStatusPaneView errorPane;
+    @FXML private UniversalStatusPaneView cancelledPane;
 
-    @FXML private SimpleStatusPaneView noDatabasePathPane;
-    @FXML private SimpleStatusPaneView noFilesPane;
-    @FXML private SimpleStatusPaneView noSupportedFileTypesPane;
+    @FXML private UniversalStatusPaneView noDatabasePathPane;
+    @FXML private UniversalStatusPaneView noFilesPane;
+    @FXML private UniversalStatusPaneView noSupportedFileTypesPane;
 
     @FXML private AiSummaryShowingView summaryShowing;
 
@@ -75,7 +74,8 @@ public class AiSummaryView extends StackPane {
     }
 
     private void setupBindings() {
-        errorPane.exceptionProperty().bind(viewModel.errorProperty());
+        errorPane.textAreaContentProperty().bind(viewModel.errorProperty().map(ExceptionsUtil::generateExceptionMessage));
+
         summaryShowing.summaryProperty().bind(viewModel.summaryProperty());
         summaryShowing.entryProperty().bind(viewModel.entryProperty());
 
@@ -87,6 +87,7 @@ public class AiSummaryView extends StackPane {
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
         processingPane.managedProperty().bind(processingPane.visibleProperty());
         errorPane.managedProperty().bind(errorPane.visibleProperty());
+        cancelledPane.managedProperty().bind(cancelledPane.visibleProperty());
         noDatabasePathPane.managedProperty().bind(noDatabasePathPane.visibleProperty());
         noFilesPane.managedProperty().bind(noFilesPane.visibleProperty());
         noSupportedFileTypesPane.managedProperty().bind(noSupportedFileTypesPane.visibleProperty());

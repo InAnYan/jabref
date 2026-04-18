@@ -70,10 +70,10 @@ public class AiEntryChatViewModel extends AbstractViewModel {
 
         BindingsHelper.bindEnum(
                 state,
-                State.AI_TURNED_OFF, isAiTurnedOff,
-                State.NO_DATABASE_PATH, isNoDatabasePath,
-                State.NO_CITATION_KEY, isNoCitationKey,
-                State.CITATION_KEY_NOT_UNIQUE, isCitationKeyNotUnique,
+                State.AI_TURNED_OFF, isAiTurnedOff.orElse(true),
+                State.NO_DATABASE_PATH, isNoDatabasePath.orElse(true),
+                State.NO_CITATION_KEY, isNoCitationKey.orElse(true),
+                State.CITATION_KEY_NOT_UNIQUE, isCitationKeyNotUnique.orElse(true),
                 State.CHATTING
         );
     }

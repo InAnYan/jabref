@@ -2,7 +2,7 @@
 
 <?import javafx.scene.layout.StackPane?>
 <?import org.jabref.gui.ai.chat.AiChatView?>
-<?import org.jabref.gui.ai.statuspane.SimpleStatusPaneView?>
+<?import org.jabref.gui.ai.statuspane.UniversalStatusPaneView?>
 <?import org.jabref.gui.ai.AiPrivacyNoticeView?>
 <fx:root
         type="StackPane"
@@ -13,17 +13,17 @@
     <AiPrivacyNoticeView
             fx:id="privacyNotice"/>
 
-    <SimpleStatusPaneView
+    <UniversalStatusPaneView
             fx:id="emptyDatabasePathPane"
             title="Unable to chat"
             description="Please save the library in order to chat."/>
 
-    <SimpleStatusPaneView
+    <UniversalStatusPaneView
             fx:id="emptyCitationKeyPane"
             title="Unable to chat"
             description="Please provide a non-empty citation key for this entry."/>
 
-    <SimpleStatusPaneView
+    <UniversalStatusPaneView
             fx:id="nonUniqueCitationKeyPane"
             title="Unable to chat"
             description="Please provide a unique citation key for this entry."/>

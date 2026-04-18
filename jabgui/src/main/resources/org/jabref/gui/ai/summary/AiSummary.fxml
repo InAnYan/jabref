@@ -2,9 +2,7 @@
 
 <?import javafx.scene.layout.StackPane?>
 <?import org.jabref.gui.ai.AiPrivacyNoticeView?>
-<?import org.jabref.gui.ai.statuspane.ErrorStatusPaneView?>
-<?import org.jabref.gui.ai.statuspane.LoadingStatusPaneView?>
-<?import org.jabref.gui.ai.statuspane.SimpleStatusPaneView?>
+<?import org.jabref.gui.ai.statuspane.UniversalStatusPaneView?>
 <?import org.jabref.gui.ai.summary.AiSummaryShowingView?>
 <fx:root
         type="StackPane"
@@ -14,39 +12,48 @@
     <AiPrivacyNoticeView
             fx:id="privacyNotice"/>
 
-    <LoadingStatusPaneView
+    <UniversalStatusPaneView
             fx:id="processingPane"
             title="%Processing..."
-            onCancel="#cancel"/>
+            showSpinner="true"
+            showButton1="true"
+            button1Text="%Cancel"
+            onButton1Click="#cancel"/>
 
-    <ErrorStatusPaneView
+    <UniversalStatusPaneView
             fx:id="errorPane"
             title="%Unable to generate summary"
             description="%Got error while processing the file:"
-            restartButtonText="%Regenerate"
-            onRestart="#regenerate"
-            onCancel="#regenerateCustom"/>
+            showTextArea="true"
+            showButton1="true"
+            button1Text="%Regenerate"
+            onButton1Click="#regenerate"
+            showButton2="true"
+            button2Text="%Regenerate with custom parameters"
+            onButton2Click="#regenerateCustom"/>
 
-    <ErrorStatusPaneView
+    <UniversalStatusPaneView
             fx:id="cancelledPane"
             title="%Unable to generate summary"
             description="%The operation was cancelled."
-            restartButtonText="%Regenerate"
-            cancelButtonText="%Cancel"
-            onRestart="#regenerate"
-            onCancel="#regenerateCustom"/>
+            showButton1="true"
+            button1Text="%Regenerate"
+            onButton1Click="#regenerate"
+            showButton2="true"
+            button2Text="%Cancel"
+            onButton2Click="#regenerateCustom"/>
 
-    <SimpleStatusPaneView
+    <UniversalStatusPaneView
             fx:id="noDatabasePathPane"
             title="%Unable to generate summary"
             description="%The path of the current library is not set, but it is required for summarization"/>
 
-    <SimpleStatusPaneView
+    <UniversalStatusPaneView
             fx:id="noFilesPane"
             title="%Unable to generate summary"
             description="%Please attach at least one PDF file to enable summarization of PDF file(s)."/>
 
-    <SimpleStatusPaneView
+    <UniversalStatusPaneView
             fx:id="noSupportedFileTypesPane"
             title="%Unable to generate summary"
             description="%Only PDF files are supported."/>

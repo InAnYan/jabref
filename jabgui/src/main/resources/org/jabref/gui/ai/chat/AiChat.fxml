@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import org.jabref.gui.ai.AiPrivacyNoticeView?>
-<?import org.jabref.gui.ai.statuspane.SimpleStatusPaneView?>
+<?import org.jabref.gui.ai.statuspane.UniversalStatusPaneView?>
 <?import org.jabref.gui.icon.JabRefIconView?>
 <?import org.jabref.gui.util.HistoryTextArea?>
 <?import org.jabref.gui.util.ListScrollPane?>
@@ -25,7 +25,7 @@
     <AiPrivacyNoticeView
             fx:id="privacyNotice"/>
 
-    <SimpleStatusPaneView
+    <UniversalStatusPaneView
             fx:id="noFilesErrorPane"
             title="%Unable to chat"
             description="%No files attached."/>
