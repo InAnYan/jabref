@@ -103,7 +103,6 @@ public class AiChatView extends StackPane {
         sendButton.managedProperty().bind(sendButton.visibleProperty());
         retryButton.managedProperty().bind(retryButton.visibleProperty());
         cancelButton.managedProperty().bind(cancelButton.visibleProperty());
-        clearButton.managedProperty().bind(clearButton.visibleProperty());
         followUpQuestionsArea.managedProperty().bind(followUpQuestionsArea.visibleProperty());
 
         BooleanBinding isAiTurnedOff = viewModel.stateProperty().isEqualTo(AiChatViewModel.State.AI_TURNED_OFF);
@@ -187,10 +186,6 @@ public class AiChatView extends StackPane {
         viewModel.cancel();
     }
 
-    @FXML
-    private void clearChatHistory() {
-        viewModel.clearChatHistory();
-    }
 
     public ListProperty<ChatMessage> chatHistoryProperty() {
         return viewModel.chatHistoryProperty();

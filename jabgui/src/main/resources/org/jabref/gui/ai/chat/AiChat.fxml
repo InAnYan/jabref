@@ -122,30 +122,11 @@
                     </center>
                 </BorderPane>
 
-                <StackPane>
-                    <Label fx:id="noticeText"
-                           maxWidth="Infinity"
-                           alignment="CENTER"
-                           StackPane.alignment="CENTER"
-                           textAlignment="CENTER"
-                           wrapText="true"/>
-
-                    <Button fx:id="clearButton"
-                            alignment="CENTER"
-                            onAction="#clearChatHistory"
-                            styleClass="icon-button,narrow"
-                            textAlignment="CENTER"
-                            StackPane.alignment="CENTER_RIGHT">
-                        <graphic>
-                            <JabRefIconView
-                                    glyph="DELETE_ENTRY"/>
-                        </graphic>
-                        <tooltip>
-                            <Tooltip
-                                    text="%Clear chat history"/>
-                        </tooltip>
-                    </Button>
-                </StackPane>
+                <Label fx:id="noticeText"
+                       maxWidth="Infinity"
+                       alignment="CENTER"
+                       textAlignment="CENTER"
+                       wrapText="true"/>
             </VBox>
         </bottom>
     </BorderPane>

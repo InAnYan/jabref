@@ -166,6 +166,11 @@ public class AiChatStatusView extends VBox {
         viewModel.exportMarkdown();
     }
 
+    @FXML
+    private void clearChatHistory() {
+        viewModel.clearChatHistory();
+    }
+
     public ObjectProperty<ChatModel> chatModelProperty() {
         return viewModel.chatModelProperty();
     }

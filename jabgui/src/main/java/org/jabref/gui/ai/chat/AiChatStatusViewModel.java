@@ -278,6 +278,17 @@ public class AiChatStatusViewModel extends AbstractViewModel {
                      });
     }
 
+    public void clearChatHistory() {
+        boolean confirmed = dialogService.showConfirmationDialogAndWait(
+                Localization.lang("Clear chat history"),
+                Localization.lang("Are you sure you want to clear the chat history?")
+        );
+
+        if (confirmed) {
+            chatHistory.clear();
+        }
+    }
+
     private AiMetadata buildMetadata() {
         ChatModel model = chatModel.get();
         if (model == null) {

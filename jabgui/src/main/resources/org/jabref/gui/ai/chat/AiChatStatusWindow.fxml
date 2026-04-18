@@ -5,7 +5,8 @@
 <DialogPane
         xmlns="http://javafx.com/javafx"
         xmlns:fx="http://javafx.com/fxml"
-        fx:controller="org.jabref.gui.ai.chat.AiChatStatusWindow">
+        fx:controller="org.jabref.gui.ai.chat.AiChatStatusWindow"
+        prefWidth="900">
     <content>
         <AiChatStatusView
                 fx:id="aiChatStatusView"/>
