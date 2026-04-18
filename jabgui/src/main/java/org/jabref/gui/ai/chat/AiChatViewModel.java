@@ -25,6 +25,7 @@ import org.jabref.logic.ai.chatting.tasks.GenerateRagResponseTask;
 import org.jabref.logic.ai.chatting.util.ChatHistoryUtils;
 import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
 import org.jabref.logic.ai.embedding.EmbeddingModelCache;
+import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
 import org.jabref.logic.ai.followup.tasks.GenerateFollowUpQuestions;
 import org.jabref.logic.ai.ingestion.IngestionTaskAggregator;
 import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
@@ -36,12 +37,14 @@ import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
+import org.jabref.logic.util.ObservablesHelper;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 
 import com.google.common.collect.Comparators;
+import com.tobiasdiez.easybind.EasyBind;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.slf4j.Logger;
@@ -77,7 +80,7 @@ public class AiChatViewModel extends AbstractViewModel {
     private BackgroundTask<List<String>> generateFollowUpQuestionsTask;
 
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
-    private AsyncEmbeddingModel embeddingModel;
+    private final ObjectProperty<AsyncEmbeddingModel> embeddingModel = new SimpleObjectProperty<>();
     private final ObjectProperty<DocumentSplitter> documentSplitter = new SimpleObjectProperty<>();
 
     private final TreeMap<List<FullBibEntry>, GenerateRagResponseTask> tasksMap =
@@ -128,6 +131,16 @@ public class AiChatViewModel extends AbstractViewModel {
         systemMessageTemplate.bind(aiPreferences.chattingSystemMessageTemplateProperty());
         userMessageTemplate.bind(aiPreferences.chattingUserMessageTemplateProperty());
 
+        this.embeddingModel.bind(ObservablesHelper.createClosableObjectBinding(
+                () -> EmbeddingModelFactory.create(aiPreferences, embeddingModelCache),
+                aiPreferences.getEmbeddingsProperties()
+        ));
+
+        this.documentSplitter.bind(ObservablesHelper.createObjectBinding(
+                () -> DocumentSplitterFactory.create(aiPreferences),
+                aiPreferences.getDocumentSplitterProperties()
+        ));
+
         BooleanBinding isAiTurnedOff = aiPreferences.enableAiProperty().not();
         BooleanBinding isWaiting = generateRagResponseTask.isNotNull();
         BooleanBinding hasNoFiles = Bindings.createBooleanBinding(() ->
@@ -163,36 +176,10 @@ public class AiChatViewModel extends AbstractViewModel {
                 this::changeEmbeddingTasks
         );
 
-        // Listen to system message template changes and update chat history
-        BindingsHelper.subscribeToChanges(
-                () -> ChatHistoryUtils.updateSystemMessage(chatHistory, systemMessageTemplate.get()),
-                systemMessageTemplate
+        EasyBind.subscribe(
+                systemMessageTemplate,
+                _ -> ChatHistoryUtils.updateSystemMessage(chatHistory, systemMessageTemplate.get())
         );
-
-        // Rebuild embedding model when relevant preferences change (also calls immediately)
-        BindingsHelper.subscribeToChanges(
-                this::rebuildEmbeddingModel,
-                aiPreferences.enableAiProperty(),
-                aiPreferences.customizeExpertSettingsProperty(),
-                aiPreferences.embeddingModelProperty()
-        );
-
-        // Rebuild document splitter when relevant preferences change (also calls immediately)
-        BindingsHelper.subscribeToChanges(
-                this::rebuildDocumentSplitter,
-                aiPreferences.customizeExpertSettingsProperty(),
-                aiPreferences.documentSplitterKindProperty(),
-                aiPreferences.documentSplitterChunkSizeProperty(),
-                aiPreferences.documentSplitterOverlapSizeProperty()
-        );
-    }
-
-    private void rebuildEmbeddingModel() {
-        embeddingModel = embeddingModelCache.getOrCreate(aiPreferences.getEmbeddingModel());
-    }
-
-    private void rebuildDocumentSplitter() {
-        documentSplitter.set(DocumentSplitterFactory.create(aiPreferences));
     }
 
     private void changeEmbeddingTasks() {
@@ -229,7 +216,7 @@ public class AiChatViewModel extends AbstractViewModel {
                                             filePreferences,
                                             ingestedDocumentsRepository,
                                             embeddingStore,
-                                            embeddingModel,
+                                            embeddingModel.get(),
                                             documentSplitter.get(),
                                             identifier.databaseContext(),
                                             file

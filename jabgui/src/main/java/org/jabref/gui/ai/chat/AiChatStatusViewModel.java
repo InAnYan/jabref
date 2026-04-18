@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javafx.beans.Observable;
 import javafx.beans.property.ListProperty;
@@ -31,6 +32,7 @@ import org.jabref.logic.ai.chatting.exporters.AiChatMarkdownExporter;
 import org.jabref.logic.ai.chatting.util.ChatModelFactory;
 import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
 import org.jabref.logic.ai.embedding.EmbeddingModelCache;
+import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddingsTask;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
@@ -86,11 +88,16 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     private final ObservableList<IngestionStatusRow> ingestionStatuses = FXCollections.observableArrayList(row ->
             new Observable[] {row.statusProperty(), row.errorProperty()}
     );
+
     private final ListProperty<AnswerEngineKind> answerEngineKinds = new SimpleListProperty<>(FXCollections.observableArrayList(AnswerEngineKind.values()));
     private final ObjectProperty<AnswerEngineKind> selectedAnswerEngineKind = new SimpleObjectProperty<>();
+
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
+    private final ObjectProperty<AsyncEmbeddingModel> embeddingModel = new SimpleObjectProperty<>();
+
     private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
+
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
     private final FieldPreferences fieldPreferences;
@@ -98,8 +105,6 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     private final DialogService dialogService;
     private final EmbeddingModelCache embeddingModelCache;
     private final EmbeddingStore<TextSegment> embeddingStore;
-
-    private AsyncEmbeddingModel embeddingModel;
 
     public AiChatStatusViewModel(
             AiPreferences aiPreferences,
@@ -118,42 +123,44 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         this.embeddingModelCache = embeddingModelCache;
         this.embeddingStore = embeddingStore;
 
-        setupListeners();
         setupValues();
+        setupBindings();
+        setupListeners();
     }
 
-    private void setupListeners() {
-        BindingsHelper.onChangeNonNull(selectedAnswerEngineKind, this::updateAnswerEngine);
-        BindingsHelper.onListContentsChange(generateEmbeddingsTasks, this::wireTask, this::unwireTask);
+    private void setupValues() {
+        selectedAnswerEngineKind.set(aiPreferences.getAnswerEngineKind());
+    }
 
+    private void setupBindings() {
         this.chatModel.bind(ObservablesHelper.createObjectBinding(
                 () -> ChatModelFactory.create(aiPreferences),
                 aiPreferences.getChatProperties()
         ));
 
-        // Rebuild embedding model when relevant preferences change (also calls immediately)
-        BindingsHelper.subscribeToChanges(
-                this::rebuildEmbeddingModel,
-                aiPreferences.enableAiProperty(),
-                aiPreferences.customizeExpertSettingsProperty(),
-                aiPreferences.embeddingModelProperty()
-        );
+        this.embeddingModel.bind(ObservablesHelper.createClosableObjectBinding(
+                () -> EmbeddingModelFactory.create(aiPreferences, embeddingModelCache),
+                aiPreferences.getEmbeddingsProperties()
+        ));
+
+        this.answerEngine.bind(ObservablesHelper.createObjectBinding(
+                () -> AnswerEngineFactory.create(
+                        selectedAnswerEngineKind.get(),
+                        filePreferences,
+                        embeddingModel.get(),
+                        embeddingStore,
+                        aiPreferences.getRagMinScore(),
+                        aiPreferences.getRagMaxResultsCount()
+                ),
+                Stream.concat(
+                        aiPreferences.getAnswerEngineProperties().stream(),
+                        Stream.of(selectedAnswerEngineKind)
+                ).toList()
+        ));
     }
 
-    private void rebuildChatModel() {
-        chatModel.set(ChatModelFactory.create(aiPreferences));
-    }
-
-    private void rebuildEmbeddingModel() {
-        embeddingModel = embeddingModelCache.getOrCreate(aiPreferences.getEmbeddingModel());
-        // Rebuild the answer engine with the new embedding model
-        if (selectedAnswerEngineKind.get() != null) {
-            updateAnswerEngine(selectedAnswerEngineKind.get());
-        }
-    }
-
-    private void setupValues() {
-        selectedAnswerEngineKind.set(aiPreferences.getAnswerEngineKind());
+    private void setupListeners() {
+        BindingsHelper.onListContentChange(generateEmbeddingsTasks, this::wireTask, this::unwireTask);
     }
 
     private void wireTask(GenerateEmbeddingsTask task) {
@@ -213,18 +220,6 @@ public class AiChatStatusViewModel extends AbstractViewModel {
                         row.statusProperty().set(FileStatus.CANCELLED);
             }
         });
-    }
-
-    private void updateAnswerEngine(AnswerEngineKind kind) {
-        AnswerEngine engine = AnswerEngineFactory.create(
-                kind,
-                filePreferences,
-                embeddingModel,
-                embeddingStore,
-                aiPreferences.getRagMinScore(),
-                aiPreferences.getRagMaxResultsCount()
-        );
-        answerEngine.set(engine);
     }
 
     public void exportMarkdown() {

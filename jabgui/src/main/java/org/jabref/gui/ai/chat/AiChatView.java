@@ -84,9 +84,10 @@ public class AiChatView extends StackPane {
 
     private void setupBindings() {
         viewModel.answerEngineProperty().bind(aiChatStatusWindow.answerEngineProperty());
+        viewModel.chatModelProperty().bind(aiChatStatusWindow.chatModelProperty());
+
         aiChatStatusWindow.entriesProperty().bind(viewModel.entriesProperty());
         aiChatStatusWindow.generateEmbeddingsTasksProperty().bind(viewModel.generateEmbeddingsTasksProperty());
-        viewModel.chatModelProperty().bind(aiChatStatusWindow.chatModelProperty());
         aiChatStatusWindow.chatHistoryProperty().bind(viewModel.chatHistoryProperty());
 
         chatHistoryScrollPane.itemsProperty().bind(viewModel.chatHistoryProperty());
@@ -132,6 +133,7 @@ public class AiChatView extends StackPane {
         followUpQuestionsArea.visibleProperty().bind(
                 viewModel.followUpQuestionsProperty().emptyProperty().not()
                          .and(preferences.getAiPreferences().generateFollowUpQuestionsProperty())
+                         .and(viewModel.stateProperty().isEqualTo(AiChatViewModel.State.IDLE))
         );
 
         followUpQuestionsSimpleListView.itemsProperty().bind(viewModel.followUpQuestionsProperty());

@@ -18,7 +18,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import dev.langchain4j.model.mistralai.MistralAiChatModel;
-import org.jspecify.annotations.Nullable;
 
 /// Static factory for creating {@link ChatModel} instances.
 ///
@@ -81,28 +80,18 @@ public final class ChatModelFactory {
         return new ChatModelImpl(langchainModel, tokenEstimator, provider, modelName, contextWindowSize, httpClient, executorService);
     }
 
-    @Nullable
     public static ChatModel create(AiPreferences aiPreferences) {
-        if (!aiPreferences.getEnableAi()) {
-            return null;
-        }
-
-        String apiKey = aiPreferences.getApiKeyForAiProvider(aiPreferences.getAiProvider());
-        if (apiKey.isEmpty()) {
-            return null;
-        }
-
         return create(
                 aiPreferences.getAiProvider(),
                 aiPreferences.getSelectedChatModel(),
-                apiKey,
+                aiPreferences.getApiKeyForAiProvider(aiPreferences.getAiProvider()),
                 aiPreferences.getTemperature(),
                 aiPreferences.getSelectedApiBaseUrl(),
                 aiPreferences.getContextWindowSize(),
                 aiPreferences.getTokenEstimatorKind()
         );
     }
-    
+
     private static class ChatModelImpl implements ChatModel, AutoCloseable {
         private final dev.langchain4j.model.chat.ChatModel delegate;
         private final TokenEstimator tokenEstimator;

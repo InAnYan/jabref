@@ -558,6 +558,27 @@ public class AiPreferences {
         ).flatMap(List::stream).toList();
     }
 
+    public List<? extends Property<?>> getAnswerEngineProperties() {
+        return List.of(
+                enableAi,
+                embeddingModel,
+                customizeExpertSettings,
+                answerEngineKind,
+                ragMaxResultsCount,
+                ragMinScore
+        );
+    }
+
+    public List<? extends Property<?>> getDocumentSplitterProperties() {
+        return List.of(
+                enableAi,
+                customizeExpertSettings,
+                documentSplitterKind,
+                documentSplitterChunkSize,
+                documentSplitterOverlapSize
+        );
+    }
+
     public String getSelectedChatModel() {
         return switch (aiProvider.get()) {
             case OPEN_AI ->

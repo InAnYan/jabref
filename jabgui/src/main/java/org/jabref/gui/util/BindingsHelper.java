@@ -8,7 +8,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.ObjectBinding;
@@ -38,28 +37,8 @@ import com.tobiasdiez.easybind.Subscription;
  * Helper methods for javafx binding. Some methods are taken from https://bugs.openjdk.java.net/browse/JDK-8134679
  */
 public class BindingsHelper {
-
     private BindingsHelper() {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
-    }
-
-    /**
-     * Registers {@code runnable} as a change listener on every one of the given {@code observables}
-     * and also invokes it once immediately.
-     * <p>
-     * Use this to deduplicate the common pattern of:
-     * <pre>
-     *     Runnable r = this::rebuild;
-     *     obs1.addListener(_ -&gt; r.run());
-     *     obs2.addListener(_ -&gt; r.run());
-     *     r.run();
-     * </pre>
-     */
-    public static void subscribeToChanges(Runnable runnable, Observable... observables) {
-        for (Observable observable : observables) {
-            observable.addListener(_ -> runnable.run());
-        }
-        runnable.run();
     }
 
     public static Subscription includePseudoClassWhen(Node node, PseudoClass pseudoClass, ObservableValue<? extends Boolean> condition) {
@@ -493,7 +472,7 @@ public class BindingsHelper {
         observable2.addListener(listener);
     }
 
-    public static <T> void onListContentsChange(ListProperty<T> listProperty, Consumer<T> onAdded, Consumer<T> onRemoved) {
+    public static <T> void onListContentChange(ListProperty<T> listProperty, Consumer<T> onAdded, Consumer<T> onRemoved) {
         listProperty.addListener((ListChangeListener<T>) c -> {
             while (c.next()) {
                 if (c.wasRemoved()) {

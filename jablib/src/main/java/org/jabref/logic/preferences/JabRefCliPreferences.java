@@ -2040,7 +2040,7 @@ public class JabRefCliPreferences implements CliPreferences {
         }
 
         boolean aiEnabled = getBoolean(AI_ENABLED);
-
+        
         aiPreferences = new AiPreferences(
                 aiEnabled,
                 getBoolean(AI_AUTO_GENERATE_EMBEDDINGS),
