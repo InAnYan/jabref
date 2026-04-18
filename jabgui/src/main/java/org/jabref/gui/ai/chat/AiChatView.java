@@ -9,6 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
 import org.jabref.gui.DialogService;
@@ -36,8 +37,10 @@ public class AiChatView extends StackPane {
     @FXML private SimpleStatusPaneView noFilesErrorPane;
     @FXML private BorderPane mainContainer;
 
-    @FXML private ProgressIndicator loadingIndicator;
     @FXML private ListScrollPane<ChatMessage> chatHistoryScrollPane;
+
+    @FXML private Pane transparentPane;
+    @FXML private ProgressIndicator loadingIndicator;
 
     @FXML private HBox followUpQuestionsArea;
     @FXML private SimpleListView<String> followUpQuestionsSimpleListView;
@@ -48,7 +51,6 @@ public class AiChatView extends StackPane {
     @FXML private Button retryButton;
     @FXML private Button cancelButton;
 
-    @FXML private Button clearButton;
     @FXML private Label noticeText;
 
     @Inject private GuiPreferences preferences;
@@ -98,6 +100,7 @@ public class AiChatView extends StackPane {
         noFilesErrorPane.managedProperty().bind(noFilesErrorPane.visibleProperty());
         mainContainer.managedProperty().bind(mainContainer.visibleProperty());
         loadingIndicator.managedProperty().bind(loadingIndicator.visibleProperty());
+        transparentPane.managedProperty().bind(transparentPane.visibleProperty());
         infoButton.managedProperty().bind(infoButton.visibleProperty());
         userMessageTextArea.managedProperty().bind(userMessageTextArea.visibleProperty());
         sendButton.managedProperty().bind(sendButton.visibleProperty());
@@ -116,6 +119,7 @@ public class AiChatView extends StackPane {
         mainContainer.visibleProperty().bind(isAiTurnedOff.not().and(isNoFiles.not()));
 
         loadingIndicator.visibleProperty().bind(isWaiting);
+        transparentPane.visibleProperty().bind(isWaiting);
         userMessageTextArea.visibleProperty().bind(isIdle);
         sendButton.visibleProperty().bind(isIdle);
         retryButton.visibleProperty().bind(isError);
@@ -185,7 +189,6 @@ public class AiChatView extends StackPane {
     private void cancel() {
         viewModel.cancel();
     }
-
 
     public ListProperty<ChatMessage> chatHistoryProperty() {
         return viewModel.chatHistoryProperty();
