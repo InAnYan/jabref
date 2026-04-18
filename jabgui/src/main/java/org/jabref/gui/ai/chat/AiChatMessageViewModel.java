@@ -28,11 +28,9 @@ public class AiChatMessageViewModel extends AbstractViewModel {
 
     private final BooleanProperty showDelete = new SimpleBooleanProperty(true);
     private final BooleanProperty showRegenerate = new SimpleBooleanProperty(false);
-    private final BooleanProperty showEdit = new SimpleBooleanProperty(false);
 
     private final ObjectProperty<EventHandler<ActionEvent>> onDelete = new SimpleObjectProperty<>();
     private final ObjectProperty<EventHandler<ActionEvent>> onRegenerate = new SimpleObjectProperty<>();
-    private final ObjectProperty<EventHandler<ActionEvent>> onEdit = new SimpleObjectProperty<>();
 
     public AiChatMessageViewModel() {
         setupBindings();
@@ -55,10 +53,6 @@ public class AiChatMessageViewModel extends AbstractViewModel {
 
     public void regenerate() {
         PropertiesHelper.handle(onRegenerate);
-    }
-
-    public void edit() {
-        PropertiesHelper.handle(onEdit);
     }
 
     public ObjectProperty<ChatMessage> chatMessageProperty() {
@@ -89,19 +83,11 @@ public class AiChatMessageViewModel extends AbstractViewModel {
         return showRegenerate;
     }
 
-    public ReadOnlyBooleanProperty showEditProperty() {
-        return showEdit;
-    }
-
     public ObjectProperty<EventHandler<ActionEvent>> onDeleteProperty() {
         return onDelete;
     }
 
     public ObjectProperty<EventHandler<ActionEvent>> onRegenerateProperty() {
         return onRegenerate;
-    }
-
-    public ObjectProperty<EventHandler<ActionEvent>> onEditProperty() {
-        return onEdit;
     }
 }
