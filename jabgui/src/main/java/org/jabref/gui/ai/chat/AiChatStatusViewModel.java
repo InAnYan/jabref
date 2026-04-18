@@ -160,7 +160,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     }
 
     private void setupListeners() {
-        BindingsHelper.onListContentChange(generateEmbeddingsTasks, this::wireTask, this::unwireTask);
+        BindingsHelper.listenToListContentChanges(generateEmbeddingsTasks, this::wireTask, this::unwireTask);
     }
 
     private void wireTask(GenerateEmbeddingsTask task) {
@@ -294,6 +294,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         if (model == null) {
             return new AiMetadata(null, "", Instant.now());
         }
+
         return new AiMetadata(model.getAiProvider(), model.getName(), Instant.now());
     }
 

@@ -14,7 +14,9 @@ public class AiSummaryParametersDialog extends BaseDialog<Summarizator> {
 
     public AiSummaryParametersDialog() {
         super();
+
         this.setTitle(Localization.lang("Summarization parameters"));
+        
         this.setResultConverter(buttonType -> {
             if (buttonType.getButtonData() == ButtonBar.ButtonData.CANCEL_CLOSE) {
                 return null;

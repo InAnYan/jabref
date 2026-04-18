@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -35,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 public class AiSummaryShowingViewModel extends AbstractViewModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiSummaryShowingViewModel.class);
+    
     private static final MarkdownFormatter MARKDOWN_FORMATTER = new MarkdownFormatter();
 
     private final ObjectProperty<AiSummary> summary = new SimpleObjectProperty<>();
@@ -65,14 +67,21 @@ public class AiSummaryShowingViewModel extends AbstractViewModel {
         setupBindings();
     }
 
-    private static String generateWebSource(AiSummary summary, Boolean isMarkdown) {
-        if (summary == null || isMarkdown == null) {
+    private void setupBindings() {
+        webViewSource.bind(Bindings.createObjectBinding(
+                this::generateWebSource,
+                summary, isMarkdown
+        ));
+    }
+
+    private String generateWebSource() {
+        if (summary.get() == null) {
             return "";
         }
 
-        String content = summary.content();
+        String content = summary.get().content();
 
-        if (isMarkdown) {
+        if (isMarkdown.get()) {
             return MARKDOWN_FORMATTER.format(content);
         } else {
             return "<body style='margin: 0; padding: 5px; width: 100vw'>" +
@@ -80,13 +89,6 @@ public class AiSummaryShowingViewModel extends AbstractViewModel {
                     content +
                     "</div></body>";
         }
-    }
-
-    private void setupBindings() {
-        webViewSource.bind(BindingsHelper.map(
-                summary, isMarkdown,
-                AiSummaryShowingViewModel::generateWebSource
-        ));
     }
 
     public void regenerate() {

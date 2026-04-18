@@ -1,5 +1,6 @@
 package org.jabref.gui.ai.chat;
 
+import java.util.Map;
 import java.util.Optional;
 
 import javafx.beans.property.ListProperty;
@@ -70,16 +71,28 @@ public class AiEntryChatViewModel extends AbstractViewModel {
 
         BindingsHelper.bindEnum(
                 state,
-                State.AI_TURNED_OFF, isAiTurnedOff.orElse(true),
-                State.NO_DATABASE_PATH, isNoDatabasePath.orElse(true),
-                State.NO_CITATION_KEY, isNoCitationKey.orElse(true),
-                State.CITATION_KEY_NOT_UNIQUE, isCitationKeyNotUnique.orElse(true),
-                State.CHATTING
+                State.CHATTING,
+
+                Map.entry(State.AI_TURNED_OFF,
+                        isAiTurnedOff.orElse(true)
+                ),
+
+                Map.entry(State.NO_DATABASE_PATH,
+                        isNoDatabasePath.orElse(true)
+                ),
+
+                Map.entry(State.NO_CITATION_KEY,
+                        isNoCitationKey.orElse(true)
+                ),
+
+                Map.entry(State.CITATION_KEY_NOT_UNIQUE,
+                        isCitationKeyNotUnique.orElse(true)
+                )
         );
     }
 
     private void setupListeners() {
-        BindingsHelper.onChangeNonNullWhen(
+        BindingsHelper.listenWhen(
                 selectedEntry,
                 selectedEntry.isNotNull().and(state.isEqualTo(State.CHATTING)),
                 this::load

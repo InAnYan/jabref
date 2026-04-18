@@ -15,6 +15,7 @@ import javafx.scene.text.Text;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.ai.AiPrivacyNoticeViewModel.DisagreeBehaviour;
 import org.jabref.gui.preferences.GuiPreferences;
+import org.jabref.gui.util.URLs;
 import org.jabref.model.ai.llm.AiProvider;
 
 import com.airhacks.afterburner.views.ViewLoader;
@@ -58,6 +59,7 @@ public class AiPrivacyNoticeView extends ScrollPane {
                 line.wrappingWidthProperty().bind(textWidth);
             }
         });
+
         aiPolicies.prefWidthProperty().bind(textWidth);
         embeddingModelText.wrappingWidthProperty().bind(textWidth);
 
@@ -89,7 +91,7 @@ public class AiPrivacyNoticeView extends ScrollPane {
 
     @FXML
     private void onDjlLinkClick() {
-        viewModel.openBrowser("https://github.com/deepjavalibrary/djl/discussions/3370#discussioncomment-10233632");
+        viewModel.openBrowser(URLs.DJL_PRIVACY_POLICY_URL);
     }
 
     @FXML

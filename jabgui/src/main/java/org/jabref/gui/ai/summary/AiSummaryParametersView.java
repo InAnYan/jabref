@@ -32,7 +32,6 @@ public class AiSummaryParametersView extends VBox {
         );
 
         setupBindings();
-        setupValues();
     }
 
     private void setupBindings() {
@@ -40,11 +39,8 @@ public class AiSummaryParametersView extends VBox {
                 .withText(SummarizatorKind::getDisplayName)
                 .install(summarizatorCombo);
 
+        summarizatorCombo.itemsProperty().bind(viewModel.summarizatorKindsProperty());
         summarizatorCombo.valueProperty().bindBidirectional(viewModel.summarizatorKindProperty());
-    }
-
-    private void setupValues() {
-        summarizatorCombo.setItems(viewModel.summarizatorKindsProperty());
     }
 
     public Summarizator constructSummarizator() {

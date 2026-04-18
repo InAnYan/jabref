@@ -21,6 +21,7 @@ import org.jabref.logic.os.OS;
 import org.jabref.model.strings.UnicodeToReadableCharMap;
 
 import com.google.common.base.CharMatcher;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
@@ -815,5 +816,9 @@ public class StringUtil {
         }
 
         return sb.toString();
+    }
+
+    public static String makeSafe(@Nullable String string) {
+        return Optional.ofNullable(string).orElse("");
     }
 }

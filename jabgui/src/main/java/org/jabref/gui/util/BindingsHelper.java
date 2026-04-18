@@ -1,13 +1,14 @@
 package org.jabref.gui.util;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.ObjectBinding;
@@ -16,7 +17,6 @@ import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableBooleanValue;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -42,6 +42,31 @@ import com.tobiasdiez.easybind.Subscription;
 public class BindingsHelper {
     private BindingsHelper() {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
+    }
+
+    public static Subscription listen(Observable observable, Runnable... runnables) {
+        InvalidationListener listener = _ -> {
+            for (Runnable runnable : runnables) {
+                runnable.run();
+            }
+        };
+
+        observable.addListener(listener);
+
+        return () -> observable.removeListener(listener);
+    }
+
+    @SafeVarargs
+    public static <T> Subscription listen(ObservableValue<T> observable, Consumer<T>... consumers) {
+        ChangeListener<T> listener = (_, _, value) -> {
+            for (Consumer<T> consumer : consumers) {
+                consumer.accept(value);
+            }
+        };
+
+        observable.addListener(listener);
+
+        return () -> observable.removeListener(listener);
     }
 
     public static Subscription includePseudoClassWhen(Node node, PseudoClass pseudoClass, ObservableValue<? extends Boolean> condition) {
@@ -258,145 +283,23 @@ public class BindingsHelper {
         });
     }
 
-    public static <A, B, R> ObjectBinding<R> map(
-            ObservableValue<A> a,
-            ObservableValue<B> b,
-            BiFunction<? super A, ? super B, ? extends R> f
-    ) {
-        return Bindings.createObjectBinding(
-                () -> f.apply(a.getValue(), b.getValue()),
-                a, b
-        );
-    }
-
-    /// Please check for nulls in f.
-    public static <A, R> ObjectBinding<R> mapChange(
-            ObservableValue<A> a,
-            Function<? super A, ? extends R> f
-    ) {
-        return Bindings.createObjectBinding(
-                () -> f.apply(a.getValue()),
-                a
-        );
-    }
-
+    @SafeVarargs
     public static <E extends Enum<E>> void bindEnum(
             Property<E> target,
-            E value1, ObservableValue<Boolean> cond1,
-            E value2, ObservableValue<Boolean> cond2,
-            E otherwise
-    ) {
-        target.bind(
-                Bindings.createObjectBinding(
-                        () -> {
-                            if (cond1.getValue()) {
-                                return value1;
-                            }
-                            if (cond2.getValue()) {
-                                return value2;
-                            }
-                            return otherwise;
-                        },
-                        cond1, cond2
-                )
-        );
-    }
-
-    public static <E extends Enum<E>> void bindEnum(
-            Property<E> target,
-            E val1, ObservableValue<Boolean> cond1,
-            E val2, ObservableValue<Boolean> cond2,
-            E val3, ObservableValue<Boolean> cond3,
-            E val4, ObservableValue<Boolean> cond4,
-            E otherwise
+            E otherwise,
+            Map.Entry<E, ObservableValue<Boolean>>... cases
     ) {
         ObjectBinding<E> binding = Bindings.createObjectBinding(() -> {
-            if (cond1.getValue())
-                return val1;
-            if (cond2.getValue())
-                return val2;
-            if (cond3.getValue())
-                return val3;
-            if (cond4.getValue())
-                return val4;
-            return otherwise;
-        }, cond1, cond2, cond3, cond4);
-
-        target.bind(binding);
-    }
-
-    public static <E extends Enum<E>> void bindEnum(
-            Property<E> target,
-            E val1, ObservableValue<Boolean> cond1,
-            E val2, ObservableValue<Boolean> cond2,
-            E val3, ObservableValue<Boolean> cond3,
-            E val4, ObservableValue<Boolean> cond4,
-            E val5, ObservableValue<Boolean> cond5,
-            E val6, ObservableValue<Boolean> cond6,
-            E val7, ObservableValue<Boolean> cond7,
-            E val8, ObservableValue<Boolean> cond8,
-            E val9, ObservableValue<Boolean> cond9,
-            E val10, ObservableValue<Boolean> cond10,
-            E otherwise
-    ) {
-        ObjectBinding<E> binding = Bindings.createObjectBinding(() -> {
-            if (cond1 != null && Boolean.TRUE.equals(cond1.getValue()))
-                return val1;
-            if (cond2 != null && Boolean.TRUE.equals(cond2.getValue()))
-                return val2;
-            if (cond3 != null && Boolean.TRUE.equals(cond3.getValue()))
-                return val3;
-            if (cond4 != null && Boolean.TRUE.equals(cond4.getValue()))
-                return val4;
-            if (cond5 != null && Boolean.TRUE.equals(cond5.getValue()))
-                return val5;
-            if (cond6 != null && Boolean.TRUE.equals(cond6.getValue()))
-                return val6;
-            if (cond7 != null && Boolean.TRUE.equals(cond7.getValue()))
-                return val7;
-            if (cond8 != null && Boolean.TRUE.equals(cond8.getValue()))
-                return val8;
-            if (cond9 != null && Boolean.TRUE.equals(cond9.getValue()))
-                return val9;
-            if (cond10 != null && Boolean.TRUE.equals(cond10.getValue()))
-                return val10;
-            return otherwise;
-        }, cond1, cond2, cond3, cond4, cond5, cond6, cond7, cond8, cond9, cond10);
-
-        target.bind(binding);
-    }
-
-    public static <E extends Enum<E>> void bindEnum(
-            Property<E> target,
-            E val1, ObservableValue<Boolean> cond1,
-            E val2, ObservableValue<Boolean> cond2,
-            E val3, ObservableValue<Boolean> cond3,
-            E val4, ObservableValue<Boolean> cond4,
-            E val5, ObservableValue<Boolean> cond5,
-            E val6, ObservableValue<Boolean> cond6,
-            E val7, ObservableValue<Boolean> cond7,
-            E val8, ObservableValue<Boolean> cond8,
-            E otherwise
-    ) {
-        ObjectBinding<E> binding = Bindings.createObjectBinding(() -> {
-            if (Boolean.TRUE.equals(cond1.getValue()))
-                return val1;
-            if (Boolean.TRUE.equals(cond2.getValue()))
-                return val2;
-            if (Boolean.TRUE.equals(cond3.getValue()))
-                return val3;
-            if (Boolean.TRUE.equals(cond4.getValue()))
-                return val4;
-            if (Boolean.TRUE.equals(cond5.getValue()))
-                return val5;
-            if (Boolean.TRUE.equals(cond6.getValue()))
-                return val6;
-            if (Boolean.TRUE.equals(cond7.getValue()))
-                return val7;
-            if (Boolean.TRUE.equals(cond8.getValue()))
-                return val8;
-            return otherwise;
-        }, cond1, cond2, cond3, cond4, cond5, cond6, cond7, cond8);
+                    for (var c : cases) {
+                        if (Boolean.TRUE.equals(c.getValue().getValue())) {
+                            return c.getKey();
+                        }
+                    }
+                    return otherwise;
+                },
+                Arrays.stream(cases)
+                      .map(Map.Entry::getValue)
+                      .toArray(ObservableValue[]::new));
 
         target.bind(binding);
     }
@@ -418,34 +321,13 @@ public class BindingsHelper {
     }
 
     @SafeVarargs
-    public static <T> void onChangeNonNull(ObservableValue<T> observable, Consumer<T>... actions) {
-        observable.addListener((_, _, newVal) -> {
-            if (newVal != null) {
-                for (var action : actions) {
-                    action.accept(newVal);
-                }
-            }
-        });
-    }
-
-    public static <T> void onChangeNonNull(ObservableValue<T> observable, Runnable... actions) {
-        observable.addListener((_, _, newVal) -> {
-            if (newVal != null) {
-                for (var action : actions) {
-                    action.run();
-                }
-            }
-        });
-    }
-
-    @SafeVarargs
-    public static <T> void onChangeNonNullWhen(
+    public static <T> void listenWhen(
             ObservableValue<T> observable,
             ObservableValue<Boolean> condition,
             Consumer<T>... actions
     ) {
         observable.addListener((_, _, newVal) -> {
-            if (newVal != null && Boolean.TRUE.equals(condition.getValue())) {
+            if (Boolean.TRUE.equals(condition.getValue())) {
                 for (var action : actions) {
                     action.accept(newVal);
                 }
@@ -453,7 +335,7 @@ public class BindingsHelper {
         });
     }
 
-    public static <T, U> void onChangeNonNullWhen(
+    public static <T, U> void listenWhen(
             ObservableValue<T> observable1,
             ObservableValue<U> observable2,
             ObservableValue<Boolean> condition,
@@ -475,7 +357,7 @@ public class BindingsHelper {
         observable2.addListener(listener);
     }
 
-    public static <T> void onListContentChange(ListProperty<T> listProperty, Consumer<T> onAdded, Consumer<T> onRemoved) {
+    public static <T> void listenToListContentChanges(ListProperty<T> listProperty, Consumer<T> onAdded, Consumer<T> onRemoved) {
         listProperty.addListener((ListChangeListener<T>) c -> {
             while (c.next()) {
                 if (c.wasRemoved()) {
@@ -488,24 +370,10 @@ public class BindingsHelper {
         });
     }
 
-    public static <T> void runWhenListChanges(ListProperty<T> listProperty, Runnable... actions) {
+    public static <T> void listenToListChange(ListProperty<T> listProperty, Runnable... actions) {
         listProperty.addListener((ListChangeListener<T>) _ -> {
             for (Runnable action : actions) {
                 action.run();
-            }
-        });
-    }
-
-    public static <T> void runWhenListChangesWithPrecondition(
-            ListProperty<T> listProperty,
-            ObservableBooleanValue condition,
-            Runnable... actions
-    ) {
-        runWhenListChanges(listProperty, () -> {
-            if (condition.get()) {
-                for (Runnable action : actions) {
-                    action.run();
-                }
             }
         });
     }

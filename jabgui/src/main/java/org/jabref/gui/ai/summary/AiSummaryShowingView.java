@@ -22,6 +22,7 @@ import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.gui.util.WebViewStore;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.summarization.AiSummary;
 import org.jabref.model.entry.BibEntryTypesManager;
@@ -97,16 +98,14 @@ public class AiSummaryShowingView extends VBox {
     private void setupBindings() {
         viewModel.isMarkdownProperty().bindBidirectional(markdownCheckbox.selectedProperty());
 
-        summaryInfoText.textProperty().bind(BindingsHelper.mapChange(
-                viewModel.summaryProperty(),
-                AiSummaryShowingView::formatSummaryInfo
-        ));
+        summaryInfoText.textProperty().bind(viewModel.summaryProperty().map(AiSummaryShowingView::formatSummaryInfo));
     }
 
     private void setupListeners() {
-        BindingsHelper.onChangeNonNull(
+        BindingsHelper.listen(
                 viewModel.webViewSourceProperty(),
-                value -> UiTaskExecutor.runInJavaFXThread(() -> webView.getEngine().loadContent(value))
+                value -> UiTaskExecutor.runInJavaFXThread(() ->
+                        webView.getEngine().loadContent(StringUtil.makeSafe(value)))
         );
     }
 

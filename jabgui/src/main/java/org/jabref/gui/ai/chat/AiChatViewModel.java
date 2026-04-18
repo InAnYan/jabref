@@ -3,6 +3,7 @@ package org.jabref.gui.ai.chat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import javafx.beans.binding.Bindings;
@@ -51,12 +52,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AiChatViewModel extends AbstractViewModel {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatViewModel.class);
-
-    private static final String EXAMPLE_QUESTION_1 = Localization.lang("What is the goal of the paper?");
-    private static final String EXAMPLE_QUESTION_2 = Localization.lang("Which methods were used in the research?");
-    private static final String EXAMPLE_QUESTION_3 = Localization.lang("What are the key findings?");
-
     public enum State {
         AI_TURNED_OFF,
         NO_FILES,
@@ -65,19 +60,25 @@ public class AiChatViewModel extends AbstractViewModel {
         ERROR
     }
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiChatViewModel.class);
+
+    private static final String EXAMPLE_QUESTION_1 = Localization.lang("What is the goal of the paper?");
+    private static final String EXAMPLE_QUESTION_2 = Localization.lang("Which methods were used in the research?");
+    private static final String EXAMPLE_QUESTION_3 = Localization.lang("What are the key findings?");
+
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.IDLE);
     private final ObjectProperty<AnswerEngine> answerEngine = new SimpleObjectProperty<>();
     private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
-    private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
 
+    private final ListProperty<GenerateEmbeddingsTask> generateEmbeddingsTasks = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ObjectProperty<GenerateRagResponseTask> generateRagResponseTask = new SimpleObjectProperty<>();
+    private BackgroundTask<List<String>> generateFollowUpQuestionsTask;
 
     private final ListProperty<String> followUpQuestions = new SimpleListProperty<>(FXCollections.observableArrayList(
             EXAMPLE_QUESTION_1,
             EXAMPLE_QUESTION_2,
             EXAMPLE_QUESTION_3
     ));
-    private BackgroundTask<List<String>> generateFollowUpQuestionsTask;
 
     private final ObjectProperty<ChatModel> chatModel = new SimpleObjectProperty<>();
     private final ObjectProperty<AsyncEmbeddingModel> embeddingModel = new SimpleObjectProperty<>();
@@ -88,8 +89,6 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private final TreeMap<List<FullBibEntry>, List<String>> followUpQuestionsCache =
             new TreeMap<>(Comparators.lexicographical(Comparator.comparing(id -> id.entry().getId())));
-
-    private List<FullBibEntry> currentEntriesSnapshot = new ArrayList<>();
 
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
@@ -103,6 +102,8 @@ public class AiChatViewModel extends AbstractViewModel {
     private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final StringProperty systemMessageTemplate = new SimpleStringProperty();
     private final StringProperty userMessageTemplate = new SimpleStringProperty();
+
+    private List<FullBibEntry> currentEntriesSnapshot = new ArrayList<>();
 
     public AiChatViewModel(
             AiPreferences aiPreferences,
@@ -159,20 +160,18 @@ public class AiChatViewModel extends AbstractViewModel {
 
         BindingsHelper.bindEnum(
                 state,
-                State.AI_TURNED_OFF, isAiTurnedOff,
-                State.WAITING_FOR_MESSAGE, isWaiting,
-                State.NO_FILES, hasNoFiles,
-                State.ERROR, isError,
-                State.IDLE
+                State.IDLE,
+
+                Map.entry(State.AI_TURNED_OFF, isAiTurnedOff),
+                Map.entry(State.WAITING_FOR_MESSAGE, isWaiting),
+                Map.entry(State.NO_FILES, hasNoFiles),
+                Map.entry(State.ERROR, isError)
         );
     }
 
     private void setupListeners() {
-        BooleanBinding entriesPresent = entries.isNotNull().and(entries.emptyProperty().not());
-
-        BindingsHelper.runWhenListChangesWithPrecondition(
+        BindingsHelper.listenToListChange(
                 entries,
-                aiPreferences.enableAiProperty().and(entriesPresent),
                 this::changeEmbeddingTasks
         );
 
@@ -183,6 +182,10 @@ public class AiChatViewModel extends AbstractViewModel {
     }
 
     private void changeEmbeddingTasks() {
+        if (!aiPreferences.getEnableAi() || entries.isEmpty()) {
+            return;
+        }
+
         if (!currentEntriesSnapshot.isEmpty()) {
             followUpQuestionsCache.put(new ArrayList<>(currentEntriesSnapshot), new ArrayList<>(followUpQuestions));
         }
@@ -311,19 +314,6 @@ public class AiChatViewModel extends AbstractViewModel {
     public void sendFollowUpMessage(String question) {
         followUpQuestions.clear();
         sendMessage(question);
-    }
-
-    public void clearChatHistory() {
-        boolean confirmed = dialogService.showConfirmationDialogAndWait(
-                Localization.lang("Clear chat history"),
-                Localization.lang("Are you sure you want to clear the chat history?")
-        );
-
-        if (confirmed) {
-            chatHistory.clear();
-            followUpQuestions.clear();
-            followUpQuestionsCache.remove(new ArrayList<>(entries));
-        }
     }
 
     private void clearGenerateRagResponseTask() {

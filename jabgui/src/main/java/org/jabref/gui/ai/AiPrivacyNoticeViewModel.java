@@ -22,8 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AiPrivacyNoticeViewModel extends AbstractViewModel {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AiPrivacyNoticeViewModel.class);
-
     public enum DisagreeBehaviour {
         HIDE_AI_TABS,
         HIDE_CHAT_WITH_GROUP_BUTTON;
@@ -37,6 +35,8 @@ public class AiPrivacyNoticeViewModel extends AbstractViewModel {
             };
         }
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiPrivacyNoticeViewModel.class);
 
     private final StringProperty embeddingModelSize = new SimpleStringProperty("");
 

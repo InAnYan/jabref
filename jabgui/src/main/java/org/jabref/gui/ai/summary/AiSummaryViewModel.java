@@ -2,6 +2,7 @@ package org.jabref.gui.ai.summary;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javafx.beans.property.ObjectProperty;
@@ -31,9 +32,6 @@ import org.jabref.model.ai.summarization.AiSummary;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class AiSummaryViewModel extends AbstractViewModel {
     public enum State {
         AI_TURNED_OFF,
@@ -46,8 +44,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
         READY,
         CANCELLED
     }
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AiSummaryViewModel.class);
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.AI_TURNED_OFF);
     private final ObjectProperty<Exception> error = new SimpleObjectProperty<>(null);
@@ -89,15 +85,49 @@ public class AiSummaryViewModel extends AbstractViewModel {
     private void setupBindings() {
         BindingsHelper.bindEnum(
                 state,
-                State.AI_TURNED_OFF, aiPreferences.enableAiProperty().not(),
-                State.NO_DATABASE_PATH, entry.map(FullBibEntry::databaseContext).map(BibDatabaseContext::getDatabasePath).map(Optional::isEmpty),
-                State.NO_FILES, entry.map(FullBibEntry::entry).map(BibEntry::getFiles).map(List::isEmpty),
-                State.NO_SUPPORTED_FILE_TYPES, entry.map(FullBibEntry::entry).map(BibEntry::getFiles).map(l -> l.stream().map(f -> Path.of(f.getLink())).noneMatch(UniversalContentParser::isSupportedFileType)),
-                State.DONE, summary.isNotNull(),
-                State.CANCELLED, currentTask.map(TrackedBackgroundTask::getStatus).map(s -> s == TrackedBackgroundTask.Status.CANCELLED).orElse(false),
-                State.ERROR_WHILE_GENERATING, error.isNotNull(),
-                State.PROCESSING, currentTask.isNotNull(),
-                State.READY
+                State.READY,
+
+                Map.entry(State.AI_TURNED_OFF,
+                        aiPreferences.enableAiProperty().not()
+                ),
+
+                Map.entry(State.NO_DATABASE_PATH,
+                        entry.map(FullBibEntry::databaseContext)
+                             .map(BibDatabaseContext::getDatabasePath)
+                             .map(Optional::isEmpty)
+                ),
+
+                Map.entry(State.NO_FILES,
+                        entry.map(FullBibEntry::entry)
+                             .map(BibEntry::getFiles)
+                             .map(List::isEmpty)
+                ),
+
+                Map.entry(State.NO_SUPPORTED_FILE_TYPES,
+                        entry.map(FullBibEntry::entry)
+                             .map(BibEntry::getFiles)
+                             .map(l -> l.stream()
+                                        .map(f -> Path.of(f.getLink()))
+                                        .noneMatch(UniversalContentParser::isSupportedFileType))
+                ),
+
+                Map.entry(State.DONE,
+                        summary.isNotNull()
+                ),
+
+                Map.entry(State.CANCELLED,
+                        currentTask.map(TrackedBackgroundTask::getStatus)
+                                   .map(s -> s == TrackedBackgroundTask.Status.CANCELLED)
+                                   .orElse(false)
+                ),
+
+                Map.entry(State.ERROR_WHILE_GENERATING,
+                        error.isNotNull()
+                ),
+
+                Map.entry(State.PROCESSING,
+                        currentTask.isNotNull()
+                )
         );
 
         BindingsHelper.bindInternalListener(
@@ -122,14 +152,11 @@ public class AiSummaryViewModel extends AbstractViewModel {
     }
 
     private void setupListeners() {
-        BindingsHelper.onChangeNonNull(
-                entry,
-                this::prepareForEntry
-        );
+        BindingsHelper.listen(entry, this::prepareForEntry);
 
-        BindingsHelper.onChangeNonNullWhen(
+        BindingsHelper.listenWhen(
                 entry,
-                state.isEqualTo(State.READY),
+                entry.isNotNull().and(state.isEqualTo(State.READY)),
                 this::processEntry
         );
     }

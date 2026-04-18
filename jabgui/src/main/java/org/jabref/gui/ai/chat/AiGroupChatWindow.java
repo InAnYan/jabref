@@ -2,12 +2,12 @@ package org.jabref.gui.ai.chat;
 
 import java.nio.file.Path;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
 
 import org.jabref.gui.groups.GroupNodeViewModel;
 import org.jabref.gui.util.BaseDialog;
-import org.jabref.gui.util.BindingsHelper;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.database.BibDatabaseContext;
 
@@ -23,14 +23,17 @@ public class AiGroupChatWindow extends BaseDialog<Void> {
                   .load()
                   .setAsDialogPane(this);
 
-        this.titleProperty().bind(BindingsHelper.map(
+        this.titleProperty().bind(Bindings.createObjectBinding(
+                this::makeWindowTitle,
                 chatView.databaseContextProperty(),
-                chatView.groupNodeProperty(),
-                AiGroupChatWindow::makeWindowTitle
+                chatView.groupNodeProperty()
         ));
     }
 
-    private static String makeWindowTitle(BibDatabaseContext context, GroupNodeViewModel group) {
+    private String makeWindowTitle() {
+        BibDatabaseContext context = chatView.databaseContextProperty().get();
+        GroupNodeViewModel group = chatView.groupNodeProperty().get();
+
         if (context == null || group == null) {
             return "";
         }

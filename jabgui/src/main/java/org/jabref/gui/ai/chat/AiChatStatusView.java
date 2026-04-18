@@ -69,22 +69,10 @@ public class AiChatStatusView extends VBox {
                 aiService.getEmbeddingModelCache(),
                 aiService.getEmbeddingsStore()
         );
-
-        setupChatModelLabel();
+        
         setupEntriesTable();
         setupIngestionTable();
-        setupParameters();
-    }
-
-    private void setupChatModelLabel() {
-        chatModelLabel.textProperty().bind(viewModel.chatModelProperty().map(AiChatStatusView::formatChatModelLabel));
-    }
-
-    private static String formatChatModelLabel(ChatModel model) {
-        if (model == null) {
-            return "";
-        }
-        return Localization.lang("%0 %1", model.getAiProvider().getDisplayName(), model.getName());
+        setupRest();
     }
 
     private void setupEntriesTable() {
@@ -148,12 +136,21 @@ public class AiChatStatusView extends VBox {
         return errorButton;
     }
 
-    private void setupParameters() {
+    private void setupRest() {
+        chatModelLabel.textProperty().bind(viewModel.chatModelProperty().map(AiChatStatusView::formatChatModelLabel));
+
         new ViewModelListCellFactory<AnswerEngineKind>()
                 .withText(AnswerEngineKind::getDisplayName)
                 .install(answerEngineComboBox);
         answerEngineComboBox.setItems(viewModel.answerEngineKindsProperty());
         answerEngineComboBox.valueProperty().bindBidirectional(viewModel.selectedAnswerEngineKindProperty());
+    }
+
+    private static String formatChatModelLabel(ChatModel model) {
+        if (model == null) {
+            return "";
+        }
+        return Localization.lang("%0 %1", model.getAiProvider().getDisplayName(), model.getName());
     }
 
     @FXML

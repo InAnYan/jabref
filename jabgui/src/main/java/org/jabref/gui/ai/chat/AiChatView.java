@@ -124,10 +124,10 @@ public class AiChatView extends StackPane {
         sendButton.visibleProperty().bind(isIdle);
         retryButton.visibleProperty().bind(isError);
         cancelButton.visibleProperty().bind(isWaiting.or(isError));
-        noticeText.textProperty().bind(viewModel.chatModelProperty().map(this::formatNoticeText));
+        noticeText.textProperty().bind(viewModel.chatModelProperty().map(AiChatView::formatNoticeText));
     }
 
-    private String formatNoticeText(ChatModel model) {
+    private static String formatNoticeText(ChatModel model) {
         String modelName = model.getAiProvider().getDisplayName() + " " + model.getName();
         return Localization.lang("Current AI model: %0. The AI may generate inaccurate or inappropriate responses. Please verify any information provided", modelName);
     }

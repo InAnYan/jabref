@@ -1,5 +1,6 @@
 package org.jabref.gui.ai.summary;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.layout.StackPane;
@@ -8,7 +9,6 @@ import org.jabref.gui.DialogService;
 import org.jabref.gui.ai.AiPrivacyNoticeView;
 import org.jabref.gui.ai.statuspane.UniversalStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
-import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.ExceptionsUtil;
 import org.jabref.logic.ai.AiService;
 import org.jabref.logic.ai.chatting.ChatModel;
@@ -46,19 +46,6 @@ public class AiSummaryView extends StackPane {
                   .load();
     }
 
-    private static String generateDescription(Summarizator summarizator, ChatModel chatModel) {
-        if (summarizator == null || chatModel == null) {
-            return "";
-        }
-
-        return Localization.lang(
-                "Your entry is being summarized by %0 %1 using algorithm %2",
-                chatModel.getAiProvider().getDisplayName(),
-                chatModel.getName(),
-                summarizator.getKind().getDisplayName()
-        );
-    }
-
     @FXML
     private void initialize() {
         viewModel = new AiSummaryViewModel(
@@ -79,9 +66,9 @@ public class AiSummaryView extends StackPane {
         summaryShowing.summaryProperty().bind(viewModel.summaryProperty());
         summaryShowing.entryProperty().bind(viewModel.entryProperty());
 
-        processingPane.descriptionProperty().bind(BindingsHelper.map(
-                viewModel.summarizatorProperty(), viewModel.chatModelProperty(),
-                AiSummaryView::generateDescription
+        processingPane.descriptionProperty().bind(Bindings.createObjectBinding(
+                this::generateDescription,
+                viewModel.summarizatorProperty(), viewModel.chatModelProperty()
         ));
 
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
@@ -101,6 +88,22 @@ public class AiSummaryView extends StackPane {
         noFilesPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.NO_FILES));
         noSupportedFileTypesPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.NO_SUPPORTED_FILE_TYPES));
         summaryShowing.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiSummaryViewModel.State.DONE));
+    }
+
+    private String generateDescription() {
+        Summarizator summarizator = viewModel.summarizatorProperty().get();
+        ChatModel chatModel = viewModel.chatModelProperty().get();
+
+        if (summarizator == null || chatModel == null) {
+            return "";
+        }
+
+        return Localization.lang(
+                "Your entry is being summarized by %0 %1 using algorithm %2",
+                chatModel.getAiProvider().getDisplayName(),
+                chatModel.getName(),
+                summarizator.getKind().getDisplayName()
+        );
     }
 
     public ObjectProperty<FullBibEntry> entryProperty() {

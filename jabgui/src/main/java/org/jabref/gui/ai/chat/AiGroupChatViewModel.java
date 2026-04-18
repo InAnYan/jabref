@@ -1,6 +1,7 @@
 package org.jabref.gui.ai.chat;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javafx.beans.binding.BooleanExpression;
@@ -47,14 +48,21 @@ public class AiGroupChatViewModel extends AbstractViewModel {
 
         BindingsHelper.bindEnum(
                 state,
-                State.AI_TURNED_OFF, aiPreferences.enableAiProperty().not(),
-                State.NO_DATABASE_PATH, databaseContext.isNotNull().and(databasePathPresent.not()),
-                State.CHATTING
+                State.CHATTING,
+
+                Map.entry(State.AI_TURNED_OFF,
+                        aiPreferences.enableAiProperty().not()),
+
+                Map.entry(State.NO_DATABASE_PATH,
+                        databaseContext.isNotNull().and(databasePathPresent.not()))
         );
 
-        BindingsHelper.onChangeNonNullWhen(
+        BindingsHelper.listenWhen(
                 groupNode, databaseContext,
-                aiPreferences.enableAiProperty().and(databasePathPresent),
+                groupNode.isNotNull()
+                         .and(databaseContext.isNotNull())
+                         .and(aiPreferences.enableAiProperty())
+                         .and(databasePathPresent),
                 this::loadGroupChat
         );
     }

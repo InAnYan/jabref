@@ -1,5 +1,7 @@
 package org.jabref.gui.ai.chat;
 
+import java.util.Optional;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
@@ -89,11 +91,15 @@ public class AiChatMessageView extends HBox {
     }
 
     private void setupListeners() {
-        BindingsHelper.onChangeNonNull(viewModel.chatMessageProperty(), this::updateOrder);
-        BindingsHelper.onChangeNonNull(viewModel.chatMessageProperty(), this::updateContent);
+        BindingsHelper.listen(viewModel.chatMessageProperty(), this::updateOrder);
+        BindingsHelper.listen(viewModel.chatMessageProperty(), this::updateContent);
     }
 
     private void updateOrder(ChatMessage chatMessage) {
+        if (chatMessage == null) {
+            return;
+        }
+
         this.getChildren().clear();
 
         if (chatMessage.role() == ChatMessage.Role.USER) {
@@ -104,7 +110,11 @@ public class AiChatMessageView extends HBox {
     }
 
     private void updateContent(ChatMessage chatMessage) {
-        markdownTextFlow.setMarkdown(chatMessage.content());
+        if (chatMessage == null) {
+            return;
+        }
+        
+        markdownTextFlow.setMarkdown(Optional.ofNullable(chatMessage.content()).orElse(""));
     }
 
     private static Pos determineAlignment(ChatMessage chatMessage) {
