@@ -19,9 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExternalLinkCreatorTest {
 
-    /**
-     * Validates URL conformance to RFC2396. Does not perform complex checks such as opening connections.
-     */
+    /// Validates URL conformance to RFC2396. Does not perform complex checks such as opening connections.
     private boolean urlIsValid(String url) {
         try {
             // This will throw on non-compliance to RFC2396.

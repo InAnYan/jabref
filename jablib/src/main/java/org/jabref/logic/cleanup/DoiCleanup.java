@@ -16,14 +16,10 @@ import org.jabref.model.entry.field.UnknownField;
 import org.jabref.model.entry.identifier.ArXivIdentifier;
 import org.jabref.model.entry.identifier.DOI;
 
-/**
- * Formats the DOI (e.g. removes http part) and also infers DOIs from the note, url, eprint or ee fields.
- */
+/// Formats the DOI (e.g. removes http part) and also infers DOIs from the note, url, eprint or ee fields.
 public class DoiCleanup implements CleanupJob {
 
-    /**
-     * Fields to check for DOIs.
-     */
+    /// Fields to check for DOIs.
     private static final List<Field> FIELDS = Arrays.asList(StandardField.NOTE, StandardField.URL, StandardField.EPRINT,
             new UnknownField("ee"));
 

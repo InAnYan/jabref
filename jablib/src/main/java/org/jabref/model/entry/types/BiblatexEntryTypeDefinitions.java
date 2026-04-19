@@ -8,12 +8,10 @@ import org.jabref.model.entry.BibEntryTypeBuilder;
 import org.jabref.model.entry.field.OrFields;
 import org.jabref.model.entry.field.StandardField;
 
-/**
- * This class defines entry types for biblatex support.
- * It is based on the <a href="https://texdoc.org/serve/biblatex.pdf/0">biblatex documentation</a>
- * <p>
- * The definitions for BibTeX are done at {@link BibtexEntryTypeDefinitions}
- */
+/// This class defines entry types for biblatex support.
+/// It is based on the <a href="https://texdoc.org/serve/biblatex.pdf/0">biblatex documentation</a>
+/// 
+/// The definitions for BibTeX are done at {@link BibtexEntryTypeDefinitions}
 public class BiblatexEntryTypeDefinitions {
 
     private static final BibEntryType ARTICLE = new BibEntryTypeBuilder()

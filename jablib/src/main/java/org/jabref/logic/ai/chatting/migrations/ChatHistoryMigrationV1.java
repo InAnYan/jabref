@@ -33,25 +33,23 @@ import org.h2.mvstore.type.BasicDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Migrates chat history from the old v1 MVStore file to the new v2 repository.
- * <p>
- * Old format (v1): Stored in "chat-history.mv" file.
- * Map keys like "bibDatabasePath-entry-citationKey" or "bibDatabasePath-group-groupName"
- * containing Map&lt;Integer, ChatHistoryRecord&gt; where ChatHistoryRecord was a private inner
- * class of MVStoreChatHistoryStorage (full name:
- * org.jabref.logic.ai.chatting.chathistory.storages.MVStoreChatHistoryStorage$ChatHistoryRecord).
- * <p>
- * New format (v2): Stored via repository using ChatIdentifier(libraryId, chatType, chatName).
- * <p>
- * <b>Problem:</b> The old inner class no longer exists, so MVStore's ObjectDataType fails with
- * ClassNotFoundException before our code can intercept.
- * <p>
- * <b>Solution:</b> Open the map with a custom {@link RawBytesDataType} that returns the raw
- * Java-serialized bytes for each value without invoking standard Java deserialization.
- * Then a {@link ClassRemappingObjectInputStream} deserializes those bytes while remapping
- * the deleted inner class name to the current {@link ChatHistoryRecord}.
- */
+/// Migrates chat history from the old v1 MVStore file to the new v2 repository.
+/// 
+/// Old format (v1): Stored in "chat-history.mv" file.
+/// Map keys like "bibDatabasePath-entry-citationKey" or "bibDatabasePath-group-groupName"
+/// containing Map&lt;Integer, ChatHistoryRecord&gt; where ChatHistoryRecord was a private inner
+/// class of MVStoreChatHistoryStorage (full name:
+/// org.jabref.logic.ai.chatting.chathistory.storages.MVStoreChatHistoryStorage$ChatHistoryRecord).
+/// 
+/// New format (v2): Stored via repository using ChatIdentifier(libraryId, chatType, chatName).
+/// 
+/// **Problem:** The old inner class no longer exists, so MVStore's ObjectDataType fails with
+/// ClassNotFoundException before our code can intercept.
+/// 
+/// **Solution:** Open the map with a custom {@link RawBytesDataType} that returns the raw
+/// Java-serialized bytes for each value without invoking standard Java deserialization.
+/// Then a {@link ClassRemappingObjectInputStream} deserializes those bytes while remapping
+/// the deleted inner class name to the current {@link ChatHistoryRecord}.
 public final class ChatHistoryMigrationV1 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatHistoryMigrationV1.class);
 
@@ -59,10 +57,8 @@ public final class ChatHistoryMigrationV1 {
     private static final String ENTRY_CHAT_HISTORY_INFIX = "-entry-";
     private static final String GROUP_CHAT_HISTORY_INFIX = "-group-";
 
-    /**
-     * Old inner class full name that is no longer in the classpath.
-     * Was: private record ChatHistoryRecord inside MVStoreChatHistoryStorage.
-     */
+    /// Old inner class full name that is no longer in the classpath.
+    /// Was: private record ChatHistoryRecord inside MVStoreChatHistoryStorage.
     private static final String OLD_CHAT_HISTORY_RECORD_CLASS =
             "org.jabref.logic.ai.chatting.chathistory.storages.MVStoreChatHistoryStorage$ChatHistoryRecord";
 
@@ -70,13 +66,11 @@ public final class ChatHistoryMigrationV1 {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
     }
 
-    /**
-     * Migrates old chat history data from v1 file to v2 repository.
-     *
-     * @param bibDatabaseContext  The database context containing the AI library ID
-     * @param repository          The new v2 chat history repository to migrate to
-     * @param notificationService Service for notifying user of errors
-     */
+    /// Migrates old chat history data from v1 file to v2 repository.
+    /// 
+    /// @param bibDatabaseContext  The database context containing the AI library ID
+    /// @param repository          The new v2 chat history repository to migrate to
+    /// @param notificationService Service for notifying user of errors
     public static void migrate(
             BibDatabaseContext bibDatabaseContext,
             ChatHistoryRepository repository,
@@ -222,10 +216,8 @@ public final class ChatHistoryMigrationV1 {
         return true;
     }
 
-    /**
-     * Deserializes old ChatHistoryRecord bytes using a remapping ObjectInputStream.
-     * Remaps the deleted inner class name to the current {@link ChatHistoryRecord}.
-     */
+    /// Deserializes old ChatHistoryRecord bytes using a remapping ObjectInputStream.
+    /// Remaps the deleted inner class name to the current {@link ChatHistoryRecord}.
     private static ChatHistoryRecord deserializeOldRecord(byte[] data) {
         try (ClassRemappingObjectInputStream ois = new ClassRemappingObjectInputStream(
                 new java.io.ByteArrayInputStream(data))) {
@@ -267,13 +259,11 @@ public final class ChatHistoryMigrationV1 {
         );
     }
 
-    /**
-     * Custom ObjectInputStream that remaps the deleted old inner class name
-     * to the current {@link ChatHistoryRecord} class.
-     * <p>
-     * The old and new records have identical components (className: String, content: String),
-     * so Java record deserialization will call the canonical constructor successfully.
-     */
+    /// Custom ObjectInputStream that remaps the deleted old inner class name
+    /// to the current {@link ChatHistoryRecord} class.
+    /// 
+    /// The old and new records have identical components (className: String, content: String),
+    /// so Java record deserialization will call the canonical constructor successfully.
     private static class ClassRemappingObjectInputStream extends ObjectInputStream {
         public ClassRemappingObjectInputStream(InputStream in) throws IOException {
             super(in);
@@ -293,15 +283,13 @@ public final class ChatHistoryMigrationV1 {
         }
     }
 
-    /**
-     * Reads raw Java-serialized bytes from MVStore's binary page format without invoking
-     * Java deserialization. MVStore's ObjectDataType stores each serializable value as:
-     * <ol>
-     *   <li>1 byte: type identifier — {@code 19} (TYPE_SERIALIZED_OBJECT in H2 2.3.232)</li>
-     *   <li>VarInt: byte length of the serialized payload</li>
-     *   <li>N bytes: the raw Java-serialized payload</li>
-     * </ol>
-     */
+    /// Reads raw Java-serialized bytes from MVStore's binary page format without invoking
+    /// Java deserialization. MVStore's ObjectDataType stores each serializable value as:
+    /// <ol>
+    /// - 1 byte: type identifier — `19` (TYPE_SERIALIZED_OBJECT in H2 2.3.232)
+    /// - VarInt: byte length of the serialized payload
+    /// - N bytes: the raw Java-serialized payload
+    /// </ol>
     private static class RawBytesDataType extends BasicDataType<byte[]> {
 
         // TYPE_SERIALIZED_OBJECT = 19, verified from H2 2.3.232 bytecode.

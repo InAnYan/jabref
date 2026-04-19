@@ -15,10 +15,8 @@ import javafx.scene.layout.HBox;
 
 import com.airhacks.afterburner.views.ViewLoader;
 
-/**
- * Universal status pane view that supports showing title, description, text area, spinner, and two buttons.
- * Each component (except title and description) can be shown or hidden via boolean properties.
- */
+/// Universal status pane view that supports showing title, description, text area, spinner, and two buttons.
+/// Each component (except title and description) can be shown or hidden via boolean properties.
 public class UniversalStatusPaneView extends BorderPane {
     @FXML private Label titleLabel;
     @FXML private Label descriptionLabel;

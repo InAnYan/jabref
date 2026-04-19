@@ -8,9 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AuthorAndsCommaReplacerTest {
 
-    /**
-     * Test method for {@link org.jabref.logic.layout.format.AuthorAndsCommaReplacer#format(java.lang.String)}.
-     */
+    /// Test method for {@link org.jabref.logic.layout.format.AuthorAndsCommaReplacer#format(java.lang.String)}.
     @Test
     void format() {
         LayoutFormatter a = new AuthorAndsCommaReplacer();

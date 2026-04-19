@@ -23,12 +23,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
-/**
- * Tests whole citation key patterns such as <code>[authorsAlpha][year]</code>.
- * The concrete patterns such as <code>authorsAlpha</code> should better be tested at {@link BracketedPatternTest}.
- * <p>
- * Concurrent execution leads to issues on GitHub actions.
- */
+/// Tests whole citation key patterns such as `[authorsAlpha][year]`.
+/// The concrete patterns such as `authorsAlpha` should better be tested at {@link BracketedPatternTest}.
+/// 
+/// Concurrent execution leads to issues on GitHub actions.
 class CitationKeyGeneratorTest {
 
     private static final BibEntry AUTHOR_EMPTY = createABibEntryAuthor("");
@@ -208,20 +206,18 @@ class CitationKeyGeneratorTest {
         assertEquals("UniLinkoeping", CitationKeyGenerator.cleanKey(generateKey(entry.orElse(null), "[auth]", new BibDatabase()), DEFAULT_UNWANTED_CHARACTERS));
     }
 
-    /**
-     * Tests if cleanKey replaces Non-ASCII chars. There are quite a few chars that should be replaced. Perhaps there is
-     * a better method than the current.
-     * <p>
-     * not tested/ not in hashmap UNICODE_CHARS:
-     * {@code
-     * Ł ł   Ő ő Ű ű   Ŀ ŀ   Ħ ħ   Ð ð Þ þ   Œ œ   Æ æ Ø ø Å å   Ə ə Đ đ   Ů ů    Ǣ ǣ ǖ ǘ ǚ ǜ
-     * Ǣ ǣ ǖ ǘ ǚ ǜ
-     * Đ đ   Ů ů
-     * Ł ł   Ő ő Ű ű   Ŀ ŀ   Ħ ħ   Ð ð Þ þ   Œ œ   Æ æ Ø ø Å å   Ə ə
-     * }
-     *
-     * @see CitationKeyGenerator#cleanKey(String, String)
-     */
+    /// Tests if cleanKey replaces Non-ASCII chars. There are quite a few chars that should be replaced. Perhaps there is
+    /// a better method than the current.
+    /// 
+    /// not tested/ not in hashmap UNICODE_CHARS:
+    /// {@code
+    /// Ł ł   Ő ő Ű ű   Ŀ ŀ   Ħ ħ   Ð ð Þ þ   Œ œ   Æ æ Ø ø Å å   Ə ə Đ đ   Ů ů    Ǣ ǣ ǖ ǘ ǚ ǜ
+    /// Ǣ ǣ ǖ ǘ ǚ ǜ
+    /// Đ đ   Ů ů
+    /// Ł ł   Ő ő Ű ű   Ŀ ŀ   Ħ ħ   Ð ð Þ þ   Œ œ   Æ æ Ø ø Å å   Ə ə
+    /// }
+    /// 
+    /// @see CitationKeyGenerator#cleanKey(String, String)
     @ParameterizedTest(name = "accents={0}, expectedResult={1}")
     @CsvSource(quoteCharacter = '"', textBlock = """
             "ÀàÈèÌìÒòÙù Â â Ĉ ĉ Ê ê Ĝ ĝ Ĥ ĥ Î î Ĵ ĵ Ô ô Ŝ ŝ Û û Ŵ ŵ Ŷ ŷ", "AaEeIiOoUuAaCcEeGgHhIiJjOoSsUuWwYy",
@@ -357,9 +353,7 @@ class CitationKeyGeneratorTest {
         );
     }
 
-    /**
-     * Tests  [auth.auth.ea]
-     */
+    /// Tests  [auth.auth.ea]
     @ParameterizedTest
     @MethodSource("authAuthEa")
     void authAuthEa(BibEntry entry, String expected) {
@@ -380,9 +374,7 @@ class CitationKeyGeneratorTest {
         );
     }
 
-    /**
-     * Tests the [auth.etal] and [authEtAl] patterns
-     */
+    /// Tests the [auth.etal] and [authEtAl] patterns
     @ParameterizedTest
     @MethodSource("authEtAl")
     void authEtAl(BibEntry entry, String pattern, String expected) {
@@ -398,9 +390,7 @@ class CitationKeyGeneratorTest {
         );
     }
 
-    /**
-     * Test the [authshort] pattern
-     */
+    /// Test the [authshort] pattern
     @ParameterizedTest
     @MethodSource("authShort")
     void authShort(BibEntry entry, String expected) {
@@ -425,9 +415,7 @@ class CitationKeyGeneratorTest {
         );
     }
 
-    /**
-     * Test the [authN_M] pattern
-     */
+    /// Test the [authN_M] pattern
     @ParameterizedTest
     @MethodSource("authNM")
     void authNM(BibEntry entry, int n, int m, String expected) {
@@ -444,9 +432,7 @@ class CitationKeyGeneratorTest {
         );
     }
 
-    /**
-     * Tests [authForeIni]
-     */
+    /// Tests [authForeIni]
     @ParameterizedTest
     @MethodSource("firstAuthorForenameInitials")
     void firstAuthorForenameInitials(BibEntry entry) {
@@ -460,9 +446,7 @@ class CitationKeyGeneratorTest {
         );
     }
 
-    /**
-     * Tests [authFirstFull]
-     */
+    /// Tests [authFirstFull]
     @ParameterizedTest
     @MethodSource("firstAuthorVonAndLast")
     void firstAuthorVonAndLast(BibEntry entry, String expected) {
@@ -524,9 +508,7 @@ class CitationKeyGeneratorTest {
         );
     }
 
-    /**
-     * Tests [authorLast]
-     */
+    /// Tests [authorLast]
     @ParameterizedTest
     @MethodSource("lastAuthor")
     void lastAuthor(BibEntry entry, String expected) {
@@ -545,18 +527,14 @@ class CitationKeyGeneratorTest {
         );
     }
 
-    /**
-     * Tests [authorLastForeIni]
-     */
+    /// Tests [authorLastForeIni]
     @ParameterizedTest
     @MethodSource("lastAuthorForenameInitials")
     void lastAuthorForenameInitials(BibEntry entry, String expected) {
         assertEquals(expected, generateKey(entry, AUTHORLASTFOREINI));
     }
 
-    /**
-     * Tests [authorIni]
-     */
+    /// Tests [authorIni]
     @ParameterizedTest
     @MethodSource("oneAuthorPlusIniData")
     void oneAuthorPlusIni(BibEntry entry, String expected) {
@@ -575,9 +553,7 @@ class CitationKeyGeneratorTest {
         );
     }
 
-    /**
-     * Tests the [authorsN] pattern. -> [authors1]
-     */
+    /// Tests the [authorsN] pattern. -> [authors1]
     @ParameterizedTest
     @MethodSource("nAuthors1Data")
     void nAuthors1(BibEntry entry, String expected) {
@@ -594,9 +570,7 @@ class CitationKeyGeneratorTest {
         );
     }
 
-    /**
-     * Tests the [authorsN] pattern. -> [authors3]
-     */
+    /// Tests the [authorsN] pattern. -> [authors3]
     @ParameterizedTest
     @MethodSource("nAuthors3Data")
     void nAuthors3(BibEntry entry, String expected) {
@@ -696,9 +670,7 @@ class CitationKeyGeneratorTest {
         assertThrows(NullPointerException.class, () -> CitationKeyGenerator.lastPage(null));
     }
 
-    /**
-     * Tests [veryShortTitle]
-     */
+    /// Tests [veryShortTitle]
     @ParameterizedTest
     @MethodSource("veryShortTitleData")
     void veryShortTitle(String titleString, String expected) {
@@ -722,9 +694,7 @@ class CitationKeyGeneratorTest {
         );
     }
 
-    /**
-     * Tests [shortTitle]
-     */
+    /// Tests [shortTitle]
     @ParameterizedTest
     @MethodSource("shortTitleData")
     void shortTitle(String titleString, String expected) {
@@ -748,9 +718,7 @@ class CitationKeyGeneratorTest {
         );
     }
 
-    /**
-     * Tests [camel]
-     */
+    /// Tests [camel]
     @ParameterizedTest
     @MethodSource("camelData")
     void camel(String titleString, String expected) {
@@ -771,9 +739,7 @@ class CitationKeyGeneratorTest {
         );
     }
 
-    /**
-     * Tests [title]
-     */
+    /// Tests [title]
     @ParameterizedTest
     @MethodSource("titleData")
     void title(String titleString, String expected) {

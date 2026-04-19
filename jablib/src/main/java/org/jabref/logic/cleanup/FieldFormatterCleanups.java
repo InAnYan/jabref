@@ -48,17 +48,15 @@ public class FieldFormatterCleanups {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FieldFormatterCleanups.class);
 
-    /**
-     * This parses the key/list map of fields and clean up actions for the field.
-     * <p>
-     * General format for one key/list map: <code>...[...]</code> - <code>field[formatter1,formatter2,...]</code>
-     * Multiple are written as <code>...[...]...[...]...[...]</code>
-     * <code>field1[formatter1,formatter2,...]field2[formatter3,formatter4,...]</code>
-     * <p>
-     * The idea is that characters are field names until <code>[</code> is reached and that formatter lists are terminated by <code>]</code>
-     * <p>
-     * Example: <code>pages[normalize_page_numbers]title[escapeAmpersands,escapeDollarSign,escapeUnderscores,latex_cleanup]</code>
-     */
+    /// This parses the key/list map of fields and clean up actions for the field.
+    /// 
+    /// General format for one key/list map: `...[...]` - `field[formatter1,formatter2,...]`
+    /// Multiple are written as `...[...]...[...]...[...]`
+    /// `field1[formatter1,formatter2,...]field2[formatter3,formatter4,...]`
+    /// 
+    /// The idea is that characters are field names until `[` is reached and that formatter lists are terminated by `]`
+    /// 
+    /// Example: `pages[normalize_page_numbers]title[escapeAmpersands,escapeDollarSign,escapeUnderscores,latex_cleanup]`
     private static final Pattern FIELD_FORMATTER_CLEANUP_PATTERN = Pattern.compile("([^\\[]+)\\[([^]]+)]");
 
     static {
@@ -93,9 +91,7 @@ public class FieldFormatterCleanups {
         this.actions = actions;
     }
 
-    /**
-     * Note: String parsing is done at {@link FieldFormatterCleanups#parse(String)}
-     */
+    /// Note: String parsing is done at {@link FieldFormatterCleanups#parse(String)}
     public static String getMetaDataString(List<FieldFormatterCleanup> actionList, String newLineSeparator) {
         // First, group all formatters by the field for which they apply
         // Order of the list should be kept

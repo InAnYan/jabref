@@ -77,17 +77,15 @@ import com.tobiasdiez.easybind.Subscription;
 import jakarta.inject.Inject;
 import org.jspecify.annotations.NonNull;
 
-/**
- * GUI component that allows editing of the fields of a BibEntry (i.e. the one that shows up, when you double click on
- * an entry in the table)
- * <p>
- * It hosts the tabs (required, general, optional) and the buttons to the left.
- * <p>
- * EntryEditor also registers itself to the event bus, receiving events whenever a field of the entry changes, enabling
- * the text fields to update themselves if the change is made from somewhere else.
- * <p>
- * The editors for fields are created via {@link org.jabref.gui.fieldeditors.FieldEditors}.
- */
+/// GUI component that allows editing of the fields of a BibEntry (i.e. the one that shows up, when you double click on
+/// an entry in the table)
+/// 
+/// It hosts the tabs (required, general, optional) and the buttons to the left.
+/// 
+/// EntryEditor also registers itself to the event bus, receiving events whenever a field of the entry changes, enabling
+/// the text fields to update themselves if the change is made from somewhere else.
+/// 
+/// The editors for fields are created via {@link org.jabref.gui.fieldeditors.FieldEditors}.
 public class EntryEditor extends BorderPane implements PreviewControls, AdaptVisibleTabs {
     private final Supplier<LibraryTab> tabSupplier;
     private final ExternalFilesEntryLinker fileLinker;
@@ -222,9 +220,7 @@ public class EntryEditor extends BorderPane implements PreviewControls, AdaptVis
         });
     }
 
-    /**
-     * Set up key bindings specific for the entry editor.
-     */
+    /// Set up key bindings specific for the entry editor.
     private void setupKeyBindings() {
         this.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             Optional<KeyBinding> keyBinding = keyBindingRepository.mapToKeyBinding(event);
@@ -366,13 +362,11 @@ public class EntryEditor extends BorderPane implements PreviewControls, AdaptVis
         return tabs;
     }
 
-    /**
-     * The preferences allow to configure tabs to show (e.g.,"General", "Abstract")
-     * These should be shown. Already hard-coded ones (above and below this code block) should be removed.
-     * This method does this calculation.
-     *
-     * @return Map of tab names and the fields to show in them.
-     */
+    /// The preferences allow to configure tabs to show (e.g.,"General", "Abstract")
+    /// These should be shown. Already hard-coded ones (above and below this code block) should be removed.
+    /// This method does this calculation.
+    /// 
+    /// @return Map of tab names and the fields to show in them.
     private Map<String, Set<Field>> getAdditionalUserConfiguredTabs() {
         Map<String, Set<Field>> entryEditorTabList = new HashMap<>(preferences.getEntryEditorPreferences().getEntryEditorTabs());
 

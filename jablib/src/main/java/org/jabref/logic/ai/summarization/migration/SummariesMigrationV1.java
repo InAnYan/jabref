@@ -29,26 +29,24 @@ import org.h2.mvstore.type.BasicDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Migrates summaries from the old v1 MVStore file to the new v2 repository.
- * <p>
- * Old format (v1): Stored in "ai/1/summaries.mv" file.
- * Map keys like "summaries-bibDatabasePath" containing Map&lt;String, Summary&gt;
- * where Summary = record(LocalDateTime timestamp, AiProvider aiProvider, String model, String content)
- * and AiProvider was at org.jabref.model.ai.AiProvider (now moved to org.jabref.model.ai.llm.AiProvider).
- * <p>
- * New format (v2): Stored in "ai/2/summaries.mv" file via repository.
- * Uses AiSummaryIdentifier(libraryId, citationKey) to store AiSummary objects.
- * <p>
- * <b>Problem:</b> Both the Summary class and AiProvider enum no longer exist at their old paths,
- * so MVStore's internal {@code ObjectDataType} fails with {@code ClassNotFoundException} before
- * our code can intercept it.
- * <p>
- * <b>Solution:</b> Open the map with a custom {@link RawBytesDataType} that reads MVStore's binary
- * page format and returns the raw Java-serialized bytes without invoking the standard
- * {@code ObjectInputStream}. Then a {@link ClassRemappingObjectInputStream} deserializes those
- * bytes while remapping the two deleted class names to current inner types.
- */
+/// Migrates summaries from the old v1 MVStore file to the new v2 repository.
+/// 
+/// Old format (v1): Stored in "ai/1/summaries.mv" file.
+/// Map keys like "summaries-bibDatabasePath" containing Map&lt;String, Summary&gt;
+/// where Summary = record(LocalDateTime timestamp, AiProvider aiProvider, String model, String content)
+/// and AiProvider was at org.jabref.model.ai.AiProvider (now moved to org.jabref.model.ai.llm.AiProvider).
+/// 
+/// New format (v2): Stored in "ai/2/summaries.mv" file via repository.
+/// Uses AiSummaryIdentifier(libraryId, citationKey) to store AiSummary objects.
+/// 
+/// **Problem:** Both the Summary class and AiProvider enum no longer exist at their old paths,
+/// so MVStore's internal `ObjectDataType` fails with `ClassNotFoundException` before
+/// our code can intercept it.
+/// 
+/// **Solution:** Open the map with a custom {@link RawBytesDataType} that reads MVStore's binary
+/// page format and returns the raw Java-serialized bytes without invoking the standard
+/// `ObjectInputStream`. Then a {@link ClassRemappingObjectInputStream} deserializes those
+/// bytes while remapping the two deleted class names to current inner types.
 public final class SummariesMigrationV1 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SummariesMigrationV1.class);
 
@@ -61,13 +59,11 @@ public final class SummariesMigrationV1 {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
     }
 
-    /**
-     * Migrates old summary data from v1 file to v2 repository.
-     *
-     * @param bibDatabaseContext The database context containing the AI library ID
-     * @param repository The new v2 summaries repository
-     * @param notificationService Service for notifying user of errors
-     */
+    /// Migrates old summary data from v1 file to v2 repository.
+    /// 
+    /// @param bibDatabaseContext The database context containing the AI library ID
+    /// @param repository The new v2 summaries repository
+    /// @param notificationService Service for notifying user of errors
     public static void migrate(
             BibDatabaseContext bibDatabaseContext,
             SummariesRepository repository,
@@ -167,9 +163,7 @@ public final class SummariesMigrationV1 {
         }
     }
 
-    /**
-     * Deserializes old Summary using a custom ObjectInputStream that remaps the old AiProvider class.
-     */
+    /// Deserializes old Summary using a custom ObjectInputStream that remaps the old AiProvider class.
     private static OldSummary deserializeOldSummary(byte[] data) {
         try (ClassRemappingObjectInputStream ois = new ClassRemappingObjectInputStream(
                 new java.io.ByteArrayInputStream(data))) {
@@ -197,10 +191,8 @@ public final class SummariesMigrationV1 {
         );
     }
 
-    /**
-     * Custom ObjectInputStream that remaps the deleted/moved class names to current inner types,
-     * so that Java's serialization machinery can instantiate them from the raw bytes.
-     */
+    /// Custom ObjectInputStream that remaps the deleted/moved class names to current inner types,
+    /// so that Java's serialization machinery can instantiate them from the raw bytes.
     private static class ClassRemappingObjectInputStream extends ObjectInputStream {
         public ClassRemappingObjectInputStream(InputStream in) throws IOException {
             super(in);
@@ -229,17 +221,15 @@ public final class SummariesMigrationV1 {
         }
     }
 
-    /**
-     * Reads raw Java-serialized bytes from MVStore's binary page format without invoking
-     * Java deserialization. MVStore's {@code ObjectDataType} stores each serializable value as:
-     * <ol>
-     *   <li>1 byte: type identifier — {@code 19} ({@code TYPE_SERIALIZED_OBJECT} in H2 2.3.232)</li>
-     *   <li>VarInt: byte length of the serialized payload</li>
-     *   <li>N bytes: the raw Java-serialized payload (starts with {@code 0xACED 0x0005})</li>
-     * </ol>
-     * By returning the raw bytes we defer deserialization to {@link ClassRemappingObjectInputStream},
-     * which can remap deleted/moved class names before they ever reach the class loader.
-     */
+    /// Reads raw Java-serialized bytes from MVStore's binary page format without invoking
+    /// Java deserialization. MVStore's `ObjectDataType` stores each serializable value as:
+    /// <ol>
+    /// - 1 byte: type identifier — `19` (`TYPE_SERIALIZED_OBJECT` in H2 2.3.232)
+    /// - VarInt: byte length of the serialized payload
+    /// - N bytes: the raw Java-serialized payload (starts with `0xACED 0x0005`)
+    /// </ol>
+    /// By returning the raw bytes we defer deserialization to {@link ClassRemappingObjectInputStream},
+    /// which can remap deleted/moved class names before they ever reach the class loader.
     private static class RawBytesDataType extends BasicDataType<byte[]> {
 
         // Mirrors the private constant ObjectDataType.TYPE_SERIALIZED_OBJECT in H2 2.3.232.
@@ -276,11 +266,9 @@ public final class SummariesMigrationV1 {
             return new byte[size][];
         }
 
-        /**
-         * Reads a variable-length encoded int from {@code buff}, using the same encoding that
-         * H2's {@code DataUtils.readVarInt} writes. Implemented inline to avoid a dependency
-         * on whether {@code org.h2.mvstore.DataUtils} is exported by the H2 module.
-         */
+        /// Reads a variable-length encoded int from `buff`, using the same encoding that
+    /// H2's `DataUtils.readVarInt` writes. Implemented inline to avoid a dependency
+    /// on whether `org.h2.mvstore.DataUtils` is exported by the H2 module.
         private static int readVarInt(ByteBuffer buff) {
             int b = buff.get() & 0xFF;
             if (b < 0x80) {
@@ -298,10 +286,8 @@ public final class SummariesMigrationV1 {
         }
     }
 
-    /**
-     * Represents the old Summary format from v1.
-     * This must match the structure of the old record.
-     */
+    /// Represents the old Summary format from v1.
+    /// This must match the structure of the old record.
     private record OldSummary(
             LocalDateTime timestamp,
             AiProvider aiProvider,

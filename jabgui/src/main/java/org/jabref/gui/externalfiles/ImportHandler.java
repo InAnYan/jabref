@@ -222,10 +222,8 @@ public class ImportHandler {
         return entry;
     }
 
-    /**
-     * Cleans up the given entries and adds them to the library.
-     * There is no automatic download done.
-     */
+    /// Cleans up the given entries and adds them to the library.
+    /// There is no automatic download done.
     public void importEntries(List<BibEntry> entries) {
         ImportCleanup cleanup = ImportCleanup.targeting(bibDatabaseContext.getMode(), preferences.getFieldPreferences());
         cleanup.doPostCleanup(entries);
@@ -357,11 +355,9 @@ public class ImportHandler {
         }
     }
 
-    /**
-     * Generate keys for given entries.
-     *
-     * @param entries entries to generate keys for
-     */
+    /// Generate keys for given entries.
+    /// 
+    /// @param entries entries to generate keys for
     private void generateKeys(List<BibEntry> entries) {
         if (!preferences.getImporterPreferences().shouldGenerateNewKeyOnImport()) {
             return;

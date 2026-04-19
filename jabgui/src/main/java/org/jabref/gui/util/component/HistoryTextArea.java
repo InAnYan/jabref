@@ -12,36 +12,34 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
-/**
- * A custom JavaFX TextArea that provides shell-like history navigation, smart multiline handling,
- * and auto-expanding height.
- * <p>
- * <b>Behavioral Properties:</b>
- * <ul>
- * <li><b>Auto-Sizing:</b> Starts with a height of 1 row. Automatically expands vertically as new lines are added (up to a maximum of 10 rows), then shows a scrollbar.</li>
- * <li><b>Submission:</b> Pressing <code>ENTER</code> submits the text (triggers the callback) and clears the input.</li>
- * <li><b>New Lines:</b> Pressing <code>SHIFT+ENTER</code> inserts a new line without submitting.</li>
- * <li><b>History Navigation (UP/DOWN):</b>
- * <ul>
- * <li><b>UP Arrow:</b> Recalls the previous message from history. Places the cursor at the <b>END</b> of the text.</li>
- * <li><b>DOWN Arrow:</b> Recalls the next (newer) message. Places the cursor at the <b>START</b> of the text.</li>
- * </ul>
- * </li>
- * <li><b>Smart Multiline Navigation:</b>
- * <ul>
- * <li>If the text contains multiple lines, <code>UP</code> and <code>DOWN</code> will move the cursor purely visually between lines first.</li>
- * <li>History navigation is only triggered when the cursor is at the physical top boundary (for UP) or bottom boundary (for DOWN).</li>
- * </ul>
- * </li>
- * <li><b>"Browsing" vs. "Edit" Mode:</b>
- * <ul>
- * <li><b>Browsing Mode:</b> Active when scrolling through history. You can move up and down freely.</li>
- * <li><b>Edit Mode:</b> Triggered immediately if you type a character, delete text, or paste content while viewing a history entry.</li>
- * <li><b>Locking Behavior:</b> Once in Edit Mode, the component "forgets" the link to the history list. Pressing UP/DOWN will <b>not</b> jump to a different message; it will simply move the cursor within the current draft. This prevents accidental data loss.</li>
- * </ul>
- * </li>
- * </ul>
- */
+/// A custom JavaFX TextArea that provides shell-like history navigation, smart multiline handling,
+/// and auto-expanding height.
+/// 
+/// **Behavioral Properties:**
+/// 
+/// - **Auto-Sizing:** Starts with a height of 1 row. Automatically expands vertically as new lines are added (up to a maximum of 10 rows), then shows a scrollbar.
+/// - **Submission:** Pressing `ENTER` submits the text (triggers the callback) and clears the input.
+/// - **New Lines:** Pressing `SHIFT+ENTER` inserts a new line without submitting.
+/// - **History Navigation (UP/DOWN):**
+/// 
+/// - **UP Arrow:** Recalls the previous message from history. Places the cursor at the **END** of the text.
+/// - **DOWN Arrow:** Recalls the next (newer) message. Places the cursor at the **START** of the text.
+/// 
+/// 
+/// - **Smart Multiline Navigation:**
+/// 
+/// - If the text contains multiple lines, `UP` and `DOWN` will move the cursor purely visually between lines first.
+/// - History navigation is only triggered when the cursor is at the physical top boundary (for UP) or bottom boundary (for DOWN).
+/// 
+/// 
+/// - **"Browsing" vs. "Edit" Mode:**
+/// 
+/// - **Browsing Mode:** Active when scrolling through history. You can move up and down freely.
+/// - **Edit Mode:** Triggered immediately if you type a character, delete text, or paste content while viewing a history entry.
+/// - **Locking Behavior:** Once in Edit Mode, the component "forgets" the link to the history list. Pressing UP/DOWN will **not** jump to a different message; it will simply move the cursor within the current draft. This prevents accidental data loss.
+/// 
+/// 
+/// 
 public class HistoryTextArea extends TextArea {
 
     private static final int NEW_MESSAGE_INDEX = -1;

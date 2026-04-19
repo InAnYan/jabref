@@ -7,9 +7,7 @@ import org.jabref.model.entry.field.Field;
 
 import org.jspecify.annotations.NonNull;
 
-/**
- * This class is used in the instance of a field being modified, removed or added.
- */
+/// This class is used in the instance of a field being modified, removed or added.
 public class FieldChange {
 
     private final BibEntry entry;

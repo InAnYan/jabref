@@ -37,9 +37,7 @@ import org.jabref.model.util.FileUpdateMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Converts string representation of groups to a parsed {@link GroupTreeNode}.
- */
+/// Converts string representation of groups to a parsed {@link GroupTreeNode}.
 public class GroupsParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupsParser.class);
@@ -87,13 +85,11 @@ public class GroupsParser {
         }
     }
 
-    /**
-     * Re-create a group instance from a textual representation.
-     *
-     * @param s The result from the group's toString() method.
-     * @return New instance of the encoded group.
-     * @throws ParseException If an error occurred and a group could not be created, e.g. due to a malformed regular expression.
-     */
+    /// Re-create a group instance from a textual representation.
+    /// 
+    /// @param s The result from the group's toString() method.
+    /// @return New instance of the encoded group.
+    /// @throws ParseException If an error occurred and a group could not be created, e.g. due to a malformed regular expression.
     public static AbstractGroup fromString(String s, Character keywordSeparator, FileUpdateMonitor fileMonitor, MetaData metaData, String userAndHost)
             throws ParseException {
         if (s.startsWith(MetadataSerializationConfiguration.KEYWORD_GROUP_ID)) {
@@ -204,11 +200,9 @@ public class GroupsParser {
         return newGroup;
     }
 
-    /**
-     * Parses s and recreates the KeywordGroup from it.
-     *
-     * @param s The String representation obtained from KeywordGroup.toString()
-     */
+    /// Parses s and recreates the KeywordGroup from it.
+    /// 
+    /// @param s The String representation obtained from KeywordGroup.toString()
     private static KeywordGroup keywordGroupFromString(String s, Character keywordSeparator) {
         if (!s.startsWith(MetadataSerializationConfiguration.KEYWORD_GROUP_ID)) {
             throw new IllegalArgumentException("KeywordGroup cannot be created from \"" + s + "\".");
@@ -286,12 +280,10 @@ public class GroupsParser {
         }
     }
 
-    /**
-     * Called only when created fromString.
-     * JabRef used to store the entries of an explicit group in the serialization, e.g.
-     * ExplicitGroup:GroupName\;0\;Key1\;Key2\;;
-     * This method exists for backwards compatibility.
-     */
+    /// Called only when created fromString.
+    /// JabRef used to store the entries of an explicit group in the serialization, e.g.
+    /// ExplicitGroup:GroupName\;0\;Key1\;Key2\;;
+    /// This method exists for backwards compatibility.
     private static void addLegacyEntryKeys(QuotedStringTokenizer tok, ExplicitGroup group) {
         while (tok.hasMoreTokens()) {
             String key = StringUtil.unquote(tok.nextToken(), MetadataSerializationConfiguration.GROUP_QUOTE_CHAR);
@@ -306,11 +298,9 @@ public class GroupsParser {
         return DefaultGroupsFactory.getAllEntriesGroup();
     }
 
-    /**
-     * Parses s and recreates the SearchGroup from it.
-     *
-     * @param s The String representation obtained from SearchGroup.toString(), or null if incompatible
-     */
+    /// Parses s and recreates the SearchGroup from it.
+    /// 
+    /// @param s The String representation obtained from SearchGroup.toString(), or null if incompatible
     private static AbstractGroup searchGroupFromString(String s) {
         if (!s.startsWith(MetadataSerializationConfiguration.SEARCH_GROUP_ID)) {
             throw new IllegalArgumentException("SearchGroup cannot be created from \"" + s + "\".");

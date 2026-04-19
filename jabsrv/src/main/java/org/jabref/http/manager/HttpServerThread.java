@@ -10,9 +10,7 @@ import org.glassfish.grizzly.http.server.HttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * This thread wrapper is required to be able to interrupt the http server, e.g. when JabRef is closing down the http server should shutdown as well.
- */
+/// This thread wrapper is required to be able to interrupt the http server, e.g. when JabRef is closing down the http server should shutdown as well.
 public class HttpServerThread extends Thread {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerThread.class);
