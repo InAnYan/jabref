@@ -48,6 +48,23 @@ public class ActionHelper {
         return BooleanExpression.booleanExpression(binding);
     }
 
+    public static BooleanExpression needsGitRemoteConfigured(StateManager stateManager) {
+        return BooleanExpression.booleanExpression(
+                EasyBind.map(
+                        stateManager.activeDatabaseProperty(),
+                        contextOptional -> contextOptional
+                                .filter(context -> context.getLocation() == DatabaseLocation.LOCAL)
+                                .map(context ->
+                                        context.getDatabasePath()
+                                               // TODO: This dependency should be passed more directly. Maybe as part of StateManager - or similar to AiChatService
+                                               .flatMap(path -> Injector.instantiateModelOrService(GitHandlerRegistry.class)
+                                                                        .fromAnyPath(path))
+                                               .map(handler -> handler.hasRemote("origin"))
+                                               .orElse(false))
+                                .orElse(false))
+        );
+    }
+
     public static BooleanExpression needsEntriesSelected(StateManager stateManager) {
         return Bindings.isNotEmpty(stateManager.getSelectedEntries());
     }
@@ -94,32 +111,36 @@ public class ActionHelper {
         return BooleanExpression.booleanExpression(fileIsPresent);
     }
 
-    /**
-     * Check if at least one of the selected entries has linked files
-     * <br>
-     * Used in {@link org.jabref.gui.maintable.OpenSelectedEntriesFilesAction} when multiple entries selected
-     *
-     * @param stateManager manager for the state of the GUI
-     * @return a boolean binding
-     */
+    public static BooleanExpression isPdfFilePresentForSelectedEntry(StateManager stateManager, CliPreferences preferences) {
+        ObservableList<BibEntry> selectedEntries = stateManager.getSelectedEntries();
+        Binding<Boolean> pdfFileIsPresent = EasyBind.valueAt(selectedEntries, 0).mapOpt(entry -> {
+            if (stateManager.getActiveDatabase().isEmpty()) {
+                return false;
+            }
+
+            return entry.getFiles().stream()
+                        .filter(linkedFile -> linkedFile.getFileName()
+                                                        .map(Path::of)
+                                                        .map(FileUtil::isPDFFile)
+                                                        .orElse(false))
+                        .anyMatch(linkedFile -> FileUtil.find(
+                                                                stateManager.getActiveDatabase().get(),
+                                                                linkedFile.getLink(),
+                                                                preferences.getFilePreferences())
+                                                        .isPresent());
+        }).orElseOpt(false);
+
+        return BooleanExpression.booleanExpression(pdfFileIsPresent);
+    }
+
+    /// Check if at least one of the selected entries has linked files
+    /// <br>
+    /// Used in {@link org.jabref.gui.maintable.OpenSelectedEntriesFilesAction} when multiple entries selected
+    ///
+    /// @param stateManager manager for the state of the GUI
+    /// @return a boolean binding
     public static BooleanExpression hasLinkedFileForSelectedEntries(StateManager stateManager) {
         return BooleanExpression.booleanExpression(EasyBind.reduce(stateManager.getSelectedEntries(),
                 entries -> entries.anyMatch(entry -> !entry.getFiles().isEmpty())));
-    }
-
-    public static BooleanExpression needsGitRemoteConfigured(StateManager stateManager) {
-        return BooleanExpression.booleanExpression(
-                EasyBind.map(stateManager.activeDatabaseProperty(), contextOptional -> {
-                    if (contextOptional.isPresent()) {
-                        return contextOptional.get().getDatabasePath()
-                                              .flatMap(path -> Injector.instantiateModelOrService(GitHandlerRegistry.class).fromAnyPath(path))
-                                              .map(handler -> handler.hasRemote("origin")
-                                              )
-                                              .orElse(false);
-                    } else {
-                        return false;
-                    }
-                })
-        );
     }
 }

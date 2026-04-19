@@ -9,6 +9,7 @@ import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.groups.AbstractGroup;
 import org.jabref.model.groups.AllEntriesGroup;
 import org.jabref.model.groups.AutomaticDateGroup;
+import org.jabref.model.groups.AutomaticEntryTypeGroup;
 import org.jabref.model.groups.AutomaticGroup;
 import org.jabref.model.groups.AutomaticKeywordGroup;
 import org.jabref.model.groups.AutomaticPersonsGroup;
@@ -17,26 +18,12 @@ import org.jabref.model.groups.GroupTreeNode;
 import org.jabref.model.groups.KeywordGroup;
 import org.jabref.model.groups.RegexKeywordGroup;
 import org.jabref.model.groups.SearchGroup;
-import org.jabref.model.groups.SmartGroup;
 import org.jabref.model.groups.TexGroup;
 import org.jabref.model.search.SearchFlags;
 
 public class GroupSerializer {
     private static String serializeAllEntriesGroup() {
         return MetadataSerializationConfiguration.ALL_ENTRIES_GROUP_ID;
-    }
-
-    private String serializeSmartGroup(SmartGroup group) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(MetadataSerializationConfiguration.SMART_GROUP_ID);
-        sb.append(StringUtil.quote(group.getName(), MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR, MetadataSerializationConfiguration.GROUP_QUOTE_CHAR));
-        sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
-        sb.append(group.getHierarchicalContext().ordinal());
-        sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
-
-        appendGroupDetails(sb, group);
-
-        return sb.toString();
     }
 
     private String serializeExplicitGroup(ExplicitGroup group) {
@@ -104,14 +91,12 @@ public class GroupSerializer {
         builder.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
     }
 
-    /**
-     * Returns a textual representation of this node and its children. This
-     * representation contains both the tree structure and the textual
-     * representations of the group associated with each node.
-     * Every node is one entry in the list of strings.
-     *
-     * @return a representation of the tree based at this node as a list of strings
-     */
+    /// Returns a textual representation of this node and its children. This
+    /// representation contains both the tree structure and the textual
+    /// representations of the group associated with each node.
+    /// Every node is one entry in the list of strings.
+    ///
+    /// @return a representation of the tree based at this node as a list of strings
     public List<String> serializeTree(GroupTreeNode node) {
         List<String> representation = new ArrayList<>();
 
@@ -130,8 +115,6 @@ public class GroupSerializer {
         return switch (group) {
             case AllEntriesGroup _ ->
                     serializeAllEntriesGroup();
-            case SmartGroup smartGroup ->
-                    serializeSmartGroup(smartGroup);
             case ExplicitGroup explicitGroup ->
                     serializeExplicitGroup(explicitGroup);
             case KeywordGroup keywordGroup ->
@@ -144,6 +127,8 @@ public class GroupSerializer {
                     serializeAutomaticPersonsGroup(personsGroup);
             case AutomaticDateGroup dateGroup ->
                     serializeAutomaticDateGroup(dateGroup);
+            case AutomaticEntryTypeGroup entryTypeGroup ->
+                    serializeAutomaticEntryTypeGroup(entryTypeGroup);
             case TexGroup texGroup ->
                     serializeTexGroup(texGroup);
             case null ->
@@ -207,6 +192,14 @@ public class GroupSerializer {
         sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
         sb.append(StringUtil.quote(group.getKeywordHierarchicalDelimiter().toString(), MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR, MetadataSerializationConfiguration.GROUP_QUOTE_CHAR));
         sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
+        appendGroupDetails(sb, group);
+        return sb.toString();
+    }
+
+    private String serializeAutomaticEntryTypeGroup(AutomaticEntryTypeGroup group) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(MetadataSerializationConfiguration.AUTOMATIC_ENTRY_TYPE_GROUP_ID);
+        appendAutomaticGroupDetails(sb, group);
         appendGroupDetails(sb, group);
         return sb.toString();
     }

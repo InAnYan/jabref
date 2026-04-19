@@ -8,6 +8,7 @@ JBang
 OpenFastTrace
 OpenRewrite
 Temurin
+jpackage
 impl
 utest
 dsn

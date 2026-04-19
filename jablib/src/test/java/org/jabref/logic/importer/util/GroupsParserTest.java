@@ -2,6 +2,7 @@ package org.jabref.logic.importer.util;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -9,11 +10,13 @@ import java.util.List;
 import javafx.scene.paint.Color;
 
 import org.jabref.logic.auxparser.DefaultAuxParser;
+import org.jabref.logic.exporter.GroupSerializer;
 import org.jabref.logic.importer.ParseException;
 import org.jabref.model.database.BibDatabase;
 import org.jabref.model.entry.field.StandardField;
 import org.jabref.model.groups.AbstractGroup;
 import org.jabref.model.groups.AutomaticDateGroup;
+import org.jabref.model.groups.AutomaticEntryTypeGroup;
 import org.jabref.model.groups.AutomaticGroup;
 import org.jabref.model.groups.AutomaticKeywordGroup;
 import org.jabref.model.groups.AutomaticPersonsGroup;
@@ -32,7 +35,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GroupsParserTest {
     private FileUpdateMonitor fileMonitor;
@@ -126,6 +132,14 @@ class GroupsParserTest {
     }
 
     @Test
+    void fromStringParsesAutomaticEntryTypeGroupWithDescription() throws ParseException {
+        AutomaticEntryTypeGroup expected = new AutomaticEntryTypeGroup("Entry types", GroupHierarchyType.INDEPENDENT);
+        expected.setDescription("Group by entry type");
+        AbstractGroup parsed = GroupsParser.fromString("AutomaticEntryTypeGroup:Entry types;0;1;;;Group by entry type;", ',', fileMonitor, metaData, "userAndHost");
+        assertEquals(expected, parsed);
+    }
+
+    @Test
     void fromStringParsesTexGroup() throws ParseException, IOException {
         TexGroup expected = TexGroup.create("myTexGroup", GroupHierarchyType.INDEPENDENT, Path.of("path", "To", "File"), new DefaultAuxParser(new BibDatabase()), metaData, "userAndHost");
         AbstractGroup parsed = GroupsParser.fromString("TexGroup:myTexGroup;0;path/To/File;1;;;;", ',', fileMonitor, metaData, "userAndHost");
@@ -133,8 +147,9 @@ class GroupsParserTest {
     }
 
     @Test
-    void fromStringUnknownGroupThrowsException() {
-        assertThrows(ParseException.class, () -> GroupsParser.fromString("0 UnknownGroup:myUnknownGroup;0;;1;;;;", ',', fileMonitor, metaData, "userAndHost"));
+    void fromStringReturnsNullForUnknownGroup() throws ParseException {
+        AbstractGroup result = GroupsParser.fromString("UnknownGroup:myUnknownGroup;0;;1;;;;", ',', fileMonitor, metaData, "userAndHost");
+        assertNull(result);
     }
 
     @Test
@@ -173,5 +188,61 @@ class GroupsParserTest {
         expected.setDescription("Group by publication year");
         AbstractGroup parsed = GroupsParser.fromString("AutomaticDateGroup:Publications;0;year;YEAR;1;0x0000ffff;calendar;Group by publication year;", ',', fileMonitor, metaData, "userAndHost");
         assertEquals(expected, parsed);
+    }
+
+    @Test
+    void fromStringParsesSmartGroupAndMigratesToExplicitGroup() throws ParseException {
+        ExplicitGroup expected = new ExplicitGroup("MySmartGroup", GroupHierarchyType.INDEPENDENT, ',');
+        AbstractGroup parsed = GroupsParser.fromString("SmartGroup:MySmartGroup;0;", ',', fileMonitor, metaData, "userAndHost");
+
+        assertNotNull(parsed);
+        assertEquals(ExplicitGroup.class, parsed.getClass());
+        assertEquals(expected, parsed);
+    }
+
+    @Test
+    void roundtripSmartGroupToExplicitGroup() throws ParseException {
+        // Read old SmartGroup format
+        String smartGroupString = "SmartGroup:MyGroup;0;1;0xf0f8ffff;icon-name;Group description;";
+        AbstractGroup parsed = GroupsParser.fromString(smartGroupString, ',', fileMonitor, metaData, "userAndHost");
+        assertNotNull(parsed);
+        assertEquals(ExplicitGroup.class, parsed.getClass());
+
+        // Store in new format (serialize)
+        GroupSerializer serializer = new GroupSerializer();
+        List<String> serialized = serializer.serializeTree(GroupTreeNode.fromGroup(parsed));
+        String serializedString = serialized.getFirst().substring(2); // Remove level prefix "0 "
+
+        // Verify it's stored as StaticGroup (ExplicitGroup format), not SmartGroup
+        assertTrue(serializedString.startsWith("StaticGroup:"));
+
+        // Read the new format
+        AbstractGroup roundtripParsed = GroupsParser.fromString(serializedString, ',', fileMonitor, metaData, "userAndHost");
+
+        assertNotNull(parsed);
+        assertNotNull(roundtripParsed);
+        assertEquals(ExplicitGroup.class, roundtripParsed.getClass());
+        assertEquals(parsed, roundtripParsed);
+    }
+
+    @Test
+    void unknownGroupTypeIsSkipped() throws Exception {
+        List<String> groupData = List.of(
+                "0 AllEntriesGroup:;",
+                "1 StaticGroup:Known;0;1;;;;;;",
+                "1 DirectoryGroup:fs-mirror;0;C:/TEMP/jabref/fs-mirror;1;;;;"
+        );
+
+        GroupTreeNode root = GroupsParser.importGroups(
+                groupData,
+                ',',
+                fileMonitor,
+                metaData,
+                "userAndHost"
+        );
+
+        assertNotNull(root);
+        List<GroupTreeNode> children = new ArrayList<>(root.getChildren());
+        assertEquals(1, children.size());
     }
 }

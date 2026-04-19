@@ -1,6 +1,9 @@
 package org.jabref.gui.preferences.customentrytypes;
 
+import java.util.stream.Collectors;
+
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -26,7 +29,6 @@ import org.jabref.gui.preferences.AbstractPreferenceTabView;
 import org.jabref.gui.preferences.PreferencesTab;
 import org.jabref.gui.util.ControlHelper;
 import org.jabref.gui.util.CustomLocalDragboard;
-import org.jabref.gui.util.FieldsUtil;
 import org.jabref.gui.util.ValueTableCellFactory;
 import org.jabref.gui.util.ViewModelTableRowFactory;
 import org.jabref.logic.l10n.Localization;
@@ -39,7 +41,7 @@ import com.airhacks.afterburner.views.ViewLoader;
 import com.tobiasdiez.easybind.EasyBind;
 import de.saxsys.mvvmfx.utils.validation.visualization.ControlsFxVisualizer;
 import jakarta.inject.Inject;
-import org.controlsfx.control.SearchableComboBox;
+import org.controlsfx.control.textfield.TextFields;
 
 public class CustomEntryTypesTab extends AbstractPreferenceTabView<CustomEntryTypesTabViewModel> implements PreferencesTab {
 
@@ -47,16 +49,14 @@ public class CustomEntryTypesTab extends AbstractPreferenceTabView<CustomEntryTy
     @FXML private TableColumn<EntryTypeViewModel, String> entryTypColumn;
     @FXML private TableColumn<EntryTypeViewModel, String> entryTypeActionsColumn;
     @FXML private TextField addNewEntryType;
-    @FXML private TextField addNewCustomFieldText;
     @FXML private TableView<FieldViewModel> fields;
     @FXML private TableColumn<FieldViewModel, String> fieldNameColumn;
     @FXML private TableColumn<FieldViewModel, Boolean> fieldTypeColumn;
     @FXML private TableColumn<FieldViewModel, String> fieldTypeActionColumn;
     @FXML private TableColumn<FieldViewModel, Boolean> fieldTypeMultilineColumn;
-    @FXML private SearchableComboBox<Field> addNewField;
+    @FXML private TextField addNewField;
     @FXML private Button addNewEntryTypeButton;
     @FXML private Button addNewFieldButton;
-    @FXML private Button addNewCustomFieldButton;
 
     @Inject private StateManager stateManager;
 
@@ -88,16 +88,19 @@ public class CustomEntryTypesTab extends AbstractPreferenceTabView<CustomEntryTy
         setupEntryTypesTable();
         setupFieldsTable();
 
+        addNewField.disableProperty().bind(viewModel.selectedEntryTypeProperty().isNull());
+
+        addNewEntryType.setOnAction(event -> addEntryType());
+        addNewField.setOnAction(event -> addNewField());
+
         addNewEntryTypeButton.disableProperty().bind(viewModel.entryTypeValidationStatus().validProperty().not());
         addNewFieldButton.disableProperty().bind(viewModel.fieldValidationStatus().validProperty().not().or(viewModel.selectedEntryTypeProperty().isNull()));
 
-        viewModel.newCustomFieldToAddProperty().bindBidirectional(addNewCustomFieldText.textProperty());
-        addNewCustomFieldButton.disableProperty().bind(viewModel.customFieldValidationStatus().validProperty().not().or(viewModel.selectedEntryTypeProperty().isNull()));
+        viewModel.newFieldToAddProperty().bindBidirectional(addNewField.textProperty());
 
         Platform.runLater(() -> {
             visualizer.initVisualization(viewModel.entryTypeValidationStatus(), addNewEntryType, true);
             visualizer.initVisualization(viewModel.fieldValidationStatus(), addNewField, true);
-            visualizer.initVisualization(viewModel.customFieldValidationStatus(), addNewCustomFieldText, true);
         });
     }
 
@@ -182,7 +185,7 @@ public class CustomEntryTypesTab extends AbstractPreferenceTabView<CustomEntryTy
         makeRotatedColumnHeader(fieldTypeColumn, Localization.lang("Required"));
 
         fieldTypeMultilineColumn.setCellFactory(CheckBoxTableCell.forTableColumn(fieldTypeMultilineColumn));
-        fieldTypeMultilineColumn.setCellValueFactory(item -> item.getValue().multilineProperty());
+        fieldTypeMultilineColumn.setCellValueFactory(this::createMultilinePropertyListener);
         makeRotatedColumnHeader(fieldTypeMultilineColumn, Localization.lang("Multiline"));
 
         fieldTypeActionColumn.setSortable(false);
@@ -203,12 +206,12 @@ public class CustomEntryTypesTab extends AbstractPreferenceTabView<CustomEntryTy
                 .setOnDragExited(this::handleOnDragExited)
                 .install(fields);
 
-        addNewField.setItems(viewModel.fieldsForAdding());
-        addNewField.setConverter(FieldsUtil.FIELD_STRING_CONVERTER);
-
-        viewModel.newFieldToAddProperty().bindBidirectional(addNewField.valueProperty());
-        // The valueProperty() of addNewField ComboBox needs to be updated by typing text in the ComboBox textfield,
-        // since the enabled/disabled state of addNewFieldButton won't update otherwise
+        TextFields.bindAutoCompletion(
+                addNewField,
+                viewModel.fieldsForAdding().stream()
+                         .map(Field::getName)
+                         .collect(Collectors.toList())
+        );
     }
 
     private void makeRotatedColumnHeader(TableColumn<?, ?> column, String text) {
@@ -264,6 +267,19 @@ public class CustomEntryTypesTab extends AbstractPreferenceTabView<CustomEntryTy
 
     @FXML
     void addEntryType() {
+        if (!viewModel.entryTypeValidationStatus().isValid()) {
+            return;
+        }
+
+        String entryTypeName = viewModel.entryTypeToAddProperty().getValue();
+        for (EntryTypeViewModel existingEntryType : entryTypesTable.getItems()) {
+            if (existingEntryType.entryType().getValue().getType().getName().equalsIgnoreCase(entryTypeName)) {
+                this.entryTypesTable.getSelectionModel().select(existingEntryType);
+                this.entryTypesTable.scrollTo(existingEntryType);
+                return;
+            }
+        }
+
         EntryTypeViewModel newlyAdded = viewModel.addNewCustomEntryType();
         this.entryTypesTable.getSelectionModel().select(newlyAdded);
         this.entryTypesTable.scrollTo(newlyAdded);
@@ -271,12 +287,14 @@ public class CustomEntryTypesTab extends AbstractPreferenceTabView<CustomEntryTy
 
     @FXML
     void addNewField() {
-        viewModel.addNewField();
-    }
+        if (!viewModel.fieldValidationStatus().isValid()) {
+            return;
+        }
 
-    @FXML
-    void addNewCustomField() {
-        viewModel.addNewCustomField();
+        viewModel.addNewField().ifPresent(newlyAdded -> {
+            this.fields.getSelectionModel().select(newlyAdded);
+            this.fields.scrollTo(newlyAdded);
+        });
     }
 
     @FXML
@@ -287,10 +305,24 @@ public class CustomEntryTypesTab extends AbstractPreferenceTabView<CustomEntryTy
                 Localization.lang("Reset to default"));
         if (reset) {
             viewModel.resetAllCustomEntryTypes();
+            viewModel.resetMultilineFieldsToDefault();
             fields.getSelectionModel().clearSelection();
             entryTypesTable.getSelectionModel().clearSelection();
             viewModel.setValues();
             entryTypesTable.refresh();
         }
+    }
+
+    /// For multiline property, fields with the same name in each entry type will be updated as the standard fields are global.
+    private BooleanProperty createMultilinePropertyListener(TableColumn.CellDataFeatures<FieldViewModel, Boolean> item) {
+        BooleanProperty property = item.getValue().multilineProperty();
+        property.addListener((obs, wasSelected, isSelected) -> {
+            viewModel.entryTypes().forEach(typeViewModel -> {
+                typeViewModel.fields().stream()
+                             .filter(field -> field.displayNameProperty().get().equals(item.getValue().displayNameProperty().get()))
+                             .forEach(field -> field.multilineProperty().set(isSelected));
+            });
+        });
+        return property;
     }
 }

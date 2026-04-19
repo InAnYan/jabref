@@ -39,7 +39,6 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
 import org.jabref.architecture.AllowedToUseClassGetResource;
-import org.jabref.gui.ClipBoardManager;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.LibraryTab;
 import org.jabref.gui.LibraryTabContainer;
@@ -48,6 +47,7 @@ import org.jabref.gui.autocompleter.AppendPersonNamesStrategy;
 import org.jabref.gui.autocompleter.AutoCompletionTextInputBinding;
 import org.jabref.gui.autocompleter.PersonNameStringConverter;
 import org.jabref.gui.autocompleter.SuggestionProvider;
+import org.jabref.gui.clipboard.ClipBoardManager;
 import org.jabref.gui.icon.IconTheme;
 import org.jabref.gui.keyboard.KeyBinding;
 import org.jabref.gui.keyboard.KeyBindingRepository;
@@ -150,14 +150,16 @@ public class GlobalSearchBar extends HBox {
 
         searchField.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (keyBindingRepository.matches(event, KeyBinding.CLEAR_SEARCH)) {
-                searchField.clear();
-                if (searchType == SearchType.NORMAL_SEARCH) {
-                    LibraryTab currentLibraryTab = tabContainer.getCurrentLibraryTab();
-                    if (currentLibraryTab != null) {
-                        currentLibraryTab.getMainTable().requestFocus();
+                if (!searchField.getText().isEmpty()) {
+                    searchField.clear();
+                    if (searchType == SearchType.NORMAL_SEARCH) {
+                        LibraryTab currentLibraryTab = tabContainer.getCurrentLibraryTab();
+                        if (currentLibraryTab != null) {
+                            currentLibraryTab.getMainTable().requestFocus();
+                        }
                     }
+                    event.consume();
                 }
-                event.consume();
             }
         });
 
@@ -363,9 +365,7 @@ public class GlobalSearchBar extends HBox {
         searchButton.visibleProperty().bind(searchField.editableProperty());
     }
 
-    /**
-     * Focuses the search field if it is not focused.
-     */
+    /// Focuses the search field if it is not focused.
     @Override
     public void requestFocus() {
         if (!searchField.isFocused()) {
@@ -401,9 +401,7 @@ public class GlobalSearchBar extends HBox {
         }
     }
 
-    /**
-     * The popup has private access in {@link AutoCompletionBinding}, so we use reflection to access it.
-     */
+    /// The popup has private access in {@link AutoCompletionBinding}, so we use reflection to access it.
     @SuppressWarnings("unchecked")
     private <T> AutoCompletePopup<T> getPopup(AutoCompletionBinding<T> autoCompletionBinding) {
         try {

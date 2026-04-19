@@ -20,6 +20,7 @@ import org.jabref.logic.importer.fileformat.RisImporter;
 import org.jabref.logic.importer.fileformat.pdf.PdfMergeMetadataImporter;
 import org.jabref.model.util.DummyFileUpdateMonitor;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Answers;
@@ -29,7 +30,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ResourceLock("Localization.lang")
 public class ImporterTest {
+
+    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s");
 
     @ParameterizedTest
     @MethodSource("instancesToTest")
@@ -52,8 +56,7 @@ public class ImporterTest {
     @ParameterizedTest
     @MethodSource("instancesToTest")
     void getIdDoesNotContainWhitespace(Importer format) {
-        Pattern whitespacePattern = Pattern.compile("\\s");
-        assertFalse(whitespacePattern.matcher(format.getId()).find());
+        assertFalse(WHITESPACE_PATTERN.matcher(format.getId()).find());
     }
 
     @ParameterizedTest

@@ -47,6 +47,17 @@ public class GroupsPreferences {
         }
     }
 
+    private GroupsPreferences() {
+        this(
+                true,                             // Default view mode intersection
+                true,                             // Default view mode filter
+                false,                            // Default view mode invert
+                true,                             // Default auto assign group
+                true,                             // Default display group content
+                GroupHierarchyType.INDEPENDENT    // Default hierarchical context
+        );
+    }
+
     @VisibleForTesting
     public GroupsPreferences(EnumSet<GroupViewMode> groupViewMode,
                              boolean shouldAutoAssignGroup,
@@ -58,6 +69,17 @@ public class GroupsPreferences {
         this.shouldDisplayGroupCount = new SimpleBooleanProperty(shouldDisplayGroupCount);
         this.defaultHierarchicalContext = new SimpleObjectProperty<>(defaultHierarchicalContext);
         this.showAiChatButton = new SimpleBooleanProperty(showAiChatButton);
+    }
+
+    public static GroupsPreferences getDefault() {
+        return new GroupsPreferences();
+    }
+
+    public void setAll(GroupsPreferences preferences) {
+        this.groupViewMode.set(preferences.groupViewMode);
+        this.shouldAutoAssignGroup.set(preferences.shouldAutoAssignGroup());
+        this.shouldDisplayGroupCount.set(preferences.shouldDisplayGroupCount());
+        this.defaultHierarchicalContext.set(preferences.getDefaultHierarchicalContext());
     }
 
     public EnumSet<GroupViewMode> getGroupViewMode() {

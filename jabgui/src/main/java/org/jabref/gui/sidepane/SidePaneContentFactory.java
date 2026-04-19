@@ -4,10 +4,10 @@ import javax.swing.undo.UndoManager;
 
 import javafx.scene.Node;
 
-import org.jabref.gui.ClipBoardManager;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.LibraryTabContainer;
 import org.jabref.gui.StateManager;
+import org.jabref.gui.clipboard.ClipBoardManager;
 import org.jabref.gui.entryeditor.AdaptVisibleTabs;
 import org.jabref.gui.groups.GroupTreeView;
 import org.jabref.gui.importer.fetcher.WebSearchPaneView;
@@ -19,8 +19,6 @@ import org.jabref.logic.journals.JournalAbbreviationRepository;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.entry.BibEntryTypesManager;
 import org.jabref.model.util.FileUpdateMonitor;
-
-import com.airhacks.afterburner.injection.Injector;
 
 public class SidePaneContentFactory {
     private final LibraryTabContainer tabContainer;
@@ -66,22 +64,19 @@ public class SidePaneContentFactory {
         return switch (sidePaneType) {
             case GROUPS ->
                     new GroupTreeView(
-                            taskExecutor,
                             stateManager,
-                            adaptVisibleTabs,
+                            entryTypesManager,
                             preferences,
                             dialogService,
                             aiService,
                             undoManager,
-                            fileUpdateMonitor);
+                            fileUpdateMonitor,
+                            adaptVisibleTabs,
+                            taskExecutor);
             case OPEN_OFFICE ->
                     new OpenOfficePanel(
                             tabContainer,
                             preferences,
-                            preferences.getOpenOfficePreferences(Injector.instantiateModelOrService(JournalAbbreviationRepository.class)),
-                            preferences.getExternalApplicationsPreferences(),
-                            preferences.getLayoutFormatterPreferences(),
-                            preferences.getCitationKeyPatternPreferences(),
                             abbreviationRepository,
                             (UiTaskExecutor) taskExecutor,
                             dialogService,

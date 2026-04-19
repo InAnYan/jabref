@@ -126,9 +126,9 @@ public enum StandardField implements Field {
     VERSION("version"),
     VOLUME("volume", FieldProperty.NUMERIC),
     VOLUMES("volumes", FieldProperty.NUMERIC),
-    YEAR("year", FieldProperty.NUMERIC),
-    YEARDIVISION("yeardivision", FieldProperty.YEARDIVISION),
-    YEARFILED("yearfiled"),
+    YEAR("year", FieldProperty.NUMERIC, FieldProperty.YEAR),
+    YEARDIVISION("yeardivision"),
+    YEARFILED("yearfiled", FieldProperty.NUMERIC, FieldProperty.YEAR),
     MR_NUMBER("mrnumber"),
     ZBL_NUMBER("zbl"), // needed for fetcher
     XDATA("xdata", FieldProperty.MULTIPLE_ENTRY_LINK),
@@ -149,6 +149,11 @@ public enum StandardField implements Field {
     // endregion
 
     public static final Set<Field> AUTOMATIC_FIELDS = Set.of(OWNER, TIMESTAMP, CREATIONDATE, MODIFICATIONDATE);
+    public static final Set<StandardField> BUILT_IN_MULTILINE_FIELDS = Set.of(
+            ABSTRACT,
+            COMMENT,
+            REVIEW
+    );
 
     private static final Map<String, StandardField> NAME_TO_STANDARD_FIELD = new HashMap<>();
 

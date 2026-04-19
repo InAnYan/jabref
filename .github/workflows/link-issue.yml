@@ -2,12 +2,12 @@ name: Link PR to Issue
 
 on:
   pull_request_target:
-    types: [opened, reopened, edited]
+    types: [ opened, reopened, edited ]
 
 jobs:
   determine_issue_number:
     name: Determine issue number
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: >
       (github.repository == 'JabRef/jabref') &&
       (github.event.pull_request.head.repo.full_name != 'JabRef/jabref') &&
@@ -28,15 +28,12 @@ jobs:
       - name: echo PR data
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_URL:    ${{ github.event.pull_request.html_url }}
+          PR_BODY:   ${{ github.event.pull_request.body }}
         run: |
           echo "PR Number: $PR_NUMBER"
           echo "PR URL: $PR_URL"
-          cat <<EOF
-          PR Body:
-          $PR_BODY
-          EOF
+          printf 'PR Body:\n%s\n' "$PR_BODY"
       - name: Determine issue number
         id: get_issue_number
         uses: koppor/ticket-check-action@add-output
@@ -62,7 +59,7 @@ jobs:
     name: Mark issue as in progress
     # after determine_issue_number to ensure that there is only one failure because of no ticket number
     needs: determine_issue_number
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       issues: write
     steps:
@@ -94,18 +91,57 @@ jobs:
     if: github.event.pull_request.head.repo.full_name != 'JabRef/jabref'
     # after determine_issue_number to ensure that there is only one failure because of no ticket number
     needs: determine_issue_number
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       issues: write
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           show-progress: 'false'
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: jq
+          version: 1.0
+      - name: Add label "📌 Pinned"
+        run: gh issue edit ${{ needs.determine_issue_number.outputs.issue_number }} --add-label "📌 Pinned"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Assign PR creator to issue
         run: |
           set -e
 
           echo "Updating issue '${{ needs.determine_issue_number.outputs.issue_number }}'"
+
+
+          # Copy over labels from issue to PR if they match good first/second/third/forth issue or component:* labels
+
+          LABELS=$(gh api repos/${{ github.repository }}/issues/${{ needs.determine_issue_number.outputs.issue_number }}/labels --jq '.[].name')
+
+          # Check for good first/second/.. issue label
+          LABEL=$(echo "$LABELS" | grep -E '^good (first|second|third|forth) issue$' || true)
+
+          # Check for component:* labels (can be multiple)
+          COMPONENT_LABELS=$(echo "$LABELS" | grep -E '^component:' || true)
+
+          if [ -n "$LABEL" ] || [ -n "$COMPONENT_LABELS" ]; then
+            SILENT=false
+            if [ -n "$LABEL" ]; then
+              echo "✅ Found label: $LABEL"
+              gh pr edit "${{ github.event.pull_request.number }}" --add-label "$LABEL"
+            fi
+            if [ -n "$COMPONENT_LABELS" ]; then
+              echo "✅ Found component labels:"
+              while IFS= read -r COMPONENT_LABEL; do
+                echo "   - $COMPONENT_LABEL"
+                gh pr edit "${{ github.event.pull_request.number }}" --add-label "$COMPONENT_LABEL"
+              done <<< "$COMPONENT_LABELS"
+            fi
+          else
+            echo "🚫 Silent fail if not possible to add assignee"
+            SILENT=true
+          fi
+
 
           # "gh issue edit" cannot be used - workaround found at https://github.com/cli/cli/issues/9620#issuecomment-2703135049
 
@@ -121,18 +157,6 @@ jobs:
           # Append the new assignee
           UPDATED_ASSIGNEES=$(echo "$ASSIGNEES" | jq --arg new "${{ github.event.pull_request.user.login }}" '. + [$new]')
 
-          LABELS=$(gh api repos/${{ github.repository }}/issues/${{ needs.determine_issue_number.outputs.issue_number }}/labels --jq '.[].name')
-          LABEL=$(echo "$LABELS" | grep -E '^good (first|second|third|forth) issue$' || true)
-          if [ -n "$LABEL" ]; then
-            echo "✅ Found label: $LABEL"
-            SILENT=false
-            # Apply label
-            gh issue edit "${{ github.event.pull_request.number }}" --add-label "$LABEL"
-          else
-            echo "🚫 Silent fail if not possible to add assignee"
-            SILENT=true
-          fi
-
           # Update issue with the new assignee list
           echo "Updating issue #${{ needs.determine_issue_number.outputs.issue_number }} updated with assignees: $UPDATED_ASSIGNEES..."
           if [ "$SILENT" = true ]; then
@@ -140,9 +164,5 @@ jobs:
           else
             gh api -X PATCH /repos/JabRef/jabref/issues/${{ needs.determine_issue_number.outputs.issue_number }} --input <(echo "{\"assignees\": $UPDATED_ASSIGNEES}")
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Add label "📌 Pinned"
-        run: gh issue edit ${{ needs.determine_issue_number.outputs.issue_number }} --add-label "📌 Pinned"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
