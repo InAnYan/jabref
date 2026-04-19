@@ -10,17 +10,15 @@ import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.summarization.AiSummary;
 import org.jabref.model.entry.BibEntry;
 
-/**
- * Session-scoped RAM cache for AI summaries.
- *
- * <p>Keyed by {@link BibEntry} <em>reference identity</em> (using {@link IdentityHashMap}), so it
- * works even for entries that have no citation key or a non-unique one.
- *
- * <p>On {@link #close()}, entries whose {@link BibEntry} has a <em>present and unique</em>
- * citation key and a valid AI library ID are flushed to the persistent {@link SummariesRepository}.
- *
- * <p>Thread-safe: all map operations are protected by a synchronized wrapper.
- */
+/// Session-scoped RAM cache for AI summaries.
+/// 
+/// Keyed by {@link BibEntry} *reference identity* (using {@link IdentityHashMap}), so it
+/// works even for entries that have no citation key or a non-unique one.
+/// 
+/// On {@link #close()}, entries whose {@link BibEntry} has a *present and unique*
+/// citation key and a valid AI library ID are flushed to the persistent {@link SummariesRepository}.
+/// 
+/// Thread-safe: all map operations are protected by a synchronized wrapper.
 public class InMemorySummaryCache {
 
     private record CachedEntry(AiSummary summary, FullBibEntry fullEntry) {
@@ -37,36 +35,28 @@ public class InMemorySummaryCache {
         this.repository = repository;
     }
 
-    /**
-     * Stores {@code summary} for {@code fullEntry}. Overwrites any previously cached summary for the
-     * same object reference.
-     */
+    /// Stores `summary` for `fullEntry`. Overwrites any previously cached summary for the
+    /// same object reference.
     public void put(FullBibEntry fullEntry, AiSummary summary) {
         cache.put(fullEntry.entry(), new CachedEntry(summary, fullEntry));
     }
 
-    /**
-     * Returns the cached summary for {@code entry}, or {@link Optional#empty()} if none exists.
-     */
+    /// Returns the cached summary for `entry`, or {@link Optional#empty()} if none exists.
     public Optional<AiSummary> get(BibEntry entry) {
         return Optional.ofNullable(cache.get(entry)).map(CachedEntry::summary);
     }
 
-    /**
-     * Removes the cached summary for {@code entry}. No-op if none was present.
-     */
+    /// Removes the cached summary for `entry`. No-op if none was present.
     public void remove(BibEntry entry) {
         cache.remove(entry);
     }
 
-    /**
-     * Writes all cached summaries to the persistent repository for entries whose citation key is
-     * <em>present and unique</em> and whose database has a valid AI library ID.
-     * Entries that do not satisfy both conditions are silently skipped.
-     *
-     * <p>Call this when the library or application is closing so that valid summaries survive
-     * the next restart.
-     */
+    /// Writes all cached summaries to the persistent repository for entries whose citation key is
+    /// *present and unique* and whose database has a valid AI library ID.
+    /// Entries that do not satisfy both conditions are silently skipped.
+    /// 
+    /// Call this when the library or application is closing so that valid summaries survive
+    /// the next restart.
     public void close() {
         cache.forEach((bibEntry, cached) -> {
             // If the BibEntry was deleted from the database, the summary must not be saved.

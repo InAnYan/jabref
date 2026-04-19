@@ -12,10 +12,8 @@ import javafx.event.EventHandler;
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.BindingsHelper;
 
-/**
- * Universal status pane view model that supports showing title, description, text area, spinner, and two buttons.
- * Each component (except title and description) can be shown or hidden via boolean properties.
- */
+/// Universal status pane view model that supports showing title, description, text area, spinner, and two buttons.
+/// Each component (except title and description) can be shown or hidden via boolean properties.
 public class UniversalStatusPaneViewModel extends AbstractViewModel {
     private final StringProperty title = new SimpleStringProperty("");
     private final StringProperty description = new SimpleStringProperty("");

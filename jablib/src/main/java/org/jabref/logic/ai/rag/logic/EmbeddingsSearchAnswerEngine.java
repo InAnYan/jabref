@@ -109,13 +109,11 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
         return excerpts;
     }
 
-    /**
-     * Finds a BibEntry that has a LinkedFile with the given file hash.
-     *
-     * @param entries the entries to search
-     * @param fileHash the SHA-256 hash of the file
-     * @return the entry if found
-     */
+    /// Finds a BibEntry that has a LinkedFile with the given file hash.
+    /// 
+    /// @param entries the entries to search
+    /// @param fileHash the SHA-256 hash of the file
+    /// @return the entry if found
     private Optional<BibEntry> findEntryByFileHash(List<FullBibEntry> entries, String fileHash) {
         return entries
                 .stream()
