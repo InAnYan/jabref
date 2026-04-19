@@ -86,12 +86,25 @@ public final class SummariesMigrationV1 {
         String libraryId = bibDatabaseContext.getMetaData().getAiLibraryId().get();
         Path bibDatabasePath = bibDatabaseContext.getDatabasePath().get();
 
-        // Get path to old v1 MVStore file (in ai/1/ directory)
         Path oldFilePath = Directories.getAiFilesDirectory()
                                       .getParent()  // Go from ai/2/ to ai/
                                       .resolve("1")  // Go to ai/1/
                                       .resolve(OLD_SUMMARIES_FILE_NAME);
 
+        migrate(oldFilePath, libraryId, bibDatabasePath, repository, notificationService);
+    }
+
+    /**
+     * Migrates old summary data from a given v1 MVStore file path to v2 repository.
+     * Package-private to allow direct use in tests without depending on {@link Directories}.
+     */
+    static void migrate(
+            Path oldFilePath,
+            String libraryId,
+            Path bibDatabasePath,
+            SummariesRepository repository,
+            NotificationService notificationService
+    ) {
         if (!oldFilePath.toFile().exists()) {
             LOGGER.debug("No old summaries file found at {} - skipping migration", oldFilePath);
             return;
@@ -102,8 +115,6 @@ public final class SummariesMigrationV1 {
                 .fileName(oldFilePath.toString())
                 .readOnly()
                 .open()) {
-            // Open old v1 MVStore file
-
             String oldMapName = SUMMARIES_MAP_PREFIX + "-" + bibDatabasePath;
 
             if (!oldMvStore.hasMap(oldMapName)) {
@@ -163,14 +174,13 @@ public final class SummariesMigrationV1 {
         } catch (Exception e) {
             LOGGER.error("Failed to migrate summaries from v1 to v2", e);
             notificationService.notify(Localization.lang("Failed to migrate AI summaries. See logs for details."));
-            return;
         }
     }
 
     /**
      * Deserializes old Summary using a custom ObjectInputStream that remaps the old AiProvider class.
      */
-    private static OldSummary deserializeOldSummary(byte[] data) {
+    static OldSummary deserializeOldSummary(byte[] data) {
         try (ClassRemappingObjectInputStream ois = new ClassRemappingObjectInputStream(
                 new java.io.ByteArrayInputStream(data))) {
             Object obj = ois.readObject();
@@ -240,7 +250,7 @@ public final class SummariesMigrationV1 {
      * By returning the raw bytes we defer deserialization to {@link ClassRemappingObjectInputStream},
      * which can remap deleted/moved class names before they ever reach the class loader.
      */
-    private static class RawBytesDataType extends BasicDataType<byte[]> {
+    static class RawBytesDataType extends BasicDataType<byte[]> {
 
         // Mirrors the private constant ObjectDataType.TYPE_SERIALIZED_OBJECT in H2 2.3.232.
         // Verified by inspecting H2 bytecode: ConstantValue int 19 for TYPE_SERIALIZED_OBJECT.
@@ -302,7 +312,7 @@ public final class SummariesMigrationV1 {
      * Represents the old Summary format from v1.
      * This must match the structure of the old record.
      */
-    private record OldSummary(
+    record OldSummary(
             LocalDateTime timestamp,
             AiProvider aiProvider,
             String model,

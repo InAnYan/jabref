@@ -42,7 +42,7 @@ class FileHasherTest {
         Optional<String> hash3 = FileHasher.computeHash(file3);
 
         assertNotEquals(hash1, hash2, "Different files should produce different hashes");
-        assertNotEquals(hash1, hash3, "Same file should produce the same hash");
+        assertEquals(hash1, hash3, "Same file should produce the same hash");
     }
 
     @Test

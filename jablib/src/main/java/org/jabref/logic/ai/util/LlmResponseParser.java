@@ -26,7 +26,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class LlmResponseParser {
     private static final Logger LOGGER = LoggerFactory.getLogger(LlmResponseParser.class);
-    private static final Pattern NUMBERED_PATTERN = Pattern.compile("^\\s*\\d+\\.\\s*(.+)$", Pattern.MULTILINE);
+    private static final Pattern NUMBERED_PATTERN = Pattern.compile("^\\s*\\d+\\.[ \\t]*(.+)$", Pattern.MULTILINE);
+    private static final Pattern BULLET_LINE_PATTERN = Pattern.compile("^[-*•]\\s*");
     private static final String QUOTE_REMOVAL_PATTERN = "^[\"']|[\"']$";
 
     private LlmResponseParser() {
@@ -67,24 +68,53 @@ public final class LlmResponseParser {
             }
         }
 
-        // If numbered format didn't match, try line-by-line parsing
+        // If numbered format didn't match, try group-based line parsing
         if (items.isEmpty()) {
             LOGGER.debug("Numbered format parsing failed, trying line-by-line parsing");
-            String[] lines = response.split("\n");
-
-            for (String line : lines) {
-                line = line.trim()
-                           .replaceAll("^[-*•]\\s*", "")  // Remove bullet points
-                           .replaceAll("^\\d+\\.\\s*", "")  // Remove numbered prefix
-                           .replaceAll(QUOTE_REMOVAL_PATTERN, "");  // Remove quotes
-
-                if (isValidItem(line)) {
-                    items.add(line);
-                }
-            }
+            items.addAll(extractByGroups(response));
         }
 
         return items;
+    }
+
+    private static List<String> extractByGroups(String response) {
+        // Split into groups of consecutive non-blank lines
+        List<List<String>> groups = new ArrayList<>();
+        List<String> current = new ArrayList<>();
+        for (String line : response.split("\n")) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty()) {
+                if (!current.isEmpty()) {
+                    groups.add(current);
+                    current = new ArrayList<>();
+                }
+            } else {
+                current.add(trimmed);
+            }
+        }
+        if (!current.isEmpty()) {
+            groups.add(current);
+        }
+
+        boolean anyBullets = groups.stream()
+                                   .anyMatch(g -> g.stream().anyMatch(l -> BULLET_LINE_PATTERN.matcher(l).find()));
+
+        List<String> result = new ArrayList<>();
+        for (List<String> group : groups) {
+            boolean groupHasBullets = group.stream().anyMatch(l -> BULLET_LINE_PATTERN.matcher(l).find());
+            if (anyBullets && !groupHasBullets) {
+                continue;
+            }
+            for (String line : group) {
+                String item = BULLET_LINE_PATTERN.matcher(line).replaceFirst("")
+                                                 .replaceAll("^\\d+\\.\\s*", "")
+                                                 .replaceAll(QUOTE_REMOVAL_PATTERN, "");
+                if (isValidItem(item)) {
+                    result.add(item);
+                }
+            }
+        }
+        return result;
     }
 
     private static boolean isValidItem(String item) {

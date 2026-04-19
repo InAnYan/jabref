@@ -88,7 +88,6 @@ class LlmResponseCleanerTest {
 
     @Test
     void singleBlock_labelWithSpaces_labelStripped() {
-        // Unusual but should not blow up; the whole first line after ``` is the label line.
         String input = "```  json  \n{}\n```";
         assertEquals("{}", LlmResponseCleaner.clean(input));
     }
@@ -131,8 +130,6 @@ class LlmResponseCleanerTest {
 
     @Test
     void unclosedFence_afterClosedBlock_treatedAsLastOpener() {
-        // Two fences: first closes a block, second opens but never closes.
-        // The last opener is the third ```, so content is what follows it.
         String input = "```\nfirst\n```\n```\nunclosed content";
         assertEquals("unclosed content", LlmResponseCleaner.clean(input));
     }
@@ -151,17 +148,13 @@ class LlmResponseCleanerTest {
 
     @Test
     void contentInsideBlockIsNotTrimmedInternally_onlyOuterStrip() {
-        // Internal indentation must be preserved; only outer strip applied.
         String input = "```\n  indented line\n    more indent\n```";
         assertEquals("  indented line\n    more indent", LlmResponseCleaner.clean(input));
     }
 
     @Test
     void fenceOnSameLineAsContent_noNewlineAfterLabel() {
-        // Opening fence has no newline at all → content is empty / whatever follows.
         String input = "```json```";
-        // After finding opener at 0, label line has no '\n', contentStart == afterFenceMarker (7→ "json```")
-        // closing ``` is found at index 7, so content is "" which strips to "".
         assertEquals("", LlmResponseCleaner.clean(input));
     }
 

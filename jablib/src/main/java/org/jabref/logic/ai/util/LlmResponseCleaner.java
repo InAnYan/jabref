@@ -57,13 +57,11 @@ public final class LlmResponseCleaner {
         // Skip optional language label: everything up to (but not including) the
         // first newline after the opening ```.
         int newlineAfterLabel = response.indexOf('\n', afterFenceMarker);
-        int contentStart;
         if (newlineAfterLabel == -1) {
-            // No newline, then no content inside the fence.
-            contentStart = afterFenceMarker;
-        } else {
-            contentStart = newlineAfterLabel + 1; // character right after the '\n'
+            // No newline after the opening fence line means there is no content.
+            return "";
         }
+        int contentStart = newlineAfterLabel + 1;
 
         // Look for a closing ``` after the content start.
         int closingFence = response.indexOf(FENCE, contentStart);
@@ -76,9 +74,10 @@ public final class LlmResponseCleaner {
             content = response.substring(contentStart, closingFence);
         }
 
-        return content.strip();
+        String stripped = content.stripTrailing();
+        return stripped.contains("\n") ? stripped : stripped.strip();
     }
-    
+
     /**
      * Returns the start index of the last "opening" ``` in the string.
      *

@@ -89,12 +89,21 @@ public final class ChatHistoryMigrationV1 {
 
         String libraryId = bibDatabaseContext.getMetaData().getAiLibraryId().get();
 
-        // Get path to old v1 MVStore file (in ai/1/ directory)
         Path oldFilePath = Directories.getAiFilesDirectory()
                                       .getParent()  // Go from ai/2/ to ai/
                                       .resolve("1")  // Go to ai/1/
                                       .resolve(OLD_CHAT_HISTORY_FILE_NAME);
 
+        migrate(oldFilePath, libraryId, bibDatabaseContext, repository, notificationService);
+    }
+    
+    public static void migrate(
+            Path oldFilePath,
+            String libraryId,
+            BibDatabaseContext bibDatabaseContext,
+            ChatHistoryRepository repository,
+            NotificationService notificationService
+    ) {
         if (!oldFilePath.toFile().exists()) {
             LOGGER.debug("No old chat history file found at {} - skipping migration", oldFilePath);
             return;
@@ -135,7 +144,6 @@ public final class ChatHistoryMigrationV1 {
         } catch (Exception e) {
             LOGGER.error("Failed to migrate chat history from v1 to v2", e);
             notificationService.notify(Localization.lang("Failed to migrate AI chat history. See logs for details."));
-            return;
         }
     }
 
