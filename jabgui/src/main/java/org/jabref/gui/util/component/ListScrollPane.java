@@ -71,8 +71,9 @@ public class ListScrollPane<T> extends ScrollPane {
 
     private void handleListContentChange(ListChangeListener.Change<? extends T> change) {
         final Function<T, Node> renderer = getRenderer();
-        if (renderer == null)
+        if (renderer == null) {
             return;
+        }
 
         boolean hadAdditions = false;
 
@@ -169,8 +170,10 @@ public class ListScrollPane<T> extends ScrollPane {
 
     public final void setAutoScrollToBottom(boolean value) {
         autoScrollToBottomProperty.set(value);
-        if (value)
+        
+        if (value) {
             scrollToBottom();
+        }
     }
 
     public final BooleanProperty autoScrollToBottomProperty() {

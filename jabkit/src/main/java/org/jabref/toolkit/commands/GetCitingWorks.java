@@ -3,13 +3,11 @@ package org.jabref.toolkit.commands;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.jabref.logic.ai.AiService;
 import org.jabref.logic.importer.FetcherException;
 import org.jabref.logic.importer.fetcher.citation.CitationFetcher;
 import org.jabref.logic.importer.fetcher.citation.CitationFetcherType;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.preferences.CliPreferences;
-import org.jabref.logic.util.CurrentThreadTaskExecutor;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.field.StandardField;
 import org.jabref.toolkit.converter.CitationFetcherTypeConverter;
@@ -43,20 +41,14 @@ class GetCitingWorks implements Callable<Integer> {
     @Override
     public Integer call() {
         CliPreferences preferences = argumentProcessor.cliPreferences;
-        AiService aiService = new AiService(
-                preferences.getAiPreferences(),
-                preferences.getFilePreferences(),
-                preferences.getCitationKeyPatternPreferences(),
-                LOGGER::info,
-                new CurrentThreadTaskExecutor());
-
+        
         CitationFetcher citationFetcher = CitationFetcherType.getCitationFetcher(
                 citationFetcherType,
                 preferences.getImporterPreferences(),
                 preferences.getImportFormatPreferences(),
                 preferences.getCitationKeyPatternPreferences(),
                 preferences.getGrobidPreferences(),
-                aiService
+                preferences.getAiPreferences()
         );
 
         List<BibEntry> entries;

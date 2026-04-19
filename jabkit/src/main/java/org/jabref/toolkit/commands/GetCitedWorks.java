@@ -41,12 +41,6 @@ class GetCitedWorks implements Callable<Integer> {
     @Override
     public Integer call() {
         CliPreferences preferences = argumentProcessor.cliPreferences;
-        AiService aiService = new AiService(
-                preferences.getAiPreferences(),
-                preferences.getFilePreferences(),
-                preferences.getCitationKeyPatternPreferences(),
-                LOGGER::info,
-                new CurrentThreadTaskExecutor());
 
         CitationFetcher citationFetcher = CitationFetcherType.getCitationFetcher(
                 citationFetcherType,
@@ -54,7 +48,7 @@ class GetCitedWorks implements Callable<Integer> {
                 preferences.getImportFormatPreferences(),
                 preferences.getCitationKeyPatternPreferences(),
                 preferences.getGrobidPreferences(),
-                aiService
+                preferences.getAiPreferences()
         );
 
         List<BibEntry> entries;

@@ -1,7 +1,8 @@
 package org.jabref.model.ai.embeddings;
 
-import org.apache.commons.io.FileUtils;
 import org.jabref.model.ai.AiDefaultEnums;
+
+import org.apache.commons.io.FileUtils;
 
 /// This enumeration was formed by <a href="https://docs.djl.ai/master/docs/load_model.html#list-available-models-using-djl-command-line">listing available embeddings model from Model Zoo of DJL</a>
 /// and by using a script that would rewrite the output in Java syntax + calculate size information by finding the models on Hugging Face.

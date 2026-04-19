@@ -67,7 +67,6 @@ public final class ObservablesHelper {
      */
     public static <T extends AutoCloseable> ObjectBinding<T> createClosableObjectBinding(final Callable<T> func, final Observable... dependencies) {
         return new ObjectBinding<>() {
-
             private T currentValue;
 
             {
