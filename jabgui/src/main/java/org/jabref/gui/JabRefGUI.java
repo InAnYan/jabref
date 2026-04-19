@@ -243,7 +243,7 @@ public class JabRefGUI extends Application {
                 preferences.getEntryEditorPreferences().citationCountFetcherTypeProperty(),
                 preferences.getCitationKeyPatternPreferences(),
                 preferences.getGrobidPreferences(),
-                JabRefGUI.aiService,
+                preferences.getAiPreferences(),
                 entryTypesManager,
                 dialogService
         );

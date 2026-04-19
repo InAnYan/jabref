@@ -54,7 +54,8 @@ public class GroupsPreferences {
                 false,                            // Default view mode invert
                 true,                             // Default auto assign group
                 true,                             // Default display group content
-                GroupHierarchyType.INDEPENDENT    // Default hierarchical context
+                GroupHierarchyType.INDEPENDENT,   // Default hierarchical context
+                true                              // Default view mode for the AI chat button
         );
     }
 

@@ -2,6 +2,8 @@ package org.jabref.logic.ai.util;
 
 import java.util.Optional;
 
+import org.jabref.model.ai.chatting.ErrorMessage;
+
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;

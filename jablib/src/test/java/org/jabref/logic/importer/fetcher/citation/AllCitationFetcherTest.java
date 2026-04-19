@@ -1,6 +1,6 @@
 package org.jabref.logic.importer.fetcher.citation;
 
-import org.jabref.logic.ai.AiService;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.citationkeypattern.CitationKeyPatternPreferences;
 import org.jabref.logic.importer.FetcherException;
 import org.jabref.logic.importer.ImportFormatPreferences;
@@ -29,7 +29,7 @@ class AllCitationFetcherTest {
                 mock(ImportFormatPreferences.class, Answers.RETURNS_DEEP_STUBS),
                 mock(CitationKeyPatternPreferences.class, Answers.RETURNS_DEEP_STUBS),
                 mock(GrobidPreferences.class, Answers.RETURNS_DEEP_STUBS),
-                mock(AiService.class, Answers.RETURNS_DEEP_STUBS));
+                mock(AiPreferences.class, Answers.RETURNS_DEEP_STUBS));
     }
 
     @Test

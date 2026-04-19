@@ -150,11 +150,6 @@ public interface DialogService extends NotificationService {
     /// @param dialog dialog to show
     void showCustomDialog(BaseDialog<?> dialog);
 
-    /// Shows a custom window.
-    ///
-    /// @param window window to show
-    void showCustomWindow(BaseWindow window);
-
     /// Shows a custom dialog as a window: does not block the main window.
     ///
     /// @param dialog dialog to show

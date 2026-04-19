@@ -10,7 +10,6 @@ import javafx.beans.property.Property;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-import com.sun.javafx.collections.ImmutableObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,9 +59,9 @@ public final class ObservablesHelper {
      * If computation fails, the binding will evaluate to {@code null}.
      * </p>
      *
-     * @param <T> The type of the closable resource, which must implement {@link AutoCloseable}.
-     * @param func The factory {@link Callable} used to compute the new resource.
-     * This executes lazily when the binding's value is requested.
+     * @param <T>          The type of the closable resource, which must implement {@link AutoCloseable}.
+     * @param func         The factory {@link Callable} used to compute the new resource.
+     *                     This executes lazily when the binding's value is requested.
      * @param dependencies The observables that this binding should listen to for invalidation.
      * @return An {@code ObjectBinding<T>} that automatically closes previous instances upon recalculation or disposal.
      */
@@ -123,7 +122,7 @@ public final class ObservablesHelper {
                        FXCollections.emptyObservableList()
                                                                               : (dependencies.length == 1) ?
                                                                                 FXCollections.singletonObservableList(dependencies[0])
-                                                                                                           : new ImmutableObservableList<>(dependencies);
+                                                                                                           : FXCollections.unmodifiableObservableList(FXCollections.observableArrayList(dependencies));
             }
         };
     }

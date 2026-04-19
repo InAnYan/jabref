@@ -782,8 +782,8 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
                 getBoolean(DISPLAY_GROUP_COUNT, defaults.shouldDisplayGroupCount()),
                 GroupHierarchyType.valueOf(
                         get(DEFAULT_HIERARCHICAL_CONTEXT, defaults.getDefaultHierarchicalContext().name())
-                )
-                getBoolean(GROUP_SHOW_AI_CHAT)
+                ),
+                getBoolean(GROUP_SHOW_AI_CHAT, defaults.showAiChatButton())
         );
     }
     // endregion
@@ -1087,6 +1087,30 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
                                                                        .ifPresent(columnsOrdered::add));
 
         return columnsOrdered;
+    }
+
+    private static List<String> getColumnNamesAsStringList(ColumnPreferences columnPreferences) {
+        return columnPreferences.getColumns().stream()
+                                .map(MainTableColumnModel::getName)
+                                .toList();
+    }
+
+    private static List<String> getColumnWidthsAsStringList(ColumnPreferences columnPreferences) {
+        return columnPreferences.getColumns().stream()
+                                .map(column -> column.widthProperty().getValue().toString())
+                                .toList();
+    }
+
+    private static List<String> getColumnSortTypesAsStringList(ColumnPreferences columnPreferences) {
+        return columnPreferences.getColumns().stream()
+                                .map(column -> column.sortTypeProperty().getValue().toString())
+                                .toList();
+    }
+
+    private static List<String> getColumnSortOrderAsStringList(ColumnPreferences columnPreferences) {
+        return columnPreferences.getColumnSortOrder().stream()
+                                .map(MainTableColumnModel::getName)
+                                .collect(Collectors.toList());
     }
     // endregion
 

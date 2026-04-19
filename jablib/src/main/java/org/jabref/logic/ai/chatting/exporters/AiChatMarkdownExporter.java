@@ -71,7 +71,7 @@ public class AiChatMarkdownExporter implements AiChatExporter {
         try {
             StringWriter stringWriter = new StringWriter();
             BibWriter bibWriter = new BibWriter(stringWriter, "\n");
-            FieldWriter fieldWriter = FieldWriter.buildIgnoreHashes(fieldPreferences);
+            FieldWriter fieldWriter = new FieldWriter(fieldPreferences);
             BibEntryWriter bibEntryWriter = new BibEntryWriter(fieldWriter, entryTypesManager);
             bibEntryWriter.write(entry, bibWriter, mode, true);
             return stringWriter.toString();

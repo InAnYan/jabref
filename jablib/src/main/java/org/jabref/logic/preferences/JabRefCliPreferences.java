@@ -424,9 +424,6 @@ public class JabRefCliPreferences implements CliPreferences {
     private static final String AI_SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE = "aiSummarizationFullDocumentSystemMessageTemplate";
     private static final String AI_SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE_TEMPLATE = "aiSummarizationFullDocumentUserMessageTemplate";
     private static final String AI_MARKDOWN_CHAT_EXPORT_TEMPLATE = "aiMarkdownChatExportTemplate";
-    private static final String AI_GENERATE_FOLLOW_UP_QUESTIONS = "aiGenerateFollowUpQuestions";
-    private static final String AI_FOLLOW_UP_QUESTIONS_COUNT = "aiFollowUpQuestionsCount";
-    private static final String AI_FOLLOW_UP_QUESTIONS_TEMPLATE = "aiFollowUpQuestionsTemplate";
     // endregion
 
     private static final String LAST_USED_DIRECTORY = "lastUsedDirectory";
