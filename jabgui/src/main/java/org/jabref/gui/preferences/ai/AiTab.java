@@ -13,11 +13,13 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import org.jabref.gui.actions.ActionFactory;
 import org.jabref.gui.actions.StandardActions;
 import org.jabref.gui.help.HelpAction;
+import org.jabref.gui.icon.IconTheme;
 import org.jabref.gui.preferences.AbstractPreferenceTabView;
 import org.jabref.gui.preferences.PreferencesTab;
 import org.jabref.gui.util.ViewModelListCellFactory;
@@ -27,10 +29,10 @@ import org.jabref.model.ai.embeddings.PredefinedEmbeddingModel;
 import org.jabref.model.ai.llm.AiProvider;
 
 import com.airhacks.afterburner.views.ViewLoader;
+import com.dlsc.gemsfx.EnhancedPasswordField;
 import com.dlsc.unitfx.IntegerInputField;
 import de.saxsys.mvvmfx.utils.validation.visualization.ControlsFxVisualizer;
 import org.controlsfx.control.SearchableComboBox;
-import org.controlsfx.control.textfield.CustomPasswordField;
 
 public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements PreferencesTab {
     private static final String HUGGING_FACE_CHAT_MODEL_PROMPT = "TinyLlama/TinyLlama_v1.1 (or any other model name)";
@@ -42,7 +44,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private CheckBox autoGenerateSummaries;
     @FXML private ComboBox<AiProvider> aiProviderComboBox;
     @FXML private ComboBox<String> chatModelComboBox;
-    @FXML private CustomPasswordField apiKeyTextField;
+    @FXML private EnhancedPasswordField apiKeyTextField;
     @FXML private CheckBox customizeExpertSettingsCheckbox;
     @FXML private VBox expertSettingsPane;
     @FXML private TextField apiBaseUrlTextField;
@@ -228,6 +230,19 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     private void initializeApiKey() {
         apiKeyTextField.textProperty().bindBidirectional(viewModel.apiKeyProperty());
         apiKeyTextField.disableProperty().bind(viewModel.disableBasicSettingsProperty());
+
+        Button revealApiKeyButton = IconTheme.JabRefIcons.PASSWORD_REVEALED.asButton();
+        revealApiKeyButton.disableProperty().bind(apiKeyTextField.disableProperty());
+        revealApiKeyButton.setOnAction(_ -> apiKeyTextField.setShowPassword(!apiKeyTextField.isShowPassword()));
+
+        Button clearApiKeyButton = IconTheme.JabRefIcons.DELETE_ENTRY.asButton();
+        clearApiKeyButton.disableProperty().bind(apiKeyTextField.disableProperty());
+        clearApiKeyButton.setOnAction(_ -> {
+            apiKeyTextField.clear();
+            apiKeyTextField.requestFocus();
+        });
+
+        apiKeyTextField.setRight(new HBox(revealApiKeyButton, clearApiKeyButton));
     }
 
     private void initializeChatModel() {
