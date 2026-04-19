@@ -7,8 +7,6 @@ parent: ai
 
 Rationale: to provide advanced configuration options for controlling AI behavior and defaults across the application
 
-Needs: impl
-
 Covers: `feat~ai~1`
 
 ## Allow modification of AI templates in AI expert settings
@@ -23,7 +21,7 @@ Covers: `feat~ai.expert-settings~1`
 ## Allow modification of global chat inference parameters in AI expert settings
 `req~ai.expert-settings.chat-inference-global~1`
 
-Rationale: users need to adjust the underlying prompt structures to refine AI outputs and behavior patterns
+Rationale: users need to adjust the underlying settings of the inference to refine AI outputs and behavior patterns
 
 Needs: impl
 
@@ -38,6 +36,7 @@ Needs: impl
 
 Covers: `feat~ai.expert-settings~1`
 
+<!-- oft:off -->
 ## Allow modification of local RAG parameters in AI expert settings
 `req~ai.expert-settings.rag-local~1`
 
@@ -47,6 +46,7 @@ Needs: impl
 
 Covers: `feat~ai.expert-settings~1`
 
+
 ## Allow modification of global summarization parameters in AI expert settings
 `req~ai.expert-settings.summarization-global~1`
 
@@ -55,6 +55,7 @@ Rationale: users need to adjust the underlying prompt structures to refine AI ou
 Needs: impl
 
 Covers: `feat~ai.expert-settings~1`
+<!-- oft:on -->
 
 ## Allow modification of local summarization parameters in AI expert settings
 `req~ai.expert-settings.summarization-local~1`

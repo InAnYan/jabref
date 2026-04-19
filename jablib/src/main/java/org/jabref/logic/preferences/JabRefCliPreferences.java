@@ -416,13 +416,9 @@ public class JabRefCliPreferences implements CliPreferences {
     private static final String AI_CHATTING_SYSTEM_MESSAGE_TEMPLATE = "aiChattingSystemMessageTemplate";
     private static final String AI_CHATTING_USER_MESSAGE_TEMPLATE = "aiChattingUserMessageTemplate";
     private static final String AI_SUMMARIZATION_CHUNK_SYSTEM_MESSAGE_TEMPLATE = "aiSummarizationChunkSystemMessageTemplate";
-    private static final String AI_SUMMARIZATION_CHUNK_USER_MESSAGE_TEMPLATE = "aiSummarizationChunkUserMessageTemplate";
     private static final String AI_SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE = "aiSummarizationCombineSystemMessageTemplate";
-    private static final String AI_SUMMARIZATION_COMBINE_USER_MESSAGE_TEMPLATE = "aiSummarizationCombineUserMessageTemplate";
     private static final String AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE = "aiCitationParsingSystemMessageTemplate";
-    private static final String AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE = "aiCitationParsingUserMessageTemplate";
     private static final String AI_SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE = "aiSummarizationFullDocumentSystemMessageTemplate";
-    private static final String AI_SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE_TEMPLATE = "aiSummarizationFullDocumentUserMessageTemplate";
     private static final String AI_MARKDOWN_CHAT_EXPORT_TEMPLATE = "aiMarkdownChatExportTemplate";
     // endregion
 
@@ -708,7 +704,6 @@ public class JabRefCliPreferences implements CliPreferences {
         defaults.put(AI_SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE);
         defaults.put(AI_SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE);
         defaults.put(AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE, AiDefaultTemplates.CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE);
-        defaults.put(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE, AiDefaultTemplates.CITATION_PARSING_USER_MESSAGE_TEMPLATE);
         defaults.put(AI_MARKDOWN_CHAT_EXPORT_TEMPLATE, AiDefaultTemplates.MARKDOWN_CHAT_EXPORT_TEMPLATE);
         defaults.put(AI_GENERATE_FOLLOW_UP_QUESTIONS, true);
         defaults.put(AI_FOLLOW_UP_QUESTIONS_COUNT, 3);
@@ -2016,13 +2011,9 @@ public class JabRefCliPreferences implements CliPreferences {
                 get(AI_CHATTING_SYSTEM_MESSAGE_TEMPLATE),
                 get(AI_CHATTING_USER_MESSAGE_TEMPLATE),
                 get(AI_SUMMARIZATION_CHUNK_SYSTEM_MESSAGE_TEMPLATE),
-                get(AI_SUMMARIZATION_CHUNK_USER_MESSAGE_TEMPLATE),
                 get(AI_SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE),
-                get(AI_SUMMARIZATION_COMBINE_USER_MESSAGE_TEMPLATE),
                 get(AI_SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE),
-                get(AI_SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE_TEMPLATE),
                 get(AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE),
-                get(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE),
                 get(AI_MARKDOWN_CHAT_EXPORT_TEMPLATE),
                 getBoolean(AI_GENERATE_FOLLOW_UP_QUESTIONS),
                 getInt(AI_FOLLOW_UP_QUESTIONS_COUNT),
@@ -2065,13 +2056,9 @@ public class JabRefCliPreferences implements CliPreferences {
         EasyBind.listen(aiPreferences.chattingSystemMessageTemplateProperty(), (_, _, newValue) -> put(AI_CHATTING_SYSTEM_MESSAGE_TEMPLATE, newValue));
         EasyBind.listen(aiPreferences.chattingUserMessageTemplateProperty(), (_, _, newValue) -> put(AI_CHATTING_USER_MESSAGE_TEMPLATE, newValue));
         EasyBind.listen(aiPreferences.summarizationChunkSystemMessageTemplateProperty(), (_, _, newValue) -> put(AI_SUMMARIZATION_CHUNK_SYSTEM_MESSAGE_TEMPLATE, newValue));
-        EasyBind.listen(aiPreferences.summarizationChunkUserMessageTemplateProperty(), (_, _, newValue) -> put(AI_SUMMARIZATION_CHUNK_USER_MESSAGE_TEMPLATE, newValue));
         EasyBind.listen(aiPreferences.summarizationCombineSystemMessageTemplateProperty(), (_, _, newValue) -> put(AI_SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE, newValue));
-        EasyBind.listen(aiPreferences.summarizationCombineUserMessageTemplateProperty(), (_, _, newValue) -> put(AI_SUMMARIZATION_COMBINE_USER_MESSAGE_TEMPLATE, newValue));
         EasyBind.listen(aiPreferences.summarizationFullDocumentSystemMessageTemplateProperty(), (_, _, newValue) -> put(AI_SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE, newValue));
-        EasyBind.listen(aiPreferences.summarizationFullDocumentUserMessageTemplateProperty(), (_, _, newValue) -> put(AI_SUMMARIZATION_FULL_DOCUMENT_USER_MESSAGE_TEMPLATE, newValue));
         EasyBind.listen(aiPreferences.citationParsingSystemMessageTemplateProperty(), (_, _, newValue) -> put(AI_CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE, newValue));
-        EasyBind.listen(aiPreferences.citationParsingUserMessageTemplateProperty(), (_, _, newValue) -> put(AI_CITATION_PARSING_USER_MESSAGE_TEMPLATE, newValue));
         EasyBind.listen(aiPreferences.markdownChatExportTemplateProperty(), (_, _, newValue) -> put(AI_MARKDOWN_CHAT_EXPORT_TEMPLATE, newValue));
 
         EasyBind.listen(aiPreferences.generateFollowUpQuestionsProperty(), (_, _, newValue) -> putBoolean(AI_GENERATE_FOLLOW_UP_QUESTIONS, newValue));

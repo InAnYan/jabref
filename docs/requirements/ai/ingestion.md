@@ -7,8 +7,6 @@ parent: ai
 
 Rationale: to process and index document content into a format suitable for retrieval and AI context generation
 
-Needs: impl
-
 Covers: `feat~ai~1`
 
 ## Support handling of PDF files during ingestion

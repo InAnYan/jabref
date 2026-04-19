@@ -1,5 +1,5 @@
 ---
-nav_order: 0055
+nav_order: 0056
 parent: Decision Records
 ---
 # Implementation of embeddings in JabRef

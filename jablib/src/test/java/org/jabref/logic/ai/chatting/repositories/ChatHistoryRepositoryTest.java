@@ -16,6 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// [utest->req~ai.chat.entries.history-storage~1]
+// [utest->req~ai.chat.groups.history-storage~1]
 class ChatHistoryRepositoryTest {
 
     @TempDir
@@ -23,7 +25,8 @@ class ChatHistoryRepositoryTest {
 
     static List<ChatHistoryRepository> repositories() {
         return List.of(
-                new MVStoreChatHistoryRepository(tempDir.resolve("chat-test.mv"), notification -> { })
+                new MVStoreChatHistoryRepository(tempDir.resolve("chat-test.mv"), notification -> {
+                })
         );
     }
 

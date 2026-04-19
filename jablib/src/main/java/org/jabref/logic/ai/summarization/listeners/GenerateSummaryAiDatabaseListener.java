@@ -80,7 +80,8 @@ public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
         @Subscribe
         public void listen(EntriesAddedEvent e) {
             e.getBibEntries().forEach(entry -> {
-                if (aiPreferences.getAutoGenerateSummaries()) {
+                // [pp->req~ai.summarization.entries.auto~1]
+                if (aiPreferences.getEnableAi() && aiPreferences.getAutoGenerateSummaries()) {
                     summarizationTaskAggregator.start(new GenerateSummaryTaskRequest(
                             filePreferences,
                             chatModel.get(),
@@ -94,7 +95,8 @@ public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
 
         @Subscribe
         public void listen(FieldChangedEvent e) {
-            if (e.getField() == StandardField.FILE && aiPreferences.getAutoGenerateSummaries()) {
+            // [pp->req~ai.summarization.entries.auto~1]
+            if (aiPreferences.getEnableAi() && e.getField() == StandardField.FILE && aiPreferences.getAutoGenerateSummaries()) {
                 summarizationTaskAggregator.start(new GenerateSummaryTaskRequest(
                         filePreferences,
                         chatModel.get(),

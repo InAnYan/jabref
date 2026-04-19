@@ -34,7 +34,9 @@ public class AiChatMessageView extends HBox {
     @FXML private StackPane markdownContentPane;
 
     @FXML private VBox buttonsVBox;
+    // [impl->req~ai.chat.regenerate-response~1]
     @FXML private Button regenerateButton;
+    // [impl->req~ai.chat.delete-messages~1]
     @FXML private Button deleteButton;
 
     // Tooltip for the whole component.
@@ -113,7 +115,7 @@ public class AiChatMessageView extends HBox {
         if (chatMessage == null) {
             return;
         }
-        
+
         markdownTextFlow.setMarkdown(Optional.ofNullable(chatMessage.content()).orElse(""));
     }
 

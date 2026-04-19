@@ -34,7 +34,7 @@
                         glyph="DELETE_ENTRY"/>
             </graphic>
         </Button>
-        
+
         <Button fx:id="regenerateButton"
                 onAction="#onRegenerateClick"
                 styleClass="icon-button,narrow">

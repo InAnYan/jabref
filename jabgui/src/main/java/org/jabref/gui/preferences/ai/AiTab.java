@@ -40,8 +40,11 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     private final ControlsFxVisualizer visualizer = new ControlsFxVisualizer();
 
     @FXML private CheckBox enableAi;
+    // [impl->req~ai.ingestion.automatic-trigger~1]
     @FXML private CheckBox autoGenerateEmbeddings;
+    // [impl->req~ai.summarization.entries.auto~1]
     @FXML private CheckBox autoGenerateSummaries;
+    // [impl->feat~ai.llms.providers~1]
     @FXML private ComboBox<AiProvider> aiProviderComboBox;
     @FXML private ComboBox<String> chatModelComboBox;
     @FXML private EnhancedPasswordField apiKeyTextField;
@@ -49,12 +52,15 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private VBox expertSettingsPane;
     @FXML private TextField apiBaseUrlTextField;
     @FXML private SearchableComboBox<PredefinedEmbeddingModel> embeddingModelComboBox;
+    // [impl->req~ai.expert-settings.chat-inference-global~1]
     @FXML private TextField temperatureTextField;
     @FXML private IntegerInputField contextWindowSizeTextField;
     @FXML private IntegerInputField documentSplitterChunkSizeTextField;
     @FXML private IntegerInputField documentSplitterOverlapSizeTextField;
+    // [impl->req~ai.expert-settings.rag-global~1]
     @FXML private IntegerInputField ragMaxResultsCountTextField;
     @FXML private TextField ragMinScoreTextField;
+    // [impl->req~ai.expert-settings.templates~1]
     @FXML private TabPane templatesTabPane;
     @FXML private Tab systemMessageForChattingTab;
     @FXML private Tab userMessageForChattingTab;
@@ -64,14 +70,19 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private Tab citationParsingUserMessageTab;
     @FXML private Tab markdownChatExportTemplateTab;
     @FXML private Tab followUpQuestionsTemplateTab;
+    // [impl->req~ai.chat.customize-system-prompt~1]
     @FXML private TextArea systemMessageTextArea;
+    // [impl->req~ai.answer-engines.embeddings-search.prompt~1]
+    // [impl->req~ai.answer-engines.full-document.prompt~1]
     @FXML private TextArea userMessageTextArea;
+    // [impl->req~ai.summarization.algorithms.chunked.system-prompt-chunk~1]
     @FXML private TextArea summarizationChunkSystemMessageTextArea;
     @FXML private TextArea summarizationChunkUserMessageTextArea;
+    // [impl->req~ai.summarization.algorithms.chunked.system-prompt-combine~1]
     @FXML private TextArea summarizationCombineSystemMessageTextArea;
     @FXML private TextArea summarizationCombineUserMessageTextArea;
+    // [impl->req~ai.citation-parsing.system-prompt-config~1]
     @FXML private TextArea citationParsingSystemMessageTextArea;
-    @FXML private TextArea citationParsingUserMessageTextArea;
     @FXML private TextArea markdownChatExportTemplateTextArea;
     @FXML private TextArea followUpQuestionsTemplateTextArea;
     @FXML private Button generalSettingsHelp;
@@ -122,11 +133,8 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         systemMessageTextArea.textProperty().bindBidirectional(viewModel.chattingSystemMessageTemplateProperty());
         userMessageTextArea.textProperty().bindBidirectional(viewModel.chattingUserMessageTemplateProperty());
         summarizationChunkSystemMessageTextArea.textProperty().bindBidirectional(viewModel.summarizationChunkSystemMessageTemplateProperty());
-        summarizationChunkUserMessageTextArea.textProperty().bindBidirectional(viewModel.summarizationChunkUserMessageTemplateProperty());
         summarizationCombineSystemMessageTextArea.textProperty().bindBidirectional(viewModel.summarizationCombineSystemMessageTemplateProperty());
-        summarizationCombineUserMessageTextArea.textProperty().bindBidirectional(viewModel.summarizationCombineUserMessageTemplateProperty());
         citationParsingSystemMessageTextArea.textProperty().bindBidirectional(viewModel.citationParsingSystemMessageTemplateProperty());
-        citationParsingUserMessageTextArea.textProperty().bindBidirectional(viewModel.citationParsingUserMessageTemplateProperty());
         markdownChatExportTemplateTextArea.textProperty().bindBidirectional(viewModel.markdownChatExportTemplateProperty());
         followUpQuestionsTemplateTextArea.textProperty().bindBidirectional(viewModel.followUpQuestionsTemplateProperty());
 
@@ -139,7 +147,6 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         summarizationCombineSystemMessageTextArea.disableProperty().bind(aiDisabled);
         summarizationCombineUserMessageTextArea.disableProperty().bind(aiDisabled);
         citationParsingSystemMessageTextArea.disableProperty().bind(aiDisabled);
-        citationParsingUserMessageTextArea.disableProperty().bind(aiDisabled);
         markdownChatExportTemplateTextArea.disableProperty().bind(aiDisabled);
         followUpQuestionsTemplateTextArea.disableProperty().bind(aiDisabled);
 
@@ -316,8 +323,6 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
             viewModel.resetSummarizationCombineSystemMessageTemplate();
         } else if (selectedTab == citationParsingSystemMessageTab) {
             viewModel.resetCitationParsingSystemMessageTemplate();
-        } else if (selectedTab == citationParsingUserMessageTab) {
-            viewModel.resetCitationParsingUserMessageTemplate();
         } else if (selectedTab == markdownChatExportTemplateTab) {
             viewModel.resetMarkdownChatExportTemplate();
         } else if (selectedTab == followUpQuestionsTemplateTab) {

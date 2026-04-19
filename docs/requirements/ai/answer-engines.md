@@ -13,6 +13,15 @@ Needs: impl
 
 Covers: `feat~ai.chatting~1`
 
+<!-- oft:off -->
+### Allow users to select a default summarization algorithm
+`feat~ai.answer-engines.default~1`
+
+Needs: impl
+
+Covers: `feat~ai.answer-engines~1`
+<!-- oft:on -->
+
 ## "Embedding search" AI answer engine
 `feat~ai.answer-engines.embeddings-search~1`
 
@@ -38,7 +47,7 @@ Covers: `feat~ai.answer-engines.embeddings-search~1`, `feat~ai.expert-settings~1
 
 Rationale: this answer engine is suitable when the user wants to get information that depends on the full content of a document
 
-Needs: impl, utest
+Needs: impl
 
 Reference: <https://arxiv.org/abs/2407.16833>
 

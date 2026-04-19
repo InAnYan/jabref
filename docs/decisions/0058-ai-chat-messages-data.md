@@ -1,5 +1,5 @@
 ---
-nav_order: 0057
+nav_order: 0058
 parent: Decision Records
 ---
 # AI chat messages serialization and deserialization

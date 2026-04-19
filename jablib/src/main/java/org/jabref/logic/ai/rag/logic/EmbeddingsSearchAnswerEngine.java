@@ -25,6 +25,7 @@ import dev.langchain4j.store.embedding.filter.MetadataFilterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// [impl->feat~ai.answer-engines.embeddings-search~1]
 public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmbeddingsSearchAnswerEngine.class);
 
@@ -65,19 +66,19 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
                 .stream()
                 .flatMap(linkedFile ->
                         entriesFilter.stream()
-                                .flatMap(fullEntry -> {
-                                    Optional<Path> path = linkedFile.findIn(fullEntry.databaseContext(), filePreferences);
-                                    return path.flatMap(FileHasher::computeHash).stream();
-                                })
+                                     .flatMap(fullEntry -> {
+                                         Optional<Path> path = linkedFile.findIn(fullEntry.databaseContext(), filePreferences);
+                                         return path.flatMap(FileHasher::computeHash).stream();
+                                     })
                 )
                 .distinct()
                 .toList();
 
         Optional<Filter> filter = fileHashes.isEmpty()
-                ? Optional.empty()
-                : Optional.of(MetadataFilterBuilder
-                        .metadataKey(EmbeddingsCleaner.FILE_HASH_METADATA_KEY)
-                        .isIn(fileHashes));
+                                  ? Optional.empty()
+                                  : Optional.of(MetadataFilterBuilder
+                                                .metadataKey(EmbeddingsCleaner.FILE_HASH_METADATA_KEY)
+                                                .isIn(fileHashes));
 
         EmbeddingSearchRequest embeddingSearchRequest = EmbeddingSearchRequest
                 .builder()
@@ -96,10 +97,10 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
                 .map(textSegment -> {
                     String fileHash = textSegment.metadata().getString(EmbeddingsCleaner.FILE_HASH_METADATA_KEY);
                     String citationKey = fileHash == null
-                            ? null
-                            : findEntryByFileHash(entriesFilter, fileHash)
-                                    .flatMap(BibEntry::getCitationKey)
-                                    .orElse(null);
+                                         ? null
+                                         : findEntryByFileHash(entriesFilter, fileHash)
+                                           .flatMap(BibEntry::getCitationKey)
+                                           .orElse(null);
                     return new RelevantInformation(citationKey, textSegment.text());
                 })
                 .toList();
@@ -110,8 +111,8 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
     }
 
     /// Finds a BibEntry that has a LinkedFile with the given file hash.
-    /// 
-    /// @param entries the entries to search
+    ///
+    /// @param entries  the entries to search
     /// @param fileHash the SHA-256 hash of the file
     /// @return the entry if found
     private Optional<BibEntry> findEntryByFileHash(List<FullBibEntry> entries, String fileHash) {
@@ -119,18 +120,18 @@ public class EmbeddingsSearchAnswerEngine implements AnswerEngine {
                 .stream()
                 .flatMap(fullEntry ->
                         fullEntry.databaseContext()
-                                .getEntries()
-                                .stream()
-                                .filter(entry ->
-                                        entry.getFiles()
-                                                .stream()
-                                                .anyMatch(linkedFile ->
-                                                        linkedFile.findIn(fullEntry.databaseContext(), filePreferences)
+                                 .getEntries()
+                                 .stream()
+                                 .filter(entry ->
+                                         entry.getFiles()
+                                              .stream()
+                                              .anyMatch(linkedFile ->
+                                                      linkedFile.findIn(fullEntry.databaseContext(), filePreferences)
                                                                 .flatMap(FileHasher::computeHash)
                                                                 .filter(hash -> hash.equals(fileHash))
                                                                 .isPresent()
-                                                )
-                                )
+                                              )
+                                 )
                 )
                 .findFirst();
     }

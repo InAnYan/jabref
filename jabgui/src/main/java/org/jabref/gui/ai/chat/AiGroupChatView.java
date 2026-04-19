@@ -14,6 +14,7 @@ import org.jabref.model.database.BibDatabaseContext;
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
+// [impl->feat~ai.chatting.groups~1]
 public class AiGroupChatView extends StackPane {
     @FXML private AiPrivacyNoticeView privacyNotice;
     @FXML private UniversalStatusPaneView emptyDatabasePathPane;
@@ -38,6 +39,7 @@ public class AiGroupChatView extends StackPane {
     }
 
     private void setupBindings() {
+        // [pp->feat~ai.chatting.groups~1]
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
         emptyDatabasePathPane.managedProperty().bind(emptyDatabasePathPane.visibleProperty());
         aiChatView.managedProperty().bind(aiChatView.visibleProperty());

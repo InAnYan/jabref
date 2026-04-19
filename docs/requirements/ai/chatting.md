@@ -12,11 +12,9 @@ Needs: impl
 Covers: `feat~ai~1`
 
 ## General AI chat requirements
-`feat~ai.chatting.general~1`
+`feat~ai.chat.general~1`
 
 Rationale: common functionalities are required across all chat modes (single entry or group) to ensure a standard user experience
-
-Needs: impl
 
 Covers: `feat~ai.chatting~1`
 
@@ -27,7 +25,7 @@ Rationale: users should be able to remove specific messages to clean up the conv
 
 Needs: impl, utest
 
-Covers: `feat~ai.chatting.general~1`
+Covers: `feat~ai.chat.general~1`
 
 ### Support regeneration of AI responses in AI chat
 `req~ai.chat.regenerate-response~1`
@@ -36,16 +34,16 @@ Rationale: users may want a different answer if the previous one was unsatisfact
 
 Needs: impl, utest
 
-Covers: `feat~ai.chatting.general~1`
+Covers: `feat~ai.chat.general~1`
 
 ### Provide a smart prompt input field in AI chat
 `req~ai.chat.smart-prompt-field~1`
 
 Rationale: the input field should support multi-line input, auto-resizing, keyboard shortcuts, and history
 
-Needs: impl, utest
+Needs: impl, <!-- oft:off --> utest <!-- oft:on -->
 
-Covers: `feat~ai.chatting.general~1`
+Covers: `feat~ai.chat.general~1`
 
 ### Support clearing of chat history in AI chat
 `req~ai.chat.clear-history~1`
@@ -54,7 +52,7 @@ Rationale: allows the user to reset the context completely and start a fresh con
 
 Needs: impl, guard, utest
 
-Covers: `feat~ai.chatting.general~1`
+Covers: `feat~ai.chat.general~1`
 
 ### Display the status of ingested files in AI chat
 `req~ai.chat.ingestion-status~1`
@@ -63,7 +61,7 @@ Rationale: the user needs to know if the context files are fully indexed/embedde
 
 Needs: impl
 
-Covers: `feat~ai.chatting.general~1`
+Covers: `feat~ai.chat.general~1`
 
 ### Display the currently used AI model in AI chat
 `req~ai.chat.model-visibility~1`
@@ -72,7 +70,7 @@ Rationale: provides transparency regarding which LLM is generating the text
 
 Needs: impl
 
-Covers: `feat~ai.chatting.general~1`
+Covers: `feat~ai.chat.general~1`
 
 ### Allow user to cancel AI response generation in AI chat
 `req~ai.chat.cancel-generation~1`
@@ -81,7 +79,7 @@ Rationale: saves resources/tokens and time if the user realizes the prompt was i
 
 Needs: impl
 
-Covers: `feat~ai.chatting.general~1`
+Covers: `feat~ai.chat.general~1`
 
 ### Display errors in AI chat
 `req~ai.chat.show-errors~1`
@@ -90,16 +88,16 @@ Rationale: feedback must be provided within the chat interface if the API fails,
 
 Needs: impl
 
-Covers: `feat~ai.chatting.general~1`
+Covers: `feat~ai.chat.general~1`
 
 ### Support retry of AI response generation after error in AI chat
 `req~ai.chat.retry-error~1`
 
 Rationale: provides a quick way to re-attempt the request without re-typing the prompt if the failure was transient
 
-Needs: impl, utest
+Needs: impl
 
-Covers: `feat~ai.chatting.general~1`
+Covers: `feat~ai.chat.general~1`
 
 ### Allow user to cancel AI response generation after an error in AI chat
 `req~ai.chat.cancel-error-state~1`
@@ -108,7 +106,7 @@ Rationale: allows the user to dismiss the error state or stop a retry loop to re
 
 Needs: impl
 
-Covers: `feat~ai.chatting.general~1`
+Covers: `feat~ai.chat.general~1`
 
 ### Support customization of the system prompt in AI chat
 `req~ai.chat.customize-system-prompt~1`
@@ -117,16 +115,7 @@ Rationale: users should be able to modify the AI behavior by changing the system
 
 Needs: impl
 
-Covers: `feat~ai.chatting.general~1`, `feat~ai.expert-settings~1`
-
-### Enforce AI awareness of the currently chatted entries in AI chat
-`req~ai.chat.context-awareness~1`
-
-Rationale: the AI context window must be dynamically populated with the metadata and content of the entries involved in the current chat scope
-
-Needs: impl
-
-Covers: `feat~ai.chatting.general~1`
+Covers: `feat~ai.chat.general~1`, `feat~ai.expert-settings~1`
 
 ### Ensure that an answer engine is used in AI chat
 `req~ai.chat.uses-answer-engine~1`
@@ -142,18 +131,9 @@ Covers: `feat~ai-answer-engines~1`
 
 Rationale: specific requirements for chatting with a single bibliography entry
 
-Needs: impl
-
-Covers: `feat~ai.chatting~1`
-
-### Provide a chat UI for AI chat with entries
-`req~ai.chat.entries.ui~1`
-
-Rationale: a dedicated interface element or tab is required to interact with a specific entry
-
 Needs: impl, pp
 
-Covers: `feat~ai.chatting.entries~1`
+Covers: `feat~ai.chatting~1`
 
 ### Support hiding of the AI chat tab
 `req~ai.chat.entries.hide-tab~1`
@@ -169,7 +149,7 @@ Covers: `feat~ai.chatting.entries~1`
 
 Rationale: history must be persisted per entry, so the user can resume the conversation later
 
-Needs: impl, dsn, utest
+Needs: dsn, model, impl, utest
 
 Covers: `feat~ai.chatting.entries~1`
 
@@ -181,15 +161,6 @@ Rationale: specific requirements for chatting with a collection/group of entries
 Needs: impl, pp
 
 Covers: `feat~ai.chatting~1`
-
-### Provide a chat UI for AI chat with groups
-`req~ai.chat.groups.ui~1`
-
-Rationale: a dedicated interface is required to manage context from multiple documents simultaneously
-
-Needs: impl
-
-Covers: `feat~ai.chatting.groups~1`
 
 ### Support hiding of the context menu entry for AI chat with group
 `req~ai.chat.groups.hide-context-menu~1`
@@ -205,7 +176,7 @@ Covers: `feat~ai.chatting.groups~1`
 
 Rationale: history must be persisted per group, so the conversation context is preserved across sessions
 
-Needs: impl, dsn, utest
+Needs: dsn, model, impl, utest
 
 Covers: `feat~ai.chatting.groups~1`
 
@@ -214,6 +185,6 @@ Covers: `feat~ai.chatting.groups~1`
 
 Rationale: essential for user orientation, ensuring that users can distinguish between different chats of a group that has the same name in different libraries
 
-Needs: impl, utest
+Needs: impl
 
 Covers: `feat~ai.chatting.groups~1`

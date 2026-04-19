@@ -40,7 +40,7 @@ public final class ChatModelFactory {
             String modelName,
             String apiKey,
             double temperature,
-            String baseUrl,
+            String baseUrl, // [impl->feat~ai.llms.custom~1]
             int contextWindowSize,
             TokenEstimatorKind tokenEstimatorKind
     ) {

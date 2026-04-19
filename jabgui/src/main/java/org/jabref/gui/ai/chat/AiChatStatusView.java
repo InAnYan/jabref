@@ -31,7 +31,9 @@ import org.jabref.model.entry.BibEntryTypesManager;
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
+// [impl->req~ai.chat.ingestion-status~1]
 public class AiChatStatusView extends VBox {
+    // [impl->req~ai.chat.model-visibility~1]
     @FXML private Label chatModelLabel;
 
     @FXML private TableView<FullBibEntry> entriesTable;
@@ -69,7 +71,7 @@ public class AiChatStatusView extends VBox {
                 aiService.getEmbeddingModelCache(),
                 aiService.getEmbeddingsStore()
         );
-        
+
         setupEntriesTable();
         setupIngestionTable();
         setupRest();
@@ -163,6 +165,7 @@ public class AiChatStatusView extends VBox {
         viewModel.exportMarkdown();
     }
 
+    // [impl->req~ai.chat.clear-history~1]
     @FXML
     private void clearChatHistory() {
         viewModel.clearChatHistory();

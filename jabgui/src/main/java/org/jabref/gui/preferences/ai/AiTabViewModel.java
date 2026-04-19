@@ -83,13 +83,9 @@ public class AiTabViewModel implements PreferenceTabViewModel {
     private final StringProperty chattingSystemMessageTemplate = new SimpleStringProperty();
     private final StringProperty chattingUserMessageTemplate = new SimpleStringProperty();
     private final StringProperty summarizationChunkSystemMessageTemplate = new SimpleStringProperty();
-    private final StringProperty summarizationChunkUserMessageTemplate = new SimpleStringProperty();
     private final StringProperty summarizationCombineSystemMessageTemplate = new SimpleStringProperty();
-    private final StringProperty summarizationCombineUserMessageTemplate = new SimpleStringProperty();
     private final StringProperty citationParsingSystemMessageTemplate = new SimpleStringProperty();
-    private final StringProperty citationParsingUserMessageTemplate = new SimpleStringProperty();
     private final StringProperty summarizationFullDocumentSystemMessageTemplate = new SimpleStringProperty();
-    private final StringProperty summarizationFullDocumentUserMessageTemplate = new SimpleStringProperty();
     private final StringProperty markdownChatExportTemplate = new SimpleStringProperty();
     private final StringProperty followUpQuestionsTemplate = new SimpleStringProperty();
 
@@ -332,13 +328,9 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         chattingSystemMessageTemplate.set(aiPreferences.getChattingSystemMessageTemplate());
         chattingUserMessageTemplate.set(aiPreferences.getChattingUserMessageTemplate());
         summarizationChunkSystemMessageTemplate.set(aiPreferences.getSummarizationChunkSystemMessageTemplate());
-        summarizationChunkUserMessageTemplate.set(aiPreferences.getSummarizationChunkUserMessageTemplate());
         summarizationCombineSystemMessageTemplate.set(aiPreferences.getSummarizationCombineSystemMessageTemplate());
-        summarizationCombineUserMessageTemplate.set(aiPreferences.getSummarizationCombineUserMessageTemplate());
         citationParsingSystemMessageTemplate.set(aiPreferences.getCitationParsingSystemMessageTemplate());
-        citationParsingUserMessageTemplate.set(aiPreferences.getCitationParsingUserMessageTemplate());
         summarizationFullDocumentSystemMessageTemplate.set(aiPreferences.getSummarizationFullDocumentSystemMessageTemplate());
-        summarizationFullDocumentUserMessageTemplate.set(aiPreferences.getSummarizationFullDocumentUserMessageTemplate());
         markdownChatExportTemplate.set(aiPreferences.getMarkdownChatExportTemplate());
 
         generateFollowUpQuestions.set(aiPreferences.getGenerateFollowUpQuestions());
@@ -383,13 +375,9 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         aiPreferences.setChattingSystemMessageTemplate(chattingSystemMessageTemplate.get());
         aiPreferences.setChattingUserMessageTemplate(chattingUserMessageTemplate.get());
         aiPreferences.setSummarizationChunkSystemMessageTemplate(summarizationChunkSystemMessageTemplate.get());
-        aiPreferences.setSummarizationChunkUserMessageTemplate(summarizationChunkUserMessageTemplate.get());
         aiPreferences.setSummarizationCombineSystemMessageTemplate(summarizationCombineSystemMessageTemplate.get());
-        aiPreferences.setSummarizationCombineUserMessageTemplate(summarizationCombineUserMessageTemplate.get());
         aiPreferences.setCitationParsingSystemMessageTemplate(citationParsingSystemMessageTemplate.get());
-        aiPreferences.setCitationParsingUserMessageTemplate(citationParsingUserMessageTemplate.get());
         aiPreferences.setSummarizationFullDocumentSystemMessageTemplate(summarizationFullDocumentSystemMessageTemplate.get());
-        aiPreferences.setSummarizationFullDocumentUserMessageTemplate(summarizationFullDocumentUserMessageTemplate.get());
         aiPreferences.setMarkdownChatExportTemplate(markdownChatExportTemplate.get());
 
         aiPreferences.setGenerateFollowUpQuestions(generateFollowUpQuestions.get());
@@ -425,7 +413,6 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         resetSummarizationChunkSystemMessageTemplate();
         resetSummarizationCombineSystemMessageTemplate();
         resetCitationParsingSystemMessageTemplate();
-        resetCitationParsingUserMessageTemplate();
         resetSummarizationFullDocumentSystemMessageTemplate();
         resetMarkdownChatExportTemplate();
         resetFollowUpQuestionsTemplate();
@@ -449,10 +436,6 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
     public void resetCitationParsingSystemMessageTemplate() {
         citationParsingSystemMessageTemplate.set(AiDefaultTemplates.CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE);
-    }
-
-    public void resetCitationParsingUserMessageTemplate() {
-        citationParsingUserMessageTemplate.set(AiDefaultTemplates.CITATION_PARSING_USER_MESSAGE_TEMPLATE);
     }
 
     public void resetSummarizationFullDocumentSystemMessageTemplate() {
@@ -582,24 +565,12 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         return summarizationChunkSystemMessageTemplate;
     }
 
-    public StringProperty summarizationChunkUserMessageTemplateProperty() {
-        return summarizationChunkUserMessageTemplate;
-    }
-
     public StringProperty summarizationCombineSystemMessageTemplateProperty() {
         return summarizationCombineSystemMessageTemplate;
     }
 
-    public StringProperty summarizationCombineUserMessageTemplateProperty() {
-        return summarizationCombineUserMessageTemplate;
-    }
-
     public StringProperty citationParsingSystemMessageTemplateProperty() {
         return citationParsingSystemMessageTemplate;
-    }
-
-    public StringProperty citationParsingUserMessageTemplateProperty() {
-        return citationParsingUserMessageTemplate;
     }
 
     public StringProperty temperatureProperty() {

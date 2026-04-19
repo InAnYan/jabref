@@ -44,6 +44,7 @@ public class AiGroupChatWindow extends BaseDialog<Void> {
                                     .map(Path::toString)
                                     .orElse(Localization.lang("Untitled"));
 
+        // [impl->req~ai.chat.groups.display-names~1]
         return Localization.lang("%0 — %1", groupName, libraryName);
     }
 

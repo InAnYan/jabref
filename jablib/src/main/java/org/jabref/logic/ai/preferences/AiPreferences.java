@@ -70,13 +70,9 @@ public class AiPreferences {
     private final StringProperty chattingSystemMessageTemplate;
     private final StringProperty chattingUserMessageTemplate;
     private final StringProperty summarizationChunkSystemMessageTemplate;
-    private final StringProperty summarizationChunkUserMessageTemplate;
     private final StringProperty summarizationCombineSystemMessageTemplate;
-    private final StringProperty summarizationCombineUserMessageTemplate;
     private final StringProperty summarizationFullDocumentSystemMessageTemplate;
-    private final StringProperty summarizationFullDocumentUserMessageTemplate;
     private final StringProperty citationParsingSystemMessageTemplate;
-    private final StringProperty citationParsingUserMessageTemplate;
     private final StringProperty markdownChatExportTemplate;
 
     private final BooleanProperty generateFollowUpQuestions;
@@ -111,13 +107,9 @@ public class AiPreferences {
             String chattingSystemMessageTemplate,
             String chattingUserMessageTemplate,
             String summarizationChunkSystemMessageTemplate,
-            String summarizationChunkUserMessageTemplate,
             String summarizationCombineSystemMessageTemplate,
-            String summarizationCombineUserMessageTemplate,
             String summarizationFullDocumentSystemMessageTemplate,
-            String summarizationFullDocumentUserMessageTemplate,
             String citationParsingSystemMessageTemplate,
-            String citationParsingUserMessageTemplate,
             String markdownChatExportTemplate,
             boolean generateFollowUpQuestions,
             int followUpQuestionsCount,
@@ -158,13 +150,9 @@ public class AiPreferences {
         this.chattingSystemMessageTemplate = new SimpleStringProperty(chattingSystemMessageTemplate);
         this.chattingUserMessageTemplate = new SimpleStringProperty(chattingUserMessageTemplate);
         this.summarizationChunkSystemMessageTemplate = new SimpleStringProperty(summarizationChunkSystemMessageTemplate);
-        this.summarizationChunkUserMessageTemplate = new SimpleStringProperty(summarizationChunkUserMessageTemplate);
         this.summarizationCombineSystemMessageTemplate = new SimpleStringProperty(summarizationCombineSystemMessageTemplate);
-        this.summarizationCombineUserMessageTemplate = new SimpleStringProperty(summarizationCombineUserMessageTemplate);
         this.summarizationFullDocumentSystemMessageTemplate = new SimpleStringProperty(summarizationFullDocumentSystemMessageTemplate);
-        this.summarizationFullDocumentUserMessageTemplate = new SimpleStringProperty(summarizationFullDocumentUserMessageTemplate);
         this.citationParsingSystemMessageTemplate = new SimpleStringProperty(citationParsingSystemMessageTemplate);
-        this.citationParsingUserMessageTemplate = new SimpleStringProperty(citationParsingUserMessageTemplate);
         this.markdownChatExportTemplate = new SimpleStringProperty(markdownChatExportTemplate);
 
         this.generateFollowUpQuestions = new SimpleBooleanProperty(generateFollowUpQuestions);
@@ -553,8 +541,7 @@ public class AiPreferences {
     public List<? extends Property<?>> getSummarizatorProperties() {
         return Stream.of(
                 List.of(enableAi, customizeExpertSettings, summarizatorKind),
-                List.of(summarizationChunkSystemMessageTemplate, summarizationChunkUserMessageTemplate, summarizationCombineSystemMessageTemplate,
-                        summarizationCombineUserMessageTemplate, summarizationFullDocumentSystemMessageTemplate, summarizationFullDocumentUserMessageTemplate)
+                List.of(summarizationChunkSystemMessageTemplate, summarizationCombineSystemMessageTemplate, summarizationFullDocumentSystemMessageTemplate)
         ).flatMap(List::stream).toList();
     }
 
@@ -645,18 +632,6 @@ public class AiPreferences {
         summarizationChunkSystemMessageTemplate.set(template);
     }
 
-    public StringProperty summarizationChunkUserMessageTemplateProperty() {
-        return summarizationChunkUserMessageTemplate;
-    }
-
-    public String getSummarizationChunkUserMessageTemplate() {
-        return summarizationChunkUserMessageTemplate.get();
-    }
-
-    public void setSummarizationChunkUserMessageTemplate(String template) {
-        summarizationChunkUserMessageTemplate.set(template);
-    }
-
     public StringProperty summarizationCombineSystemMessageTemplateProperty() {
         return summarizationCombineSystemMessageTemplate;
     }
@@ -667,18 +642,6 @@ public class AiPreferences {
 
     public void setSummarizationCombineSystemMessageTemplate(String template) {
         summarizationCombineSystemMessageTemplate.set(template);
-    }
-
-    public StringProperty summarizationCombineUserMessageTemplateProperty() {
-        return summarizationCombineUserMessageTemplate;
-    }
-
-    public String getSummarizationCombineUserMessageTemplate() {
-        return summarizationCombineUserMessageTemplate.get();
-    }
-
-    public void setSummarizationCombineUserMessageTemplate(String template) {
-        summarizationCombineUserMessageTemplate.set(template);
     }
 
     public StringProperty summarizationFullDocumentSystemMessageTemplateProperty() {
@@ -693,18 +656,6 @@ public class AiPreferences {
         summarizationFullDocumentSystemMessageTemplate.set(template);
     }
 
-    public StringProperty summarizationFullDocumentUserMessageTemplateProperty() {
-        return summarizationFullDocumentUserMessageTemplate;
-    }
-
-    public String getSummarizationFullDocumentUserMessageTemplate() {
-        return summarizationFullDocumentUserMessageTemplate.get();
-    }
-
-    public void setSummarizationFullDocumentUserMessageTemplate(String template) {
-        summarizationFullDocumentUserMessageTemplate.set(template);
-    }
-
     public StringProperty citationParsingSystemMessageTemplateProperty() {
         return citationParsingSystemMessageTemplate;
     }
@@ -716,19 +667,7 @@ public class AiPreferences {
     public void setCitationParsingSystemMessageTemplate(String template) {
         citationParsingSystemMessageTemplate.set(template);
     }
-
-    public StringProperty citationParsingUserMessageTemplateProperty() {
-        return citationParsingUserMessageTemplate;
-    }
-
-    public String getCitationParsingUserMessageTemplate() {
-        return citationParsingUserMessageTemplate.get();
-    }
-
-    public void setCitationParsingUserMessageTemplate(String template) {
-        citationParsingUserMessageTemplate.set(template);
-    }
-
+    
     public StringProperty markdownChatExportTemplateProperty() {
         return markdownChatExportTemplate;
     }

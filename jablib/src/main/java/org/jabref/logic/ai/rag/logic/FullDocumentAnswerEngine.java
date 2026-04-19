@@ -9,10 +9,10 @@ import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.pipeline.RelevantInformation;
 import org.jabref.model.entry.BibEntry;
 
+// [impl->feat~ai.answer-engines.full-document~1]
 public class FullDocumentAnswerEngine implements AnswerEngine {
     private final FilePreferences filePreferences;
 
-    // TODO: Add dependency on parsing.
     private final UniversalContentParser universalContentParser = new UniversalContentParser();
 
     public FullDocumentAnswerEngine(FilePreferences filePreferences) {

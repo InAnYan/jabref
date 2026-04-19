@@ -9,6 +9,7 @@ import org.jabref.logic.l10n.Localization;
 
 import com.airhacks.afterburner.views.ViewLoader;
 
+// [impl->req~ai.expert-settings.summarization-local~1]
 public class AiSummaryParametersDialog extends BaseDialog<Summarizator> {
     @FXML private AiSummaryParametersView aiSummaryParametersView;
 
@@ -16,7 +17,7 @@ public class AiSummaryParametersDialog extends BaseDialog<Summarizator> {
         super();
 
         this.setTitle(Localization.lang("Summarization parameters"));
-        
+
         this.setResultConverter(buttonType -> {
             if (buttonType.getButtonData() == ButtonBar.ButtonData.CANCEL_CLOSE) {
                 return null;

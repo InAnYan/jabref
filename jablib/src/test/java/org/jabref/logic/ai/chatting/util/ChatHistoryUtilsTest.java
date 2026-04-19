@@ -12,6 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// [utest->req~ai.chat.delete-messages~1]
+// [utest->req~ai.chat.regenerate-response~1]
+// [utest->req~ai.chat.clear-history~1]
 class ChatHistoryUtilsTest {
 
     @Test

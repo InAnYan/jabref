@@ -14,6 +14,8 @@ import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 
+// [model->req~ai.chat.entries.history-storage~1]
+// [model->req~ai.chat.groups.history-storage~1]
 public record ChatMessage(String id, Instant timestamp, Role role, String content, List<RelevantInformation> relevantInformation) {
     public enum Role {
         SYSTEM(Localization.lang("System")),

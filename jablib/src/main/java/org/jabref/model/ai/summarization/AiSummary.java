@@ -5,6 +5,7 @@ import org.jabref.model.ai.AiMetadata;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+// [model->feat~ai.summarization~1]
 public record AiSummary(
         AiMetadata metadata,
         SummarizatorKind summarizationAlgorithm,

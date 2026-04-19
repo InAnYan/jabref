@@ -10,6 +10,7 @@ import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
+// [impl->feat~ai.summarization.entries~1]
 public class AiSummaryTab extends EntryEditorTab {
     private final GuiPreferences preferences;
     private final StateManager stateManager;

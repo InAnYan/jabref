@@ -214,6 +214,7 @@ public class AiChatViewModel extends AbstractViewModel {
 
         entries.forEach(identifier ->
                 identifier.entry().getFiles().forEach(file -> {
+                            // [impl->req~ai.ingestion.trigger-on-demand~1]
                             GenerateEmbeddingsTask task = ingestionTaskAggregator.start(
                                     new GenerateEmbeddingsTaskRequest(
                                             filePreferences,
@@ -267,7 +268,9 @@ public class AiChatViewModel extends AbstractViewModel {
             }
         });
 
-        task.onFailure(ex -> originalChatHistory.add(ChatMessage.errorMessage(ex)));
+        task.onFailure(ex ->
+                // [impl->req~ai.chat.show-errors~1]
+                originalChatHistory.add(ChatMessage.errorMessage(ex)));
 
         task.onFinished(() -> {
             tasksMap.remove(taskEntries);

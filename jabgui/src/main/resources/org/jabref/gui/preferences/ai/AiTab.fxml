@@ -17,10 +17,10 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import org.jabref.gui.icon.JabRefIconView?>
+<?import com.dlsc.gemsfx.EnhancedPasswordField?>
 <?import com.dlsc.gemsfx.Spacer?>
 <?import com.dlsc.unitfx.IntegerInputField?>
 <?import org.controlsfx.control.SearchableComboBox?>
-<?import com.dlsc.gemsfx.EnhancedPasswordField?>
 <fx:root
         spacing="10.0"
         type="VBox"
@@ -160,6 +160,7 @@
               spacing="10.0">
             <Label alignment="BASELINE_CENTER"
                    text="%API base URL (used only for LLM)"/>
+            <!-- impl->req~ai.llms.custom.base-url~1 -->
             <TextField
                     fx:id="apiBaseUrlTextField"
                     disable="true"
@@ -308,35 +309,17 @@
             <TextArea
                     fx:id="summarizationChunkSystemMessageTextArea"/>
         </Tab>
-        <Tab fx:id="summarizationChunkUserMessageTab"
-             text="%User message for summarization of a chunk"
-             closable="false">
-            <TextArea
-                    fx:id="summarizationChunkUserMessageTextArea"/>
-        </Tab>
         <Tab fx:id="summarizationCombineSystemMessageTab"
              text="%System message for summarization of several chunks"
              closable="false">
             <TextArea
                     fx:id="summarizationCombineSystemMessageTextArea"/>
         </Tab>
-        <Tab fx:id="summarizationCombineUserMessageTab"
-             text="%User message for summarization of several chunks"
-             closable="false">
-            <TextArea
-                    fx:id="summarizationCombineUserMessageTextArea"/>
-        </Tab>
         <Tab fx:id="citationParsingSystemMessageTab"
              text="%System message for parsing raw citations"
              closable="false">
             <TextArea
                     fx:id="citationParsingSystemMessageTextArea"/>
-        </Tab>
-        <Tab fx:id="citationParsingUserMessageTab"
-             text="%User message for parsing raw citations"
-             closable="false">
-            <TextArea
-                    fx:id="citationParsingUserMessageTextArea"/>
         </Tab>
         <Tab fx:id="markdownChatExportTemplateTab"
              text="%Markdown chat export template"
