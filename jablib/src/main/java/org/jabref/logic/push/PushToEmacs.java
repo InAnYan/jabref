@@ -21,7 +21,9 @@ public class PushToEmacs extends AbstractPushToApplication {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PushToEmacs.class);
 
-    /// @param preferences getPushToApplicationPreferences(), getExternalApplicationsPreferences(), and getFilePreferences() are used
+    /**
+     * @param preferences getPushToApplicationPreferences(), getExternalApplicationsPreferences(), and getFilePreferences() are used
+     */
     public PushToEmacs(NotificationService notificationService, PushToApplicationPreferences preferences) {
         super(notificationService, preferences);
     }

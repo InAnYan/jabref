@@ -14,7 +14,9 @@ import org.jabref.model.entry.BibEntry;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 
-/// This importer imports a verbatim BibTeX entry from the first page of the PDF.
+/**
+ * This importer imports a verbatim BibTeX entry from the first page of the PDF.
+ */
 public class PdfVerbatimBibtexImporter extends PdfImporter {
 
     private final ImportFormatPreferences importFormatPreferences;

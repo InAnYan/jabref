@@ -26,7 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/// This tests the writing to a PDF. If the creation of the RDF content should be checked, please head to {@link org.jabref.logic.exporter.XmpExporterTest}
+/**
+ * This tests the writing to a PDF. If the creation of the RDF content should be checked, please head to {@link org.jabref.logic.exporter.XmpExporterTest}
+ */
 class XmpUtilWriterTest {
 
     @TempDir
@@ -84,7 +86,9 @@ class XmpUtilWriterTest {
         when(xmpPreferences.shouldUseXmpPrivacyFilter()).thenReturn(false);
     }
 
-    /// Test for writing a PDF file with a single DublinCore metadata entry.
+    /**
+     * Test for writing a PDF file with a single DublinCore metadata entry.
+     */
     void singleEntryWorks(BibEntry entry) throws IOException, TransformerException {
         Path pdfFile = this.createDefaultFile("JabRef_writeSingle.pdf", tempDir);
 
@@ -196,7 +200,9 @@ class XmpUtilWriterTest {
         assertEquals(List.of(vapnik2000), entryList);
     }
 
-    /// Creates a temporary PDF-file with a single empty page.
+    /**
+     * Creates a temporary PDF-file with a single empty page.
+     */
     private Path createDefaultFile(String fileName, Path tempDir) throws IOException {
         // create a default PDF
         Path pdfFile = tempDir.resolve(fileName);

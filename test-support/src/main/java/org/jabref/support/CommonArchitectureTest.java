@@ -18,8 +18,10 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition;
 import com.tngtech.archunit.library.GeneralCodingRules;
 
-/// This class checks JabRef's shipped classes for architecture quality.
-/// Does not analyze test classes. Hint from <a href="https://stackoverflow.com/a/44681895/873282">StackOverflow</a>
+/**
+ * This class checks JabRef's shipped classes for architecture quality.
+ * Does not analyze test classes. Hint from <a href="https://stackoverflow.com/a/44681895/873282">StackOverflow</a>
+ */
 @AnalyzeClasses(packages = "org.jabref", importOptions = ImportOption.DoNotIncludeTests.class)
 public class CommonArchitectureTest {
 

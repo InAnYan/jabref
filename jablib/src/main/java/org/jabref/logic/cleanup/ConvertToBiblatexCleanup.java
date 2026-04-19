@@ -13,7 +13,9 @@ import org.jabref.model.entry.EntryConverter;
 import org.jabref.model.entry.field.Field;
 import org.jabref.model.entry.field.StandardField;
 
-/// Converts the entry to biblatex format.
+/**
+ * Converts the entry to biblatex format.
+ */
 public class ConvertToBiblatexCleanup implements CleanupJob {
 
     @Override

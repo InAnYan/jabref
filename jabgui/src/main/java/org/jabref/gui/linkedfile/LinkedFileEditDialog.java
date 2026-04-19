@@ -38,15 +38,19 @@ public class LinkedFileEditDialog extends BaseDialog<LinkedFile> {
     private LinkedFileEditDialogViewModel viewModel;
     private final LinkedFile linkedFile;
 
-    /// Constructor for adding a new LinkedFile.
+    /**
+     * Constructor for adding a new LinkedFile.
+     */
     public LinkedFileEditDialog() {
         this.linkedFile = new LinkedFile("", "", StandardFileType.PDF);
         initializeDialog(Localization.lang("Add file link"), ADD_BUTTON);
     }
 
-    /// Constructor for editing an existing LinkedFile.
-    /// 
-    /// @param linkedFile The linked file to be edited.
+    /**
+     * Constructor for editing an existing LinkedFile.
+     *
+     * @param linkedFile The linked file to be edited.
+     */
     public LinkedFileEditDialog(LinkedFile linkedFile) {
         this.linkedFile = linkedFile;
         initializeDialog(Localization.lang("Edit file link"), EDIT_BUTTON);

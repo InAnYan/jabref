@@ -46,7 +46,9 @@ class TimeStampToModificationDateTest {
         );
     }
 
-    /// Tests migration to field "modificationdate" if the users uses the default ISO yyyy-mm-dd format and the standard timestamp field
+    /**
+     * Tests migration to field "modificationdate" if the users uses the default ISO yyyy-mm-dd format and the standard timestamp field
+     */
     @ParameterizedTest
     @MethodSource("standardFieldToModificationDate")
     void withStandardFieldToModificationDate(BibEntry expected, BibEntry input) {
@@ -73,7 +75,9 @@ class TimeStampToModificationDateTest {
         );
     }
 
-    /// Tests migration to field "modificationdate" if the users uses the default ISO yyyy-mm-dd format and a custom timestamp field
+    /**
+     * Tests migration to field "modificationdate" if the users uses the default ISO yyyy-mm-dd format and a custom timestamp field
+     */
     @ParameterizedTest
     @MethodSource("customFieldToModificationDate")
     void withCustomFieldToModificationDate(BibEntry expected, BibEntry input) {

@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-/// Enriches a suggestion provider by a given set of content selector values.
+/**
+ * Enriches a suggestion provider by a given set of content selector values.
+ */
 public class ContentSelectorSuggestionProvider extends StringSuggestionProvider {
 
     private final SuggestionProvider<String> suggestionProvider;

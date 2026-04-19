@@ -173,7 +173,9 @@ public class UnlinkedFilesDialogViewModel {
         importFilesBackgroundTask.executeWith(taskExecutor);
     }
 
-    /// This starts the export of all files of all selected nodes in the file tree view.
+    /**
+     * This starts the export of all files of all selected nodes in the file tree view.
+     */
     public void startExport() {
         List<Path> fileList = checkedFileListProperty
                 .stream()

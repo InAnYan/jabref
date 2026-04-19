@@ -40,7 +40,9 @@ import kong.unirest.core.json.JSONObject;
 import org.apache.hc.core5.net.URIBuilder;
 import org.jspecify.annotations.NonNull;
 
-/// Fetches data from the SAO/NASA Astrophysics Data System (<a href="https://ui.adsabs.harvard.edu/">https://ui.adsabs.harvard.edu/</a>)
+/**
+ * Fetches data from the SAO/NASA Astrophysics Data System (<a href="https://ui.adsabs.harvard.edu/">https://ui.adsabs.harvard.edu/</a>)
+ */
 public class AstrophysicsDataSystem
         implements IdBasedParserFetcher, PagedSearchBasedParserFetcher, EntryBasedParserFetcher, CustomizableKeyFetcher {
     public static final String FETCHER_NAME = "SAO/NASA ADS";
@@ -56,14 +58,18 @@ public class AstrophysicsDataSystem
         this.importerPreferences = importerPreferences;
     }
 
-    /// @param bibcodes collection of bibcodes for which a JSON object should be created
+    /**
+     * @param bibcodes collection of bibcodes for which a JSON object should be created
+     */
     private static String buildPostData(Collection<String> bibcodes) {
         JSONObject obj = new JSONObject();
         obj.put("bibcode", bibcodes);
         return obj.toString();
     }
 
-    /// @return export URL endpoint
+    /**
+     * @return export URL endpoint
+     */
     private static URL getUrlForExport() throws URISyntaxException, MalformedURLException {
         return new URIBuilder(API_EXPORT_URL).build().toURL();
     }
@@ -73,8 +79,10 @@ public class AstrophysicsDataSystem
         return FETCHER_NAME;
     }
 
-    /// @param queryList the list that contains the parsed nodes
-    /// @return URL which points to a search request for given query
+    /**
+     * @param queryList the list that contains the parsed nodes
+     * @return URL which points to a search request for given query
+     */
     @Override
     public URL getURLForQuery(BaseQueryNode queryList, int pageNumber) throws URISyntaxException, MalformedURLException {
         URIBuilder builder = new URIBuilder(API_SEARCH_URL);
@@ -86,8 +94,10 @@ public class AstrophysicsDataSystem
         return builder.build().toURL();
     }
 
-    /// @param entry BibEntry for which a search URL is created
-    /// @return URL which points to a search request for given entry
+    /**
+     * @param entry BibEntry for which a search URL is created
+     * @return URL which points to a search request for given entry
+     */
     @Override
     public URL getURLForEntry(BibEntry entry) throws URISyntaxException, MalformedURLException {
         StringBuilder stringBuilder = new StringBuilder();
@@ -111,8 +121,10 @@ public class AstrophysicsDataSystem
         return builder.build().toURL();
     }
 
-    /// @param identifier bibcode or doi for which a search URL is created
-    /// @return URL which points to a search URL for given identifier
+    /**
+     * @param identifier bibcode or doi for which a search URL is created
+     * @return URL which points to a search URL for given identifier
+     */
     @Override
     public URL getUrlForIdentifier(String identifier) throws URISyntaxException, MalformedURLException {
         String query = "doi:\"" + identifier + "\" OR " + "bibcode:\"" + identifier + "\"";
@@ -169,8 +181,10 @@ public class AstrophysicsDataSystem
         return performSearchByIds(bibcodes);
     }
 
-    /// @param url search ul for which bibcode will be returned
-    /// @return list of bibcodes matching the search request. May be empty
+    /**
+     * @param url search ul for which bibcode will be returned
+     * @return list of bibcodes matching the search request. May be empty
+     */
     private List<String> fetchBibcodes(URL url) throws FetcherException {
         try {
             URLDownload download = getUrlDownload(url);
@@ -214,8 +228,10 @@ public class AstrophysicsDataSystem
         return Optional.of(entry);
     }
 
-    /// @param identifiers bibcodes for which bibentries should be fetched
-    /// @return list of bibentries matching the bibcodes. Can be empty and differ in size to the size of requested bibcodes
+    /**
+     * @param identifiers bibcodes for which bibentries should be fetched
+     * @return list of bibentries matching the bibcodes. Can be empty and differ in size to the size of requested bibcodes
+     */
     private List<BibEntry> performSearchByIds(Collection<String> identifiers) throws FetcherException {
         List<String> ids = identifiers.stream().filter(identifier -> !StringUtil.isBlank(identifier)).collect(Collectors.toList());
         if (ids.isEmpty()) {

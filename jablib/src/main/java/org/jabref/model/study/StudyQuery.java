@@ -7,7 +7,9 @@ public class StudyQuery {
         this.query = query;
     }
 
-    /// Used for Jackson deserialization
+    /**
+     * Used for Jackson deserialization
+     */
     public StudyQuery() {
     }
 

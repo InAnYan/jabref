@@ -4,7 +4,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-/// Parses a title to a list of words.
+/**
+ * Parses a title to a list of words.
+ */
 public final class TitleParser {
 
     private StringBuilder buffer;

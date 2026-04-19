@@ -27,8 +27,10 @@ public class DefaultLatexParser implements LatexParser {
     private static final String TEX_EXT = ".tex";
     private static final String BIB_EXT = ".bib";
 
-    /// It is allowed to add new cite commands for pattern matching. Some valid examples: "citep", "[cC]ite", and
-    /// "[cC]ite(author|title|year|t|p)?".
+    /**
+     * It is allowed to add new cite commands for pattern matching. Some valid examples: "citep", "[cC]ite", and
+     * "[cC]ite(author|title|year|t|p)?".
+     */
     private static final String[] CITE_COMMANDS = {
             "[cC]ite(alt|alp|author|authorfull|date|num|p|t|text|title|url|year|yearpar)?",
             "([aA]|[aA]uto|fnote|foot|footfull|full|no|[nN]ote|[pP]aren|[pP]note|[tT]ext|[sS]mart|super)cite([s*]?)",
@@ -102,7 +104,9 @@ public class DefaultLatexParser implements LatexParser {
         return results;
     }
 
-    /// Find cites along a specific line and store them.
+    /**
+     * Find cites along a specific line and store them.
+     */
     private void matchCitation(Path file, int lineNumber, String line, LatexParserResult latexParserResult) {
         Matcher citeMatch = CITE_PATTERN.matcher(line);
 
@@ -114,7 +118,9 @@ public class DefaultLatexParser implements LatexParser {
         }
     }
 
-    /// Find BIB files along a specific line and store them.
+    /**
+     * Find BIB files along a specific line and store them.
+     */
     private void matchBibFile(Path file, String line, LatexParserResult latexParserResult) {
         Matcher bibliographyMatch = BIBLIOGRAPHY_PATTERN.matcher(line);
 
@@ -133,7 +139,9 @@ public class DefaultLatexParser implements LatexParser {
         }
     }
 
-    /// Find inputs and includes along a specific line and store them for parsing later.
+    /**
+     * Find inputs and includes along a specific line and store them for parsing later.
+     */
     private void matchNestedFile(Path texFile, String line, LatexParserResult latexParserResult) {
         Matcher includeMatch = INCLUDE_PATTERN.matcher(line);
 

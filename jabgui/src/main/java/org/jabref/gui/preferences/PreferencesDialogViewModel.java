@@ -163,7 +163,9 @@ public class PreferencesDialogViewModel extends AbstractViewModel {
         return false;
     }
 
-    /// Checks if all tabs are valid
+    /**
+     * Checks if all tabs are valid
+     */
     public boolean validSettings() {
         for (PreferencesTab tab : preferenceTabs) {
             if (!tab.validateSettings()) {
@@ -198,7 +200,9 @@ public class PreferencesDialogViewModel extends AbstractViewModel {
         dialogService.notify(Localization.lang("Preferences recorded."));
     }
 
-    /// Inserts the preference values into the Properties of the ViewModel
+    /**
+     * Inserts the preference values into the Properties of the ViewModel
+     */
     public void setValues() {
         memoryStickProperty.setValue(preferences.getInternalPreferences().isMemoryStickMode());
 

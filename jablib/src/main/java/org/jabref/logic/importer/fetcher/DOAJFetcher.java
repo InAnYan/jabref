@@ -30,9 +30,11 @@ import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// Fetches data from the Directory of Open Access Journals (DOAJ)
-/// 
-/// @see <a href="https://doaj.org/api/v1/docs">API documentation</a>
+/**
+ * Fetches data from the Directory of Open Access Journals (DOAJ)
+ *
+ * @see <a href="https://doaj.org/api/v1/docs">API documentation</a>
+ */
 public class DOAJFetcher implements SearchBasedParserFetcher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DOAJFetcher.class);
@@ -44,10 +46,12 @@ public class DOAJFetcher implements SearchBasedParserFetcher {
         this.preferences = preferences;
     }
 
-    /// Convert a JSONObject containing a bibJSON entry to a BibEntry
-    /// 
-    /// @param bibJsonEntry The JSONObject to convert
-    /// @return the converted BibEntry
+    /**
+     * Convert a JSONObject containing a bibJSON entry to a BibEntry
+     *
+     * @param bibJsonEntry The JSONObject to convert
+     * @return the converted BibEntry
+     */
     public static BibEntry parseBibJSONtoBibtex(JSONObject bibJsonEntry, Character keywordSeparator) {
         // Fields that are directly accessible at the top level BibJson object
         List<Field> singleFields = List.of(StandardField.YEAR, StandardField.TITLE, StandardField.ABSTRACT, StandardField.MONTH);

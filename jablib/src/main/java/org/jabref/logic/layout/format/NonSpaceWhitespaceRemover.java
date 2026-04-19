@@ -5,7 +5,9 @@ import org.jabref.logic.layout.LayoutFormatter;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-/// Remove non-printable character formatter.
+/**
+ * Remove non-printable character formatter.
+ */
 @NullMarked
 public class NonSpaceWhitespaceRemover implements LayoutFormatter {
 

@@ -18,20 +18,22 @@ import org.jabref.model.groups.GroupTreeNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// Session-scoped RAM cache for AI chat histories.
-/// 
-/// Keyed by {@link BibEntry} or {@link GroupTreeNode} *reference identity* (using {@link IdentityHashMap}),
-/// so it works even for entries that have no citation key or a non-unique one.
-/// 
-/// Chat history is *mutable* - the {@link ObservableList} returned by {@link #getForEntry(BibDatabaseContext, BibEntry)}
-/// is the primary working storage. Changes to these lists are NOT immediately persisted to the repository.
-/// 
-/// On {@link #close()}, all chat histories are intelligently flushed to the persistent {@link ChatHistoryRepository}:
-/// - If citation key hasn't changed: replace in storage
-/// - If citation key has changed: clear old key, write to new key
-/// - If citation key is invalid: skip with warning
-/// 
-/// Thread-safe: all map operations are protected by synchronization on the cache instance.
+/**
+ * Session-scoped RAM cache for AI chat histories.
+ *
+ * Keyed by {@link BibEntry} or {@link GroupTreeNode} *reference identity* (using {@link IdentityHashMap}),
+ * so it works even for entries that have no citation key or a non-unique one.
+ *
+ * Chat history is *mutable* - the {@link ObservableList} returned by {@link #getForEntry(BibDatabaseContext, BibEntry)}
+ * is the primary working storage. Changes to these lists are NOT immediately persisted to the repository.
+ *
+ * On {@link #close()}, all chat histories are intelligently flushed to the persistent {@link ChatHistoryRepository}:
+ * - If citation key hasn't changed: replace in storage
+ * - If citation key has changed: clear old key, write to new key
+ * - If citation key is invalid: skip with warning
+ *
+ * Thread-safe: all map operations are protected by synchronization on the cache instance.
+ */
 public class InMemoryChatHistoryCache {
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryChatHistoryCache.class);
 
@@ -64,13 +66,15 @@ public class InMemoryChatHistoryCache {
         this.repository = repository;
     }
 
-    /// Returns the chat history for `entry`. If none exists in RAM, loads from repository
-    /// and caches it. The returned {@link ObservableList} is the primary working storage - mutations
-    /// are NOT immediately persisted.
-    /// 
-    /// @param databaseContext the database context for the entry (needed for persistence)
-    /// @param entry the entry to get chat history for
-    /// @return the live, mutable chat history
+    /**
+     * Returns the chat history for {@code entry}. If none exists in RAM, loads from repository
+     * and caches it. The returned {@link ObservableList} is the primary working storage - mutations
+     * are NOT immediately persisted.
+     *
+     * @param databaseContext the database context for the entry (needed for persistence)
+     * @param entry the entry to get chat history for
+     * @return the live, mutable chat history
+     */
     public synchronized ObservableList<ChatMessage> getForEntry(BibDatabaseContext databaseContext, BibEntry entry) {
         return entryChats.computeIfAbsent(entry, _ -> {
             ObservableList<ChatMessage> chatHistory;
@@ -97,13 +101,15 @@ public class InMemoryChatHistoryCache {
         }).chatHistory();
     }
 
-    /// Returns the chat history for `group`. If none exists in RAM, loads from repository
-    /// and caches it. The returned {@link ObservableList} is the primary working storage - mutations
-    /// are NOT immediately persisted.
-    /// 
-    /// @param databaseContext the database context for the group (needed for persistence)
-    /// @param group the group to get chat history for
-    /// @return the live, mutable chat history
+    /**
+     * Returns the chat history for {@code group}. If none exists in RAM, loads from repository
+     * and caches it. The returned {@link ObservableList} is the primary working storage - mutations
+     * are NOT immediately persisted.
+     *
+     * @param databaseContext the database context for the group (needed for persistence)
+     * @param group the group to get chat history for
+     * @return the live, mutable chat history
+     */
     public synchronized ObservableList<ChatMessage> getForGroup(BibDatabaseContext databaseContext, GroupTreeNode group) {
         return groupChats.computeIfAbsent(group, _ -> {
             ObservableList<ChatMessage> chatHistory;
@@ -128,26 +134,32 @@ public class InMemoryChatHistoryCache {
         }).chatHistory();
     }
 
-    /// Removes the cached chat history for an entry.
-    /// The chat history is NOT persisted before removal - it's simply discarded from RAM.
+    /**
+     * Removes the cached chat history for an entry.
+     * The chat history is NOT persisted before removal - it's simply discarded from RAM.
+     */
     public synchronized void removeEntry(BibEntry entry) {
         entryChats.remove(entry);
     }
 
-    /// Removes the cached chat history for a group.
-    /// The chat history is NOT persisted before removal - it's simply discarded from RAM.
+    /**
+     * Removes the cached chat history for a group.
+     * The chat history is NOT persisted before removal - it's simply discarded from RAM.
+     */
     public synchronized void removeGroup(GroupTreeNode group) {
         groupChats.remove(group);
     }
 
-    /// Writes all cached chat histories to the persistent repository using intelligent transfer logic.
-    /// 
-    /// For each entry:
-    /// 1. If current citation key is invalid: skip with warning
-    /// 2. If current citation key is valid and same as original: replace in storage
-    /// 3. If current citation key is valid and different from original: clear old, write to new
-    /// 
-    /// Call this when the application is closing so chat histories survive the next restart.
+    /**
+     * Writes all cached chat histories to the persistent repository using intelligent transfer logic.
+     *
+     * For each entry:
+     * 1. If current citation key is invalid: skip with warning
+     * 2. If current citation key is valid and same as original: replace in storage
+     * 3. If current citation key is valid and different from original: clear old, write to new
+     *
+     * Call this when the application is closing so chat histories survive the next restart.
+     */
     public synchronized void close() {
         LOGGER.debug("Flushing {} entry chats and {} group chats to repository",
                 entryChats.size(), groupChats.size());

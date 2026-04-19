@@ -9,7 +9,9 @@ import org.jabref.gui.LibraryTab;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.logic.l10n.Localization;
 
-/// Dialog shown when *closing* of application needs to wait for a save operation to finish.
+/**
+ * Dialog shown when <em>closing</em> of application needs to wait for a save operation to finish.
+ */
 public class ProcessingLibraryDialog {
 
     private final DialogService dialogService;

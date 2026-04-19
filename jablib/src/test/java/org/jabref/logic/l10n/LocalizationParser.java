@@ -117,7 +117,9 @@ public class LocalizationParser {
         }
     }
 
-    /// Returns the trimmed key set of the given property file. Each key is already unescaped.
+    /**
+     * Returns the trimmed key set of the given property file. Each key is already unescaped.
+     */
     public static SortedSet<String> getKeysInPropertiesFile(String path) {
         Properties properties = getProperties(path);
         return properties.keySet().stream()
@@ -176,9 +178,11 @@ public class LocalizationParser {
                                           .collect(Collectors.toList());
     }
 
-    /// Loads the fxml file and returns all used language resources.
-    /// 
-    /// Note: FXML prefixes localization keys with `%`.
+    /**
+     * Loads the fxml file and returns all used language resources.
+     * <p>
+     * Note: FXML prefixes localization keys with <code>%</code>.
+     */
     private static Collection<LocalizationEntry> getLanguageKeysInFxmlFile(Path path, LocalizationBundleForTest type) {
         Collection<String> result = new ArrayList<>();
 

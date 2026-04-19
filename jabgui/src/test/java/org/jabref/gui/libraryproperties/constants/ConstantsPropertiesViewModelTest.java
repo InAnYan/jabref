@@ -21,7 +21,9 @@ class ConstantsPropertiesViewModelTest {
     private final DialogService service = mock(DialogService.class);
     private final ExternalApplicationsPreferences externalApplicationsPreferences = mock(ExternalApplicationsPreferences.class);
 
-    /// Check that the list of strings is sorted according to their keys
+    /**
+     * Check that the list of strings is sorted according to their keys
+     */
     @Test
     void stringsListPropertySorting() {
         BibtexString string1 = new BibtexString("TSE", "Transactions on Software Engineering");
@@ -42,7 +44,9 @@ class ConstantsPropertiesViewModelTest {
         assertEquals(expected, actual);
     }
 
-    /// Check that the list of strings is sorted after resorting it
+    /**
+     * Check that the list of strings is sorted after resorting it
+     */
     @Test
     void stringsListPropertyResorting() {
         BibDatabase db = new BibDatabase();

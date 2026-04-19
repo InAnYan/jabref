@@ -7,7 +7,9 @@ public class GroupUpdatedEvent extends BibDatabaseContextChangedEvent {
 
     private final MetaData metaData;
 
-    /// @param metaData Affected instance
+    /**
+     * @param metaData Affected instance
+     */
     public GroupUpdatedEvent(MetaData metaData) {
         this.metaData = metaData;
     }

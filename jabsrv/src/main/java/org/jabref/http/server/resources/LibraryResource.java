@@ -53,11 +53,13 @@ public class LibraryResource {
     @Inject
     Gson gson;
 
-    /// At http://localhost:23119/libraries/{id}
-    /// 
-    /// @param id The specified library
-    /// @return specified library in JSON format
-    /// @throws IOException
+    /**
+     * At http://localhost:23119/libraries/{id}
+     *
+     * @param id The specified library
+     * @return specified library in JSON format
+     * @throws IOException
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public String getJson(@PathParam("id") String id) throws IOException {
@@ -142,7 +144,9 @@ public class LibraryResource {
         return gson.toJson(response);
     }
 
-    /// @return a stream to the Chocolate.bib file in the classpath (is null only if the file was moved or there are issues with the classpath)
+    /**
+     * @return a stream to the Chocolate.bib file in the classpath (is null only if the file was moved or there are issues with the classpath)
+     */
     private @Nullable InputStream getChocolateBibAsStream() {
         return BibDatabase.class.getResourceAsStream("/Chocolate.bib");
     }

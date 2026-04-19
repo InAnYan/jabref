@@ -12,7 +12,9 @@ import org.jabref.model.entry.field.StandardField;
 
 import org.jspecify.annotations.NonNull;
 
-/// Article identifier for MathSciNet (also sometimes called "MRNumber")
+/**
+ * Article identifier for MathSciNet (also sometimes called "MRNumber")
+ */
 @AllowedToUseLogic("Uses StringUtil temporarily")
 public class MathSciNetId implements Identifier {
 
@@ -50,7 +52,9 @@ public class MathSciNetId implements Identifier {
         return identifier;
     }
 
-    /// Get URL in online database.
+    /**
+     * Get URL in online database.
+     */
     @Override
     public Optional<URI> getExternalURI() {
         try {

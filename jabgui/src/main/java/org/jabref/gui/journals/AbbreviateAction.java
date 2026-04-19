@@ -24,7 +24,9 @@ import org.jabref.model.entry.field.FieldFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// Converts journal full names to either iso or medline abbreviations for all selected entries.
+/**
+ * Converts journal full names to either iso or medline abbreviations for all selected entries.
+ */
 public class AbbreviateAction extends SimpleCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbbreviateAction.class);

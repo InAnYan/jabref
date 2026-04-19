@@ -35,7 +35,9 @@ class DatabaseFileLookupTest {
         entry2 = database.getEntryByCitationKey("entry2").get();
     }
 
-    /// Tests the prerequisites of this test-class itself.
+    /**
+     * Tests the prerequisites of this test-class itself.
+     */
     @Test
     void prerequisitesFulfilled() {
         assertEquals(2, database.getEntryCount());

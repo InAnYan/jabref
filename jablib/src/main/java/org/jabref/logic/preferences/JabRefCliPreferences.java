@@ -129,20 +129,22 @@ import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// The `JabRefPreferences` class provides the preferences and their defaults using
-/// the JDK `java.util.prefs` class.
-/// 
-/// Internally it defines symbols used to pick a value from the `java.util.prefs`
-/// interface and keeps a hashmap with all the default values.
-/// 
-/// There are still some similar preferences classes ({@link OpenOfficePreferences} and
-/// {@link SharedDatabasePreferences}) which also use the `java.util.prefs` API.
-/// 
-/// contents of the defaults HashMap that are defined in this class.
-/// There are more default parameters in this map which belong to separate preference classes.
-/// 
-/// This class is injected into formatter using reflection to avoid tight coupling and
-/// is easier than injecting via constructor due to amount of refactoring
+/**
+ * The {@code JabRefPreferences} class provides the preferences and their defaults using
+ * the JDK {@code java.util.prefs} class.
+ * <p>
+ * Internally it defines symbols used to pick a value from the {@code java.util.prefs}
+ * interface and keeps a hashmap with all the default values.
+ * <p>
+ * There are still some similar preferences classes ({@link OpenOfficePreferences} and
+ * {@link SharedDatabasePreferences}) which also use the {@code java.util.prefs} API.
+ * <p>
+ * contents of the defaults HashMap that are defined in this class.
+ * There are more default parameters in this map which belong to separate preference classes.
+ * <p>
+ * This class is injected into formatter using reflection to avoid tight coupling and
+ * is easier than injecting via constructor due to amount of refactoring
+ */
 @Singleton
 public class JabRefCliPreferences implements CliPreferences {
     public static final String LANGUAGE = "language";
@@ -281,15 +283,17 @@ public class JabRefCliPreferences implements CliPreferences {
     public static final String VALIDATE_IN_ENTRY_EDITOR = "validateInEntryEditor";
     public static final String SHOW_SCITE_TAB = "showSciteTab";
 
-    /// The OpenOffice/LibreOffice connection preferences are: OO_PATH main directory for
-    /// OO/LO installation, used to detect location on Win/macOS when using manual
-    /// connect OO_EXECUTABLE_PATH path to soffice-file OO_JARS_PATH directory that
-    /// contains juh.jar, jurt.jar, ridl.jar, unoil.jar OO_SYNC_WHEN_CITING true if the
-    /// reference list is updated when adding a new citation OO_SHOW_PANEL true if the OO
-    /// panel is shown on startup OO_USE_ALL_OPEN_DATABASES true if all databases should
-    /// be used when citing OO_BIBLIOGRAPHY_STYLE_FILE path to the used style file
-    /// OO_EXTERNAL_STYLE_FILES list with paths to external style files STYLES_*_* size
-    /// and position of "Select style" dialog
+    /**
+     * The OpenOffice/LibreOffice connection preferences are: OO_PATH main directory for
+     * OO/LO installation, used to detect location on Win/macOS when using manual
+     * connect OO_EXECUTABLE_PATH path to soffice-file OO_JARS_PATH directory that
+     * contains juh.jar, jurt.jar, ridl.jar, unoil.jar OO_SYNC_WHEN_CITING true if the
+     * reference list is updated when adding a new citation OO_SHOW_PANEL true if the OO
+     * panel is shown on startup OO_USE_ALL_OPEN_DATABASES true if all databases should
+     * be used when citing OO_BIBLIOGRAPHY_STYLE_FILE path to the used style file
+     * OO_EXTERNAL_STYLE_FILES list with paths to external style files STYLES_*_* size
+     * and position of "Select style" dialog
+     */
     public static final String OO_EXECUTABLE_PATH = "ooExecutablePath";
     public static final String OO_SYNC_WHEN_CITING = "syncOOWhenCiting";
     public static final String OO_USE_ALL_OPEN_BASES = "useAllOpenBases";
@@ -452,12 +456,16 @@ public class JabRefCliPreferences implements CliPreferences {
 
     // The only instance of this class:
     private static JabRefCliPreferences singleton;
-    /// HashMap that contains all preferences which are set by default
+    /**
+     * HashMap that contains all preferences which are set by default
+     */
     public final Map<String, Object> defaults = new HashMap<>();
 
     private final Preferences prefs;
 
-    /// Cache variables
+    /**
+     * Cache variables
+     */
     private UserHostInfo userAndHost;
 
     private LibraryPreferences libraryPreferences;
@@ -489,9 +497,11 @@ public class JabRefCliPreferences implements CliPreferences {
     private PushToApplicationPreferences pushToApplicationPreferences;
     private GitPreferences gitPreferences;
 
-    /// @implNote The constructor was made public because dependency injection via constructor
-    /// required widespread refactoring, currently we are using reflection in some formatters
-    /// to gain access
+    /**
+     * @implNote The constructor was made public because dependency injection via constructor
+     * required widespread refactoring, currently we are using reflection in some formatters
+     * to gain access
+     */
     public JabRefCliPreferences() {
         try {
             Path preferencesPath = Path.of("jabref.xml");
@@ -886,10 +896,12 @@ public class JabRefCliPreferences implements CliPreferences {
     }
     // endregion
 
-    /// @deprecated Never ever add a call to this method. There should be only one
-    /// caller. All other usages should get the preferences passed (or injected). The
-    /// JabRef team leaves the `@deprecated` annotation to have IntelliJ listing
-    /// this method with a strike-through.
+    /**
+     * @deprecated Never ever add a call to this method. There should be only one
+     * caller. All other usages should get the preferences passed (or injected). The
+     * JabRef team leaves the {@code @deprecated} annotation to have IntelliJ listing
+     * this method with a strike-through.
+     */
     @Deprecated
     public static JabRefCliPreferences getInstance() {
         if (JabRefCliPreferences.singleton == null) {
@@ -898,28 +910,34 @@ public class JabRefCliPreferences implements CliPreferences {
         return JabRefCliPreferences.singleton;
     }
 
-    //// **********************************************************************************************************
-/// // Common serializer logic
-    /// ************************************************************************************************************
-/// @VisibleForTesting
-/// static String convertListToString(List<String> value) {
-/// return value.stream().map(val -> StringUtil.quote(val, STRINGLIST_DELIMITER.toString(), '\\')).collect(Collectors.joining(STRINGLIST_DELIMITER.toString()));
-/// }
-/// @VisibleForTesting
-/// static List<String> convertStringToList(String toConvert) {
-/// if (StringUtil.isBlank(toConvert)) {
-/// return List.of();
-/// }
-/// return Splitter.on(STRINGLIST_DELIMITER).splitToList(toConvert);
-/// }
-    /// ************************************************************************************************************
-/// // Backingstore access logic
-    /// ************************************************************************************************************
-    /// *
-    /// Check whether a key is set (differently from null).
-    /// 
-    /// @param key The key to check.
-    /// @return true if the key is set, false otherwise.
+    //*************************************************************************************************************
+    // Common serializer logic
+    //*************************************************************************************************************
+
+    @VisibleForTesting
+    static String convertListToString(List<String> value) {
+        return value.stream().map(val -> StringUtil.quote(val, STRINGLIST_DELIMITER.toString(), '\\')).collect(Collectors.joining(STRINGLIST_DELIMITER.toString()));
+    }
+
+    @VisibleForTesting
+    static List<String> convertStringToList(String toConvert) {
+        if (StringUtil.isBlank(toConvert)) {
+            return List.of();
+        }
+
+        return Splitter.on(STRINGLIST_DELIMITER).splitToList(toConvert);
+    }
+
+    //*************************************************************************************************************
+    // Backingstore access logic
+    //*************************************************************************************************************
+
+    /**
+     * Check whether a key is set (differently from null).
+     *
+     * @param key The key to check.
+     * @return true if the key is set, false otherwise.
+     */
     public boolean hasKey(String key) {
         return prefs.get(key, null) != null;
     }
@@ -1001,9 +1019,11 @@ public class JabRefCliPreferences implements CliPreferences {
         prefs.remove(key);
     }
 
-    /// Puts a list of strings into the Preferences, by linking its elements with a
-    /// STRINGLIST_DELIMITER into a single string. Escape characters make the process
-    /// transparent even if strings contains a STRINGLIST_DELIMITER.
+    /**
+     * Puts a list of strings into the Preferences, by linking its elements with a
+     * STRINGLIST_DELIMITER into a single string. Escape characters make the process
+     * transparent even if strings contains a STRINGLIST_DELIMITER.
+     */
     public void putStringList(String key, List<String> value) {
         if (value == null) {
             remove(key);
@@ -1013,21 +1033,27 @@ public class JabRefCliPreferences implements CliPreferences {
         put(key, convertListToString(value));
     }
 
-    /// Returns a List of Strings containing the chosen columns.
+    /**
+     * Returns a List of Strings containing the chosen columns.
+     */
     public List<String> getStringList(String key) {
         return convertStringToList(get(key));
     }
 
-    /// Returns a Path
+    /**
+     * Returns a Path
+     */
     private Path getPath(String key, Path defaultValue) {
         String rawPath = get(key);
         return StringUtil.isNotBlank(rawPath) ? Path.of(rawPath) : defaultValue;
     }
 
-    /// Clear all preferences.
-    /// 
-    /// @throws BackingStoreException if JabRef is unable to write to the registry/the
-    /// preferences storage
+    /**
+     * Clear all preferences.
+     *
+     * @throws BackingStoreException if JabRef is unable to write to the registry/the
+     *                               preferences storage
+     */
     @Override
     public void clear() throws BackingStoreException {
         clearAllBibEntryTypes();
@@ -1043,9 +1069,11 @@ public class JabRefCliPreferences implements CliPreferences {
         trustStoreManager.clearCustomCertificates();
     }
 
-    /// Removes the given key from the preferences.
-    /// 
-    /// @throws IllegalArgumentException if the key does not exist
+    /**
+     * Removes the given key from the preferences.
+     *
+     * @throws IllegalArgumentException if the key does not exist
+     */
     @Override
     public void deleteKey(String key) throws IllegalArgumentException {
         String keyTrimmed = key.trim();
@@ -1056,7 +1084,9 @@ public class JabRefCliPreferences implements CliPreferences {
         }
     }
 
-    /// Calling this method will write all preferences into the preference store.
+    /**
+     * Calling this method will write all preferences into the preference store.
+     */
     @Override
     public void flush() {
         if (getBoolean(MEMORY_STICK_MODE)) {
@@ -1115,7 +1145,9 @@ public class JabRefCliPreferences implements CliPreferences {
         }
     }
 
-    /// Returns a list of Strings stored by key+N with N being an incrementing number
+    /**
+     * Returns a list of Strings stored by key+N with N being an incrementing number
+     */
     protected List<String> getSeries(String key) {
         int i = 0;
         List<String> series = new ArrayList<>();
@@ -1127,10 +1159,12 @@ public class JabRefCliPreferences implements CliPreferences {
         return series;
     }
 
-    /// Removes all entries keyed by prefix+number, where number is equal to or higher
-    /// than the given number.
-    /// 
-    /// @param number or higher.
+    /**
+     * Removes all entries keyed by prefix+number, where number is equal to or higher
+     * than the given number.
+     *
+     * @param number or higher.
+     */
     protected void purgeSeries(String prefix, int number) {
         int n = number;
         while (get(prefix + n) != null) {
@@ -1139,9 +1173,11 @@ public class JabRefCliPreferences implements CliPreferences {
         }
     }
 
-    /// Exports Preferences to an XML file.
-    /// 
-    /// @param path Path to export to
+    /**
+     * Exports Preferences to an XML file.
+     *
+     * @param path Path to export to
+     */
     @Override
     public void exportPreferences(Path path) throws JabRefException {
         LOGGER.debug("Exporting preferences {}", path.toAbsolutePath());
@@ -1156,11 +1192,13 @@ public class JabRefCliPreferences implements CliPreferences {
         }
     }
 
-    /// Imports Preferences from an XML file.
-    /// 
-    /// @param file Path of file to import from
-    /// @throws JabRefException thrown if importing the preferences failed due to an
-    /// InvalidPreferencesFormatException or an IOException
+    /**
+     * Imports Preferences from an XML file.
+     *
+     * @param file Path of file to import from
+     * @throws JabRefException thrown if importing the preferences failed due to an
+     *                         InvalidPreferencesFormatException or an IOException
+     */
     @Override
     public void importPreferences(Path file) throws JabRefException {
         try (InputStream is = Files.newInputStream(file)) {

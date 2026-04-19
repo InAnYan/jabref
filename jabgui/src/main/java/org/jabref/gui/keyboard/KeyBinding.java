@@ -2,7 +2,9 @@ package org.jabref.gui.keyboard;
 
 import org.jabref.logic.l10n.Localization;
 
-/// @implNote Cannot be sorted alphabetically, as {@link KeyBindingRepository#getKeyCombination(KeyBinding)} iterates over the enum in order and returns the first match.
+/**
+ * @implNote Cannot be sorted alphabetically, as {@link KeyBindingRepository#getKeyCombination(KeyBinding)} iterates over the enum in order and returns the first match.
+ */
 public enum KeyBinding {
     EDITOR_DELETE("Delete", Localization.lang("Delete text"), "", KeyBindingCategory.EDITOR),
     // DELETE BACKWARDS = Rubout
@@ -141,7 +143,9 @@ public enum KeyBinding {
         this.category = category;
     }
 
-    /// This method returns the enum constant value
+    /**
+     * This method returns the enum constant value
+     */
     public String getConstant() {
         return constant;
     }
@@ -150,9 +154,11 @@ public enum KeyBinding {
         return localization;
     }
 
-    /// This method returns the default key binding, the key(s) which are assigned
-    /// 
-    /// @return The default key binding
+    /**
+     * This method returns the default key binding, the key(s) which are assigned
+     *
+     * @return The default key binding
+     */
     public String getDefaultKeyBinding() {
         return defaultBinding;
     }

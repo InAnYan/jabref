@@ -30,7 +30,9 @@ public class ReferenceViewModel {
         return new ReadOnlyListWrapper<>(citationList);
     }
 
-    /// Return a string for displaying an entry key and its number of uses.
+    /**
+     * Return a string for displaying an entry key and its number of uses.
+     */
     public String getDisplayText() {
         return "%s (%s)".formatted(entry, citationList.size());
     }

@@ -131,7 +131,9 @@ class LayoutTest {
         assertEquals(expected, layoutText);
     }
 
-    /// Test for http://discourse.jabref.org/t/the-wrapfilelinks-formatter/172 (the example in the help files)
+    /**
+     * Test for http://discourse.jabref.org/t/the-wrapfilelinks-formatter/172 (the example in the help files)
+     */
     @Test
     void wrapFileLinksExpandFile() throws IOException {
         BibEntry entry = new BibEntry(StandardEntryType.Article);

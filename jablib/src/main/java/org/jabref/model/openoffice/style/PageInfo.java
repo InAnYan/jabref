@@ -24,9 +24,11 @@ public class PageInfo {
         return Optional.of(OOText.fromString(trimmed));
     }
 
-    /// Defines sort order for pageInfo strings.
-    /// 
-    /// Optional.empty comes before non-empty.
+    /**
+     * Defines sort order for pageInfo strings.
+     * <p>
+     * Optional.empty comes before non-empty.
+     */
     public static int comparePageInfo(Optional<OOText> a, Optional<OOText> b) {
         Optional<OOText> aa = PageInfo.normalizePageInfo(a);
         Optional<OOText> bb = PageInfo.normalizePageInfo(b);

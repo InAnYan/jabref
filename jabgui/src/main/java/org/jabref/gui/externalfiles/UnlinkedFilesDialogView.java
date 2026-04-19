@@ -282,8 +282,10 @@ public class UnlinkedFilesDialogView extends BaseDialog<Void> {
         viewModel.startExport();
     }
 
-    /// Creates a Label with a maximum width and ellipsis for overflow.
-    /// Truncates text if it exceeds two-thirds of the screen width.
+    /**
+     * Creates a Label with a maximum width and ellipsis for overflow.
+     * Truncates text if it exceeds two-thirds of the screen width.
+     */
     private Label createEllipsisLabel(String text) {
         Label label = new Label(text);
         double maxWidth = colFile.getMaxWidth();
@@ -292,7 +294,9 @@ public class UnlinkedFilesDialogView extends BaseDialog<Void> {
         return label;
     }
 
-    /// Expands or collapses the specified tree according to the `expand`-parameter.
+    /**
+     * Expands or collapses the specified tree according to the <code>expand</code>-parameter.
+     */
     private void expandTree(TreeItem<?> item, boolean expand) {
         if ((item != null) && !item.isLeaf()) {
             item.setExpanded(expand);

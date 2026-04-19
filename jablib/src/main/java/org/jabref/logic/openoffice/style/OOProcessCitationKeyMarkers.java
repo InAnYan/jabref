@@ -13,8 +13,10 @@ class OOProcessCitationKeyMarkers {
     private OOProcessCitationKeyMarkers() {
     }
 
-    /// Produce citation markers for the case when the citation
-    /// markers are the citation keys themselves, separated by commas.
+    /**
+     * Produce citation markers for the case when the citation
+     * markers are the citation keys themselves, separated by commas.
+     */
     static void produceCitationMarkers(CitationGroups citationGroups, JStyle style) {
         assert style.isCitationKeyCiteMarkers();
 

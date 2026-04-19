@@ -42,7 +42,9 @@ public class LinkedFileHandler {
         return copyOrMoveToDefaultDirectory(true, false);
     }
 
-    /// @return true if the file was copied/moved or the same file exists in the target directory
+    /**
+     * @return true if the file was copied/moved or the same file exists in the target directory
+     */
     public boolean copyOrMoveToDefaultDirectory(boolean shouldMove, boolean shouldRenameToFilenamePattern) throws IOException {
         Optional<Path> databaseFileDirectoryOpt = databaseContext.getFirstExistingFileDir(filePreferences);
         if (databaseFileDirectoryOpt.isEmpty()) {
@@ -107,9 +109,11 @@ public class LinkedFileHandler {
         return true;
     }
 
-    /// If exists: the path already exists and has the same content as the given sourcePath
-    /// 
-    /// @param renamed The original/suggested filename was adapted to fit it
+    /**
+     * If exists: the path already exists and has the same content as the given sourcePath
+     *
+     * @param renamed The original/suggested filename was adapted to fit it
+     */
     private record GetTargetPathResult(boolean exists, boolean renamed, Path path) {
     }
 
@@ -237,10 +241,12 @@ public class LinkedFileHandler {
         return getSuggestedFileName(extension);
     }
 
-    /// Determines the file name based on the pattern specified in the preferences and valid for the file system.
-    /// 
-    /// @param extension The extension of the file. If empty, no extension is added.
-    /// @return A filename based on the pattern specified in the preferences and valid for the file system.
+    /**
+     * Determines the file name based on the pattern specified in the preferences and valid for the file system.
+     *
+     * @param extension The extension of the file. If empty, no extension is added.
+     * @return A filename based on the pattern specified in the preferences and valid for the file system.
+     */
     public String getSuggestedFileName(@NonNull String extension) {
         Optional<String> targetFileName = FileUtil.createFileNameFromPattern(databaseContext.getDatabase(), entry, filePreferences.getFileNamePattern());
         if (targetFileName.isEmpty() && linkedFile.isOnlineLink()) {
@@ -271,10 +277,12 @@ public class LinkedFileHandler {
         return FileUtil.getValidFileName(suggestedName);
     }
 
-    /// Check to see if a file already exists in the target directory.  Search is not case sensitive.
-    /// 
-    /// @return First identified path that matches an existing file.  This name can be used in subsequent calls to
-    /// override the existing file.
+    /**
+     * Check to see if a file already exists in the target directory.  Search is not case sensitive.
+     *
+     * @return First identified path that matches an existing file.  This name can be used in subsequent calls to
+     * override the existing file.
+     */
     public Optional<Path> findExistingFile(LinkedFile linkedFile, BibEntry entry, String targetFileName) {
         // The .get() is legal without check because the method will always return a value.
         Path targetFilePath = linkedFile.findIn(databaseContext, filePreferences)

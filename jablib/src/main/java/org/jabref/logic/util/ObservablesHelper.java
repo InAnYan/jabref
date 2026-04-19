@@ -14,9 +14,11 @@ import com.sun.javafx.collections.ImmutableObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// Utility methods for working with JavaFX {@link Observable} objects in non-GUI logic code.
-/// 
-/// GUI code should use `BindingsHelper` from `jabgui` instead.
+/**
+ * Utility methods for working with JavaFX {@link Observable} objects in non-GUI logic code.
+ * <p>
+ * GUI code should use {@code BindingsHelper} from {@code jabgui} instead.
+ */
 public final class ObservablesHelper {
     private final static Logger LOGGER = LoggerFactory.getLogger(ObservablesHelper.class);
 
@@ -36,32 +38,34 @@ public final class ObservablesHelper {
         }));
     }
 
-    /// Creates an {@link ObjectBinding} that safely manages the lifecycle of {@link AutoCloseable} resources.
-    /// 
-    /// Standard JavaFX bindings are lazy and stateless, which can lead to resource leaks when
-    /// binding to heavy or stateful objects (like file streams, external processes, or specialized
-    /// internal components). This utility creates a binding that retains a reference to its
-    /// previously calculated value and guarantees that {@link AutoCloseable#close()} is invoked
-    /// on the old value immediately before a new value is computed.
-    /// 
-    /// 
-    /// **Lifecycle & Memory Management:**
-    /// 
-    /// - **Lazy Evaluation:** Old resources are closed *only* when a new value is explicitly requested via `.get()` after invalidation.
-    /// - **Disposal:** The active resource is automatically closed when {@link ObjectBinding#dispose()} is called.
-    /// 
-    /// 
-    /// 
-    /// *Note:* Exceptions thrown during the closing of old resources or the computation of
-    /// new ones are caught and logged to prevent crashing the JavaFX application thread.
-    /// If computation fails, the binding will evaluate to `null`.
-    /// 
-    /// 
-    /// @param <T> The type of the closable resource, which must implement {@link AutoCloseable}.
-    /// @param func The factory {@link Callable} used to compute the new resource.
-    /// This executes lazily when the binding's value is requested.
-    /// @param dependencies The observables that this binding should listen to for invalidation.
-    /// @return An `ObjectBinding<T>` that automatically closes previous instances upon recalculation or disposal.
+    /**
+     * Creates an {@link ObjectBinding} that safely manages the lifecycle of {@link AutoCloseable} resources.
+     * <p>
+     * Standard JavaFX bindings are lazy and stateless, which can lead to resource leaks when
+     * binding to heavy or stateful objects (like file streams, external processes, or specialized
+     * internal components). This utility creates a binding that retains a reference to its
+     * previously calculated value and guarantees that {@link AutoCloseable#close()} is invoked
+     * on the old value immediately before a new value is computed.
+     * </p>
+     * <p>
+     * <b>Lifecycle & Memory Management:</b>
+     * <ul>
+     * <li><b>Lazy Evaluation:</b> Old resources are closed <i>only</i> when a new value is explicitly requested via {@code .get()} after invalidation.</li>
+     * <li><b>Disposal:</b> The active resource is automatically closed when {@link ObjectBinding#dispose()} is called.</li>
+     * </ul>
+     * </p>
+     * <p>
+     * <i>Note:</i> Exceptions thrown during the closing of old resources or the computation of
+     * new ones are caught and logged to prevent crashing the JavaFX application thread.
+     * If computation fails, the binding will evaluate to {@code null}.
+     * </p>
+     *
+     * @param <T> The type of the closable resource, which must implement {@link AutoCloseable}.
+     * @param func The factory {@link Callable} used to compute the new resource.
+     * This executes lazily when the binding's value is requested.
+     * @param dependencies The observables that this binding should listen to for invalidation.
+     * @return An {@code ObjectBinding<T>} that automatically closes previous instances upon recalculation or disposal.
+     */
     public static <T extends AutoCloseable> ObjectBinding<T> createClosableObjectBinding(final Callable<T> func, final Observable... dependencies) {
         return new ObjectBinding<>() {
 
@@ -91,7 +95,9 @@ public final class ObservablesHelper {
                 }
             }
 
-            /// Calls {@link ObjectBinding#unbind(Observable...)} and closes the active resource.
+            /**
+             * Calls {@link ObjectBinding#unbind(Observable...)} and closes the active resource.
+             */
             @Override
             public void dispose() {
                 super.unbind(dependencies);
@@ -107,7 +113,9 @@ public final class ObservablesHelper {
                 }
             }
 
-            /// Returns an immutable list of the dependencies of this binding.
+            /**
+             * Returns an immutable list of the dependencies of this binding.
+             */
 
             @Override
             public ObservableList<?> getDependencies() {

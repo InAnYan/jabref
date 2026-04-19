@@ -33,7 +33,9 @@ public class AiChatTab extends EntryEditorTab {
         return entryEditorPreferences.shouldShowAiChatTab();
     }
 
-    /// @implNote Method similar to {@link AiSummaryTab#bindToEntry(BibEntry)}
+    /**
+     * @implNote Method similar to {@link AiSummaryTab#bindToEntry(BibEntry)}
+     */
     @Override
     protected void bindToEntry(BibEntry entry) {
         BibDatabaseContext bibDatabaseContext = stateManager.getActiveDatabase().orElse(new BibDatabaseContext());

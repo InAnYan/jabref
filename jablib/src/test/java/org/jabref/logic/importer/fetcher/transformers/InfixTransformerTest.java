@@ -11,7 +11,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/// Test Interface for all transformers that use infix notation for their logical binary operators
+/**
+ * Test Interface for all transformers that use infix notation for their logical binary operators
+ */
 public abstract class InfixTransformerTest<T extends AbstractQueryTransformer> {
 
     protected abstract T getTransformer();

@@ -30,7 +30,8 @@ class UnlinkedFilesCrawlerTest {
         Files.writeString(testRoot.resolve(".gitignore"), """
                 ignore/.*
                 ignore/*
-                ignore/// *
+                ignore/**
+                ignore/**/*
                 """);
         Path subDir = testRoot.resolve("ignore");
         Files.createDirectories(subDir);

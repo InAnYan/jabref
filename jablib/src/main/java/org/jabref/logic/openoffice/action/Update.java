@@ -20,7 +20,9 @@ import com.sun.star.text.XTextDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// Update document: citation marks and bibliography
+/**
+ * Update document: citation marks and bibliography
+ */
 public class Update {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Update.class);
@@ -28,7 +30,9 @@ public class Update {
     private Update() {
     }
 
-    /// @return the list of unresolved citation keys
+    /**
+     * @return the list of unresolved citation keys
+     */
     private static List<String> updateDocument(XTextDocument doc,
                                                OOFrontend frontend,
                                                List<BibDatabase> databases,
@@ -116,7 +120,9 @@ public class Update {
                 syncOptions.alwaysAddCitedOnPages);
     }
 
-    /// Reread document before sync
+    /**
+     * Reread document before sync
+     */
     public static List<String> resyncDocument(XTextDocument doc,
                                               JStyle style,
                                               FunctionalTextViewCursor fcursor,

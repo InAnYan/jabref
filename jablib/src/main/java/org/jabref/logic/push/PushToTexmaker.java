@@ -4,7 +4,9 @@ import java.nio.file.Path;
 
 import org.jabref.logic.util.NotificationService;
 
-/// Class for pushing entries into TexMaker.
+/**
+ * Class for pushing entries into TexMaker.
+ */
 public class PushToTexmaker extends AbstractPushToApplication {
 
     public static final PushApplications APPLICATION = PushApplications.TEXMAKER;

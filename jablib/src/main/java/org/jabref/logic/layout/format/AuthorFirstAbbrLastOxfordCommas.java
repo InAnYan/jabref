@@ -3,13 +3,15 @@ package org.jabref.logic.layout.format;
 import org.jabref.logic.layout.LayoutFormatter;
 import org.jabref.model.entry.AuthorList;
 
-/// 
-/// - Names are given as first name, von and last name.
-/// - First names will be abbreviated.
-/// - Individual authors separated by comma.
-/// - The and of a list of three or more authors is preceeded by a comma
-/// (Oxford comma)
-/// 
+/**
+ * <ul>
+ * <li>Names are given as first name, von and last name.</li>
+ * <li>First names will be abbreviated.</li>
+ * <li>Individual authors separated by comma.</li>
+ * <li>The and of a list of three or more authors is preceeded by a comma
+ * (Oxford comma)</li>
+ * </ul>
+ */
 public class AuthorFirstAbbrLastOxfordCommas implements LayoutFormatter {
 
     @Override

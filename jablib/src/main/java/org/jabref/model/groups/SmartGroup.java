@@ -4,8 +4,10 @@ import java.util.Objects;
 
 import org.jabref.model.entry.field.StandardField;
 
-/// This group contains entries, which were automatically assigned to it.
-/// Assignments are stored in the {@link StandardField#GROUPS} field.
+/**
+ * This group contains entries, which were automatically assigned to it.
+ * Assignments are stored in the {@link StandardField#GROUPS} field.
+ */
 public class SmartGroup extends WordKeywordGroup {
 
     public SmartGroup(String name, GroupHierarchyType context, Character keywordSeparator) {

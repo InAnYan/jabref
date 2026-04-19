@@ -35,7 +35,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/// Loading of groups is tested in the GroupsParserTest class.
+/**
+ * Loading of groups is tested in the GroupsParserTest class.
+ */
 class GroupSerializerTest {
 
     private GroupSerializer groupSerializer;

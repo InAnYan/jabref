@@ -547,7 +547,9 @@ class FileUtilTest {
         assertEquals(secretFile, result);
     }
 
-    /// @implNote Tests inspired by {@link org.jabref.model.database.BibDatabaseContextTest#getFileDirectoriesWithRelativeMetadata}
+    /**
+     * @implNote Tests inspired by {@link org.jabref.model.database.BibDatabaseContextTest#getFileDirectoriesWithRelativeMetadata}
+     */
     public static Stream<Arguments> relativize() {
         Path bibPath = bibTempDir.resolve("bibliography.bib");
         Path filesPath = bibTempDir.resolve("files").resolve("pdfs");

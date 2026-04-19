@@ -18,15 +18,17 @@ import org.jabref.model.entry.BibEntryTypesManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// Exports an AI chat conversation to Markdown format.
-/// 
-/// The Markdown output is produced by rendering a configurable Velocity template.
-/// The template has access to the following variables:
-/// 
-/// - `$metadata` — {@link AiMetadata} with provider, model, and timestamp
-/// - `$bibtex` — pre-rendered BibTeX string of all associated entries
-/// - `$messages` — filtered list of {@link ChatMessage} objects (SYSTEM messages excluded)
-/// 
+/**
+ * Exports an AI chat conversation to Markdown format.
+ *
+ * <p>The Markdown output is produced by rendering a configurable Velocity template.
+ * The template has access to the following variables:
+ * <ul>
+ *   <li>{@code $metadata} — {@link AiMetadata} with provider, model, and timestamp</li>
+ *   <li>{@code $bibtex} — pre-rendered BibTeX string of all associated entries</li>
+ *   <li>{@code $messages} — filtered list of {@link ChatMessage} objects (SYSTEM messages excluded)</li>
+ * </ul>
+ */
 public class AiChatMarkdownExporter implements AiChatExporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiChatMarkdownExporter.class);
 

@@ -13,7 +13,9 @@ import org.jabref.model.entry.LinkedFile;
 import org.jabref.model.entry.field.Field;
 import org.jabref.model.entry.field.StandardField;
 
-/// Collects file links from the ps and pdf fields, and add them to the list contained in the file field.
+/**
+ * Collects file links from the ps and pdf fields, and add them to the list contained in the file field.
+ */
 public class UpgradePdfPsToFileCleanup implements CleanupJob {
 
     // Field name and file type name (from ExternalFileTypes)

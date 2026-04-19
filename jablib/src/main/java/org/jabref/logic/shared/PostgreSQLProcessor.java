@@ -14,7 +14,9 @@ import org.jabref.model.metadata.MetaData;
 
 import org.postgresql.PGConnection;
 
-/// Processes all incoming or outgoing bib data to PostgreSQL database and manages its structure.
+/**
+ * Processes all incoming or outgoing bib data to PostgreSQL database and manages its structure.
+ */
 public class PostgreSQLProcessor extends DBMSProcessor {
 
     private PostgresSQLNotificationListener listener;
@@ -26,9 +28,11 @@ public class PostgreSQLProcessor extends DBMSProcessor {
         super(connection);
     }
 
-    /// Creates and sets up the needed tables and columns according to the database type.
-    /// 
-    /// @throws SQLException in case of error
+    /**
+     * Creates and sets up the needed tables and columns according to the database type.
+     *
+     * @throws SQLException in case of error
+     */
     @Override
     public void setUp() throws SQLException {
 

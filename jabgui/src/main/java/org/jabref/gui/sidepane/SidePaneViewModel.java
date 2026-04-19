@@ -109,8 +109,10 @@ public class SidePaneViewModel extends AbstractViewModel {
         return sidePaneComponent;
     }
 
-    /// Stores the current configuration of visible panes in the preferences, so that we show panes at the preferred
-    /// position next time.
+    /**
+     * Stores the current configuration of visible panes in the preferences, so that we show panes at the preferred
+     * position next time.
+     */
     private void updatePreferredPositions() {
         Map<SidePaneType, Integer> preferredPositions = new HashMap<>(preferences.getSidePanePreferences()
                                                                                  .getPreferredPositions());
@@ -167,7 +169,9 @@ public class SidePaneViewModel extends AbstractViewModel {
         observableList.sort(Comparator.comparingInt(placeholder::indexOf));
     }
 
-    /// Helper class for sorting visible side panes based on their preferred position.
+    /**
+     * Helper class for sorting visible side panes based on their preferred position.
+     */
     protected static class PreferredIndexSort implements Comparator<SidePaneType> {
 
         private final Map<SidePaneType, Integer> preferredPositions;

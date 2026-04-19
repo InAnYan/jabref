@@ -13,8 +13,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PersonNameStringConverterTest {
 
-    /// The author.
-    /// 
+    /**
+     * The author.
+     **/
     private Author author;
 
     @BeforeEach

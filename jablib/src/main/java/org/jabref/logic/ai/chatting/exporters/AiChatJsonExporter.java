@@ -25,10 +25,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// Exports an AI chat conversation to JSON format.
-/// 
-/// The JSON output includes export metadata (provider, model, timestamp), BibTeX entry data,
-/// and the conversation messages with role/content pairs.
+/**
+ * Exports an AI chat conversation to JSON format.
+ *
+ * <p>The JSON output includes export metadata (provider, model, timestamp), BibTeX entry data,
+ * and the conversation messages with role/content pairs.
+ */
 public class AiChatJsonExporter implements AiChatExporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiChatJsonExporter.class);
 

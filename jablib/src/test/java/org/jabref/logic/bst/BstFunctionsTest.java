@@ -19,14 +19,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/// For additional tests see for
-/// 
-/// -  purify: {@link org.jabref.logic.bst.util.BstPurifierTest}
-/// -  width: {@link org.jabref.logic.bst.util.BstWidthCalculatorTest}
-/// -  format.name: {@link org.jabref.logic.bst.util.BstNameFormatterTest}
-/// -  change.case: {@link org.jabref.logic.bst.util.BstCaseChangersTest}
-/// -  prefix: {@link org.jabref.logic.bst.util.BstTextPrefixerTest}
-/// 
+/**
+ * For additional tests see for
+ * <ul>
+ * <li> purify: {@link org.jabref.logic.bst.util.BstPurifierTest}</li>
+ * <li> width: {@link org.jabref.logic.bst.util.BstWidthCalculatorTest}</li>
+ * <li> format.name: {@link org.jabref.logic.bst.util.BstNameFormatterTest}</li>
+ * <li> change.case: {@link org.jabref.logic.bst.util.BstCaseChangersTest}</li>
+ * <li> prefix: {@link org.jabref.logic.bst.util.BstTextPrefixerTest}</li>
+ * </ul>
+ */
 class BstFunctionsTest {
     @Test
     void compareFunctions() throws RecognitionException {
@@ -590,7 +592,9 @@ class BstFunctionsTest {
         assertEquals(0, vm.getStack().size());
     }
 
-    /// See also {@link org.jabref.logic.bst.util.BstWidthCalculatorTest}
+    /**
+     * See also {@link org.jabref.logic.bst.util.BstWidthCalculatorTest}
+     */
     @Test
     void width() throws RecognitionException {
         BstVM vm = new BstVM("""

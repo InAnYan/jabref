@@ -14,8 +14,10 @@ import org.jabref.model.entry.types.StandardEntryType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-/// Mapping between Msbib and biblatex All Fields: <a href = "https://msdn.microsoft.com/de-de/library/office/documentformat.openxml.bibliography">List
-/// of all MSBib fields</a>
+/**
+ * Mapping between Msbib and biblatex All Fields: <a href = "https://msdn.microsoft.com/de-de/library/office/documentformat.openxml.bibliography">List
+ * of all MSBib fields</a>
+ */
 public class MSBibMapping {
 
     private static final String BIBTEX_PREFIX = "BIBTEX_";
@@ -163,18 +165,22 @@ public class MSBibMapping {
         return BIB_ENTRYTYPE_MAPPING.getOrDefault(bibtexType, MSBibEntryType.Misc);
     }
 
-    /// <a href="http://www.microsoft.com/globaldev/reference/lcid-all.mspx">All LCID codes</a>
-    /// 
-    /// @param language The language to transform
-    /// @return 1033 (american english) as default. LCID otherwise.
+    /**
+     * <a href="http://www.microsoft.com/globaldev/reference/lcid-all.mspx">All LCID codes</a>
+     *
+     * @param language The language to transform
+     * @return 1033 (american english) as default. LCID otherwise.
+     */
     public static int getLCID(String language) {
         return LANG_TO_LCID.getOrDefault(language, 1033);
     }
 
-    /// <a href="http://www.microsoft.com/globaldev/reference/lcid-all.mspx">All LCID codes</a>
-    /// 
-    /// @param LCID The LCID to transform
-    /// @return "english" as default. Corresponding language from BiMap otherwise.
+    /**
+     * <a href="http://www.microsoft.com/globaldev/reference/lcid-all.mspx">All LCID codes</a>
+     *
+     * @param LCID The LCID to transform
+     * @return "english" as default. Corresponding language from BiMap otherwise.
+     */
     public static String getLanguage(int LCID) {
         return LANG_TO_LCID.inverse().getOrDefault(LCID, "english");
     }

@@ -8,7 +8,9 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import com.tobiasdiez.easybind.PreboundBinding;
 
-/// Similar to {@link com.tobiasdiez.easybind.monadic.MonadicObservableValue}
+/**
+ * Similar to {@link com.tobiasdiez.easybind.monadic.MonadicObservableValue}
+ */
 public class OptionalObjectProperty<T> extends SimpleObjectProperty<Optional<T>> {
 
     private OptionalObjectProperty(Optional<T> initialValue) {
@@ -19,8 +21,10 @@ public class OptionalObjectProperty<T> extends SimpleObjectProperty<Optional<T>>
         return new OptionalObjectProperty<>(Optional.empty());
     }
 
-    /// Returns a new ObservableValue that holds the value held by this
-    /// ObservableValue, or `other` when this ObservableValue is empty.
+    /**
+     * Returns a new ObservableValue that holds the value held by this
+     * ObservableValue, or {@code other} when this ObservableValue is empty.
+     */
     public ObjectBinding<T> orElseOpt(T other) {
         return new PreboundBinding<>(this) {
             @Override

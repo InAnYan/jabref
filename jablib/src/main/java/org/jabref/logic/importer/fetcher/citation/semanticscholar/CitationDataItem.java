@@ -1,6 +1,8 @@
 package org.jabref.logic.importer.fetcher.citation.semanticscholar;
 
-/// Used for GSON
+/**
+ * Used for GSON
+ */
 public class CitationDataItem {
     private PaperDetails citingPaper;
 

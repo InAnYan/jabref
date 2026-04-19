@@ -2,19 +2,21 @@ package org.jabref.logic.ai.util;
 
 import jakarta.annotation.Nullable;
 
-/// Cleans raw LLM response strings by extracting content from the last
-/// fenced code block (``` ... ```) if present, or simply trimming whitespace.
-/// 
-/// Rules:
-/// <ol>
-/// - If the response contains no ``` fences → return the string stripped of
-/// leading/trailing whitespace.
-/// - If one or more ``` fences exist → find the *last* complete block,
-/// strip the optional language label on the opening fence (e.g. ````json`,
-/// ````markdown`), and return the inner content trimmed.
-/// - If the last fence is unclosed (no matching closing `````) → treat
-/// everything after the opening fence line as the content.
-/// </ol>
+/**
+ * Cleans raw LLM response strings by extracting content from the last
+ * fenced code block (``` ... ```) if present, or simply trimming whitespace.
+ *
+ * <p>Rules:
+ * <ol>
+ *   <li>If the response contains no ``` fences → return the string stripped of
+ *       leading/trailing whitespace.</li>
+ *   <li>If one or more ``` fences exist → find the <em>last</em> complete block,
+ *       strip the optional language label on the opening fence (e.g. {@code ```json},
+ *       {@code ```markdown}), and return the inner content trimmed.</li>
+ *   <li>If the last fence is unclosed (no matching closing {@code ```}) → treat
+ *       everything after the opening fence line as the content.</li>
+ * </ol>
+ */
 public final class LlmResponseCleaner {
     private static final String FENCE = "```";
 
@@ -22,10 +24,12 @@ public final class LlmResponseCleaner {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
     }
 
-    /// Cleans the given LLM response string according to the rules above.
-    /// 
-    /// @param response the raw LLM response; may be `null`
-    /// @return the cleaned string, never `null`
+    /**
+     * Cleans the given LLM response string according to the rules above.
+     *
+     * @param response the raw LLM response; may be {@code null}
+     * @return the cleaned string, never {@code null}
+     */
     public static String clean(@Nullable String response) {
         if (response == null) {
             return "";
@@ -75,11 +79,13 @@ public final class LlmResponseCleaner {
         return content.strip();
     }
     
-    /// Returns the start index of the last "opening" ``` in the string.
-    /// 
-    /// We treat every ``` as a potential opener/closer pair. Walking through the
-    /// string we toggle a flag: the first ``` opens a block, the next closes it, etc.
-    /// We remember the start index of each opener and return the last one seen.
+    /**
+     * Returns the start index of the last "opening" ``` in the string.
+     *
+     * <p>We treat every ``` as a potential opener/closer pair. Walking through the
+     * string we toggle a flag: the first ``` opens a block, the next closes it, etc.
+     * We remember the start index of each opener and return the last one seen.
+     */
     private static int findLastOpener(String s) {
         int lastOpener = -1;
         boolean inBlock = false;

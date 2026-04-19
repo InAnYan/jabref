@@ -5,7 +5,9 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/// Test case that verifies the functionalities of the formatter AuthorLastFirstAbbreviator.
+/**
+ * Test case that verifies the functionalities of the formatter AuthorLastFirstAbbreviator.
+ */
 class AuthorLastFirstAbbreviatorTest {
 
     private final AuthorLastFirstAbbreviator abbreviator = new AuthorLastFirstAbbreviator();

@@ -23,7 +23,9 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-/// Currently used for debugging only
+/**
+ * Currently used for debugging only
+ */
 @AllowedToUseStandardStreams("Used for debugging only")
 public class XMLUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(XMLUtil.class);
@@ -31,7 +33,9 @@ public class XMLUtil {
     private XMLUtil() {
     }
 
-    /// Prints out the document to standard out. Used to generate files for test cases.
+    /**
+     * Prints out the document to standard out. Used to generate files for test cases.
+     */
     public static void printDocument(Document doc) {
         try {
             DOMSource domSource = new DOMSource(doc);
@@ -51,11 +55,13 @@ public class XMLUtil {
         return n.getLength() == 0 ? List.of() : new NodeListWrapper(n);
     }
 
-    /// Gets the content of a subnode.
-    /// For example,
-    /// <pre>{@code <item>
-    /// <nodeName>content</nodeName>
-    /// </item>}</pre>
+    /**
+     * Gets the content of a subnode.
+     * For example,
+     * <pre>{@code <item>
+     *     <nodeName>content</nodeName>
+     * </item>}</pre>
+     */
     public static Optional<String> getNodeContent(Node item, String nodeName) {
         if (item.getNodeType() != Node.ELEMENT_NODE) {
             return Optional.empty();
@@ -69,20 +75,24 @@ public class XMLUtil {
         }
     }
 
-    /// Gets the content of an attribute.
-    /// For example,
-    /// `<item attributeName="content" />`
+    /**
+     * Gets the content of an attribute.
+     * For example,
+     * {@code <item attributeName="content" />}
+     */
     public static Optional<String> getAttributeContent(Node item, String attributeName) {
         NamedNodeMap attributes = item.getAttributes();
         return Optional.ofNullable(attributes.getNamedItem(attributeName)).map(Node::getTextContent);
     }
 
-    /// Gets a list of subnodes with the specified tag name.
-    /// For example,
-    /// <pre>{@code <item>
-    /// <node>first hit</node>
-    /// <node>second hit</node>
-    /// </item>}</pre>
+    /**
+     * Gets a list of subnodes with the specified tag name.
+     * For example,
+     * <pre>{@code <item>
+     *     <node>first hit</node>
+     *     <node>second hit</node>
+     * </item>}</pre>
+     */
     public static List<Node> getNodesByName(Node item, String nodeName) {
         if (item.getNodeType() != Node.ELEMENT_NODE) {
             return List.of();
@@ -91,12 +101,14 @@ public class XMLUtil {
         return asList(nodes);
     }
 
-    /// Gets a the first subnode with the specified tag name.
-    /// For example,
-    /// <pre>{@code <item>
-    /// <node>hit</node>
-    /// <node>second hit, but not returned</node>
-    /// </item>}</pre>
+    /**
+     * Gets a the first subnode with the specified tag name.
+     * For example,
+     * <pre>{@code <item>
+     *     <node>hit</node>
+     *     <node>second hit, but not returned</node>
+     * </item>}</pre>
+     */
     public static Optional<Node> getNode(Node item, String nodeName) {
         return getNodesByName(item, nodeName).stream().findFirst();
     }

@@ -25,9 +25,11 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 
 public class SlrGitHandler extends GitHandler {
 
-    /// Initialize the handler for the given repository
-    /// 
-    /// @param repositoryPath The root of the initialized git repository
+    /**
+     * Initialize the handler for the given repository
+     *
+     * @param repositoryPath The root of the initialized git repository
+     */
     public SlrGitHandler(Path repositoryPath) {
         super(repositoryPath);
     }
@@ -41,10 +43,12 @@ public class SlrGitHandler extends GitHandler {
         this.createCommitOnCurrentBranch(patchMessage, false);
     }
 
-    /// Calculates the diff between the HEAD and the previous commit of the sourceBranch.
-    /// 
-    /// @param sourceBranch The name of the branch that is the target of the calculation
-    /// @return Returns the patch (diff) between the head of the sourceBranch and its previous commit HEAD^1
+    /**
+     * Calculates the diff between the HEAD and the previous commit of the sourceBranch.
+     *
+     * @param sourceBranch The name of the branch that is the target of the calculation
+     * @return Returns the patch (diff) between the head of the sourceBranch and its previous commit HEAD^1
+     */
     String calculatePatchOfNewSearchResults(String sourceBranch) throws IOException, GitAPIException {
         try (Git git = Git.open(this.repositoryPathAsFile)) {
             Optional<Ref> sourceBranchRef = getRefForBranch(sourceBranch);
@@ -78,13 +82,15 @@ public class SlrGitHandler extends GitHandler {
         }
     }
 
-    /// Applies the provided patch on the current branch
-    /// Ignores any changes made to the study definition file.
-    /// The reason for this is that the study definition file cannot be patched the same way as the bib files, as the
-    /// order of fields in the yml file matters.
-    /// 
-    /// @param patch the patch (diff) as a string
-    /// @return Returns a map where each file has its path as a key and the string contains the hunk of new results
+    /**
+     * Applies the provided patch on the current branch
+     * Ignores any changes made to the study definition file.
+     * The reason for this is that the study definition file cannot be patched the same way as the bib files, as the
+     * order of fields in the yml file matters.
+     *
+     * @param patch the patch (diff) as a string
+     * @return Returns a map where each file has its path as a key and the string contains the hunk of new results
+     */
     Map<Path, String> parsePatchForAddedEntries(String patch) throws IOException, GitAPIException {
         String[] tokens = patch.split("\n");
         // Tracks for each file the related diff. Represents each file by its relative path
@@ -127,8 +133,10 @@ public class SlrGitHandler extends GitHandler {
         return diffsPerFile;
     }
 
-    /// Applies for each file (specified as keys), the calculated patch (specified as the value)
-    /// The patch is inserted between the encoding and the contents of the bib files.
+    /**
+     * Applies for each file (specified as keys), the calculated patch (specified as the value)
+     * The patch is inserted between the encoding and the contents of the bib files.
+     */
     void applyPatch(Map<Path, String> patch) {
         patch.keySet().forEach(path -> {
             try {

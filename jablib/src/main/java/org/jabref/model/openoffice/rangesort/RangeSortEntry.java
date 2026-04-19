@@ -2,7 +2,9 @@ package org.jabref.model.openoffice.rangesort;
 
 import com.sun.star.text.XTextRange;
 
-/// A simple implementation of `RangeSortable`
+/**
+ * A simple implementation of {@code RangeSortable}
+ */
 public class RangeSortEntry<T> implements RangeSortable<T> {
 
     private XTextRange range;

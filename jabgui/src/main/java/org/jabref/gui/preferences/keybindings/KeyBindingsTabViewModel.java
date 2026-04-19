@@ -51,7 +51,9 @@ public class KeyBindingsTabViewModel implements PreferenceTabViewModel {
         keyBindingPresets.add(new NewEntryBindingPreset());
     }
 
-    /// Read all keybindings from the keybinding repository and create table keybinding models for them
+    /**
+     * Read all keybindings from the keybinding repository and create table keybinding models for them
+     */
     @Override
     public void setValues() {
         KeyBindingViewModel root = new KeyBindingViewModel(keyBindingRepository, KeyBindingCategory.FILE);
@@ -80,11 +82,13 @@ public class KeyBindingsTabViewModel implements PreferenceTabViewModel {
         }
     }
 
-    /// Searches for the term in the keybinding's localization, category, or key combination
-    /// 
-    /// @param keyBinding keybinding to search in
-    /// @param searchTerm term to search for
-    /// @return true if the term is found in the keybinding
+    /**
+     * Searches for the term in the keybinding's localization, category, or key combination
+     *
+     * @param keyBinding keybinding to search in
+     * @param searchTerm term to search for
+     * @return true if the term is found in the keybinding
+     */
     private boolean matchesSearchTerm(KeyBinding keyBinding, String searchTerm) {
         if (keyBinding.getLocalization().toLowerCase().contains(searchTerm) ||
                 keyBinding.getCategory().getName().toLowerCase().contains(searchTerm)) {

@@ -24,7 +24,9 @@ import org.jabref.model.entry.LinkedFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// Try to download fulltext PDF for selected entry(s) by following URL or DOI link.
+/**
+ * Try to download fulltext PDF for selected entry(s) by following URL or DOI link.
+ */
 public class DownloadFullTextAction extends SimpleCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadFullTextAction.class);
@@ -118,12 +120,14 @@ public class DownloadFullTextAction extends SimpleCommand {
         }
     }
 
-    /// This method attaches a linked file from a URL (if not already linked) to an entry using the key and value pair
-    /// from the findFullTexts map and then downloads the file into the given targetDirectory
-    /// 
-    /// @param databaseContext the active database
-    /// @param url             the url "key"
-    /// @param entry           the entry "value"
+    /**
+     * This method attaches a linked file from a URL (if not already linked) to an entry using the key and value pair
+     * from the findFullTexts map and then downloads the file into the given targetDirectory
+     *
+     * @param databaseContext the active database
+     * @param url             the url "key"
+     * @param entry           the entry "value"
+     */
     private void addLinkedFileFromURL(BibDatabaseContext databaseContext, URL url, BibEntry entry) {
         LinkedFile newLinkedFile = new LinkedFile(url, "");
 

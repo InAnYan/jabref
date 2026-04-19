@@ -88,7 +88,9 @@ public class CommentsTab extends FieldsEditorTab {
         return comments;
     }
 
-    /// Comment editors: three times size of button
+    /**
+     * Comment editors: three times size of button
+     */
     private void setCompressedRowLayout() {
         int numberOfComments = gridPane.getRowCount() - 1;
         double totalWeight = numberOfComments * 3 + 1;

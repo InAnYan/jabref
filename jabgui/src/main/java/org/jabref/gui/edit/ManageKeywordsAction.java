@@ -11,7 +11,9 @@ import com.airhacks.afterburner.injection.Injector;
 import static org.jabref.gui.actions.ActionHelper.needsDatabase;
 import static org.jabref.gui.actions.ActionHelper.needsEntriesSelected;
 
-/// An Action for launching keyword managing dialog
+/**
+ * An Action for launching keyword managing dialog
+ */
 public class ManageKeywordsAction extends SimpleCommand {
 
     private final StateManager stateManager;

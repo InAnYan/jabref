@@ -10,7 +10,9 @@ import com.sun.star.style.XStyle;
 import com.sun.star.style.XStyleFamiliesSupplier;
 import com.sun.star.text.XTextDocument;
 
-/// Styles in the document.
+/**
+ * Styles in the document.
+ */
 public class UnoStyle {
 
     public static final String CHARACTER_STYLES = "CharacterStyles";

@@ -100,9 +100,11 @@ public class JabRefFrameViewModel implements UiMessageHandler {
         }
     }
 
-    /// Quit JabRef
-    /// 
-    /// @return true if the user chose to quit; false otherwise
+    /**
+     * Quit JabRef
+     *
+     * @return true if the user chose to quit; false otherwise
+     */
     public boolean close() {
         // Ask if the user really wants to close, if there are still background tasks running
         // The background tasks may make changes themselves that need saving.
@@ -140,10 +142,12 @@ public class JabRefFrameViewModel implements UiMessageHandler {
         return true;
     }
 
-    /// Handles commands submitted by the command line or by the remote host to be executed in the ui
-    /// Needs to run in a certain order. E.g. databases have to be loaded before selecting an entry.
-    /// 
-    /// @param uiCommands to be handled
+    /**
+     * Handles commands submitted by the command line or by the remote host to be executed in the ui
+     * Needs to run in a certain order. E.g. databases have to be loaded before selecting an entry.
+     *
+     * @param uiCommands to be handled
+     */
     @Override
     public void handleUiCommands(List<UiCommand> uiCommands) {
         LOGGER.debug("Handling UI commands {}", uiCommands);

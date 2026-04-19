@@ -1,6 +1,8 @@
 package org.jabref.model.openoffice.style;
 
-/// Identifies a citation group in a document.
+/**
+ * Identifies a citation group in a document.
+ */
 public class CitationGroupId {
     String groupId;
 
@@ -8,7 +10,9 @@ public class CitationGroupId {
         this.groupId = groupId;
     }
 
-    /// CitationEntry needs some string identifying the group that it can pass back later.
+    /**
+     * CitationEntry needs some string identifying the group that it can pass back later.
+     */
     public String citationGroupIdAsString() {
         return groupId;
     }

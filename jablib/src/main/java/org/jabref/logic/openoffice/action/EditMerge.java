@@ -36,7 +36,9 @@ public class EditMerge {
     private EditMerge() {
     }
 
-    /// @return true if modified document
+    /**
+     * @return true if modified document
+     */
     public static boolean mergeCitationGroups(XTextDocument doc, OOFrontend frontend, JStyle style)
             throws
             CreationException,
@@ -91,8 +93,10 @@ public class EditMerge {
         return madeModifications;
     }
 
-    /// @param group       A list of consecutive citation groups only separated by spaces.
-    /// @param groupCursor A cursor covering the XTextRange of each entry in group (and the spaces between them)
+    /**
+     * @param group       A list of consecutive citation groups only separated by spaces.
+     * @param groupCursor A cursor covering the XTextRange of each entry in group (and the spaces between them)
+     */
     private record JoinableGroupData(List<CitationGroup> group, XTextCursor groupCursor) {
     }
 
@@ -131,11 +135,13 @@ public class EditMerge {
         }
     }
 
-    /// Decide if group could be added to state.currentGroup
-    /// 
-    /// @param group        The CitationGroup to test
-    /// @param currentRange The XTextRange corresponding to group.
-    /// @return false if cannot add, true if can.  If returned true, then state.cursorBetween and state.currentGroupCursor are expanded to end at the start of currentRange.
+    /**
+     * Decide if group could be added to state.currentGroup
+     *
+     * @param group        The CitationGroup to test
+     * @param currentRange The XTextRange corresponding to group.
+     * @return false if cannot add, true if can.  If returned true, then state.cursorBetween and state.currentGroupCursor are expanded to end at the start of currentRange.
+     */
     private static boolean checkAddToGroup(ScanState state, CitationGroup group, XTextRange currentRange) {
         if (state.currentGroup.isEmpty()) {
             return false;
@@ -227,7 +233,9 @@ public class EditMerge {
         return couldExpand;
     }
 
-    /// Add group to state.currentGroup Set state.cursorBetween to start at currentRange.getEnd() Expand state.currentGroupCursor to also cover currentRange Set state.prev to group, state.prevRange to currentRange
+    /**
+     * Add group to state.currentGroup Set state.cursorBetween to start at currentRange.getEnd() Expand state.currentGroupCursor to also cover currentRange Set state.prev to group, state.prevRange to currentRange
+     */
     private static void addToCurrentGroup(ScanState state, CitationGroup group, XTextRange currentRange) {
         final boolean isNewGroup = state.currentGroup.isEmpty();
         if (!isNewGroup) {
@@ -263,7 +271,9 @@ public class EditMerge {
         state.prevRange = currentRange;
     }
 
-    /// Scan the document for joinable groups. Return those found.
+    /**
+     * Scan the document for joinable groups. Return those found.
+     */
     private static List<JoinableGroupData> scan(XTextDocument doc, OOFrontend frontend)
             throws
             NoDocumentException,

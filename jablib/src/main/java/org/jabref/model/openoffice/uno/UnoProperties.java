@@ -14,7 +14,9 @@ import com.sun.star.beans.XPropertySetInfo;
 import com.sun.star.lang.WrappedTargetException;
 import org.jspecify.annotations.NonNull;
 
-/// Utilities for properties.
+/**
+ * Utilities for properties.
+ */
 public class UnoProperties {
 
     private UnoProperties() {

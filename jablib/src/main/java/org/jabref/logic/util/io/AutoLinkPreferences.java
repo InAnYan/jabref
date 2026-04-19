@@ -31,7 +31,9 @@ public class AutoLinkPreferences {
         this.keywordSeparator = keywordSeparatorProperty;
     }
 
-    /// For testing purpose
+    /**
+     * For testing purpose
+     */
     public AutoLinkPreferences(CitationKeyDependency citationKeyDependency,
                                String regularExpression,
                                boolean askAutoNamingPdfs,

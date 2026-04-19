@@ -30,16 +30,18 @@ import org.jabref.model.search.query.SearchQuery;
 
 import com.tobiasdiez.easybind.EasyBinding;
 
-/// This class manages the GUI-state of JabRef, including:
-/// 
-/// 
-/// - currently selected database
-/// - currently selected group
-/// - active search
-/// - active number of search results
-/// - focus owner
-/// - dialog window sizes/positions
-/// 
+/**
+ * This class manages the GUI-state of JabRef, including:
+ *
+ * <ul>
+ *   <li>currently selected database</li>
+ *   <li>currently selected group</li>
+ *   <li>active search</li>
+ *   <li>active number of search results</li>
+ *   <li>focus owner</li>
+ *   <li>dialog window sizes/positions</li>
+ * </ul>
+ */
 public interface StateManager extends SrvStateManager {
 
     ObservableList<SidePaneType> getVisibleSidePaneComponents();

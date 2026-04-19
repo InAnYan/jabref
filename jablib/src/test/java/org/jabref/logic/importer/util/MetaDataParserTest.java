@@ -42,7 +42,9 @@ public class MetaDataParserTest {
         assertEquals(expected, MetaDataParser.parseDirectory(input));
     }
 
-    /// In case of any change, copy the content to {@link MetaDataSerializerTest#serializeCustomizedEntryType()}
+    /**
+     * In case of any change, copy the content to {@link MetaDataSerializerTest#serializeCustomizedEntryType()}
+     */
     public static Stream<Arguments> parseCustomizedEntryType() {
         return Stream.of(
                 Arguments.of(

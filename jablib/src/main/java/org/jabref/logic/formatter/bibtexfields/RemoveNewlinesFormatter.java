@@ -7,7 +7,9 @@ import org.jabref.logic.l10n.Localization;
 
 import org.jspecify.annotations.NonNull;
 
-/// Removes all line breaks in the string.
+/**
+ * Removes all line breaks in the string.
+ */
 public class RemoveNewlinesFormatter extends Formatter {
     private static final Pattern LINEBREAKS = Pattern.compile("\\R");
 

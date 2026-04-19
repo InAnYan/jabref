@@ -13,8 +13,10 @@ import org.jabref.model.search.query.SearchQueryNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// In case the transformer contains state for a query transformation (such as the {@link IEEEQueryTransformer}), it has to be noted at the JavaDoc.
-/// Otherwise, a single instance QueryTransformer can be used.
+/**
+ * In case the transformer contains state for a query transformation (such as the {@link IEEEQueryTransformer}), it has to be noted at the JavaDoc.
+ * Otherwise, a single instance QueryTransformer can be used.
+ */
 public abstract class AbstractQueryTransformer {
     public static final String NO_EXPLICIT_FIELD = "default";
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractQueryTransformer.class);
@@ -23,8 +25,10 @@ public abstract class AbstractQueryTransformer {
     protected int startYear = Integer.MAX_VALUE;
     protected int endYear = Integer.MIN_VALUE;
 
-    /// Transforms a and b and c to (a AND b AND c), where
-    /// a, b, and c can be complex expressions.
+    /**
+     * Transforms a and b and c to (a AND b AND c), where
+     * a, b, and c can be complex expressions.
+     */
     protected Optional<String> transform(OperatorNode query) {
         String delimiter;
         if (query.op() == OperatorNode.Operator.OR) {
@@ -44,21 +48,27 @@ public abstract class AbstractQueryTransformer {
         return Optional.of(result);
     }
 
-    /// Returns the logical AND operator used by the library
-    /// Note: whitespaces have to be included around the operator
-    /// 
-    /// Example: `" AND "`
+    /**
+     * Returns the logical AND operator used by the library
+     * Note: whitespaces have to be included around the operator
+     * <p>
+     * Example: <code>" AND "</code>
+     */
     protected abstract String getLogicalAndOperator();
 
-    /// Returns the logical OR operator used by the library
-    /// Note: whitespaces have to be included around the operator
-    /// 
-    /// Example: `" OR "`
+    /**
+     * Returns the logical OR operator used by the library
+     * Note: whitespaces have to be included around the operator
+     * <p>
+     * Example: <code>" OR "</code>
+     */
     protected abstract String getLogicalOrOperator();
 
-    /// Returns the logical NOT operator used by the library
-    /// 
-    /// Example: `"!"`
+    /**
+     * Returns the logical NOT operator used by the library
+     * <p>
+     * Example: <code>"!"</code>
+     */
     protected abstract String getLogicalNotOperator();
 
     private Optional<String> transform(SearchQueryNode query) {
@@ -103,21 +113,31 @@ public abstract class AbstractQueryTransformer {
         return "doi:" + term;
     }
 
-    /// Handles the not modifier, all other cases are silently ignored
+    /**
+     * Handles the not modifier, all other cases are silently ignored
+     */
     private Optional<String> transform(NotNode query) {
         return transform(query.negatedNode()).map(s -> getLogicalNotOperator() + s);
     }
 
-    /// Return a string representation of the author fielded term
+    /**
+     * Return a string representation of the author fielded term
+     */
     protected abstract String handleAuthor(String author);
 
-    /// Return a string representation of the title fielded term
+    /**
+     * Return a string representation of the title fielded term
+     */
     protected abstract String handleTitle(String title);
 
-    /// Return a string representation of the journal fielded term
+    /**
+     * Return a string representation of the journal fielded term
+     */
     protected abstract String handleJournal(String journalTitle);
 
-    /// Return a string representation of the year fielded term
+    /**
+     * Return a string representation of the year fielded term
+     */
     protected abstract String handleYear(String year);
 
     /// Parses the year range and fills startYear and endYear.
@@ -135,10 +155,12 @@ public abstract class AbstractQueryTransformer {
         }
     }
 
-    /// Return a string representation of the year-range fielded term
-    /// Should follow the structure yyyy-yyyy
-    /// 
-    /// Example: `2015-2021`
+    /**
+     * Return a string representation of the year-range fielded term
+     * Should follow the structure yyyy-yyyy
+     * <p>
+     * Example: <code>2015-2021</code>
+     */
     protected String handleYearRange(String yearRange) {
         parseYearRange(yearRange);
         if (endYear == Integer.MAX_VALUE) {
@@ -152,9 +174,11 @@ public abstract class AbstractQueryTransformer {
         return resultBuilder.toString();
     }
 
-    /// Return a string representation of the un-fielded (default fielded) term
-    /// 
-    /// Default implementation: just return the term (in quotes if a space is contained)
+    /**
+     * Return a string representation of the un-fielded (default fielded) term
+     * <p>
+     * Default implementation: just return the term (in quotes if a space is contained)
+     */
     protected Optional<String> handleUnFieldedTerm(String term) {
         return Optional.of(StringUtil.quoteStringIfSpaceIsContained(term));
     }
@@ -167,8 +191,10 @@ public abstract class AbstractQueryTransformer {
         return "%s%s%s".formatted(fieldAsString, separator, StringUtil.quoteStringIfSpaceIsContained(term));
     }
 
-    /// Return a string representation of the provided field
-    /// If it is not supported return an empty optional.
+    /**
+     * Return a string representation of the provided field
+     * If it is not supported return an empty optional.
+     */
     protected Optional<String> handleOtherField(String fieldAsString, String term) {
         return Optional.of(createKeyValuePair(fieldAsString, term));
     }
@@ -192,20 +218,24 @@ public abstract class AbstractQueryTransformer {
         }
     }
 
-    /// Parses the given query string into a complex query using lucene.
-    /// Note: For unique fields, the alphabetically and numerically first instance in the query string is used in the complex query.
-    /// 
-    /// @param queryNode The first search node
-    /// @return A query string containing all fields that are contained in the original lucene query and
-    /// that are expressible in the library specific query language, other information either is discarded or
-    /// stored as part of the state of the transformer if it can be used e.g. as a URL parameter for the query.
+    /**
+     * Parses the given query string into a complex query using lucene.
+     * Note: For unique fields, the alphabetically and numerically first instance in the query string is used in the complex query.
+     *
+     * @param queryNode The first search node
+     * @return A query string containing all fields that are contained in the original lucene query and
+     * that are expressible in the library specific query language, other information either is discarded or
+     * stored as part of the state of the transformer if it can be used e.g. as a URL parameter for the query.
+     */
     public Optional<String> transformSearchQuery(BaseQueryNode queryNode) {
         Optional<String> transformedQuery = transform(queryNode);
         transformedQuery = transformedQuery.map(this::removeOuterBraces);
         return transformedQuery;
     }
 
-    /// Removes the outer braces as they are unnecessary
+    /**
+     * Removes the outer braces as they are unnecessary
+     */
     private String removeOuterBraces(String query) {
         if (query.startsWith("(") && query.endsWith(")")) {
             return query.substring(1, query.length() - 1);

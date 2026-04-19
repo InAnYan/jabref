@@ -15,7 +15,9 @@ import org.jabref.model.entry.BibEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// Convenience class for getting BibTeX entries from the BibSonomy scraper, from an URL pointing to an entry.
+/**
+ * Convenience class for getting BibTeX entries from the BibSonomy scraper, from an URL pointing to an entry.
+ */
 public class BibsonomyScraper {
 
     private static final String BIBSONOMY_SCRAPER = "https://scraper.bibsonomy.org/service?url=";
@@ -26,7 +28,9 @@ public class BibsonomyScraper {
     private BibsonomyScraper() {
     }
 
-    /// Return a BibEntry by looking up the given url from the BibSonomy scraper.
+    /**
+     * Return a BibEntry by looking up the given url from the BibSonomy scraper.
+     */
     public static Optional<BibEntry> getEntry(String entryUrl, ImportFormatPreferences importFormatPreferences) {
         try {
             // Replace special characters by corresponding sequences:

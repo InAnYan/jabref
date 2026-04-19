@@ -268,7 +268,9 @@ public class SharedDatabaseLoginDialogViewModel extends AbstractViewModel {
         sharedDatabasePreferences.setAutosave(autosave.get());
     }
 
-    /// Fetches possibly saved data and configures the control elements respectively.
+    /**
+     * Fetches possibly saved data and configures the control elements respectively.
+     */
     private void applyPreferences() {
         Optional<String> sharedDatabaseType = sharedDatabasePreferences.getType();
         Optional<String> sharedDatabaseHost = sharedDatabasePreferences.getHost();

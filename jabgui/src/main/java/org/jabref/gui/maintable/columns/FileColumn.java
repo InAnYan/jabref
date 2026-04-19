@@ -27,8 +27,10 @@ import org.jabref.model.entry.LinkedFile;
 
 import org.jspecify.annotations.NonNull;
 
-/// A column that draws a clickable symbol for either all the files of a defined file type
-/// or a joined column with all the files of any type
+/**
+ * A column that draws a clickable symbol for either all the files of a defined file type
+ * or a joined column with all the files of any type
+ */
 public class FileColumn extends MainTableColumn<List<LinkedFile>> {
 
     private final DialogService dialogService;
@@ -36,7 +38,9 @@ public class FileColumn extends MainTableColumn<List<LinkedFile>> {
     private final GuiPreferences preferences;
     private final TaskExecutor taskExecutor;
 
-    /// Creates a joined column for all the linked files.
+    /**
+     * Creates a joined column for all the linked files.
+     */
     public FileColumn(MainTableColumnModel model,
                       @NonNull BibDatabaseContext database,
                       DialogService dialogService,
@@ -73,7 +77,9 @@ public class FileColumn extends MainTableColumn<List<LinkedFile>> {
                 .install(this);
     }
 
-    /// Creates a column for all the linked files of a single file type.
+    /**
+     * Creates a column for all the linked files of a single file type.
+     */
     public FileColumn(MainTableColumnModel model,
                       @NonNull BibDatabaseContext database,
                       DialogService dialogService,

@@ -26,7 +26,9 @@ import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// @implNote SSL certificates are installed at {@link TrustStoreManager#configureTrustStore(Path)}
+/**
+ * @implNote SSL certificates are installed at {@link TrustStoreManager#configureTrustStore(Path)}
+ */
 public class TrustStoreManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TrustStoreManager.class);
@@ -99,12 +101,16 @@ public class TrustStoreManager {
         }
     }
 
-    /// Custom certificates are certificates with alias that ends with `[custom]`
+    /**
+     * Custom certificates are certificates with alias that ends with {@code [custom]}
+     */
     private Boolean isCustomCertificate(String alias) {
         return alias.endsWith("[custom]");
     }
 
-    /// Deletes all custom certificates, Custom certificates are certificates with alias that ends with `[custom]`
+    /**
+     * Deletes all custom certificates, Custom certificates are certificates with alias that ends with {@code [custom]}
+     */
     public void clearCustomCertificates() {
         aliases().stream().filter(this::isCustomCertificate).forEach(this::deleteCertificate);
         flush();
@@ -128,10 +134,12 @@ public class TrustStoreManager {
         return null;
     }
 
-    /// This method checks to see if the truststore is present in `storePath`,
-    /// and if it isn't, it copies the default JDK truststore to the specified location.
-    /// 
-    /// @param storePath path of the truststore
+    /**
+     * This method checks to see if the truststore is present in {@code storePath},
+     * and if it isn't, it copies the default JDK truststore to the specified location.
+     *
+     * @param storePath path of the truststore
+     */
     public static void createTruststoreFileIfNotExist(Path storePath) {
         try {
             LOGGER.debug("Trust store path: {}", storePath.toAbsolutePath());
@@ -152,7 +160,9 @@ public class TrustStoreManager {
         }
     }
 
-    /// @implNote based on https://stackoverflow.com/a/62586564/3450689
+    /**
+     * @implNote based on https://stackoverflow.com/a/62586564/3450689
+     */
     private static void configureTrustStore(Path myStorePath) throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException,
             CertificateException, IOException {
         X509TrustManager jreTrustManager = getJreTrustManager();

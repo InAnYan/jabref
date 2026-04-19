@@ -61,7 +61,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/// Tests for reading can be found at {@link org.jabref.logic.importer.fileformat.BibtexImporterTest}
+/**
+ * Tests for reading can be found at {@link org.jabref.logic.importer.fileformat.BibtexImporterTest}
+ */
 class BibDatabaseWriterTest {
 
     private BibDatabaseWriter databaseWriter;

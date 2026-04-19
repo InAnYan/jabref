@@ -1,6 +1,8 @@
 package org.jabref.logic.importer.fetcher.transformers;
 
-/// Transforms the query to a lucene query string
+/**
+ * Transforms the query to a lucene query string
+ */
 public class DefaultSearchQueryTransformer extends AbstractQueryTransformer {
 
     @Override

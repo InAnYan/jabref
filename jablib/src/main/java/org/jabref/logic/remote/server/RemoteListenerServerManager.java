@@ -29,7 +29,9 @@ public class RemoteListenerServerManager implements AutoCloseable {
         }
     }
 
-    /// Acquire any resources needed for the server.
+    /**
+     * Acquire any resources needed for the server.
+     */
     public void open(RemoteMessageHandler messageHandler, int port) {
         if (isOpen()) {
             return;

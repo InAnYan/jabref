@@ -6,7 +6,9 @@ import java.util.Map;
 import org.jabref.logic.layout.LayoutFormatter;
 import org.jabref.logic.util.strings.XmlCharsMap;
 
-/// Changes {\^o} or {\^{o}} to ?
+/**
+ * Changes {\^o} or {\^{o}} to ?
+ */
 public class XMLChars implements LayoutFormatter {
 
     private static final XmlCharsMap XML_CHARS = new XmlCharsMap();

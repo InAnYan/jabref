@@ -16,7 +16,9 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-/// Converts a DOI to BibTeX
+/**
+ * Converts a DOI to BibTeX
+ */
 public class App {
     public static void main(String[] args) {
         String doi;

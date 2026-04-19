@@ -91,10 +91,12 @@ public class Layout {
         return layoutEntries.stream().map(LayoutEntry::getText).collect(Collectors.joining("\n"));
     }
 
-    /// Returns the processed bibtex entry. If the database argument is
-    /// null, no string references will be resolved. Otherwise all valid
-    /// string references will be replaced by the strings' contents. Even
-    /// recursive string references are resolved.
+    /**
+     * Returns the processed bibtex entry. If the database argument is
+     * null, no string references will be resolved. Otherwise all valid
+     * string references will be replaced by the strings' contents. Even
+     * recursive string references are resolved.
+     */
     public String doLayout(BibEntry bibtex, BibDatabase database) {
         StringBuilder builder = new StringBuilder(100);
 
@@ -113,10 +115,12 @@ public class Layout {
         return builder.toString();
     }
 
-    /// Returns the processed text. If the database argument is
-    /// null, no string references will be resolved. Otherwise, all valid
-    /// string references will be replaced by the strings' contents. Even
-    /// recursive string references are resolved.
+    /**
+     * Returns the processed text. If the database argument is
+     * null, no string references will be resolved. Otherwise, all valid
+     * string references will be replaced by the strings' contents. Even
+     * recursive string references are resolved.
+     */
     public String doLayout(BibDatabaseContext databaseContext, Charset encoding) {
         StringBuilder sb = new StringBuilder(100);
         String fieldText;

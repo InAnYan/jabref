@@ -35,11 +35,13 @@ import org.jspecify.annotations.Nullable;
 import static java.util.Comparator.comparingDouble;
 import static org.jabref.logic.ai.ingestion.logic.EmbeddingsCleaner.FILE_HASH_METADATA_KEY;
 
-/// A custom implementation of langchain4j's {@link EmbeddingStore} that uses a {@link MVStore} as an embedded database.
-/// 
-/// Every embedding has 3 fields: float array (the embedding itself), file hash where it was generated from, and the embedded
-/// string (the content).
-/// 
+/**
+ * A custom implementation of langchain4j's {@link EmbeddingStore} that uses a {@link MVStore} as an embedded database.
+ * <p>
+ * Every embedding has 3 fields: float array (the embedding itself), file hash where it was generated from, and the embedded
+ * string (the content).
+ * <p>
+ */
 public class MVStoreEmbeddingStore extends MVStoreBase implements EmbeddingStore<TextSegment> {
 
     private static final String FILE_HASH_MAP_NAME = "file-hashes";

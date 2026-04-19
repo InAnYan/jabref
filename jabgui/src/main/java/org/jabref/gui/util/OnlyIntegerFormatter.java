@@ -6,9 +6,11 @@ import java.util.regex.Pattern;
 import javafx.scene.control.TextFormatter;
 import javafx.util.converter.IntegerStringConverter;
 
-/// Formatter that only accepts integer.
-/// 
-/// More or less taken from http://stackoverflow.com/a/36749659/873661
+/**
+ * Formatter that only accepts integer.
+ * <p>
+ * More or less taken from http://stackoverflow.com/a/36749659/873661
+ */
 public class OnlyIntegerFormatter extends TextFormatter<Integer> {
 
     public OnlyIntegerFormatter() {

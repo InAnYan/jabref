@@ -7,7 +7,9 @@ import org.jabref.model.entry.field.Field;
 
 import org.jspecify.annotations.NonNull;
 
-/// Stores all words in the given field.
+/**
+ * Stores all words in the given field.
+ */
 public class WordSuggestionProvider extends StringSuggestionProvider {
 
     private final Field field;

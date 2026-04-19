@@ -21,7 +21,9 @@ import org.jabref.model.util.ListUtil;
 
 import org.jspecify.annotations.NonNull;
 
-/// Matches entries if a given field contains a specified word.
+/**
+ * Matches entries if a given field contains a specified word.
+ */
 @AllowedToUseLogic("Uses StringUtil temporarily")
 public class WordKeywordGroup extends KeywordGroup implements GroupEntryChanger {
 

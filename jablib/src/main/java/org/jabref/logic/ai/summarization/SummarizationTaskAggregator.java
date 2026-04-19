@@ -10,18 +10,20 @@ import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.entry.BibEntry;
 
-/// Deduplicates summarization tasks across the application lifetime.
-/// 
-/// Exactly one {@link GenerateSummaryTask} is created per {@link BibEntry} object reference
-/// ({@link BibEntry#getId()} is the tree key). A second call for the same entry while a task is
-/// still running returns the existing task — no duplicate generation.
-/// 
-/// When a task completes successfully, the result is written to the {@link InMemorySummaryCache}
-/// so that callers who were not listening at that moment can still retrieve it. The task is then
-/// removed from the internal map.
-/// 
-/// All public methods are `synchronized` to make them safe for concurrent access from
-/// both the JavaFX thread and background task threads.
+/**
+ * Deduplicates summarization tasks across the application lifetime.
+ *
+ * <p>Exactly one {@link GenerateSummaryTask} is created per {@link BibEntry} object reference
+ * ({@link BibEntry#getId()} is the tree key). A second call for the same entry while a task is
+ * still running returns the existing task — no duplicate generation.
+ *
+ * <p>When a task completes successfully, the result is written to the {@link InMemorySummaryCache}
+ * so that callers who were not listening at that moment can still retrieve it. The task is then
+ * removed from the internal map.
+ *
+ * <p>All public methods are {@code synchronized} to make them safe for concurrent access from
+ * both the JavaFX thread and background task threads.
+ */
 public class SummarizationTaskAggregator {
 
     private final TaskExecutor taskExecutor;
@@ -35,14 +37,16 @@ public class SummarizationTaskAggregator {
         this.inMemoryCache = inMemoryCache;
     }
 
-    /// Starts a {@link GenerateSummaryTask} for the entry in `request`, or returns the
-    /// already-running task if one exists for that entry.
-    /// 
-    /// `computeIfAbsent` is the deduplication mechanism — only one task per entry at a time.
-    /// 
-    /// **Important:** if you attach a status listener to the returned task, also check
-    /// {@link org.jabref.logic.ai.util.TrackedBackgroundTask#getStatus()} immediately after
-    /// attaching, in case the task already finished before the listener was registered.
+    /**
+     * Starts a {@link GenerateSummaryTask} for the entry in {@code request}, or returns the
+     * already-running task if one exists for that entry.
+     *
+     * <p>{@code computeIfAbsent} is the deduplication mechanism — only one task per entry at a time.
+     *
+     * <p><b>Important:</b> if you attach a status listener to the returned task, also check
+     * {@link org.jabref.logic.ai.util.TrackedBackgroundTask#getStatus()} immediately after
+     * attaching, in case the task already finished before the listener was registered.
+     */
     public synchronized GenerateSummaryTask start(GenerateSummaryTaskRequest request) {
         Optional<GenerateSummaryTask> task = getTask(request.fullEntry().entry());
 
@@ -78,8 +82,10 @@ public class SummarizationTaskAggregator {
         return task;
     }
 
-    /// Returns the currently running {@link GenerateSummaryTask} for `entry`, or
-    /// {@link Optional#empty()} if no task is active for that entry.
+    /**
+     * Returns the currently running {@link GenerateSummaryTask} for {@code entry}, or
+     * {@link Optional#empty()} if no task is active for that entry.
+     */
     public synchronized Optional<GenerateSummaryTask> getTask(BibEntry entry) {
         return Optional.ofNullable(tasks.get(entry));
     }

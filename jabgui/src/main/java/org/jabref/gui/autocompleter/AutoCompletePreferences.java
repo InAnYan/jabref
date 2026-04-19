@@ -45,7 +45,9 @@ public class AutoCompletePreferences {
         this.shouldAutoComplete.set(shouldAutoComplete);
     }
 
-    /// Returns how the first names are handled.
+    /**
+     * Returns how the first names are handled.
+     */
     public AutoCompleteFirstNameMode getFirstNameMode() {
         return firstNameMode.get();
     }
@@ -70,9 +72,11 @@ public class AutoCompletePreferences {
         this.nameFormat.set(nameFormat);
     }
 
-    /// Returns the list of fields for which autocomplete is enabled
-    /// 
-    /// @return List of field names
+    /**
+     * Returns the list of fields for which autocomplete is enabled
+     *
+     * @return List of field names
+     */
     public ObservableSet<Field> getCompleteFields() {
         return completeFields;
     }

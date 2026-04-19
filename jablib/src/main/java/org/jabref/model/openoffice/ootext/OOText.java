@@ -2,9 +2,11 @@ package org.jabref.model.openoffice.ootext;
 
 import org.jspecify.annotations.NonNull;
 
-/// Text with HTML-like markup as understood by OOTextIntoOO.write
-/// 
-/// Some of the tags can be added using OOFormat methods. Others come from the layout engine, either by interpreting LaTeX markup or from settings in the jstyle file.
+/**
+ * Text with HTML-like markup as understood by OOTextIntoOO.write
+ * <p>
+ * Some of the tags can be added using OOFormat methods. Others come from the layout engine, either by interpreting LaTeX markup or from settings in the jstyle file.
+ */
 public class OOText {
 
     private final String data;
@@ -13,7 +15,9 @@ public class OOText {
         this.data = data;
     }
 
-    /// @return null for null input, otherwise the argument wrapped into a new OOText
+    /**
+     * @return null for null input, otherwise the argument wrapped into a new OOText
+     */
     public static OOText fromString(String string) {
         if (string == null) {
             return null;
@@ -21,7 +25,9 @@ public class OOText {
         return new OOText(string);
     }
 
-    /// @return null for null input, otherwise the string inside the argument
+    /**
+     * @return null for null input, otherwise the string inside the argument
+     */
     public static String toString(OOText ootext) {
         if (ootext == null) {
             return null;

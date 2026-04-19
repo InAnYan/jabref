@@ -7,7 +7,9 @@ import org.jabref.model.entry.field.Field;
 
 import org.jspecify.annotations.NonNull;
 
-/// Stores the full content of one field.
+/**
+ * Stores the full content of one field.
+ */
 class FieldValueSuggestionProvider extends StringSuggestionProvider {
 
     private final Field field;

@@ -11,7 +11,9 @@ import org.jabref.model.entry.types.EntryTypeFactory;
  */
 public class EntryTypeFormatter implements LayoutFormatter {
 
-    /// Input: entry type as a string
+    /**
+     * Input: entry type as a string
+     */
     @Override
     public String format(String entryType) {
         return EntryTypeFactory.parse(entryType).getDisplayName();
