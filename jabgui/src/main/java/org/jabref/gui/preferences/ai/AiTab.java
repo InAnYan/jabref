@@ -27,6 +27,8 @@ import org.jabref.logic.help.HelpFile;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.embeddings.PredefinedEmbeddingModel;
 import org.jabref.model.ai.llm.AiProvider;
+import org.jabref.model.ai.summarization.SummarizatorKind;
+import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
 import com.airhacks.afterburner.views.ViewLoader;
 import com.dlsc.gemsfx.EnhancedPasswordField;
@@ -52,6 +54,8 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private VBox expertSettingsPane;
     @FXML private TextField apiBaseUrlTextField;
     @FXML private SearchableComboBox<PredefinedEmbeddingModel> embeddingModelComboBox;
+    @FXML private ComboBox<SummarizatorKind> summarizationAlgorithmComboBox;
+    @FXML private ComboBox<TokenEstimatorKind> tokenEstimationAlgorithmComboBox;
     // [impl->req~ai.expert-settings.chat-inference-global~1]
     @FXML private TextField temperatureTextField;
     @FXML private IntegerInputField contextWindowSizeTextField;
@@ -66,8 +70,8 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private Tab userMessageForChattingTab;
     @FXML private Tab summarizationChunkSystemMessageTab;
     @FXML private Tab summarizationCombineSystemMessageTab;
+    @FXML private Tab summarizationFullDocumentSystemMessageTab;
     @FXML private Tab citationParsingSystemMessageTab;
-    @FXML private Tab citationParsingUserMessageTab;
     @FXML private Tab markdownChatExportTemplateTab;
     @FXML private Tab followUpQuestionsTemplateTab;
     // [impl->req~ai.chat.customize-system-prompt~1]
@@ -80,7 +84,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private TextArea summarizationChunkUserMessageTextArea;
     // [impl->req~ai.summarization.algorithms.chunked.system-prompt-combine~1]
     @FXML private TextArea summarizationCombineSystemMessageTextArea;
-    @FXML private TextArea summarizationCombineUserMessageTextArea;
+    @FXML private TextArea summarizationFullDocumentSystemMessageTextArea;
     // [impl->req~ai.citation-parsing.system-prompt-config~1]
     @FXML private TextArea citationParsingSystemMessageTextArea;
     @FXML private TextArea markdownChatExportTemplateTextArea;
@@ -143,9 +147,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         systemMessageTextArea.disableProperty().bind(aiDisabled);
         userMessageTextArea.disableProperty().bind(aiDisabled);
         summarizationChunkSystemMessageTextArea.disableProperty().bind(aiDisabled);
-        summarizationChunkUserMessageTextArea.disableProperty().bind(aiDisabled);
         summarizationCombineSystemMessageTextArea.disableProperty().bind(aiDisabled);
-        summarizationCombineUserMessageTextArea.disableProperty().bind(aiDisabled);
         citationParsingSystemMessageTextArea.disableProperty().bind(aiDisabled);
         markdownChatExportTemplateTextArea.disableProperty().bind(aiDisabled);
         followUpQuestionsTemplateTextArea.disableProperty().bind(aiDisabled);
@@ -202,6 +204,20 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
                 contextWindowSizeTextField.valueProperty().set(newValue == null ? 0 : newValue.intValue()));
 
         contextWindowSizeTextField.disableProperty().bind(viewModel.disableExpertSettingsProperty());
+
+        new ViewModelListCellFactory<SummarizatorKind>()
+                .withText(SummarizatorKind::getDisplayName)
+                .install(summarizationAlgorithmComboBox);
+        summarizationAlgorithmComboBox.setItems(viewModel.summarizationAlgorithmsProperty());
+        summarizationAlgorithmComboBox.valueProperty().bindBidirectional(viewModel.summarizationAlgorithmProperty());
+        summarizationAlgorithmComboBox.disableProperty().bind(viewModel.disableExpertSettingsProperty());
+
+        new ViewModelListCellFactory<TokenEstimatorKind>()
+                .withText(TokenEstimatorKind::getDisplayName)
+                .install(tokenEstimationAlgorithmComboBox);
+        tokenEstimationAlgorithmComboBox.setItems(viewModel.tokenEstimationAlgorithmsProperty());
+        tokenEstimationAlgorithmComboBox.valueProperty().bindBidirectional(viewModel.tokenEstimationAlgorithmProperty());
+        tokenEstimationAlgorithmComboBox.disableProperty().bind(viewModel.disableExpertSettingsProperty());
 
         temperatureTextField.textProperty().bindBidirectional(viewModel.temperatureProperty());
         temperatureTextField.disableProperty().bind(viewModel.disableExpertSettingsProperty());
@@ -321,6 +337,8 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
             viewModel.resetSummarizationChunkSystemMessageTemplate();
         } else if (selectedTab == summarizationCombineSystemMessageTab) {
             viewModel.resetSummarizationCombineSystemMessageTemplate();
+        } else if (selectedTab == summarizationFullDocumentSystemMessageTab) {
+            viewModel.resetSummarizationFullDocumentSystemMessageTemplate();
         } else if (selectedTab == citationParsingSystemMessageTab) {
             viewModel.resetCitationParsingSystemMessageTemplate();
         } else if (selectedTab == markdownChatExportTemplateTab) {

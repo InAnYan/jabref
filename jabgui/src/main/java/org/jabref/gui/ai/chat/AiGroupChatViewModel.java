@@ -2,9 +2,7 @@ package org.jabref.gui.ai.chat;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
@@ -25,11 +23,10 @@ import org.jabref.model.entry.BibEntry;
 public class AiGroupChatViewModel extends AbstractViewModel {
     public enum State {
         AI_TURNED_OFF,
-        NO_DATABASE_PATH,
         CHATTING
     }
 
-    private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.NO_DATABASE_PATH);
+    private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.AI_TURNED_OFF);
 
     private final ObjectProperty<GroupNodeViewModel> groupNode = new SimpleObjectProperty<>();
     private final ObjectProperty<BibDatabaseContext> databaseContext = new SimpleObjectProperty<>();
@@ -37,37 +34,29 @@ public class AiGroupChatViewModel extends AbstractViewModel {
     private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
 
+    private final AiPreferences aiPreferences;
     private final InMemoryChatHistoryCache chatHistoryCache;
 
     public AiGroupChatViewModel(AiPreferences aiPreferences, AiService aiService) {
+        this.aiPreferences = aiPreferences;
         this.chatHistoryCache = aiService.getChatHistoryCache();
-
-        BooleanExpression databasePathPresent = BooleanExpression.booleanExpression(
-                databaseContext.map(BibDatabaseContext::getDatabasePath).map(Optional::isPresent)
-        );
 
         BindingsHelper.bindEnum(
                 state,
                 State.CHATTING,
 
                 Map.entry(State.AI_TURNED_OFF,
-                        aiPreferences.enableAiProperty().not()),
-
-                Map.entry(State.NO_DATABASE_PATH,
-                        databaseContext.isNotNull().and(databasePathPresent.not()))
+                        aiPreferences.enableAiProperty().not())
         );
 
-        BindingsHelper.listenWhen(
-                groupNode, databaseContext,
-                groupNode.isNotNull()
-                         .and(databaseContext.isNotNull())
-                         .and(aiPreferences.enableAiProperty())
-                         .and(databasePathPresent),
-                this::loadGroupChat
-        );
+        BindingsHelper.listen(this::loadGroupChat, groupNode, databaseContext);
     }
 
     private void loadGroupChat() {
+        if (groupNode.get() == null || databaseContext.get() == null || !aiPreferences.getEnableAi()) {
+            return;
+        }
+
         BibDatabaseContext context = databaseContext.get();
         GroupNodeViewModel group = groupNode.get();
 

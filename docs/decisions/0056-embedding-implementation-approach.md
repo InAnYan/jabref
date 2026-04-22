@@ -4,6 +4,8 @@ parent: Decision Records
 ---
 # Implementation of embeddings in JabRef
 
+<!-- dsn->feat~ai.answer-engines.embeddings-search~1 -->
+
 ## Context and Problem Statement
 
 JabRef needs to implement embedding models to perform Retrieval-Augmented Generation (RAG) by generating embeddings for chunks of papers. The AI ecosystem in Java is not as diverse or developed as it is in Python, which limits the available tools for this task. 

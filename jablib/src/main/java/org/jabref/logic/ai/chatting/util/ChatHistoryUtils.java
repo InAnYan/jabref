@@ -20,15 +20,17 @@ public final class ChatHistoryUtils {
 
     /// Rewinds history to the point before the specified message and returns the user content to be re-sent.
     ///
-    /// @return the content to regenerate, or null if the message was not found
-    public static String regenerate(List<ChatMessage> chatHistory, String id) {
+    /// Modifies the chat history in-place.
+    ///
+    /// @return the content to regenerate or empty if the message was not found
+    public static Optional<String> regenerate(List<ChatMessage> chatHistory, String id) {
         Optional<ChatMessage> recordOpt = chatHistory
                 .stream()
                 .filter(message -> Objects.equals(message.id(), id))
                 .findFirst();
 
         if (recordOpt.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
 
         ChatMessage message = recordOpt.get();
@@ -51,13 +53,13 @@ public final class ChatHistoryUtils {
                 !historyMessage.timestamp().isBefore(finalCutoffTime)
         );
 
-        return contentToRegenerate;
+        return Optional.of(contentToRegenerate);
     }
 
     /// Updates the system message in the chat history.
     /// If a system message already exists, it is replaced. Otherwise, a new system message is added at the beginning.
     ///
-    /// @param chatHistory the chat history to update
+    /// @param chatHistory      the chat history to update
     /// @param newSystemMessage the new system message content
     public static void updateSystemMessage(List<ChatMessage> chatHistory, String newSystemMessage) {
         // Remove existing system message if present
@@ -69,16 +71,16 @@ public final class ChatHistoryUtils {
         }
     }
 
-    /// Finds the last USER message in the chat history by iterating backwards.
+    /// Finds the last user message in the chat history by iterating backwards.
     ///
     /// @param chatHistory the chat history to search
-    /// @return the last USER message, or null if no USER message is found
-    public static ChatMessage getLastUserMessage(List<ChatMessage> chatHistory) {
+    /// @return the last user messag, or empty if no user message is found
+    public static Optional<ChatMessage> getLastUserMessage(List<ChatMessage> chatHistory) {
         for (int i = chatHistory.size() - 1; i >= 0; i--) {
             if (chatHistory.get(i).role() == ChatMessage.Role.USER) {
-                return chatHistory.get(i);
+                return Optional.of(chatHistory.get(i));
             }
         }
-        return null;
+        return Optional.empty();
     }
 }

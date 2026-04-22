@@ -44,11 +44,6 @@
             onButton2Click="#regenerateCustom"/>
 
     <UniversalStatusPaneView
-            fx:id="noDatabasePathPane"
-            title="%Unable to generate summary"
-            description="%The path of the current library is not set, but it is required for summarization"/>
-
-    <UniversalStatusPaneView
             fx:id="noFilesPane"
             title="%Unable to generate summary"
             description="%Please attach at least one PDF file to enable summarization of PDF file(s)."/>

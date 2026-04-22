@@ -530,8 +530,8 @@ public class AiPreferences {
         return List.of(openAiApiBaseUrl, mistralAiApiBaseUrl, huggingFaceApiBaseUrl, geminiApiBaseUrl);
     }
 
-    public List<? extends Property<?>> getChatProperties() {
-        return Stream.of(
+    public List<Property<?>> getChatProperties() {
+        return (List<Property<?>>) Stream.of(
                 List.of(enableAi, aiProvider, customizeExpertSettings, temperature, contextWindowSize, tokenEstimatorKind),
                 getChatModelNamesProperties(),
                 getApiBaseUrlsProperties()
@@ -667,7 +667,7 @@ public class AiPreferences {
     public void setCitationParsingSystemMessageTemplate(String template) {
         citationParsingSystemMessageTemplate.set(template);
     }
-    
+
     public StringProperty markdownChatExportTemplateProperty() {
         return markdownChatExportTemplate;
     }

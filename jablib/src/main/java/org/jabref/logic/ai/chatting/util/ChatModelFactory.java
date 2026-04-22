@@ -92,7 +92,7 @@ public final class ChatModelFactory {
         );
     }
 
-    private static class ChatModelImpl implements ChatModel, AutoCloseable {
+    private static class ChatModelImpl implements ChatModel {
         private final dev.langchain4j.model.chat.ChatModel delegate;
         private final TokenEstimator tokenEstimator;
         private final AiProvider provider;

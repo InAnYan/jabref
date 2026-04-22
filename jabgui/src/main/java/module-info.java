@@ -180,8 +180,5 @@ open module org.jabref {
     // requires mslinks;
     requires org.antlr.antlr4.runtime;
     requires org.libreoffice.uno;
-    requires org.glassfish.grizzly;
-    requires jakarta.annotation;
-    requires jakarta.ws.rs;
     // endregion
 }

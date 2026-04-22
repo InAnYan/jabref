@@ -4,6 +4,8 @@ parent: Decision Records
 ---
 # AI chat messages serialization and deserialization
 
+<!-- dsn->req~ai.chat.entries.history-storage~1 -->
+
 ## Context and Problem Statement
 
 We need to choose the serialization and deserialization method for AI chat messages, as the chat history is persisted.

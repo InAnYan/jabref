@@ -20,7 +20,7 @@ public class AiChatStatusWindow extends BaseDialog<Void> {
     public AiChatStatusWindow() {
         super();
 
-        this.setTitle(Localization.lang("AI chat status"));
+        this.setTitle(Localization.lang("AI Chat Status"));
         this.getDialogPane().getScene().getWindow().setOnCloseRequest(_ -> this.hide());
 
         ViewLoader.view(this)
@@ -35,7 +35,7 @@ public class AiChatStatusWindow extends BaseDialog<Void> {
     public ListProperty<ChatMessage> chatHistoryProperty() {
         return aiChatStatusView.chatHistoryProperty();
     }
-    
+
     public ObjectProperty<AnswerEngine> answerEngineProperty() {
         return aiChatStatusView.answerEngineProperty();
     }

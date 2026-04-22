@@ -30,20 +30,12 @@ import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.BaseDialog;
 import org.jabref.gui.util.CustomLocalDragboard;
 import org.jabref.logic.ai.AiService;
-import org.jabref.logic.ai.chatting.util.ChatModelFactory;
-import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
-import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
-import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral.GenerateEmbeddingsForSeveralTaskRequest;
-import org.jabref.logic.ai.ingestion.util.DocumentSplitterFactory;
-import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.tasks.GenerateSummaryTaskRequest;
-import org.jabref.logic.ai.summarization.util.SummarizatorFactory;
 import org.jabref.logic.bibtex.FieldPreferences;
 import org.jabref.logic.groups.GroupsFactory;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.search.query.GroupNameFilterVisitor;
-import org.jabref.logic.util.ObservablesHelper;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.database.BibDatabaseContext;
@@ -80,15 +72,12 @@ public class GroupTreeViewModel extends AbstractViewModel {
     private final FieldPreferences fieldPreferences;
     private final ObjectProperty<Predicate<GroupNodeViewModel>> filterPredicate = new SimpleObjectProperty<>();
     private final StringProperty filterText = new SimpleStringProperty();
-    private final ObjectProperty<AsyncEmbeddingModel> embeddingModel = new SimpleObjectProperty<>();
-    private final ObjectProperty<DocumentSplitter> documentSplitter = new SimpleObjectProperty<>();
     private final Comparator<GroupTreeNode> compAlphabetIgnoreCase = (GroupTreeNode v1, GroupTreeNode v2) -> v1
             .getName()
             .compareToIgnoreCase(v2.getName());
     private final Comparator<GroupTreeNode> compAlphabetIgnoreCaseReverse = (GroupTreeNode v1, GroupTreeNode v2) -> v2
             .getName()
             .compareToIgnoreCase(v1.getName());
-    private Optional<BibDatabaseContext> currentDatabase = Optional.empty();
     private final Comparator<GroupTreeNode> compEntries = (GroupTreeNode v1, GroupTreeNode v2) -> {
         int numChildren1 = v1.getEntriesInGroup(this.currentDatabase.get().getEntries()).size();
         int numChildren2 = v2.getEntriesInGroup(this.currentDatabase.get().getEntries()).size();
@@ -99,6 +88,7 @@ public class GroupTreeViewModel extends AbstractViewModel {
         int numChildren2 = v2.getEntriesInGroup(this.currentDatabase.get().getEntries()).size();
         return Integer.compare(numChildren1, numChildren2);
     };
+    private Optional<BibDatabaseContext> currentDatabase = Optional.empty();
 
     public GroupTreeViewModel(@NonNull StateManager stateManager,
                               @NonNull BibEntryTypesManager entryTypesManager,
@@ -118,18 +108,6 @@ public class GroupTreeViewModel extends AbstractViewModel {
         this.adaptVisibleTabs = adaptVisibleTabs;
         this.localDragboard = localDragboard;
         this.taskExecutor = taskExecutor;
-
-        AiPreferences aiPreferences = preferences.getAiPreferences();
-
-        this.embeddingModel.bind(ObservablesHelper.createClosableObjectBinding(
-                () -> EmbeddingModelFactory.create(aiPreferences, aiService.getEmbeddingModelCache()),
-                aiPreferences.getEmbeddingsProperties()
-        ));
-
-        this.documentSplitter.bind(ObservablesHelper.createObjectBinding(
-                () -> DocumentSplitterFactory.create(aiPreferences),
-                aiPreferences.getDocumentSplitterProperties()
-        ));
 
         // Register listener
         EasyBind.subscribe(stateManager.activeDatabaseProperty(), this::onActiveDatabaseChanged);
@@ -508,6 +486,10 @@ public class GroupTreeViewModel extends AbstractViewModel {
     }
 
     public void generateEmbeddings(GroupNodeViewModel groupNode) {
+        if (!preferences.getAiPreferences().getEnableAi() || !preferences.getAiPreferences().getAutoGenerateEmbeddings()) {
+            return;
+        }
+
         assert currentDatabase.isPresent();
 
         AbstractGroup group = groupNode.getGroupNode().getGroup();
@@ -526,8 +508,8 @@ public class GroupTreeViewModel extends AbstractViewModel {
                          preferences.getFilePreferences(),
                          aiService.getIngestedDocumentsRepository(),
                          aiService.getEmbeddingsStore(),
-                         embeddingModel.get(),
-                         documentSplitter.get(),
+                         aiService.getCurrentEmbeddingModel(),
+                         aiService.getCurrentDocumentSplitter(),
                          currentDatabase.get(),
                          group.nameProperty(),
                          linkedFiles,
@@ -538,6 +520,10 @@ public class GroupTreeViewModel extends AbstractViewModel {
     }
 
     public void generateSummaries(GroupNodeViewModel groupNode) {
+        if (!preferences.getAiPreferences().getEnableAi() || !preferences.getAiPreferences().getAutoGenerateSummaries()) {
+            return;
+        }
+
         assert currentDatabase.isPresent();
 
         AbstractGroup group = groupNode.getGroupNode().getGroup();
@@ -554,8 +540,8 @@ public class GroupTreeViewModel extends AbstractViewModel {
                 aiService.getSummarizationTaskAggregator().start(
                         new GenerateSummaryTaskRequest(
                                 preferences.getFilePreferences(),
-                                ChatModelFactory.create(preferences.getAiPreferences()),
-                                SummarizatorFactory.create(preferences.getAiPreferences()),
+                                aiService.getCurrentChatModel(),
+                                aiService.getCurrentSummarizator(),
                                 new FullBibEntry(currentDatabase.get(), entry),
                                 false
                         )

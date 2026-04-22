@@ -14,7 +14,7 @@ Needs: impl
 Covers: `feat~ai.chatting~1`
 
 <!-- oft:off -->
-### Allow users to select a default summarization algorithm
+## Allow users to select a default summarization algorithm
 `feat~ai.answer-engines.default~1`
 
 Needs: impl
@@ -29,7 +29,7 @@ Rationale: this answer engine is suitable when the user wants to perform a seman
 
 Reference: <https://arxiv.org/abs/2005.11401>
 
-Needs: impl
+Needs: impl, dsn
 
 Covers: `feat~ai.answer-engines~1`
 

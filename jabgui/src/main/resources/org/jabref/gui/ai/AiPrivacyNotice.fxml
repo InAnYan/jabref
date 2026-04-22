@@ -39,7 +39,8 @@
             <Button onAction="#onPrivacyAgree"
                     text="%I agree"/>
             <Button onAction="#onPrivacyDisagree"
-                    fx:id="privacyDisagreeButton"/>
+                    fx:id="privacyDisagreeButton"
+                    text="%I do not agree"/>
         </HBox>
     </VBox>
 </fx:root>

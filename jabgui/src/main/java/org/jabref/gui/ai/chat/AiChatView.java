@@ -30,6 +30,9 @@ import org.jabref.model.ai.identifiers.FullBibEntry;
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
+/// General AI chat component with [org.jabref.model.entry.BibEntry]. Can be used for chatting with one entry ([AiEntryChatView]) or with several entries (like [AiGroupChatView]).
+///
+/// To set up this component, set or bind the [#entriesProperty()] and [#chatHistoryProperty()] properties.
 // [impl->feat~ai.chatting~1]
 public class AiChatView extends StackPane {
     private final AiChatStatusWindow aiChatStatusWindow = new AiChatStatusWindow();
@@ -75,7 +78,6 @@ public class AiChatView extends StackPane {
                 preferences.getFilePreferences(),
                 aiService.getIngestionTaskAggregator(),
                 aiService.getIngestedDocumentsRepository(),
-                dialogService,
                 aiService.getEmbeddingsStore(),
                 aiService.getEmbeddingModelCache(),
                 taskExecutor

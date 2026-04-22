@@ -21,6 +21,9 @@ import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 
+/// A container for rendering a list of items. it is not that smart as [javafx.scene.control.ListView], which can skip drawing components that are not visible, but it is flexible and supports custom spacing and auto-scroll.
+///
+/// Mainly used in [org.jabref.gui.ai.chat.AiChatView].
 public class ListScrollPane<T> extends ScrollPane {
 
     private final VBox contentContainer;
@@ -170,7 +173,7 @@ public class ListScrollPane<T> extends ScrollPane {
 
     public final void setAutoScrollToBottom(boolean value) {
         autoScrollToBottomProperty.set(value);
-        
+
         if (value) {
             scrollToBottom();
         }

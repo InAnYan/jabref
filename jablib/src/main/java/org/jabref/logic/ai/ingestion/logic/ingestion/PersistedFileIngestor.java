@@ -40,7 +40,6 @@ public class PersistedFileIngestor {
 
         if (currentFileHash.isPresent()) {
             if (ingestedDocumentsRepository.isDocumentIngested(currentFileHash.get())) {
-                // File has already been ingested and has not changed (same hash)
                 LOGGER.debug("No need to generate embeddings for file \"{}\", because it was already ingested and has not changed", path);
                 shouldIngest = false;
             }

@@ -290,13 +290,13 @@ public class JabRefGuiStateManager implements StateManager {
     }
 
     @Override
-    public Optional<Walkthrough> getActiveWalkthrough() {
-        return activeWalkthrough.get();
+    public void setActiveWalkthrough(Walkthrough walkthrough) {
+        activeWalkthrough.set(Optional.ofNullable(walkthrough));
     }
 
     @Override
-    public void setActiveWalkthrough(Walkthrough walkthrough) {
-        activeWalkthrough.set(Optional.ofNullable(walkthrough));
+    public Optional<Walkthrough> getActiveWalkthrough() {
+        return activeWalkthrough.get();
     }
 
     @Override

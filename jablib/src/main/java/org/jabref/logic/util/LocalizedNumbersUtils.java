@@ -5,7 +5,11 @@ import java.text.ParseException;
 import java.util.Locale;
 import java.util.Optional;
 
-public class LocalizedNumbers {
+public final class LocalizedNumbersUtils {
+    private LocalizedNumbersUtils() {
+        throw new UnsupportedOperationException("cannot instantiate a utility class");
+    }
+
     public static Optional<Double> stringToDouble(String value) {
         return stringToDouble(Locale.getDefault(), value);
     }

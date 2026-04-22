@@ -31,6 +31,27 @@ import org.jabref.model.entry.BibEntryTypesManager;
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
+/// Displays status and metadata for an AI chat session.
+///
+/// This component provides information about:
+/// - The currently selected chat model
+/// - The answer engine in use
+/// - Entries included in the chat context
+/// - The ingestion status of linked files, including any errors encountered
+///
+/// It also offers actions to:
+/// - Export the chat history
+/// - Clear the chat history
+///
+/// Typical usage:
+/// This component is primarily used within the AiChatView, where:
+/// - The chat model and answer engine are bound to this component
+/// - The chat history is provided by the AI chat and displayed here
+///
+/// Future plans:
+/// The component is intended to support configuration of chat parameters,
+/// such as selecting a different chat model per session instead of relying
+/// on global preferences. Currently, only the answer engine can be modified.
 // [impl->req~ai.chat.ingestion-status~1]
 public class AiChatStatusView extends VBox {
     // [impl->req~ai.chat.model-visibility~1]

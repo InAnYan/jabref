@@ -5,7 +5,6 @@ import javafx.fxml.FXML;
 import javafx.scene.layout.StackPane;
 
 import org.jabref.gui.ai.AiPrivacyNoticeView;
-import org.jabref.gui.ai.statuspane.UniversalStatusPaneView;
 import org.jabref.gui.groups.GroupNodeViewModel;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
@@ -17,7 +16,6 @@ import jakarta.inject.Inject;
 // [impl->feat~ai.chatting.groups~1]
 public class AiGroupChatView extends StackPane {
     @FXML private AiPrivacyNoticeView privacyNotice;
-    @FXML private UniversalStatusPaneView emptyDatabasePathPane;
     @FXML private AiChatView aiChatView;
 
     @Inject private GuiPreferences preferences;
@@ -41,11 +39,9 @@ public class AiGroupChatView extends StackPane {
     private void setupBindings() {
         // [pp->feat~ai.chatting.groups~1]
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
-        emptyDatabasePathPane.managedProperty().bind(emptyDatabasePathPane.visibleProperty());
         aiChatView.managedProperty().bind(aiChatView.visibleProperty());
 
         privacyNotice.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiGroupChatViewModel.State.AI_TURNED_OFF));
-        emptyDatabasePathPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiGroupChatViewModel.State.NO_DATABASE_PATH));
         aiChatView.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiGroupChatViewModel.State.CHATTING));
 
         aiChatView.chatHistoryProperty().bind(viewModel.chatHistoryProperty());

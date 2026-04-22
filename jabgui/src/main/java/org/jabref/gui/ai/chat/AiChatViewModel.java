@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import javafx.beans.binding.Bindings;
@@ -18,7 +19,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import org.jabref.gui.AbstractViewModel;
-import org.jabref.gui.DialogService;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.ChatModel;
@@ -92,7 +92,6 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
-    private final DialogService dialogService;
     private final IngestionTaskAggregator ingestionTaskAggregator;
     private final IngestedDocumentsRepository ingestedDocumentsRepository;
     private final EmbeddingStore<TextSegment> embeddingStore;
@@ -110,14 +109,12 @@ public class AiChatViewModel extends AbstractViewModel {
             FilePreferences filePreferences,
             IngestionTaskAggregator ingestionTaskAggregator,
             IngestedDocumentsRepository ingestedDocumentsRepository,
-            DialogService dialogService,
             EmbeddingStore<TextSegment> embeddingStore,
             EmbeddingModelCache embeddingModelCache,
             TaskExecutor taskExecutor
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
-        this.dialogService = dialogService;
         this.ingestionTaskAggregator = ingestionTaskAggregator;
         this.ingestedDocumentsRepository = ingestedDocumentsRepository;
         this.embeddingStore = embeddingStore;
@@ -148,7 +145,7 @@ public class AiChatViewModel extends AbstractViewModel {
                         entries.get() == null ||
                                 entries.isEmpty() ||
                                 entries.stream().flatMap(identifier -> identifier.entry().getFiles().stream()).findAny().isEmpty(),
-                entries
+                entries, aiPreferences.enableAiProperty()
         );
 
         BooleanBinding isError = Bindings.createBooleanBinding(() -> {
@@ -209,7 +206,6 @@ public class AiChatViewModel extends AbstractViewModel {
         }
 
         generateEmbeddingsTasks.clear();
-        // It's okay to pass null.
         generateRagResponseTask.set(tasksMap.get(entries));
 
         entries.forEach(identifier ->
@@ -249,8 +245,7 @@ public class AiChatViewModel extends AbstractViewModel {
         GenerateRagResponseTask task = new GenerateRagResponseTask(
                 chatModel.get(),
                 answerEngine.get(),
-                List.copyOf(chatHistory), // TODO: Why?
-                userMessage,
+                chatHistory,
                 entries.get(),
                 systemMessageTemplate.get(),
                 userMessageTemplate.get()
@@ -310,7 +305,7 @@ public class AiChatViewModel extends AbstractViewModel {
                     originalFollowUpQuestions.setAll(questions);
                     followUpQuestionsCache.put(entriesSnapshot, new ArrayList<>(questions));
                 })
-                .onFailure(ex -> LOGGER.warn("Failed to generate follow-up questions", ex))
+                .onFailure(ex -> LOGGER.error("Failed to generate follow-up questions", ex))
                 .executeWith(taskExecutor);
     }
 
@@ -349,11 +344,9 @@ public class AiChatViewModel extends AbstractViewModel {
     public void regenerate(String id) {
         assert state.get() == State.ERROR || state.get() == State.IDLE;
 
-        String contentToRegenerate = ChatHistoryUtils.regenerate(chatHistory, id);
+        Optional<String> contentToRegenerate = ChatHistoryUtils.regenerate(chatHistory, id);
 
-        if (contentToRegenerate != null) {
-            sendMessage(contentToRegenerate);
-        }
+        contentToRegenerate.ifPresent(this::sendMessage);
     }
 
     public void regenerate() {

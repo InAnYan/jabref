@@ -7,6 +7,7 @@ import java.util.function.BooleanSupplier;
 
 import javafx.beans.property.ObjectProperty;
 
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.bibtex.FieldPreferences;
 import org.jabref.logic.citation.repository.BibEntryCitationsAndReferencesRepository;
@@ -45,6 +46,7 @@ public class SearchCitationsRelationsService {
                                            CitationKeyPatternPreferences citationKeyPatternPreferences,
                                            GrobidPreferences grobidPreferences,
                                            AiPreferences aiPreferences,
+                                           ChatModel chatModel,
                                            BibEntryTypesManager entryTypesManager,
                                            NotificationService notificationService) {
         this.citationFetcher = CitationFetcherType.getCitationFetcher(
@@ -53,7 +55,8 @@ public class SearchCitationsRelationsService {
                 importFormatPreferences,
                 citationKeyPatternPreferences,
                 grobidPreferences,
-                aiPreferences);
+                aiPreferences,
+                chatModel);
 
         this.citationCountFetcher = CitationCountFetcherType.getCitationCountFetcher(
                 citationCountFetcherTypeProperty.get(),
@@ -66,7 +69,8 @@ public class SearchCitationsRelationsService {
                     importFormatPreferences,
                     citationKeyPatternPreferences,
                     grobidPreferences,
-                    aiPreferences);
+                    aiPreferences,
+                    chatModel);
         });
 
         citationCountFetcherTypeProperty.addListener((_, _, newValue) -> {

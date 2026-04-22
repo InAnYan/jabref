@@ -26,9 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /// Exports an AI chat conversation to JSON format.
-/// 
+///
 /// The JSON output includes export metadata (provider, model, timestamp), BibTeX entry data,
 /// and the conversation messages with role/content pairs.
+///
+/// The JSON schema of the export is handcrafted, because there is no well-established export format.
 public class AiChatJsonExporter implements AiChatExporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiChatJsonExporter.class);
 
@@ -87,6 +89,7 @@ public class AiChatJsonExporter implements AiChatExporter {
             Map<String, String> message = new LinkedHashMap<>();
             message.put("role", role);
             message.put("content", msg.content());
+            message.put("timestamp", msg.timestamp().toString());
             conversationList.add(message);
         }
         root.put("conversation", conversationList);

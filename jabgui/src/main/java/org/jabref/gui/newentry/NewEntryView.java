@@ -38,6 +38,7 @@ import org.jabref.gui.util.ControlHelper;
 import org.jabref.gui.util.IconValidationDecorator;
 import org.jabref.gui.util.UiTaskExecutor;
 import org.jabref.gui.util.ViewModelListCellFactory;
+import org.jabref.logic.ai.AiService;
 import org.jabref.logic.importer.IdBasedFetcher;
 import org.jabref.logic.importer.ImportFormatPreferences;
 import org.jabref.logic.importer.WebFetcher;
@@ -91,6 +92,7 @@ public class NewEntryView extends BaseDialog<BibEntry> {
     @Inject private StateManager stateManager;
     @Inject private TaskExecutor taskExecutor;
     @Inject private FileUpdateMonitor fileUpdateMonitor;
+    @Inject private AiService aiService;
 
     private final ControlsFxVisualizer visualizer;
 
@@ -214,7 +216,7 @@ public class NewEntryView extends BaseDialog<BibEntry> {
 
     @FXML
     public void initialize() {
-        viewModel = new NewEntryViewModel(preferences, libraryTab, dialogService, stateManager, (UiTaskExecutor) taskExecutor, fileUpdateMonitor);
+        viewModel = new NewEntryViewModel(preferences, libraryTab, dialogService, stateManager, (UiTaskExecutor) taskExecutor, fileUpdateMonitor, aiService);
 
         getDialogPane().disableProperty().bind(viewModel.executingProperty());
 

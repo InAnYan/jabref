@@ -4,8 +4,10 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 
@@ -29,13 +31,14 @@ import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.util.ObservablesHelper;
 import org.jabref.model.ai.identifiers.FullBibEntry;
 import org.jabref.model.ai.summarization.AiSummary;
-import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
+
+import com.tobiasdiez.easybind.EasyBind;
+import jakarta.annotation.Nullable;
 
 public class AiSummaryViewModel extends AbstractViewModel {
     public enum State {
         AI_TURNED_OFF,
-        NO_DATABASE_PATH,
         NO_FILES,
         NO_SUPPORTED_FILE_TYPES,
         PROCESSING,
@@ -91,12 +94,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
                         aiPreferences.enableAiProperty().not()
                 ),
 
-                Map.entry(State.NO_DATABASE_PATH,
-                        entry.map(FullBibEntry::databaseContext)
-                             .map(BibDatabaseContext::getDatabasePath)
-                             .map(Optional::isEmpty)
-                ),
-
                 Map.entry(State.NO_FILES,
                         entry.map(FullBibEntry::entry)
                              .map(BibEntry::getFiles)
@@ -130,13 +127,18 @@ public class AiSummaryViewModel extends AbstractViewModel {
                 )
         );
 
-        BindingsHelper.bindInternalListener(
-                currentTask,
-                GenerateSummaryTask::statusProperty,
-                taskStateListener
-        );
+        Function<GenerateSummaryTask, ReadOnlyObjectProperty<TrackedBackgroundTask.Status>> propertyExtractor = GenerateSummaryTask::statusProperty;
 
-        this.chatModel.bind(ObservablesHelper.createObjectBinding(
+        currentTask.addListener((_, oldVal, newVal) -> {
+            if (oldVal != null) {
+                propertyExtractor.apply(oldVal).removeListener(taskStateListener);
+            }
+            if (newVal != null) {
+                propertyExtractor.apply(newVal).addListener(taskStateListener);
+            }
+        });
+
+        this.chatModel.bind(ObservablesHelper.createClosableObjectBinding(
                 () -> ChatModelFactory.create(aiPreferences),
                 aiPreferences.getChatProperties()
         ));
@@ -152,13 +154,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
     }
 
     private void setupListeners() {
-        BindingsHelper.listen(entry, this::prepareForEntry);
-
-        BindingsHelper.listenWhen(
-                entry,
-                entry.isNotNull().and(state.isEqualTo(State.READY)),
-                this::processEntry
-        );
+        EasyBind.subscribe(entry, _ -> prepareForEntry());
+        EasyBind.subscribe(entry, this::processEntry);
     }
 
     /// Resets the chat model and summarizator to the default values from AI preferences.
@@ -200,7 +197,16 @@ public class AiSummaryViewModel extends AbstractViewModel {
     }
 
     private void processEntry(FullBibEntry fullEntry) {
-        // 1. Check persistent storage (requires valid citation key + AI library ID).
+        if (fullEntry == null || state.get() != State.READY) {
+            return;
+        }
+
+        // THe retrieval is done in 4 steps:
+        // 1. Check the repository if there is a generated entry.
+        // 2. Check the in-memory cache.
+        // 3. Check if there is a running task.
+        // 4. Otherwise, start a new task.
+
         Optional<AiSummary> persistedSummary = fullEntry.toAiSummaryIdentifier()
                                                         .flatMap(summariesRepository::get);
         if (persistedSummary.isPresent()) {
@@ -208,22 +214,19 @@ public class AiSummaryViewModel extends AbstractViewModel {
             return;
         }
 
-        // 2. Check RAM cache (works for all entries, even without a citation key).
         Optional<AiSummary> cachedSummary = inMemoryCache.get(fullEntry.entry());
         if (cachedSummary.isPresent()) {
             this.summary.set(cachedSummary.get());
             return;
         }
 
-        // 3. Reconnect to an in-progress task without starting a duplicate.
         Optional<GenerateSummaryTask> runningTask = summarizationTaskAggregator.getTask(fullEntry.entry());
         if (runningTask.isPresent()) {
             GenerateSummaryTask task = runningTask.get();
             currentTask.set(task);
             summarizator.set(task.getRequest().summarizator());
             chatModel.set(task.getRequest().chatModel());
-            // Edge case: task finished in the narrow window between the aggregator lookup
-            // and the bindInternalListener attaching the status listener. Handle immediately.
+
             switch (task.getStatus()) {
                 case SUCCESS -> {
                     summary.set(task.getResult());
@@ -239,7 +242,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
             return;
         }
 
-        // 4. Nothing found — start a new generation task.
         generate();
     }
 
@@ -254,14 +256,16 @@ public class AiSummaryViewModel extends AbstractViewModel {
         }
 
         AiSummaryParametersDialog parametersDialog = new AiSummaryParametersDialog();
-        Optional<Summarizator> customSummarizator = dialogService.showCustomDialogAndWait(parametersDialog);
+        dialogService.showCustomDialogAndWait(parametersDialog);
 
-        if (customSummarizator.isEmpty()) {
+        @Nullable Summarizator customSummarizator = parametersDialog.summarizatorProperty().get();
+
+        if (customSummarizator == null) {
             return;
         }
 
         summarizator.unbind();
-        summarizator.set(customSummarizator.get());
+        summarizator.set(customSummarizator);
 
         clearSummary(identifier);
         startSummarization(identifier);
@@ -278,10 +282,8 @@ public class AiSummaryViewModel extends AbstractViewModel {
             return;
         }
 
-        // Always clear from RAM cache (works regardless of citation key).
         inMemoryCache.remove(fullEntry.entry());
 
-        // Try to clear from persistent storage (silently skipped if identifier is absent).
         fullEntry.toAiSummaryIdentifier()
                  .ifPresent(summariesRepository::clear);
 
@@ -307,8 +309,6 @@ public class AiSummaryViewModel extends AbstractViewModel {
     }
 
     private void updateByTaskState(TrackedBackgroundTask.Status value) {
-        // Capture task reference now (on background thread) before the FX-thread lambda runs,
-        // as clearTask() may null it in the interim.
         GenerateSummaryTask task = currentTask.get();
         if (task == null) {
             return;
@@ -318,11 +318,11 @@ public class AiSummaryViewModel extends AbstractViewModel {
             switch (value) {
                 case TrackedBackgroundTask.Status.ERROR -> {
                     error.set(task.getException());
-                    clearTask(); // detach listener, free the reference
+                    clearTask();
                 }
                 case TrackedBackgroundTask.Status.SUCCESS -> {
                     summary.set(task.getResult());
-                    clearTask(); // detach listener, free the reference
+                    clearTask();
                 }
             }
         });
@@ -358,9 +358,5 @@ public class AiSummaryViewModel extends AbstractViewModel {
 
     public ObjectProperty<ChatModel> chatModelProperty() {
         return chatModel;
-    }
-
-    public ObjectProperty<GenerateSummaryTask> currentTaskProperty() {
-        return currentTask;
     }
 }

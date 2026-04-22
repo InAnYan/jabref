@@ -636,7 +636,6 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
 
         return sidePanePreferences;
     }
-    // endregion
 
     private SidePanePreferences getSidePanePreferencesFromBackingStore(SidePanePreferences defaults) {
         Set<SidePaneType> backingStoreVisiblePanes = getVisibleSidePanes(defaults.visiblePanes());
@@ -708,6 +707,7 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
         putStringList(SIDE_PANE_COMPONENT_NAMES, names);
         putStringList(SIDE_PANE_COMPONENT_PREFERRED_POSITIONS, positions);
     }
+    // endregion
 
     // region ExternalApplicationsPreferences
     @Override
@@ -852,9 +852,6 @@ public class JabRefGuiPreferences extends JabRefCliPreferences implements GuiPre
                 getBoolean(PREVIEW_COVER_IMAGE_DOWNLOAD, defaults.shouldDownloadCovers())
         );
     }
-    // endregion
-
-    // region NameDisplayPreferences
 
     private void storeBstPaths(List<Path> bstPaths) {
         putStringList(PREVIEW_BST_LAYOUT_PATHS, bstPaths.stream().map(Path::toAbsolutePath).map(Path::toString).toList());

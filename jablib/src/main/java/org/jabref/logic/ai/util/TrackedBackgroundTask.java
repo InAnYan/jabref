@@ -7,6 +7,10 @@ import javafx.beans.property.SimpleObjectProperty;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ProgressCounter;
 
+/// An extension to the [BackgroundTask] that stores the result (or exception) of the task inside.
+///
+/// Useful for the Ai features with task aggregators ([org.jabref.logic.ai.ingestion.IngestionTaskAggregator], [org.jabref.logic.ai.summarization.SummarizationTaskAggregator]),
+/// because it allows to use the task object as a temporary storage.
 public abstract class TrackedBackgroundTask<V> extends BackgroundTask<V> {
     public enum Status {
         PENDING,
@@ -19,7 +23,7 @@ public abstract class TrackedBackgroundTask<V> extends BackgroundTask<V> {
             return this == SUCCESS || this == ERROR || this == CANCELLED;
         }
     }
-    
+
     protected final ProgressCounter progressCounter = new ProgressCounter();
 
     private final ObjectProperty<Status> status = new SimpleObjectProperty<>(Status.PENDING);

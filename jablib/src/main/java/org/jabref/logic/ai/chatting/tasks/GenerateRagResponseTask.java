@@ -16,22 +16,19 @@ import org.jabref.model.ai.pipeline.RelevantInformation;
 
 import dev.langchain4j.model.chat.response.ChatResponse;
 
+/// The task responsible for generating a RAG (retrieval-augmented generation) response. Before sending a user message to the LLM, the [AnswerEngine] is called which finds the relevant context for the message.
 public class GenerateRagResponseTask extends BackgroundTask<ChatMessage> {
     private final ChatModel chatModel;
     private final AnswerEngine answerEngine;
     private final List<ChatMessage> chatHistory;
-    private final String userMessageContent;
     private final List<FullBibEntry> entries;
     private final String systemMessageTemplate;
     private final String injectionTemplate;
 
-    /// Creates a task that processes RAG and generates an LLM response.
-    /// The input chat history is not modified; a new list is created internally.
     public GenerateRagResponseTask(
             ChatModel chatModel,
             AnswerEngine answerEngine,
             List<ChatMessage> chatHistory,
-            String userMessageContent,
             List<FullBibEntry> entries,
             String systemMessageTemplate,
             String injectionTemplate
@@ -39,7 +36,6 @@ public class GenerateRagResponseTask extends BackgroundTask<ChatMessage> {
         this.chatModel = chatModel;
         this.answerEngine = answerEngine;
         this.chatHistory = chatHistory;
-        this.userMessageContent = userMessageContent;
         this.entries = entries;
         this.systemMessageTemplate = systemMessageTemplate;
         this.injectionTemplate = injectionTemplate;
@@ -52,26 +48,22 @@ public class GenerateRagResponseTask extends BackgroundTask<ChatMessage> {
     public ChatMessage call() throws Exception {
         List<ChatMessage> workingChatHistory = new ArrayList<>(chatHistory);
 
-        ChatMessage userMessage = ChatHistoryUtils.getLastUserMessage(workingChatHistory);
-
-        if (userMessage == null) {
-            userMessage = ChatMessage.userMessage(userMessageContent);
-            workingChatHistory.add(userMessage);
-        }
+        Optional<ChatMessage> userMessage = ChatHistoryUtils.getLastUserMessage(workingChatHistory);
+        assert userMessage.isPresent();
 
         List<RelevantInformation> relevantInformation = answerEngine.process(
-                userMessage.content(),
+                userMessage.get().content(),
                 entries
         );
 
         String injected = AiTemplateRenderer.renderChattingUserMessage(
                 injectionTemplate,
                 entries.stream().map(FullBibEntry::entry).toList(),
-                userMessage.content(),
+                userMessage.get().content(),
                 relevantInformation
         );
 
-        ChatMessage injectedMessage = ChatMessage.userMessage(userMessage.timestamp(), injected);
+        ChatMessage injectedMessage = ChatMessage.userMessage(userMessage.get().timestamp(), injected);
 
         ChatMessage systemMessage = ChatMessage.systemMessage(AiTemplateRenderer.renderChattingSystemMessage(
                 systemMessageTemplate,

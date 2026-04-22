@@ -2,9 +2,7 @@ package org.jabref.gui.ai;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
-import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -13,7 +11,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
 import org.jabref.gui.DialogService;
-import org.jabref.gui.ai.AiPrivacyNoticeViewModel.DisagreeBehaviour;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.gui.util.URLs;
 import org.jabref.model.ai.llm.AiProvider;
@@ -25,7 +22,6 @@ public class AiPrivacyNoticeView extends ScrollPane {
     @FXML private VBox text;
     @FXML private GridPane aiPolicies;
     @FXML private Text embeddingModelText;
-    @FXML private Button privacyDisagreeButton;
 
     @Inject private GuiPreferences preferences;
     @Inject private DialogService dialogService;
@@ -62,8 +58,6 @@ public class AiPrivacyNoticeView extends ScrollPane {
 
         aiPolicies.prefWidthProperty().bind(textWidth);
         embeddingModelText.wrappingWidthProperty().bind(textWidth);
-
-        privacyDisagreeButton.textProperty().bind(viewModel.privacyDisagreeButtonTextProperty());
     }
 
     private void setupUi() {
@@ -104,17 +98,5 @@ public class AiPrivacyNoticeView extends ScrollPane {
     @FXML
     private void onPrivacyDisagree() {
         viewModel.privacyDisagree();
-    }
-
-    public ObjectProperty<AiPrivacyNoticeViewModel.DisagreeBehaviour> disagreeBehaviourProperty() {
-        return viewModel.disagreeBehaviourProperty();
-    }
-
-    public DisagreeBehaviour getDisagreeBehaviour() {
-        return viewModel.disagreeBehaviourProperty().get();
-    }
-
-    public void setDisagreeBehaviour(DisagreeBehaviour onPrivacyDisagree) {
-        viewModel.disagreeBehaviourProperty().set(onPrivacyDisagree);
     }
 }

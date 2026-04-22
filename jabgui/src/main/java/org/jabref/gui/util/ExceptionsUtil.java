@@ -5,7 +5,7 @@ import java.io.StringWriter;
 
 import jakarta.annotation.Nullable;
 
-public class ExceptionsUtil {
+public final class ExceptionsUtil {
     private ExceptionsUtil() {
         throw new UnsupportedOperationException("cannot instantiate utility class");
     }
@@ -14,7 +14,7 @@ public class ExceptionsUtil {
         if (throwable == null) {
             return "";
         }
-        
+
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         throwable.printStackTrace(pw);

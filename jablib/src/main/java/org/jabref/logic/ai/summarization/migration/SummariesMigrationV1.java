@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Map;
+import java.util.Optional;
 
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
 import org.jabref.logic.l10n.Localization;
@@ -30,19 +31,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /// Migrates summaries from the old v1 MVStore file to the new v2 repository.
-/// 
+///
 /// Old format (v1): Stored in "ai/1/summaries.mv" file.
 /// Map keys like "summaries-bibDatabasePath" containing Map&lt;String, Summary&gt;
 /// where Summary = record(LocalDateTime timestamp, AiProvider aiProvider, String model, String content)
 /// and AiProvider was at org.jabref.model.ai.AiProvider (now moved to org.jabref.model.ai.llm.AiProvider).
-/// 
+///
 /// New format (v2): Stored in "ai/2/summaries.mv" file via repository.
 /// Uses AiSummaryIdentifier(libraryId, citationKey) to store AiSummary objects.
-/// 
+///
 /// **Problem:** Both the Summary class and AiProvider enum no longer exist at their old paths,
 /// so MVStore's internal `ObjectDataType` fails with `ClassNotFoundException` before
 /// our code can intercept it.
-/// 
+///
 /// **Solution:** Open the map with a custom {@link RawBytesDataType} that reads MVStore's binary
 /// page format and returns the raw Java-serialized bytes without invoking the standard
 /// `ObjectInputStream`. Then a {@link ClassRemappingObjectInputStream} deserializes those
@@ -60,9 +61,9 @@ public final class SummariesMigrationV1 {
     }
 
     /// Migrates old summary data from v1 file to v2 repository.
-    /// 
-    /// @param bibDatabaseContext The database context containing the AI library ID
-    /// @param repository The new v2 summaries repository
+    ///
+    /// @param bibDatabaseContext  The database context containing the AI library ID
+    /// @param repository          The new v2 summaries repository
     /// @param notificationService Service for notifying user of errors
     public static void migrate(
             BibDatabaseContext bibDatabaseContext,
@@ -140,24 +141,26 @@ public final class SummariesMigrationV1 {
                 String citationKey = entry.getKey();
 
                 try {
-                    OldSummary oldSummary = deserializeOldSummary(entry.getValue());
+                    Optional<OldSummary> oldSummary = deserializeOldSummary(entry.getValue());
 
-                    if (oldSummary != null) {
-                        AiSummaryIdentifier newIdentifier = new AiSummaryIdentifier(libraryId, citationKey);
-
-                        // Check if already migrated
-                        if (repository.get(newIdentifier).isPresent()) {
-                            LOGGER.debug("Skipping {} - already has summary in new format", citationKey);
-                            continue;
-                        }
-
-                        // Convert to new format
-                        AiSummary newSummary = convertToNewSummary(oldSummary);
-                        repository.set(newIdentifier, newSummary);
-
-                        migratedCount++;
-                        LOGGER.debug("Migrated summary for: {}", citationKey);
+                    if (oldSummary.isEmpty()) {
+                        continue;
                     }
+
+                    AiSummaryIdentifier newIdentifier = new AiSummaryIdentifier(libraryId, citationKey);
+
+                    // Check if already migrated
+                    if (repository.get(newIdentifier).isPresent()) {
+                        LOGGER.debug("Skipping {} - already has summary in new format", citationKey);
+                        continue;
+                    }
+
+                    // Convert to new format
+                    AiSummary newSummary = convertToNewSummary(oldSummary.get());
+                    repository.set(newIdentifier, newSummary);
+
+                    migratedCount++;
+                    LOGGER.debug("Migrated summary for: {}", citationKey);
                 } catch (Exception e) {
                     LOGGER.warn("Failed to migrate summary for {}: {}", citationKey, e.getMessage());
                     failedCount++;
@@ -172,20 +175,20 @@ public final class SummariesMigrationV1 {
     }
 
     /// Deserializes old Summary using a custom ObjectInputStream that remaps the old AiProvider class.
-    static OldSummary deserializeOldSummary(byte[] data) {
+    static Optional<OldSummary> deserializeOldSummary(byte[] data) {
         try (ClassRemappingObjectInputStream ois = new ClassRemappingObjectInputStream(
                 new java.io.ByteArrayInputStream(data))) {
             Object obj = ois.readObject();
 
             if (obj instanceof OldSummary summary) {
-                return summary;
+                return Optional.of(summary);
             } else {
                 LOGGER.warn("Deserialized object is not OldSummary: {}", obj.getClass());
-                return null;
+                return Optional.empty();
             }
-        } catch (Exception e) {
-            LOGGER.warn("Failed to deserialize old summary: {}", e.getMessage());
-            return null;
+        } catch (IOException | ClassNotFoundException e) {
+            LOGGER.error("Failed to deserialize old summary", e);
+            return Optional.empty();
         }
     }
 
@@ -194,7 +197,7 @@ public final class SummariesMigrationV1 {
 
         return new AiSummary(
                 new AiMetadata(oldSummary.aiProvider(), oldSummary.model(), timestamp),
-                SummarizatorKind.CHUNKED,  // Old summaries - assume chunked (default)
+                SummarizatorKind.CHUNKED,  // Old summaries were made using only the chunked summarizator.
                 oldSummary.content()
         );
     }
@@ -231,11 +234,11 @@ public final class SummariesMigrationV1 {
 
     /// Reads raw Java-serialized bytes from MVStore's binary page format without invoking
     /// Java deserialization. MVStore's `ObjectDataType` stores each serializable value as:
-    /// <ol>
+    ///
     /// - 1 byte: type identifier — `19` (`TYPE_SERIALIZED_OBJECT` in H2 2.3.232)
     /// - VarInt: byte length of the serialized payload
     /// - N bytes: the raw Java-serialized payload (starts with `0xACED 0x0005`)
-    /// </ol>
+    ///
     /// By returning the raw bytes we defer deserialization to {@link ClassRemappingObjectInputStream},
     /// which can remap deleted/moved class names before they ever reach the class loader.
     static class RawBytesDataType extends BasicDataType<byte[]> {
@@ -275,8 +278,8 @@ public final class SummariesMigrationV1 {
         }
 
         /// Reads a variable-length encoded int from `buff`, using the same encoding that
-    /// H2's `DataUtils.readVarInt` writes. Implemented inline to avoid a dependency
-    /// on whether `org.h2.mvstore.DataUtils` is exported by the H2 module.
+        /// H2's `DataUtils.readVarInt` writes. Implemented inline to avoid a dependency
+        /// on whether `org.h2.mvstore.DataUtils` is exported by the H2 module.
         private static int readVarInt(ByteBuffer buff) {
             int b = buff.get() & 0xFF;
             if (b < 0x80) {

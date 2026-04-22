@@ -20,12 +20,8 @@ import org.jabref.model.entry.event.FieldChangedEvent;
 import org.jabref.model.entry.field.StandardField;
 
 import com.google.common.eventbus.Subscribe;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSummaryAiDatabaseListener.class);
-
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
     private final SummarizationTaskAggregator summarizationTaskAggregator;
@@ -51,7 +47,7 @@ public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
                 aiPreferences.getSummarizatorProperties()
         ));
 
-        this.chatModel.bind(ObservablesHelper.createObjectBinding(
+        this.chatModel.bind(ObservablesHelper.createClosableObjectBinding(
                 () -> ChatModelFactory.create(aiPreferences),
                 aiPreferences.getChatProperties()
         ));
@@ -81,30 +77,34 @@ public class GenerateSummaryAiDatabaseListener implements AiDatabaseListener {
         public void listen(EntriesAddedEvent e) {
             e.getBibEntries().forEach(entry -> {
                 // [pp->req~ai.summarization.entries.auto~1]
-                if (aiPreferences.getEnableAi() && aiPreferences.getAutoGenerateSummaries()) {
-                    summarizationTaskAggregator.start(new GenerateSummaryTaskRequest(
-                            filePreferences,
-                            chatModel.get(),
-                            summarizator.get(),
-                            new FullBibEntry(context, entry),
-                            false
-                    ));
+                if (!aiPreferences.getEnableAi() || !aiPreferences.getAutoGenerateSummaries()) {
+                    return;
                 }
+
+                summarizationTaskAggregator.start(new GenerateSummaryTaskRequest(
+                        filePreferences,
+                        chatModel.get(),
+                        summarizator.get(),
+                        new FullBibEntry(context, entry),
+                        false
+                ));
             });
         }
 
         @Subscribe
         public void listen(FieldChangedEvent e) {
             // [pp->req~ai.summarization.entries.auto~1]
-            if (aiPreferences.getEnableAi() && e.getField() == StandardField.FILE && aiPreferences.getAutoGenerateSummaries()) {
-                summarizationTaskAggregator.start(new GenerateSummaryTaskRequest(
-                        filePreferences,
-                        chatModel.get(),
-                        summarizator.get(),
-                        new FullBibEntry(context, e.getBibEntry()),
-                        false
-                ));
+            if (!aiPreferences.getEnableAi() || !aiPreferences.getAutoGenerateSummaries() || e.getField() != StandardField.FILE) {
+                return;
             }
+
+            summarizationTaskAggregator.start(new GenerateSummaryTaskRequest(
+                    filePreferences,
+                    chatModel.get(),
+                    summarizator.get(),
+                    new FullBibEntry(context, e.getBibEntry()),
+                    false
+            ));
         }
     }
 }

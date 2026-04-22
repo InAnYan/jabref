@@ -1,26 +1,40 @@
 package org.jabref.logic.ai;
 
+import java.util.UUID;
+
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
 import org.jabref.logic.FilePreferences;
+import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.InMemoryChatHistoryCache;
 import org.jabref.logic.ai.chatting.migrations.ChatHistoryMigrationV1;
 import org.jabref.logic.ai.chatting.repositories.ChatHistoryRepository;
 import org.jabref.logic.ai.chatting.repositories.MVStoreChatHistoryRepository;
+import org.jabref.logic.ai.chatting.util.ChatModelFactory;
+import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
 import org.jabref.logic.ai.embedding.EmbeddingModelCache;
+import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
 import org.jabref.logic.ai.embedding.MVStoreEmbeddingStore;
 import org.jabref.logic.ai.ingestion.IngestionTaskAggregator;
 import org.jabref.logic.ai.ingestion.listeners.GenerateEmbeddingsAiDatabaseListener;
 import org.jabref.logic.ai.ingestion.logic.EmbeddingsCleaner;
+import org.jabref.logic.ai.ingestion.logic.documentsplitting.DocumentSplitter;
 import org.jabref.logic.ai.ingestion.repositories.IngestedDocumentsRepository;
 import org.jabref.logic.ai.ingestion.repositories.MVStoreIngestedDocumentsRepository;
+import org.jabref.logic.ai.ingestion.util.DocumentSplitterFactory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.summarization.InMemorySummaryCache;
 import org.jabref.logic.ai.summarization.SummarizationTaskAggregator;
 import org.jabref.logic.ai.summarization.listeners.GenerateSummaryAiDatabaseListener;
+import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
 import org.jabref.logic.ai.summarization.migration.SummariesMigrationV1;
 import org.jabref.logic.ai.summarization.repositories.MVStoreSummariesRepository;
 import org.jabref.logic.ai.summarization.repositories.SummariesRepository;
+import org.jabref.logic.ai.summarization.util.SummarizatorFactory;
 import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.NotificationService;
+import org.jabref.logic.util.ObservablesHelper;
 import org.jabref.logic.util.TaskExecutor;
 import org.jabref.model.database.BibDatabaseContext;
 
@@ -41,9 +55,12 @@ public class AiService implements AutoCloseable {
     private static final String FULLY_INGESTED_FILE_NAME = "fully-ingested.mv";
     private static final String SUMMARIES_FILE_NAME = "summaries.mv";
 
+    private final NotificationService notificationService;
+
     // Chatting components
     private final MVStoreChatHistoryRepository mvStoreChatHistoryRepository;
     private final InMemoryChatHistoryCache inMemoryChatHistoryCache;
+    private final ObjectProperty<ChatModel> currentChatModel = new SimpleObjectProperty<>();
 
     // Ingestion components
     private final EmbeddingModelCache embeddingModelCache;
@@ -52,12 +69,15 @@ public class AiService implements AutoCloseable {
     private final IngestionTaskAggregator ingestionTaskAggregator;
     private final EmbeddingsCleaner embeddingsCleaner;
     private final GenerateEmbeddingsAiDatabaseListener generateEmbeddingsAiDatabaseListener;
+    private final ObjectProperty<DocumentSplitter> currentDocumentSplitter = new SimpleObjectProperty<>();
+    private final ObjectProperty<AsyncEmbeddingModel> currentEmbeddingModel = new SimpleObjectProperty<>();
 
     // Summarization components
     private final MVStoreSummariesRepository mvStoreSummariesRepository;
     private final InMemorySummaryCache inMemorySummaryCache;
     private final SummarizationTaskAggregator summarizationTaskAggregator;
     private final GenerateSummaryAiDatabaseListener generateSummaryAiDatabaseListener;
+    private final ObjectProperty<Summarizator> currentSummarizator = new SimpleObjectProperty<>();
 
     public AiService(
             AiPreferences aiPreferences,
@@ -65,12 +85,18 @@ public class AiService implements AutoCloseable {
             NotificationService notificationService,
             TaskExecutor taskExecutor
     ) {
+        this.notificationService = notificationService;
+
         // Chatting components
         this.mvStoreChatHistoryRepository = new MVStoreChatHistoryRepository(
                 Directories.getAiFilesDirectory().resolve(CHAT_HISTORY_FILE_NAME),
                 notificationService
         );
         this.inMemoryChatHistoryCache = new InMemoryChatHistoryCache(mvStoreChatHistoryRepository);
+        this.currentChatModel.bind(ObservablesHelper.createClosableObjectBinding(
+                () -> ChatModelFactory.create(aiPreferences),
+                aiPreferences.getChatProperties()
+        ));
 
         // Ingestion components
         this.embeddingModelCache = new EmbeddingModelCache(notificationService, taskExecutor);
@@ -96,6 +122,15 @@ public class AiService implements AutoCloseable {
                 embeddingModelCache,
                 ingestionTaskAggregator
         );
+        this.currentEmbeddingModel.bind(ObservablesHelper.createClosableObjectBinding(
+                () -> EmbeddingModelFactory.create(aiPreferences, this.embeddingModelCache),
+                aiPreferences.getEmbeddingsProperties()
+        ));
+
+        this.currentDocumentSplitter.bind(ObservablesHelper.createObjectBinding(
+                () -> DocumentSplitterFactory.create(aiPreferences),
+                aiPreferences.getDocumentSplitterProperties()
+        ));
 
         // Summarization components
         this.mvStoreSummariesRepository = new MVStoreSummariesRepository(
@@ -109,14 +144,36 @@ public class AiService implements AutoCloseable {
                 filePreferences,
                 summarizationTaskAggregator
         );
+        this.currentSummarizator.bind(ObservablesHelper.createObjectBinding(
+                () -> SummarizatorFactory.create(aiPreferences),
+                aiPreferences.getSummarizatorProperties()
+        ));
     }
 
-    public void setupDatabase(BibDatabaseContext context) {
+    public void setupDatabase(BibDatabaseContext context, boolean isDummyContext) {
         generateEmbeddingsAiDatabaseListener.setupDatabase(context);
         generateSummaryAiDatabaseListener.setupDatabase(context);
+
+        if (!isDummyContext) {
+            ensureAiLibraryIdPresent(context);
+            migrateDatabase(context);
+        }
     }
 
-    public void migrateDatabase(NotificationService notificationService, BibDatabaseContext context) {
+    private void ensureAiLibraryIdPresent(BibDatabaseContext bibDatabaseContext) {
+        if (bibDatabaseContext.getMetaData().getAiLibraryId().isEmpty()) {
+            bibDatabaseContext.getMetaData().setEventPropagation(false);
+
+            // Adding a `finally` block just in case an error occurs when calling `setLibraryId`.
+            try {
+                bibDatabaseContext.getMetaData().setAiLibraryId(UUID.randomUUID().toString());
+            } finally {
+                bibDatabaseContext.getMetaData().setEventPropagation(true);
+            }
+        }
+    }
+
+    private void migrateDatabase(BibDatabaseContext context) {
         try {
             ChatHistoryMigrationV1.migrate(
                     context,
@@ -142,6 +199,10 @@ public class AiService implements AutoCloseable {
         return inMemoryChatHistoryCache;
     }
 
+    public ChatModel getCurrentChatModel() {
+        return currentChatModel.get();
+    }
+
     public EmbeddingModelCache getEmbeddingModelCache() {
         return embeddingModelCache;
     }
@@ -162,6 +223,14 @@ public class AiService implements AutoCloseable {
         return embeddingsCleaner;
     }
 
+    public DocumentSplitter getCurrentDocumentSplitter() {
+        return currentDocumentSplitter.get();
+    }
+
+    public AsyncEmbeddingModel getCurrentEmbeddingModel() {
+        return currentEmbeddingModel.get();
+    }
+
     public SummariesRepository getSummariesRepository() {
         return mvStoreSummariesRepository;
     }
@@ -172,6 +241,10 @@ public class AiService implements AutoCloseable {
 
     public SummarizationTaskAggregator getSummarizationTaskAggregator() {
         return summarizationTaskAggregator;
+    }
+
+    public Summarizator getCurrentSummarizator() {
+        return currentSummarizator.get();
     }
 
     @Override

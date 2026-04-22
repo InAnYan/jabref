@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.swing.undo.UndoManager;
@@ -123,34 +122,50 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
     private final NavigationHistory navigationHistory = new NavigationHistory();
     private final BooleanProperty canGoBackProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty canGoForwardProperty = new SimpleBooleanProperty(false);
-    // Indicates whether the tab is loading data using a dataloading task
-    // The constructors take care to the right true/false assignment during start.
-    private final SimpleBooleanProperty loading = new SimpleBooleanProperty(false);
-    private final OptionalObjectProperty<SearchQuery> searchQueryProperty = OptionalObjectProperty.empty();
-    private final IntegerProperty resultSize = new SimpleIntegerProperty(0);
-    private final ClipBoardManager clipBoardManager;
-    private final TaskExecutor taskExecutor;
-    private final AiService aiService;
+
     private boolean backOrForwardNavigationActionTriggered = false;
+
     private BibDatabaseContext bibDatabaseContext;
+
     // All subscribers needing "coarse" change events should use this filter
     // See https://devdocs.jabref.org/code-howtos/eventbus.html for details
     private CoarseChangeFilter coarseChangeFilter;
+
     private MainTableDataModel tableModel;
     private FileAnnotationCache annotationCache;
     private MainTable mainTable;
     private AutoRenameFileOnEntryChange autoRenameFileOnEntryChange;
+
+    // Indicates whether the tab is loading data using a dataloading task
+    // The constructors take care to the right true/false assignment during start.
+    private final SimpleBooleanProperty loading = new SimpleBooleanProperty(false);
+
     // initially, the dialog is loading, not saving
     private boolean saving = false;
+
     private PersonNameSuggestionProvider searchAutoCompleter;
+
     private SuggestionProviders suggestionProviders;
+
     @SuppressWarnings({"FieldCanBeLocal"})
     private Subscription dividerPositionSubscription;
+
     private ListProperty<GroupTreeNode> selectedGroupsProperty;
+    private final OptionalObjectProperty<SearchQuery> searchQueryProperty = OptionalObjectProperty.empty();
+    private final IntegerProperty resultSize = new SimpleIntegerProperty(0);
+
     private Optional<DatabaseChangeMonitor> changeMonitor = Optional.empty();
+
     private BackgroundTask<ParserResult> dataLoadingTask;
+
+    private final ClipBoardManager clipBoardManager;
+    private final TaskExecutor taskExecutor;
+
+    private final AiService aiService;
+
     private ImportHandler importHandler;
     private IndexManager indexManager;
+
     private Runnable autoCompleterChangedListener;
 
     /// If the context is a dummy, the Lucene index should not be created, as both the dummy context and the actual context share the same index path {@link BibDatabaseContext#getFulltextIndexPath()}.
@@ -241,30 +256,13 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
         autoRenameFileOnEntryChange = new AutoRenameFileOnEntryChange(bibDatabaseContext, preferences.getFilePreferences());
         coarseChangeFilter.registerListener(autoRenameFileOnEntryChange);
 
-        if (!isDummyContext) {
-            ensureAiLibraryIdPresent(bibDatabaseContext);
-            aiService.migrateDatabase(dialogService, bibDatabaseContext);
-        }
-
-        aiService.setupDatabase(bibDatabaseContext);
+        aiService.setupDatabase(bibDatabaseContext, isDummyContext);
 
         Platform.runLater(() -> {
             EasyBind.subscribe(changedProperty, this::updateTabTitle);
             stateManager.getOpenDatabases().addListener((ListChangeListener<BibDatabaseContext>) _ ->
                     updateTabTitle(changedProperty.getValue()));
         });
-    }
-
-    private void ensureAiLibraryIdPresent(BibDatabaseContext bibDatabaseContext) {
-        if (bibDatabaseContext.getMetaData().getAiLibraryId().isEmpty()) {
-            bibDatabaseContext.getMetaData().setEventPropagation(false);
-            // Adding a `finally` block just in case an error occurs when calling `setLibraryId`.
-            try {
-                bibDatabaseContext.getMetaData().setAiLibraryId(UUID.randomUUID().toString());
-            } finally {
-                bibDatabaseContext.getMetaData().setEventPropagation(true);
-            }
-        }
     }
 
     public void setAutoCompleterChangedListener(@NonNull Runnable listener) {

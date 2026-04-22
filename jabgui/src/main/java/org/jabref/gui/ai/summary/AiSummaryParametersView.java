@@ -1,5 +1,6 @@
 package org.jabref.gui.ai.summary;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.VBox;
@@ -12,6 +13,7 @@ import org.jabref.model.ai.summarization.SummarizatorKind;
 import com.airhacks.afterburner.views.ViewLoader;
 import jakarta.inject.Inject;
 
+/// A quick view (that is used as a dialog in [AiSummaryParametersDialog]) for modifying the parameters of the summarization process.
 public class AiSummaryParametersView extends VBox {
     @FXML private ComboBox<SummarizatorKind> summarizatorCombo;
 
@@ -43,7 +45,7 @@ public class AiSummaryParametersView extends VBox {
         summarizatorCombo.valueProperty().bindBidirectional(viewModel.summarizatorKindProperty());
     }
 
-    public Summarizator constructSummarizator() {
-        return viewModel.constructSummarizator();
+    public ObjectProperty<Summarizator> summarizatorProperty() {
+        return viewModel.summarizatorProperty();
     }
 }

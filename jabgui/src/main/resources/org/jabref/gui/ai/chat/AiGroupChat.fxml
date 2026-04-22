@@ -3,7 +3,6 @@
 <?import javafx.scene.layout.StackPane?>
 <?import org.jabref.gui.ai.AiPrivacyNoticeView?>
 <?import org.jabref.gui.ai.chat.AiChatView?>
-<?import org.jabref.gui.ai.statuspane.UniversalStatusPaneView?>
 <fx:root
         type="StackPane"
         xmlns="http://javafx.com/javafx"
@@ -11,13 +10,7 @@
         fx:controller="org.jabref.gui.ai.chat.AiGroupChatView">
 
     <AiPrivacyNoticeView
-            fx:id="privacyNotice"
-            disagreeBehaviour="HIDE_CHAT_WITH_GROUP_BUTTON"/>
-
-    <UniversalStatusPaneView
-            fx:id="emptyDatabasePathPane"
-            title="Unable to chat"
-            description="Please save the library in order to chat."/>
+            fx:id="privacyNotice"/>
 
     <AiChatView
             fx:id="aiChatView"/>

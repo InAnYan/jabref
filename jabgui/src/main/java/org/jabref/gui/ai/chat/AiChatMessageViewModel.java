@@ -16,6 +16,7 @@ import javafx.event.EventHandler;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.BindingsHelper;
+import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatMessage;
 
 public class AiChatMessageViewModel extends AbstractViewModel {
@@ -41,12 +42,12 @@ public class AiChatMessageViewModel extends AbstractViewModel {
         source.bind(chatMessage
                 .map(ChatMessage::role)
                 .map(ChatMessage.Role::getDisplayName));
-        messageContent.bind(chatMessage.map(ChatMessage::content).map(s -> s == null ? "" : s));
+        messageContent.bind(chatMessage.map(ChatMessage::content).map(StringUtil::makeSafe));
         timestamp.bind(chatMessage.map(ChatMessage::timestamp));
 
         showRegenerate.bind(chatMessage.map(ChatMessage::role).map(ChatMessage.Role::canRegenerate));
     }
-    
+
     public void delete() {
         BindingsHelper.handle(onDelete);
     }

@@ -59,16 +59,6 @@ public final class AiTemplateRenderer {
         return render(templateSource, "CITATION_PARSING_SYSTEM_MESSAGE", context);
     }
 
-    /// Renders the Markdown chat export template.
-    /// 
-    /// The following variables are available in the template:
-    /// 
-    /// - `$metadata` — {@link AiMetadata} with provider, model, and timestamp
-    /// - `$bibtex` — pre-rendered BibTeX string for all associated entries
-    /// - `$messages` — list of {@link ChatMessage} objects (SYSTEM messages excluded).
-    /// Access content via `$message.content()` and role via
-    /// `$message.role().getDisplayName()`
-    /// 
     public static String renderMarkdownChatExport(String templateSource, AiMetadata metadata, String bibtex, List<ChatMessage> messages) {
         VelocityContext context = new VelocityContext(BASE_CONTEXT);
         context.put("metadata", metadata);

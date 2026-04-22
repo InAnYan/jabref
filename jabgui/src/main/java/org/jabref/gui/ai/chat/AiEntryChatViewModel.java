@@ -1,7 +1,6 @@
 package org.jabref.gui.ai.chat;
 
 import java.util.Map;
-import java.util.Optional;
 
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -14,22 +13,18 @@ import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.logic.ai.chatting.InMemoryChatHistoryCache;
 import org.jabref.logic.ai.preferences.AiPreferences;
-import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatMessage;
 import org.jabref.model.ai.identifiers.FullBibEntry;
-import org.jabref.model.database.BibDatabaseContext;
-import org.jabref.model.entry.BibEntry;
+
+import com.tobiasdiez.easybind.EasyBind;
 
 public class AiEntryChatViewModel extends AbstractViewModel {
     public enum State {
         AI_TURNED_OFF,
-        NO_DATABASE_PATH,
-        NO_CITATION_KEY,
-        CITATION_KEY_NOT_UNIQUE,
         CHATTING
     }
 
-    private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.NO_DATABASE_PATH);
+    private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.AI_TURNED_OFF);
     private final ObjectProperty<FullBibEntry> selectedEntry = new SimpleObjectProperty<>();
     private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -51,55 +46,25 @@ public class AiEntryChatViewModel extends AbstractViewModel {
     private void setupBindings() {
         ObservableValue<Boolean> isAiTurnedOff = aiPreferences.enableAiProperty().not();
 
-        ObservableValue<Boolean> isNoDatabasePath = selectedEntry
-                .map(FullBibEntry::databaseContext)
-                .map(BibDatabaseContext::getDatabasePath)
-                .map(Optional::isEmpty)
-                .orElse(false);
-
-        ObservableValue<Boolean> isNoCitationKey = selectedEntry
-                .map(FullBibEntry::entry)
-                .map(BibEntry::getCitationKey)
-                .map(opt -> opt.isEmpty() || StringUtil.isBlank(opt.get()))
-                .orElse(false);
-
-        ObservableValue<Boolean> isCitationKeyNotUnique = selectedEntry
-                .map(fullBibEntry -> {
-                    Optional<String> citationKey = fullBibEntry.entry().getCitationKey();
-                    return citationKey.filter(s -> fullBibEntry.databaseContext().getDatabase().isDuplicateCitationKeyExisting(s)).isPresent();
-                });
-
         BindingsHelper.bindEnum(
                 state,
                 State.CHATTING,
 
                 Map.entry(State.AI_TURNED_OFF,
                         isAiTurnedOff.orElse(true)
-                ),
-
-                Map.entry(State.NO_DATABASE_PATH,
-                        isNoDatabasePath.orElse(true)
-                ),
-
-                Map.entry(State.NO_CITATION_KEY,
-                        isNoCitationKey.orElse(true)
-                ),
-
-                Map.entry(State.CITATION_KEY_NOT_UNIQUE,
-                        isCitationKeyNotUnique.orElse(true)
                 )
         );
     }
 
     private void setupListeners() {
-        BindingsHelper.listenWhen(
-                selectedEntry,
-                selectedEntry.isNotNull().and(state.isEqualTo(State.CHATTING)),
-                this::load
-        );
+        EasyBind.subscribe(selectedEntry, this::load);
     }
 
     private void load(FullBibEntry identifier) {
+        if (selectedEntry.get() == null || state.get() != State.CHATTING) {
+            return;
+        }
+
         assert identifier.databaseContext().getMetaData().getAiLibraryId().isPresent();
         assert identifier.entry().getCitationKey().isPresent();
 

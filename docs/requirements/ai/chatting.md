@@ -188,3 +188,5 @@ Rationale: essential for user orientation, ensuring that users can distinguish b
 Needs: impl
 
 Covers: `feat~ai.chatting.groups~1`
+
+<!-- markdownlint-disable-file MD022 -->

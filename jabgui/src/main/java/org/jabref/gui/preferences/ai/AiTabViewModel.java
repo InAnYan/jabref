@@ -19,15 +19,18 @@ import javafx.collections.FXCollections;
 import javafx.scene.control.SpinnerValueFactory;
 
 import org.jabref.gui.preferences.PreferenceTabViewModel;
+import org.jabref.logic.ai.preferences.AiDefaultExpertSettings;
 import org.jabref.logic.ai.preferences.AiDefaultTemplates;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.preferences.CliPreferences;
-import org.jabref.logic.util.LocalizedNumbers;
+import org.jabref.logic.util.LocalizedNumbersUtils;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.embeddings.PredefinedEmbeddingModel;
 import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.ai.llm.PredefinedChatModel;
+import org.jabref.model.ai.summarization.SummarizatorKind;
+import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
 import de.saxsys.mvvmfx.utils.validation.FunctionBasedValidator;
 import de.saxsys.mvvmfx.utils.validation.ValidationMessage;
@@ -91,6 +94,14 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
     private final BooleanProperty generateFollowUpQuestions = new SimpleBooleanProperty();
     private final IntegerProperty followUpQuestionsCount = new SimpleIntegerProperty();
+
+    private final ListProperty<SummarizatorKind> summarizationAlgorithmsList =
+            new SimpleListProperty<>(FXCollections.observableArrayList(SummarizatorKind.values()));
+    private final ObjectProperty<SummarizatorKind> summarizationAlgorithmProperty = new SimpleObjectProperty<>();
+
+    private final ObjectProperty<TokenEstimatorKind> tokenEstimationAlgorithmProperty = new SimpleObjectProperty<>();
+    private final ListProperty<TokenEstimatorKind> tokenEstimationAlgorithmsProperty =
+            new SimpleListProperty<>(FXCollections.observableArrayList(TokenEstimatorKind.values()));
 
     private final StringProperty temperature = new SimpleStringProperty();
     private final IntegerProperty contextWindowSize = new SimpleIntegerProperty();
@@ -258,13 +269,13 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
         this.temperatureTypeValidator = new FunctionBasedValidator<>(
                 temperature,
-                temp -> LocalizedNumbers.stringToDouble(temp).isPresent(),
+                temp -> LocalizedNumbersUtils.stringToDouble(temp).isPresent(),
                 ValidationMessage.error(Localization.lang("Temperature must be a number")));
 
         // Source: https://platform.openai.com/docs/api-reference/chat/create#chat-create-temperature
         this.temperatureRangeValidator = new FunctionBasedValidator<>(
                 temperature,
-                temp -> LocalizedNumbers.stringToDouble(temp).map(t -> t >= 0 && t <= 2).orElse(false),
+                temp -> LocalizedNumbersUtils.stringToDouble(temp).map(t -> t >= 0 && t <= 2).orElse(false),
                 ValidationMessage.error(Localization.lang("Temperature must be between 0 and 2")));
 
         this.contextWindowSizeValidator = new FunctionBasedValidator<>(
@@ -289,12 +300,12 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
         this.ragMinScoreTypeValidator = new FunctionBasedValidator<>(
                 ragMinScore,
-                minScore -> LocalizedNumbers.stringToDouble(minScore).isPresent(),
+                minScore -> LocalizedNumbersUtils.stringToDouble(minScore).isPresent(),
                 ValidationMessage.error(Localization.lang("RAG minimum score must be a number")));
 
         this.ragMinScoreRangeValidator = new FunctionBasedValidator<>(
                 ragMinScore,
-                minScore -> LocalizedNumbers.stringToDouble(minScore).map(s -> s > 0 && s < 1).orElse(false),
+                minScore -> LocalizedNumbersUtils.stringToDouble(minScore).map(s -> s > 0 && s < 1).orElse(false),
                 ValidationMessage.error(Localization.lang("RAG minimum score must be greater than 0 and less than 1")));
     }
 
@@ -337,12 +348,14 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         followUpQuestionsCount.set(aiPreferences.getFollowUpQuestionsCount());
         followUpQuestionsTemplate.set(aiPreferences.getFollowUpQuestionsTemplate());
 
-        temperature.setValue(LocalizedNumbers.doubleToString(aiPreferences.getTemperature()));
+        summarizationAlgorithmProperty.setValue(aiPreferences.getSummarizatorKind());
+        tokenEstimationAlgorithmProperty.setValue(aiPreferences.getTokenEstimatorKind());
+        temperature.setValue(LocalizedNumbersUtils.doubleToString(aiPreferences.getTemperature()));
         contextWindowSize.setValue(aiPreferences.getContextWindowSize());
         documentSplitterChunkSize.setValue(aiPreferences.getDocumentSplitterChunkSize());
         documentSplitterOverlapSize.setValue(aiPreferences.getDocumentSplitterOverlapSize());
         ragMaxResultsCount.setValue(aiPreferences.getRagMaxResultsCount());
-        ragMinScore.setValue(LocalizedNumbers.doubleToString(aiPreferences.getRagMinScore()));
+        ragMinScore.setValue(LocalizedNumbersUtils.doubleToString(aiPreferences.getRagMinScore()));
     }
 
     @Override
@@ -384,13 +397,15 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         aiPreferences.setFollowUpQuestionsCount(followUpQuestionsCount.get());
         aiPreferences.setFollowUpQuestionsTemplate(followUpQuestionsTemplate.get());
 
+        aiPreferences.setSummarizatorKind(summarizationAlgorithmProperty.get());
+        aiPreferences.setTokenEstimatorKind(tokenEstimationAlgorithmProperty.get());
         // We already check the correctness of temperature and RAG minimum score in validators, so we don't need to check it here.
-        aiPreferences.setTemperature(LocalizedNumbers.stringToDouble(oldLocale, temperature.get()).get());
+        aiPreferences.setTemperature(LocalizedNumbersUtils.stringToDouble(oldLocale, temperature.get()).get());
         aiPreferences.setContextWindowSize(contextWindowSize.get());
         aiPreferences.setDocumentSplitterChunkSize(documentSplitterChunkSize.get());
         aiPreferences.setDocumentSplitterOverlapSize(documentSplitterOverlapSize.get());
         aiPreferences.setRagMaxResultsCount(ragMaxResultsCount.get());
-        aiPreferences.setRagMinScore(LocalizedNumbers.stringToDouble(oldLocale, ragMinScore.get()).get());
+        aiPreferences.setRagMinScore(LocalizedNumbersUtils.stringToDouble(oldLocale, ragMinScore.get()).get());
     }
 
     public void resetExpertSettings() {
@@ -399,12 +414,13 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
         contextWindowSize.set(PredefinedChatModel.getContextWindowSize(selectedAiProvider.get(), currentChatModel.get()));
 
-        // TODO: Get default values.
-        temperature.set(LocalizedNumbers.doubleToString(0.7));
-        documentSplitterChunkSize.set(300);
-        documentSplitterOverlapSize.set(100);
-        ragMaxResultsCount.set(10);
-        ragMinScore.set(LocalizedNumbers.doubleToString(0.3));
+        summarizationAlgorithmProperty.set(AiDefaultExpertSettings.SUMMARIZATOR_KIND);
+        tokenEstimationAlgorithmProperty.set(AiDefaultExpertSettings.TOKEN_ESTIMATOR_KIND);
+        temperature.set(LocalizedNumbersUtils.doubleToString(AiDefaultExpertSettings.TEMPERATURE));
+        documentSplitterChunkSize.set(AiDefaultExpertSettings.DOCUMENT_SPLITTER_CHUNK_SIZE);
+        documentSplitterOverlapSize.set(AiDefaultExpertSettings.DOCUMENT_SPLITTER_OVERLAP_SIZE);
+        ragMaxResultsCount.set(AiDefaultExpertSettings.RAG_MAX_RESULTS_COUNT);
+        ragMinScore.set(LocalizedNumbersUtils.doubleToString(AiDefaultExpertSettings.RAG_MIN_SCORE));
     }
 
     public void resetTemplates() {
@@ -434,12 +450,12 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         summarizationCombineSystemMessageTemplate.set(AiDefaultTemplates.SUMMARIZATION_COMBINE_SYSTEM_MESSAGE_TEMPLATE);
     }
 
-    public void resetCitationParsingSystemMessageTemplate() {
-        citationParsingSystemMessageTemplate.set(AiDefaultTemplates.CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE);
-    }
-
     public void resetSummarizationFullDocumentSystemMessageTemplate() {
         summarizationFullDocumentSystemMessageTemplate.set(AiDefaultTemplates.SUMMARIZATION_FULL_DOCUMENT_SYSTEM_MESSAGE_TEMPLATE);
+    }
+
+    public void resetCitationParsingSystemMessageTemplate() {
+        citationParsingSystemMessageTemplate.set(AiDefaultTemplates.CITATION_PARSING_SYSTEM_MESSAGE_TEMPLATE);
     }
 
     public void resetMarkdownChatExportTemplate() {
@@ -569,8 +585,28 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         return summarizationCombineSystemMessageTemplate;
     }
 
+    public StringProperty summarizationFullDocumentSystemMessageTemplateProperty() {
+        return summarizationFullDocumentSystemMessageTemplate;
+    }
+
     public StringProperty citationParsingSystemMessageTemplateProperty() {
         return citationParsingSystemMessageTemplate;
+    }
+
+    public ListProperty<SummarizatorKind> summarizationAlgorithmsProperty() {
+        return summarizationAlgorithmsList;
+    }
+
+    public ObjectProperty<SummarizatorKind> summarizationAlgorithmProperty() {
+        return summarizationAlgorithmProperty;
+    }
+
+    public ListProperty<TokenEstimatorKind> tokenEstimationAlgorithmsProperty() {
+        return tokenEstimationAlgorithmsProperty;
+    }
+
+    public ObjectProperty<TokenEstimatorKind> tokenEstimationAlgorithmProperty() {
+        return tokenEstimationAlgorithmProperty;
     }
 
     public StringProperty temperatureProperty() {

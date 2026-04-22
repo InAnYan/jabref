@@ -1,7 +1,7 @@
 package org.jabref.gui.ai.summary;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.ButtonBar;
 
 import org.jabref.gui.util.BaseDialog;
 import org.jabref.logic.ai.summarization.logic.summarizationalgorithms.Summarizator;
@@ -18,16 +18,12 @@ public class AiSummaryParametersDialog extends BaseDialog<Summarizator> {
 
         this.setTitle(Localization.lang("Summarization parameters"));
 
-        this.setResultConverter(buttonType -> {
-            if (buttonType.getButtonData() == ButtonBar.ButtonData.CANCEL_CLOSE) {
-                return null;
-            } else {
-                return aiSummaryParametersView.constructSummarizator();
-            }
-        });
-
         ViewLoader.view(this)
                   .load()
                   .setAsDialogPane(this);
+    }
+
+    public ObjectProperty<Summarizator> summarizatorProperty() {
+        return aiSummaryParametersView.summarizatorProperty();
     }
 }

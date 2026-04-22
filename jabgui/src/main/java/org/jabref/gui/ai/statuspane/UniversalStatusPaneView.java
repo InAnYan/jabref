@@ -15,8 +15,9 @@ import javafx.scene.layout.HBox;
 
 import com.airhacks.afterburner.views.ViewLoader;
 
-/// Universal status pane view that supports showing title, description, text area, spinner, and two buttons.
-/// Each component (except title and description) can be shown or hidden via boolean properties.
+/// A handy component to display a state of a system: whether there is some important information, error, or action to take.
+///
+/// Look at the [org.jabref.gui.ai.summary.AiSummaryView] for an example of usage.
 public class UniversalStatusPaneView extends BorderPane {
     @FXML private Label titleLabel;
     @FXML private Label descriptionLabel;
@@ -42,7 +43,6 @@ public class UniversalStatusPaneView extends BorderPane {
     }
 
     private void setupBindings() {
-        // Bind managed property to visible property for all components
         titleLabel.managedProperty().bind(titleLabel.visibleProperty());
         descriptionLabel.managedProperty().bind(descriptionLabel.visibleProperty());
         textArea.managedProperty().bind(textArea.visibleProperty());
@@ -51,20 +51,16 @@ public class UniversalStatusPaneView extends BorderPane {
         button1.managedProperty().bind(button1.visibleProperty());
         button2.managedProperty().bind(button2.visibleProperty());
 
-        // Bind visibility - title and description hide when empty
         titleLabel.visibleProperty().bind(viewModel.titleProperty().isNotEmpty());
         descriptionLabel.visibleProperty().bind(viewModel.descriptionProperty().isNotEmpty());
 
-        // Bind visibility for optional components
         textArea.visibleProperty().bind(viewModel.showTextAreaProperty());
         spinner.visibleProperty().bind(viewModel.showSpinnerProperty());
         button1.visibleProperty().bind(viewModel.showButton1Property());
         button2.visibleProperty().bind(viewModel.showButton2Property());
 
-        // Hide buttons box when both buttons are hidden
         buttonsBox.visibleProperty().bind(viewModel.showButton1Property().or(viewModel.showButton2Property()));
 
-        // Bind text properties
         titleLabel.textProperty().bind(viewModel.titleProperty());
         descriptionLabel.textProperty().bind(viewModel.descriptionProperty());
         textArea.textProperty().bind(viewModel.textAreaContentProperty());
@@ -82,7 +78,6 @@ public class UniversalStatusPaneView extends BorderPane {
         viewModel.executeButton2Action();
     }
 
-    // Title property methods
     public StringProperty titleProperty() {
         return viewModel.titleProperty();
     }
@@ -95,7 +90,6 @@ public class UniversalStatusPaneView extends BorderPane {
         viewModel.titleProperty().set(title);
     }
 
-    // Description property methods
     public StringProperty descriptionProperty() {
         return viewModel.descriptionProperty();
     }
@@ -108,7 +102,6 @@ public class UniversalStatusPaneView extends BorderPane {
         viewModel.descriptionProperty().set(description);
     }
 
-    // Text area property methods
     public BooleanProperty showTextAreaProperty() {
         return viewModel.showTextAreaProperty();
     }
@@ -133,7 +126,6 @@ public class UniversalStatusPaneView extends BorderPane {
         viewModel.textAreaContentProperty().set(textAreaContent);
     }
 
-    // Spinner property methods
     public BooleanProperty showSpinnerProperty() {
         return viewModel.showSpinnerProperty();
     }
@@ -146,7 +138,6 @@ public class UniversalStatusPaneView extends BorderPane {
         viewModel.showSpinnerProperty().set(showSpinner);
     }
 
-    // Button 1 property methods
     public BooleanProperty showButton1Property() {
         return viewModel.showButton1Property();
     }
@@ -183,7 +174,6 @@ public class UniversalStatusPaneView extends BorderPane {
         viewModel.button1ActionProperty().set(button1Action);
     }
 
-    // Button 2 property methods
     public BooleanProperty showButton2Property() {
         return viewModel.showButton2Property();
     }
@@ -220,7 +210,6 @@ public class UniversalStatusPaneView extends BorderPane {
         viewModel.button2ActionProperty().set(button2Action);
     }
 
-    // Convenience properties for FXML binding (matching JavaFX conventions)
     public ObjectProperty<EventHandler<ActionEvent>> onButton1ClickProperty() {
         return viewModel.button1ActionProperty();
     }

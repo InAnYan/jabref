@@ -1,5 +1,6 @@
 package org.jabref.gui.ai.summary;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
@@ -18,16 +19,20 @@ public class AiSummaryParametersViewModel extends AbstractViewModel {
     );
     private final ObjectProperty<SummarizatorKind> summarizatorKind = new SimpleObjectProperty<>();
 
-    private final AiPreferences aiPreferences;
+    private final ObjectProperty<Summarizator> summarizator = new SimpleObjectProperty<>();
 
     public AiSummaryParametersViewModel(AiPreferences aiPreferences) {
-        this.aiPreferences = aiPreferences;
-
-        setupValues();
-    }
-
-    private void setupValues() {
         this.summarizatorKind.set(aiPreferences.getSummarizatorKind());
+
+        this.summarizator.bind(Bindings.createObjectBinding(
+                () -> SummarizatorFactory.create(
+                        summarizatorKind.get(),
+                        aiPreferences.getSummarizationChunkSystemMessageTemplate(),
+                        aiPreferences.getSummarizationCombineSystemMessageTemplate(),
+                        aiPreferences.getSummarizationFullDocumentSystemMessageTemplate()
+                ),
+                summarizatorKind
+        ));
     }
 
     public ListProperty<SummarizatorKind> summarizatorKindsProperty() {
@@ -38,12 +43,7 @@ public class AiSummaryParametersViewModel extends AbstractViewModel {
         return summarizatorKind;
     }
 
-    public Summarizator constructSummarizator() {
-        return SummarizatorFactory.create(
-                summarizatorKind.get(),
-                aiPreferences.getSummarizationChunkSystemMessageTemplate(),
-                aiPreferences.getSummarizationCombineSystemMessageTemplate(),
-                aiPreferences.getSummarizationFullDocumentSystemMessageTemplate()
-        );
+    public ObjectProperty<Summarizator> summarizatorProperty() {
+        return summarizator;
     }
 }

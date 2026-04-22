@@ -3,6 +3,8 @@ package org.jabref.toolkit.commands;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.jabref.logic.ai.chatting.ChatModel;
+import org.jabref.logic.ai.chatting.util.ChatModelFactory;
 import org.jabref.logic.importer.FetcherException;
 import org.jabref.logic.importer.fetcher.citation.CitationFetcher;
 import org.jabref.logic.importer.fetcher.citation.CitationFetcherType;
@@ -42,28 +44,31 @@ class GetCitedWorks implements Callable<Integer> {
     public Integer call() {
         CliPreferences preferences = argumentProcessor.cliPreferences;
 
-        CitationFetcher citationFetcher = CitationFetcherType.getCitationFetcher(
-                citationFetcherType,
-                preferences.getImporterPreferences(),
-                preferences.getImportFormatPreferences(),
-                preferences.getCitationKeyPatternPreferences(),
-                preferences.getGrobidPreferences(),
-                preferences.getAiPreferences()
-        );
+        try (ChatModel chatModel = ChatModelFactory.create(preferences.getAiPreferences())) {
+            CitationFetcher citationFetcher = CitationFetcherType.getCitationFetcher(
+                    citationFetcherType,
+                    preferences.getImporterPreferences(),
+                    preferences.getImportFormatPreferences(),
+                    preferences.getCitationKeyPatternPreferences(),
+                    preferences.getGrobidPreferences(),
+                    preferences.getAiPreferences(),
+                    chatModel
+            );
 
-        List<BibEntry> entries;
+            List<BibEntry> entries;
 
-        try {
-            entries = citationFetcher.getReferences(new BibEntry().withField(StandardField.DOI, doi));
-        } catch (FetcherException e) {
-            LOGGER.error("Could not fetch citation information based on DOI", e);
-            System.err.print(Localization.lang("No data was found for the identifier"));
-            System.err.println(" - " + doi);
-            System.err.println(e.getLocalizedMessage());
-            System.err.println();
-            return 2;
+            try {
+                entries = citationFetcher.getReferences(new BibEntry().withField(StandardField.DOI, doi));
+            } catch (FetcherException e) {
+                LOGGER.error("Could not fetch citation information based on DOI", e);
+                System.err.print(Localization.lang("No data was found for the identifier"));
+                System.err.println(" - " + doi);
+                System.err.println(e.getLocalizedMessage());
+                System.err.println();
+                return 2;
+            }
+
+            return JabKit.outputEntries(argumentProcessor.cliPreferences, entries);
         }
-
-        return JabKit.outputEntries(argumentProcessor.cliPreferences, entries);
     }
 }

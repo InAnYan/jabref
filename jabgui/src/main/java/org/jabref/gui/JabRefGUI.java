@@ -244,6 +244,7 @@ public class JabRefGUI extends Application {
                 preferences.getCitationKeyPatternPreferences(),
                 preferences.getGrobidPreferences(),
                 preferences.getAiPreferences(),
+                aiService.getCurrentChatModel(),
                 entryTypesManager,
                 dialogService
         );

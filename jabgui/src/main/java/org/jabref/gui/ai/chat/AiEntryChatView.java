@@ -5,7 +5,6 @@ import javafx.fxml.FXML;
 import javafx.scene.layout.StackPane;
 
 import org.jabref.gui.ai.AiPrivacyNoticeView;
-import org.jabref.gui.ai.statuspane.UniversalStatusPaneView;
 import org.jabref.gui.preferences.GuiPreferences;
 import org.jabref.logic.ai.AiService;
 import org.jabref.model.ai.identifiers.FullBibEntry;
@@ -16,9 +15,6 @@ import jakarta.inject.Inject;
 // [impl->feat~ai.chatting.entries~1]
 public class AiEntryChatView extends StackPane {
     @FXML private AiPrivacyNoticeView privacyNotice;
-    @FXML private UniversalStatusPaneView emptyDatabasePathPane;
-    @FXML private UniversalStatusPaneView emptyCitationKeyPane;
-    @FXML private UniversalStatusPaneView nonUniqueCitationKeyPane;
     @FXML private AiChatView aiChatView;
 
     @Inject private GuiPreferences preferences;
@@ -45,15 +41,9 @@ public class AiEntryChatView extends StackPane {
     private void setupBindings() {
         // [pp->feat~ai.chatting.entries~1]
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
-        emptyDatabasePathPane.managedProperty().bind(emptyDatabasePathPane.visibleProperty());
-        emptyCitationKeyPane.managedProperty().bind(emptyCitationKeyPane.visibleProperty());
-        nonUniqueCitationKeyPane.managedProperty().bind(nonUniqueCitationKeyPane.visibleProperty());
         aiChatView.managedProperty().bind(aiChatView.visibleProperty());
 
         privacyNotice.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiEntryChatViewModel.State.AI_TURNED_OFF));
-        emptyDatabasePathPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiEntryChatViewModel.State.NO_DATABASE_PATH));
-        emptyCitationKeyPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiEntryChatViewModel.State.NO_CITATION_KEY));
-        nonUniqueCitationKeyPane.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiEntryChatViewModel.State.CITATION_KEY_NOT_UNIQUE));
         aiChatView.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiEntryChatViewModel.State.CHATTING));
 
         aiChatView.chatHistoryProperty().bind(viewModel.chatHistoryProperty());

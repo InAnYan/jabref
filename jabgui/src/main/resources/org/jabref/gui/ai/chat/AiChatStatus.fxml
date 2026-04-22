@@ -35,13 +35,13 @@
 
         <HBox spacing="10"
               alignment="CENTER_LEFT">
-            <Label text="%Chat model:"/>
+            <Label text="%Chat model"/>
             <Label fx:id="chatModelLabel"/>
         </HBox>
 
         <HBox spacing="10"
               alignment="CENTER_LEFT">
-            <Label text="%Answer engine:"/>
+            <Label text="%Answer engine"/>
             <ComboBox
                     fx:id="answerEngineComboBox"
                     prefWidth="200"/>

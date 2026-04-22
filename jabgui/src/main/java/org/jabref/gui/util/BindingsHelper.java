@@ -37,11 +37,12 @@ import com.tobiasdiez.easybind.PreboundBinding;
 import com.tobiasdiez.easybind.Subscription;
 
 /// Helper methods for javafx binding. Some methods are taken from https://bugs.openjdk.java.net/browse/JDK-8134679
-public class BindingsHelper {
+public final class BindingsHelper {
     private BindingsHelper() {
         throw new UnsupportedOperationException("cannot instantiate a utility class");
     }
 
+    /// A variant of [EasyBind#listen] that uses [Runnable] as listeners
     public static Subscription listen(Observable observable, Runnable... runnables) {
         InvalidationListener listener = _ -> {
             for (Runnable runnable : runnables) {
@@ -54,6 +55,7 @@ public class BindingsHelper {
         return () -> observable.removeListener(listener);
     }
 
+    /// A variant of [EasyBind#listen] that uses [Consumer] as listeners.
     @SafeVarargs
     public static <T> Subscription listen(ObservableValue<T> observable, Consumer<T>... consumers) {
         ChangeListener<T> listener = (_, _, value) -> {
@@ -65,6 +67,21 @@ public class BindingsHelper {
         observable.addListener(listener);
 
         return () -> observable.removeListener(listener);
+    }
+
+    /// A variant of [EasyBind#listen] that uses [Runnable] as a listener and listens to several observables.
+    public static <T> Subscription listen(Runnable runnable, Observable... observables) {
+        InvalidationListener listener = _ -> runnable.run();
+
+        for (Observable observable : observables) {
+            observable.addListener(listener);
+        }
+
+        return () -> {
+            for (Observable observable : observables) {
+                observable.removeListener(listener);
+            }
+        };
     }
 
     public static Subscription includePseudoClassWhen(Node node, PseudoClass pseudoClass, ObservableValue<? extends Boolean> condition) {
@@ -271,6 +288,7 @@ public class BindingsHelper {
         });
     }
 
+    /// Bind the enum property value to multiple conditions. Useful for making state machines.
     @SafeVarargs
     public static <E extends Enum<E>> void bindEnum(
             Property<E> target,
@@ -292,59 +310,7 @@ public class BindingsHelper {
         target.bind(binding);
     }
 
-    public static <T, V, R extends ObservableValue<V>> void bindInternalListener(
-            ObservableValue<T> parentProperty,
-            Function<T, R> propertyExtractor,
-            ChangeListener<? super V> listener
-    ) {
-
-        parentProperty.addListener((_, oldVal, newVal) -> {
-            if (oldVal != null) {
-                propertyExtractor.apply(oldVal).removeListener(listener);
-            }
-            if (newVal != null) {
-                propertyExtractor.apply(newVal).addListener(listener);
-            }
-        });
-    }
-
-    @SafeVarargs
-    public static <T> void listenWhen(
-            ObservableValue<T> observable,
-            ObservableValue<Boolean> condition,
-            Consumer<T>... actions
-    ) {
-        observable.addListener((_, _, newVal) -> {
-            if (Boolean.TRUE.equals(condition.getValue())) {
-                for (var action : actions) {
-                    action.accept(newVal);
-                }
-            }
-        });
-    }
-
-    public static <T, U> void listenWhen(
-            ObservableValue<T> observable1,
-            ObservableValue<U> observable2,
-            ObservableValue<Boolean> condition,
-            Runnable... actions
-    ) {
-        InvalidationListener listener = _ -> {
-            boolean obs1Present = observable1.getValue() != null;
-            boolean obs2Present = observable2.getValue() != null;
-            boolean isConditionMet = Boolean.TRUE.equals(condition.getValue());
-
-            if (obs1Present && obs2Present && isConditionMet) {
-                for (var action : actions) {
-                    action.run();
-                }
-            }
-        };
-
-        observable1.addListener(listener);
-        observable2.addListener(listener);
-    }
-
+    /// A shorthand to perform actions on list modification: one function that processes added elements, and one for removed.
     public static <T> void listenToListContentChanges(ListProperty<T> listProperty, Consumer<T> onAdded, Consumer<T> onRemoved) {
         listProperty.addListener((ListChangeListener<T>) c -> {
             while (c.next()) {
@@ -358,6 +324,7 @@ public class BindingsHelper {
         });
     }
 
+    /// A shorthand to make a [ListChangeListener] out of the [Runnable].
     public static <T> void listenToListChange(ListProperty<T> listProperty, Runnable... actions) {
         listProperty.addListener((ListChangeListener<T>) _ -> {
             for (Runnable action : actions) {
@@ -366,6 +333,7 @@ public class BindingsHelper {
         });
     }
 
+    /// A horthand for calling the properties of action event handlers.
     public static void handle(ObjectProperty<EventHandler<ActionEvent>> handler) {
         if (handler.get() != null) {
             handler.get().handle(null);

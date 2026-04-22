@@ -315,6 +315,12 @@
             <TextArea
                     fx:id="summarizationCombineSystemMessageTextArea"/>
         </Tab>
+        <Tab fx:id="summarizationFullDocumentSystemMessageTab"
+             text="%System message for 'full document' summarization"
+             closable="false">
+            <TextArea
+                    fx:id="summarizationFullDocumentSystemMessageTextArea"/>
+        </Tab>
         <Tab fx:id="citationParsingSystemMessageTab"
              text="%System message for parsing raw citations"
              closable="false">
@@ -392,6 +398,25 @@
         <Spinner
                 fx:id="followUpQuestionsCountSpinner"
                 editable="true"
+                maxWidth="100"/>
+    </HBox>
+
+    <HBox alignment="CENTER_LEFT"
+          spacing="10.0">
+        <Label alignment="BASELINE_CENTER"
+               text="%Default summarization algorithm"/>
+        <SearchableComboBox
+                fx:id="summarizationAlgorithmComboBox"
+                maxWidth="100"/>
+    </HBox>
+
+
+    <HBox alignment="CENTER_LEFT"
+          spacing="10.0">
+        <Label alignment="BASELINE_CENTER"
+               text="%Default token estimation algorithm"/>
+        <SearchableComboBox
+                fx:id="tokenEstimationAlgorithmComboBox"
                 maxWidth="100"/>
     </HBox>
 </fx:root>
