@@ -64,10 +64,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         if (selectedEntry.get() == null || state.get() != State.CHATTING) {
             return;
         }
-
-        assert identifier.databaseContext().getMetaData().getAiLibraryId().isPresent();
-        assert identifier.entry().getCitationKey().isPresent();
-
+        
         entries.set(FXCollections.observableArrayList(identifier));
 
         chatHistory.set(chatHistoryCache.getForEntry(
