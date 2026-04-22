@@ -13,8 +13,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.input.ClipboardContent;
 
 import org.jabref.gui.AbstractViewModel;
+import org.jabref.gui.clipboard.ClipBoardManager;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatMessage;
@@ -33,7 +35,11 @@ public class AiChatMessageViewModel extends AbstractViewModel {
     private final ObjectProperty<EventHandler<ActionEvent>> onDelete = new SimpleObjectProperty<>();
     private final ObjectProperty<EventHandler<ActionEvent>> onRegenerate = new SimpleObjectProperty<>();
 
-    public AiChatMessageViewModel() {
+    private final ClipBoardManager clipBoardManager;
+
+    public AiChatMessageViewModel(ClipBoardManager clipBoardManager) {
+        this.clipBoardManager = clipBoardManager;
+
         setupBindings();
     }
 
@@ -54,6 +60,13 @@ public class AiChatMessageViewModel extends AbstractViewModel {
 
     public void regenerate() {
         BindingsHelper.handle(onRegenerate);
+    }
+
+    public void copyToClipboard() {
+        ClipboardContent content = new ClipboardContent();
+        content.putString(messageContent.get());
+
+        clipBoardManager.setContent(content);
     }
 
     public ObjectProperty<ChatMessage> chatMessageProperty() {

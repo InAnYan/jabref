@@ -10,18 +10,21 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import org.jabref.gui.clipboard.ClipBoardManager;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.LocaleUtil;
 import org.jabref.gui.util.component.MarkdownTextFlow;
 import org.jabref.model.ai.chatting.ChatMessage;
 
 import com.airhacks.afterburner.views.ViewLoader;
+import jakarta.inject.Inject;
 
 public class AiChatMessageView extends HBox {
     private static final PseudoClass USER_PSEUDO_CLASS = PseudoClass.getPseudoClass("user");
@@ -32,12 +35,15 @@ public class AiChatMessageView extends HBox {
 
     @FXML private Label sourceLabel;
     @FXML private StackPane markdownContentPane;
+    @FXML private ContextMenu contextMenu;
 
     @FXML private VBox buttonsVBox;
     // [impl->req~ai.chat.regenerate-response~1]
     @FXML private Button regenerateButton;
     // [impl->req~ai.chat.delete-messages~1]
     @FXML private Button deleteButton;
+
+    @Inject private ClipBoardManager clipboardManager;
 
     // Tooltip for the whole component.
     private Tooltip tooltip = new Tooltip();
@@ -53,12 +59,15 @@ public class AiChatMessageView extends HBox {
 
     @FXML
     private void initialize() {
-        this.viewModel = new AiChatMessageViewModel();
+        this.viewModel = new AiChatMessageViewModel(clipboardManager);
 
         markdownTextFlow = new MarkdownTextFlow(markdownContentPane);
         markdownContentPane.getChildren().add(markdownTextFlow);
 
         Tooltip.install(vBox, tooltip);
+
+        vBox.setOnContextMenuRequested(event ->
+                contextMenu.show(vBox, event.getScreenX(), event.getScreenY()));
 
         setupBindings();
         setupListeners();
@@ -135,6 +144,11 @@ public class AiChatMessageView extends HBox {
     @FXML
     private void onRegenerateClick() {
         viewModel.regenerate();
+    }
+
+    @FXML
+    private void onCopyContextMenuClick() {
+        viewModel.copyToClipboard();
     }
 
     public ObjectProperty<ChatMessage> chatMessageProperty() {
