@@ -21,17 +21,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 // [utest->req~ai.summarization.general.storage~1]
 class SummariesRepositoryTest {
 
-    @TempDir
-    static Path tempDir;
+    private static final AiSummaryIdentifier IDENTIFIER = new AiSummaryIdentifier("lib-1", "Smith2024");
 
-    static List<SummariesRepository> repositories() {
+    @TempDir
+    private static Path tempDir;
+
+    private static List<SummariesRepository> repositories() {
         return List.of(
                 new MVStoreSummariesRepository(_ -> {
                 }, tempDir.resolve("summaries-test.mv"))
         );
     }
-
-    private static final AiSummaryIdentifier IDENTIFIER = new AiSummaryIdentifier("lib-1", "Smith2024");
 
     private static AiSummary buildSummary(String content) {
         AiMetadata metadata = new AiMetadata(AiProvider.OPEN_AI, "gpt-4", Instant.now());

@@ -176,6 +176,10 @@ public class AiChatStatusView extends VBox {
         return Localization.lang("%0 %1", model.getAiProvider().getDisplayName(), model.getName());
     }
 
+    public void setAnswerEngine(AnswerEngine answerEngine) {
+        viewModel.setAnswerEngine(answerEngine);
+    }
+
     @FXML
     private void exportJson() {
         viewModel.exportJson();

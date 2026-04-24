@@ -174,8 +174,6 @@ class ChatHistoryMigrationV1Test {
     private record DiscoveredEntry(Path dbPath, ChatType chatType, String chatName) {
     }
 
-    /// Minimal parser for the JSON companion format:
-    /// {@code { "<dbPath>": { "<citationKey>": [{"role":"user|assistant","text":"..."},…] } }}
     private static class JsonChatHistoryFile {
 
         private final Map<String, Map<String, List<JsonMessage>>> data;

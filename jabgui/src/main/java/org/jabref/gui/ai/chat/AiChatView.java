@@ -35,8 +35,6 @@ import jakarta.inject.Inject;
 /// To set up this component, set or bind the [#entriesProperty()] and [#chatHistoryProperty()] properties.
 // [impl->feat~ai.chatting~1]
 public class AiChatView extends StackPane {
-    private final AiChatStatusWindow aiChatStatusWindow = new AiChatStatusWindow();
-
     @FXML private AiPrivacyNoticeView privacyNotice;
     @FXML private UniversalStatusPaneView noFilesErrorPane;
     @FXML private BorderPane mainContainer;
@@ -76,6 +74,7 @@ public class AiChatView extends StackPane {
         viewModel = new AiChatViewModel(
                 preferences.getAiPreferences(),
                 preferences.getFilePreferences(),
+                dialogService,
                 aiService.getIngestionTaskAggregator(),
                 aiService.getIngestedDocumentsRepository(),
                 aiService.getEmbeddingsStore(),
@@ -89,13 +88,6 @@ public class AiChatView extends StackPane {
     }
 
     private void setupBindings() {
-        viewModel.answerEngineProperty().bind(aiChatStatusWindow.answerEngineProperty());
-        viewModel.chatModelProperty().bind(aiChatStatusWindow.chatModelProperty());
-
-        aiChatStatusWindow.entriesProperty().bind(viewModel.entriesProperty());
-        aiChatStatusWindow.generateEmbeddingsTasksProperty().bind(viewModel.generateEmbeddingsTasksProperty());
-        aiChatStatusWindow.chatHistoryProperty().bind(viewModel.chatHistoryProperty());
-
         chatHistoryScrollPane.itemsProperty().bind(viewModel.chatHistoryProperty());
         chatHistoryScrollPane.setRenderer(this::renderChatMessage);
         chatHistoryScrollPane.setAutoScrollToBottom(true);
@@ -176,7 +168,7 @@ public class AiChatView extends StackPane {
 
     @FXML
     private void showInfo() {
-        dialogService.showCustomDialogAndWait(aiChatStatusWindow);
+        viewModel.showInfo();
     }
 
     @FXML

@@ -14,12 +14,11 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddings
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ProgressCounter;
-import org.jabref.model.entry.LinkedFile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// This task generates embeddings for several {@link LinkedFile} (typically used for groups).
+/// This task generates embeddings for several linked files (typically used for groups).
 /// It will check if embeddings were already generated.
 /// And it also will store the embeddings.
 public class GenerateEmbeddingsForSeveralTask extends BackgroundTask<Void> {

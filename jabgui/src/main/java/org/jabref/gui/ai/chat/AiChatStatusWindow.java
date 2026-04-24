@@ -28,6 +28,10 @@ public class AiChatStatusWindow extends BaseDialog<Void> {
                   .setAsDialogPane(this);
     }
 
+    public void setAnswerEngine(AnswerEngine answerEngine) {
+        aiChatStatusView.setAnswerEngine(answerEngine);
+    }
+
     public ObjectProperty<ChatModel> chatModelProperty() {
         return aiChatStatusView.chatModelProperty();
     }

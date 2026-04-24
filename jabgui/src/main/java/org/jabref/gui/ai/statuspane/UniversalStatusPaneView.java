@@ -27,7 +27,8 @@ public class UniversalStatusPaneView extends BorderPane {
     @FXML private Button button1;
     @FXML private Button button2;
 
-    private UniversalStatusPaneViewModel viewModel;
+    // NOTE: Needed to construct the view model in a field in order for localization tests to work.
+    private final UniversalStatusPaneViewModel viewModel = new UniversalStatusPaneViewModel();
 
     public UniversalStatusPaneView() {
         ViewLoader.view(this)
@@ -37,8 +38,6 @@ public class UniversalStatusPaneView extends BorderPane {
 
     @FXML
     private void initialize() {
-        viewModel = new UniversalStatusPaneViewModel();
-
         setupBindings();
     }
 

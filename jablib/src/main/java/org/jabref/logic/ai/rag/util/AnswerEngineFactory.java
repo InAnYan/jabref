@@ -1,6 +1,7 @@
 package org.jabref.logic.ai.rag.util;
 
 import org.jabref.logic.FilePreferences;
+import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
 import org.jabref.logic.ai.rag.logic.EmbeddingsSearchAnswerEngine;
 import org.jabref.logic.ai.rag.logic.FullDocumentAnswerEngine;
@@ -35,5 +36,21 @@ public final class AnswerEngineFactory {
                             ragMaxResultsCount
                     );
         };
+    }
+
+    public static AnswerEngine create(
+            AiPreferences aiPreferences,
+            FilePreferences filePreferences,
+            EmbeddingModel embeddingModel,
+            EmbeddingStore<TextSegment> embeddingStore
+    ) {
+        return create(
+                aiPreferences.getAnswerEngineKind(),
+                filePreferences,
+                embeddingModel,
+                embeddingStore,
+                aiPreferences.getRagMinScore(),
+                aiPreferences.getRagMaxResultsCount()
+        );
     }
 }

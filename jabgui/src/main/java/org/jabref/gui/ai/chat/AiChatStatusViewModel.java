@@ -278,6 +278,10 @@ public class AiChatStatusViewModel extends AbstractViewModel {
                      });
     }
 
+    public void setAnswerEngine(AnswerEngine answerEngine) {
+        selectedAnswerEngineKind.set(answerEngine.getKind());
+    }
+
     public void clearChatHistory() {
         // [guard->req~ai.chat.clear-history~1]
         boolean confirmed = dialogService.showConfirmationDialogAndWait(

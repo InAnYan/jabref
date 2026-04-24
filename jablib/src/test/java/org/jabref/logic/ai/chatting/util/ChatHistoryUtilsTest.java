@@ -3,13 +3,13 @@ package org.jabref.logic.ai.chatting.util;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.jabref.model.ai.chatting.ChatMessage;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // [utest->req~ai.chat.delete-messages~1]
@@ -48,9 +48,10 @@ class ChatHistoryUtilsTest {
         ChatMessage ai = new ChatMessage("id-ai", Instant.ofEpochMilli(2000), ChatMessage.Role.AI, "ai answer", List.of());
         List<ChatMessage> history = new ArrayList<>(List.of(user, ai));
 
-        String toRegenerate = ChatHistoryUtils.regenerate(history, user.id());
+        Optional<String> toRegenerate = ChatHistoryUtils.regenerate(history, user.id());
 
-        assertEquals("user question", toRegenerate);
+        assertTrue(toRegenerate.isPresent());
+        assertEquals("user question", toRegenerate.get());
         // Messages at or after the user message timestamp are removed
         assertTrue(history.stream().allMatch(m -> m.timestamp().isBefore(user.timestamp())));
     }
@@ -61,10 +62,10 @@ class ChatHistoryUtilsTest {
         ChatMessage ai = new ChatMessage("id-ai", Instant.ofEpochMilli(2000), ChatMessage.Role.AI, "ai answer", List.of());
         List<ChatMessage> history = new ArrayList<>(List.of(user, ai));
 
-        String toRegenerate = ChatHistoryUtils.regenerate(history, ai.id());
+        Optional<String> toRegenerate = ChatHistoryUtils.regenerate(history, ai.id());
 
-        // Should find the preceding USER message content
-        assertEquals("original question", toRegenerate);
+        assertTrue(toRegenerate.isPresent());
+        assertEquals("original question", toRegenerate.get());
     }
 
     @Test
@@ -73,9 +74,9 @@ class ChatHistoryUtilsTest {
                 ChatMessage.userMessage("question")
         ));
 
-        String result = ChatHistoryUtils.regenerate(history, "ghost-id");
+        Optional<String> result = ChatHistoryUtils.regenerate(history, "ghost-id");
 
-        assertNull(result);
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -126,25 +127,26 @@ class ChatHistoryUtilsTest {
         ChatMessage user2 = ChatMessage.userMessage("second question");
         List<ChatMessage> history = List.of(user1, ai, user2);
 
-        ChatMessage last = ChatHistoryUtils.getLastUserMessage(history);
+        Optional<ChatMessage> last = ChatHistoryUtils.getLastUserMessage(history);
 
-        assertEquals("second question", last.content());
+        assertTrue(last.isPresent());
+        assertEquals("second question", last.get().content());
     }
 
     @Test
     void getLastUserMessageReturnsNullWhenNoUserMessage() {
         List<ChatMessage> history = List.of(ChatMessage.aiMessage("only AI", List.of()));
 
-        ChatMessage last = ChatHistoryUtils.getLastUserMessage(history);
+        Optional<ChatMessage> last = ChatHistoryUtils.getLastUserMessage(history);
 
-        assertNull(last);
+        assertTrue(last.isEmpty());
     }
 
     @Test
     void getLastUserMessageReturnsNullForEmptyHistory() {
-        ChatMessage last = ChatHistoryUtils.getLastUserMessage(List.of());
+        Optional<ChatMessage> last = ChatHistoryUtils.getLastUserMessage(List.of());
 
-        assertNull(last);
+        assertTrue(last.isEmpty());
     }
 }
 

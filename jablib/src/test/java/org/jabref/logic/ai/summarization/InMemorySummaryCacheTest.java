@@ -26,11 +26,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InMemorySummaryCacheTest {
 
+    private static final String LIBRARY_ID = "test-lib-id";
+
     private FakeSummariesRepository fakeRepository;
     private InMemorySummaryCache cache;
 
     private BibDatabaseContext databaseContext;
-    private static final String LIBRARY_ID = "test-lib-id";
 
     @BeforeEach
     void setUp() {

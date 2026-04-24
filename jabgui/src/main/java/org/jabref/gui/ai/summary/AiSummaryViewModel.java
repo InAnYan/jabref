@@ -256,7 +256,11 @@ public class AiSummaryViewModel extends AbstractViewModel {
         }
 
         AiSummaryParametersDialog parametersDialog = new AiSummaryParametersDialog();
-        dialogService.showCustomDialogAndWait(parametersDialog);
+        Optional<Boolean> result = dialogService.showCustomDialogAndWait(parametersDialog);
+
+        if (result.isEmpty() || !result.get()) {
+            return;
+        }
 
         @Nullable Summarizator customSummarizator = parametersDialog.summarizatorProperty().get();
 

@@ -134,11 +134,12 @@ class SummariesMigrationV1Test {
 
                     for (var entry : map.entrySet()) {
                         String citationKey = entry.getKey();
-                        SummariesMigrationV1.OldSummary oldSummary =
+
+                        Optional<SummariesMigrationV1.OldSummary> oldSummary =
                                 SummariesMigrationV1.deserializeOldSummary(entry.getValue());
-                        if (oldSummary != null) {
-                            result.add(new DiscoveredEntry(dbPath, citationKey, oldSummary));
-                        }
+
+                        oldSummary.ifPresent(summary ->
+                                result.add(new DiscoveredEntry(dbPath, citationKey, summary)));
                     }
                 }
             }

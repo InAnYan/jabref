@@ -19,11 +19,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import org.jabref.gui.AbstractViewModel;
+import org.jabref.gui.DialogService;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.logic.FilePreferences;
 import org.jabref.logic.ai.chatting.ChatModel;
 import org.jabref.logic.ai.chatting.tasks.GenerateRagResponseTask;
 import org.jabref.logic.ai.chatting.util.ChatHistoryUtils;
+import org.jabref.logic.ai.chatting.util.ChatModelFactory;
 import org.jabref.logic.ai.embedding.AsyncEmbeddingModel;
 import org.jabref.logic.ai.embedding.EmbeddingModelCache;
 import org.jabref.logic.ai.embedding.EmbeddingModelFactory;
@@ -36,6 +38,7 @@ import org.jabref.logic.ai.ingestion.tasks.generateembeddings.GenerateEmbeddings
 import org.jabref.logic.ai.ingestion.util.DocumentSplitterFactory;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.logic.ai.rag.logic.AnswerEngine;
+import org.jabref.logic.ai.rag.util.AnswerEngineFactory;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
 import org.jabref.logic.util.ObservablesHelper;
@@ -92,6 +95,7 @@ public class AiChatViewModel extends AbstractViewModel {
 
     private final AiPreferences aiPreferences;
     private final FilePreferences filePreferences;
+    private final DialogService dialogService;
     private final IngestionTaskAggregator ingestionTaskAggregator;
     private final IngestedDocumentsRepository ingestedDocumentsRepository;
     private final EmbeddingStore<TextSegment> embeddingStore;
@@ -107,6 +111,7 @@ public class AiChatViewModel extends AbstractViewModel {
     public AiChatViewModel(
             AiPreferences aiPreferences,
             FilePreferences filePreferences,
+            DialogService dialogService,
             IngestionTaskAggregator ingestionTaskAggregator,
             IngestedDocumentsRepository ingestedDocumentsRepository,
             EmbeddingStore<TextSegment> embeddingStore,
@@ -115,6 +120,7 @@ public class AiChatViewModel extends AbstractViewModel {
     ) {
         this.aiPreferences = aiPreferences;
         this.filePreferences = filePreferences;
+        this.dialogService = dialogService;
         this.ingestionTaskAggregator = ingestionTaskAggregator;
         this.ingestedDocumentsRepository = ingestedDocumentsRepository;
         this.embeddingStore = embeddingStore;
@@ -122,6 +128,7 @@ public class AiChatViewModel extends AbstractViewModel {
         this.taskExecutor = taskExecutor;
 
         setupBindings();
+        setupValues();
         setupListeners();
     }
 
@@ -164,6 +171,19 @@ public class AiChatViewModel extends AbstractViewModel {
                 Map.entry(State.NO_FILES, hasNoFiles),
                 Map.entry(State.ERROR, isError)
         );
+    }
+
+    private void setupValues() {
+        answerEngine.setValue(AnswerEngineFactory.create(
+                aiPreferences.getAnswerEngineKind(),
+                filePreferences,
+                embeddingModel.get(),
+                embeddingStore,
+                aiPreferences.getRagMinScore(),
+                aiPreferences.getRagMaxResultsCount()
+        ));
+
+        chatModel.setValue(ChatModelFactory.create(aiPreferences));
     }
 
     private void setupListeners() {
@@ -227,6 +247,20 @@ public class AiChatViewModel extends AbstractViewModel {
                         }
                 )
         );
+    }
+
+    public void showInfo() {
+        AiChatStatusWindow window = new AiChatStatusWindow();
+
+        window.chatModelProperty().bind(chatModel);
+        window.entriesProperty().bind(entries);
+        window.generateEmbeddingsTasksProperty().bind(generateEmbeddingsTasks);
+
+        window.setAnswerEngine(answerEngine.get());
+
+        dialogService.showCustomDialogAndWait(window);
+
+        answerEngine.set(window.answerEngineProperty().get());
     }
 
     public void sendMessage(String userMessage) {

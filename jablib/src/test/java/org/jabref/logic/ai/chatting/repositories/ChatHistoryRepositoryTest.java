@@ -20,8 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 // [utest->req~ai.chat.groups.history-storage~1]
 class ChatHistoryRepositoryTest {
 
+    private static final ChatIdentifier IDENTIFIER = new ChatIdentifier("lib-1", ChatType.WITH_ENTRY, "Smith2024");
+
     @TempDir
-    static Path tempDir;
+    private static Path tempDir;
 
     static List<ChatHistoryRepository> repositories() {
         return List.of(
@@ -29,8 +31,6 @@ class ChatHistoryRepositoryTest {
                 })
         );
     }
-
-    private static final ChatIdentifier IDENTIFIER = new ChatIdentifier("lib-1", ChatType.WITH_ENTRY, "Smith2024");
 
     @ParameterizedTest
     @MethodSource("repositories")
