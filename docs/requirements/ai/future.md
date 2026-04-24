@@ -2,6 +2,8 @@
 parent: ai
 ---
 
+<!-- oft:off -->
+
 # Future features
 `feat~ai.future~1`
 
@@ -46,5 +48,7 @@ Rationale: currently it is hard to test other chat model in an AI chat, because 
 Needs: impl, dsn, utest
 
 Covers: `feat~ai.chatting~1`
+
+<!-- oft:on -->
 
 <!-- markdownlint-disable-file MD022 -->

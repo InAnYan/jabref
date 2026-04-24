@@ -41,7 +41,7 @@ Covers: `feat~ai.chat.general~1`
 
 Rationale: the input field should support multi-line input, auto-resizing, keyboard shortcuts, and history
 
-Needs: impl, <!-- oft:off --> utest <!-- oft:on -->
+Needs: impl
 
 Covers: `feat~ai.chat.general~1`
 
@@ -51,8 +51,6 @@ Covers: `feat~ai.chat.general~1`
 Rationale: allows the user to reset the context completely and start a fresh conversation without previous biases
 
 Needs: impl, guard, utest
-
-Covers: `feat~ai.chat.general~1`
 
 ### Display the status of ingested files in AI chat
 `req~ai.chat.ingestion-status~1`

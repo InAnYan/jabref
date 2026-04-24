@@ -160,7 +160,6 @@
               spacing="10.0">
             <Label alignment="BASELINE_CENTER"
                    text="%API base URL (used only for LLM)"/>
-            <!-- impl->req~ai.llms.custom.base-url~1 -->
             <TextField
                     fx:id="apiBaseUrlTextField"
                     disable="true"
