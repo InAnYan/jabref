@@ -29,6 +29,7 @@ import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.embeddings.PredefinedEmbeddingModel;
 import org.jabref.model.ai.llm.AiProvider;
 import org.jabref.model.ai.llm.PredefinedChatModel;
+import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
@@ -94,6 +95,10 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
     private final BooleanProperty generateFollowUpQuestions = new SimpleBooleanProperty();
     private final IntegerProperty followUpQuestionsCount = new SimpleIntegerProperty();
+
+    private final ListProperty<AnswerEngineKind> answerEnginesList =
+            new SimpleListProperty<>(FXCollections.observableArrayList(AnswerEngineKind.values()));
+    private final ObjectProperty<AnswerEngineKind> answerEngineProperty = new SimpleObjectProperty<>();
 
     private final ListProperty<SummarizatorKind> summarizationAlgorithmsList =
             new SimpleListProperty<>(FXCollections.observableArrayList(SummarizatorKind.values()));
@@ -348,8 +353,10 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         followUpQuestionsCount.set(aiPreferences.getFollowUpQuestionsCount());
         followUpQuestionsTemplate.set(aiPreferences.getFollowUpQuestionsTemplate());
 
+        answerEngineProperty.set(aiPreferences.getAnswerEngineKind());
         summarizationAlgorithmProperty.setValue(aiPreferences.getSummarizatorKind());
         tokenEstimationAlgorithmProperty.setValue(aiPreferences.getTokenEstimatorKind());
+
         temperature.setValue(LocalizedNumbersUtils.doubleToString(aiPreferences.getTemperature()));
         contextWindowSize.setValue(aiPreferences.getContextWindowSize());
         documentSplitterChunkSize.setValue(aiPreferences.getDocumentSplitterChunkSize());
@@ -397,8 +404,10 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         aiPreferences.setFollowUpQuestionsCount(followUpQuestionsCount.get());
         aiPreferences.setFollowUpQuestionsTemplate(followUpQuestionsTemplate.get());
 
+        aiPreferences.setAnswerEngineKind(answerEngineProperty.get());
         aiPreferences.setSummarizatorKind(summarizationAlgorithmProperty.get());
         aiPreferences.setTokenEstimatorKind(tokenEstimationAlgorithmProperty.get());
+
         // We already check the correctness of temperature and RAG minimum score in validators, so we don't need to check it here.
         aiPreferences.setTemperature(LocalizedNumbersUtils.stringToDouble(oldLocale, temperature.get()).get());
         aiPreferences.setContextWindowSize(contextWindowSize.get());
@@ -413,6 +422,10 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         currentApiBaseUrl.set(resetApiBaseUrl);
 
         contextWindowSize.set(PredefinedChatModel.getContextWindowSize(selectedAiProvider.get(), currentChatModel.get()));
+
+        answerEngineProperty.set(AiDefaultExpertSettings.ANSWER_ENGINE_KIND);
+        summarizationAlgorithmProperty.set(AiDefaultExpertSettings.SUMMARIZATOR_KIND);
+        tokenEstimationAlgorithmProperty.set(AiDefaultExpertSettings.TOKEN_ESTIMATOR_KIND);
 
         summarizationAlgorithmProperty.set(AiDefaultExpertSettings.SUMMARIZATOR_KIND);
         tokenEstimationAlgorithmProperty.set(AiDefaultExpertSettings.TOKEN_ESTIMATOR_KIND);
@@ -591,6 +604,14 @@ public class AiTabViewModel implements PreferenceTabViewModel {
 
     public StringProperty citationParsingSystemMessageTemplateProperty() {
         return citationParsingSystemMessageTemplate;
+    }
+
+    public ListProperty<AnswerEngineKind> answerEngineKindsProperty() {
+        return answerEnginesList;
+    }
+
+    public ObjectProperty<AnswerEngineKind> answerEngineProperty() {
+        return answerEngineProperty;
     }
 
     public ListProperty<SummarizatorKind> summarizationAlgorithmsProperty() {

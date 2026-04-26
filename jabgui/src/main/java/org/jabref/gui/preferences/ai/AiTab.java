@@ -27,6 +27,7 @@ import org.jabref.logic.help.HelpFile;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.model.ai.embeddings.PredefinedEmbeddingModel;
 import org.jabref.model.ai.llm.AiProvider;
+import org.jabref.model.ai.pipeline.AnswerEngineKind;
 import org.jabref.model.ai.summarization.SummarizatorKind;
 import org.jabref.model.ai.tokenization.TokenEstimatorKind;
 
@@ -54,6 +55,8 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private VBox expertSettingsPane;
     @FXML private TextField apiBaseUrlTextField;
     @FXML private SearchableComboBox<PredefinedEmbeddingModel> embeddingModelComboBox;
+    @FXML private ComboBox<AnswerEngineKind> answerEngineComboBox;
+    // [impl->req~ai.summarization.algorithm.default~1]
     @FXML private ComboBox<SummarizatorKind> summarizationAlgorithmComboBox;
     @FXML private ComboBox<TokenEstimatorKind> tokenEstimationAlgorithmComboBox;
     // [impl->req~ai.expert-settings.chat-inference-global~1]
@@ -81,9 +84,9 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
     @FXML private TextArea userMessageTextArea;
     // [impl->req~ai.summarization.algorithms.chunked.system-prompt-chunk~1]
     @FXML private TextArea summarizationChunkSystemMessageTextArea;
-    @FXML private TextArea summarizationChunkUserMessageTextArea;
     // [impl->req~ai.summarization.algorithms.chunked.system-prompt-combine~1]
     @FXML private TextArea summarizationCombineSystemMessageTextArea;
+    // [impl->req~ai.summarization.algorithms.full.system-prompt~1]
     @FXML private TextArea summarizationFullDocumentSystemMessageTextArea;
     // [impl->req~ai.citation-parsing.system-prompt-config~1]
     @FXML private TextArea citationParsingSystemMessageTextArea;
@@ -138,6 +141,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         userMessageTextArea.textProperty().bindBidirectional(viewModel.chattingUserMessageTemplateProperty());
         summarizationChunkSystemMessageTextArea.textProperty().bindBidirectional(viewModel.summarizationChunkSystemMessageTemplateProperty());
         summarizationCombineSystemMessageTextArea.textProperty().bindBidirectional(viewModel.summarizationCombineSystemMessageTemplateProperty());
+        summarizationFullDocumentSystemMessageTextArea.textProperty().bindBidirectional(viewModel.summarizationFullDocumentSystemMessageTemplateProperty());
         citationParsingSystemMessageTextArea.textProperty().bindBidirectional(viewModel.citationParsingSystemMessageTemplateProperty());
         markdownChatExportTemplateTextArea.textProperty().bindBidirectional(viewModel.markdownChatExportTemplateProperty());
         followUpQuestionsTemplateTextArea.textProperty().bindBidirectional(viewModel.followUpQuestionsTemplateProperty());
@@ -148,6 +152,7 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
         userMessageTextArea.disableProperty().bind(aiDisabled);
         summarizationChunkSystemMessageTextArea.disableProperty().bind(aiDisabled);
         summarizationCombineSystemMessageTextArea.disableProperty().bind(aiDisabled);
+        summarizationFullDocumentSystemMessageTextArea.disableProperty().bind(aiDisabled);
         citationParsingSystemMessageTextArea.disableProperty().bind(aiDisabled);
         markdownChatExportTemplateTextArea.disableProperty().bind(aiDisabled);
         followUpQuestionsTemplateTextArea.disableProperty().bind(aiDisabled);
@@ -204,6 +209,13 @@ public class AiTab extends AbstractPreferenceTabView<AiTabViewModel> implements 
                 contextWindowSizeTextField.valueProperty().set(newValue == null ? 0 : newValue.intValue()));
 
         contextWindowSizeTextField.disableProperty().bind(viewModel.disableExpertSettingsProperty());
+
+        new ViewModelListCellFactory<AnswerEngineKind>()
+                .withText(AnswerEngineKind::getDisplayName)
+                .install(answerEngineComboBox);
+        answerEngineComboBox.setItems(viewModel.answerEngineKindsProperty());
+        answerEngineComboBox.valueProperty().bindBidirectional(viewModel.answerEngineProperty());
+        answerEngineComboBox.disableProperty().bind(viewModel.disableExpertSettingsProperty());
 
         new ViewModelListCellFactory<SummarizatorKind>()
                 .withText(SummarizatorKind::getDisplayName)

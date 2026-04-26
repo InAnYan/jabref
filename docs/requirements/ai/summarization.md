@@ -70,14 +70,12 @@ Needs: impl
 
 Covers: `feat~ai.summarization~1`
 
-<!-- oft:off -->
 ### Allow users to select a default summarization algorithm
-`feat~ai.summarization.algorithm.default~1`
+`req~ai.summarization.algorithm.default~1`
 
 Needs: impl
 
 Covers: `feat~ai.summarization.algorithms~1`
-<!-- oft:on -->
 
 ### "Chunked" AI summarization algorithm
 `feat~ai.summarization.algorithms.chunked~1`
@@ -119,7 +117,6 @@ Reference: <https://arxiv.org/abs/2307.03172>
 
 Covers: `feat~ai.summarization.algorithms~1`
 
-<!-- oft:off -->
 #### Allow customization of the system prompt for "full document" AI summarization
 `req~ai.summarization.algorithms.full.system-prompt~1`
 
@@ -128,6 +125,5 @@ Rationale: users need to adjust the underlying prompt structures to refine AI ou
 Needs: impl
 
 Covers: `feat~ai.summarization.algorithms.full~1`, `feat~ai.expert-settings~1`
-<!-- oft:on -->
 
 <!-- markdownlint-disable-file MD022 -->

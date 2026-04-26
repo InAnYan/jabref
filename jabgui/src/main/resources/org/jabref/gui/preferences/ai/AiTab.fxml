@@ -392,8 +392,7 @@
 
     <HBox spacing="10"
           alignment="CENTER_LEFT">
-        <Label fx:id="followUpQuestionsCountLabel"
-               text="%Number of follow-up questions"/>
+        <Label text="%Number of follow-up questions"/>
         <Spinner
                 fx:id="followUpQuestionsCountSpinner"
                 editable="true"
@@ -403,8 +402,17 @@
     <HBox alignment="CENTER_LEFT"
           spacing="10.0">
         <Label alignment="BASELINE_CENTER"
+               text="%Default answer engine"/>
+        <ComboBox
+                fx:id="answerEngineComboBox"
+                maxWidth="200"/>
+    </HBox>
+
+    <HBox alignment="CENTER_LEFT"
+          spacing="10.0">
+        <Label alignment="BASELINE_CENTER"
                text="%Default summarization algorithm"/>
-        <SearchableComboBox
+        <ComboBox
                 fx:id="summarizationAlgorithmComboBox"
                 maxWidth="100"/>
     </HBox>
@@ -414,7 +422,7 @@
           spacing="10.0">
         <Label alignment="BASELINE_CENTER"
                text="%Default token estimation algorithm"/>
-        <SearchableComboBox
+        <ComboBox
                 fx:id="tokenEstimationAlgorithmComboBox"
                 maxWidth="100"/>
     </HBox>
