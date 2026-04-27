@@ -31,13 +31,13 @@ public class AiChatMessageView extends HBox {
     private static final PseudoClass AI_PSEUDO_CLASS = PseudoClass.getPseudoClass("ai");
     private static final PseudoClass ERROR_PSEUDO_CLASS = PseudoClass.getPseudoClass("error");
 
-    @FXML private VBox vBox;
+    @FXML private VBox bubble;
 
     @FXML private Label sourceLabel;
     @FXML private StackPane markdownContentPane;
     @FXML private ContextMenu contextMenu;
 
-    @FXML private VBox buttonsVBox;
+    @FXML private VBox buttons;
     // [impl->req~ai.chat.regenerate-response~1]
     @FXML private Button regenerateButton;
     // [impl->req~ai.chat.delete-messages~1]
@@ -64,10 +64,10 @@ public class AiChatMessageView extends HBox {
         markdownTextFlow = new MarkdownTextFlow(markdownContentPane);
         markdownContentPane.getChildren().add(markdownTextFlow);
 
-        Tooltip.install(vBox, tooltip);
+        Tooltip.install(bubble, tooltip);
 
-        vBox.setOnContextMenuRequested(event ->
-                contextMenu.show(vBox, event.getScreenX(), event.getScreenY()));
+        bubble.setOnContextMenuRequested(event ->
+                contextMenu.show(bubble, event.getScreenX(), event.getScreenY()));
 
         setupBindings();
         setupListeners();
@@ -81,7 +81,7 @@ public class AiChatMessageView extends HBox {
         tooltip.textProperty().bind(viewModel.timestampProperty().map(LocaleUtil::formatInstant));
 
         this.alignmentProperty().bind(viewModel.chatMessageProperty().map(AiChatMessageView::determineAlignment));
-        buttonsVBox.visibleProperty().bind(this.hoverProperty());
+        buttons.visibleProperty().bind(this.hoverProperty());
 
         regenerateButton.visibleProperty().bind(viewModel.showRegenerateProperty());
         deleteButton.visibleProperty().bind(viewModel.showDeleteProperty());
@@ -96,9 +96,9 @@ public class AiChatMessageView extends HBox {
         ObservableValue<Boolean> isAi = messageRole.map(v -> v == ChatMessage.Role.AI);
         ObservableValue<Boolean> isError = messageRole.map(v -> v == ChatMessage.Role.ERROR);
 
-        BindingsHelper.includePseudoClassWhen(vBox, USER_PSEUDO_CLASS, isUser.orElse(false));
-        BindingsHelper.includePseudoClassWhen(vBox, AI_PSEUDO_CLASS, isAi.orElse(false));
-        BindingsHelper.includePseudoClassWhen(vBox, ERROR_PSEUDO_CLASS, isError.orElse(false));
+        BindingsHelper.includePseudoClassWhen(bubble, USER_PSEUDO_CLASS, isUser.orElse(false));
+        BindingsHelper.includePseudoClassWhen(bubble, AI_PSEUDO_CLASS, isAi.orElse(false));
+        BindingsHelper.includePseudoClassWhen(bubble, ERROR_PSEUDO_CLASS, isError.orElse(false));
     }
 
     private void setupListeners() {
@@ -114,9 +114,9 @@ public class AiChatMessageView extends HBox {
         this.getChildren().clear();
 
         if (chatMessage.role() == ChatMessage.Role.USER) {
-            this.getChildren().addAll(buttonsVBox, vBox);
+            this.getChildren().addAll(buttons, bubble);
         } else {
-            this.getChildren().addAll(vBox, buttonsVBox);
+            this.getChildren().addAll(bubble, buttons);
         }
     }
 
