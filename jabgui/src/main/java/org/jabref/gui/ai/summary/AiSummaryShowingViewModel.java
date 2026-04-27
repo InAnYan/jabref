@@ -37,9 +37,11 @@ import org.slf4j.LoggerFactory;
 public class AiSummaryShowingViewModel extends AbstractViewModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiSummaryShowingViewModel.class);
 
-    private static final String HTML_TEMPLATE =
-            "<body style='margin: 0; padding: 5px; width: 100vw'>" +
-                    "<div style='white-space: pre-wrap; word-wrap: break-word; width: 100vw'>%s</div></body>";
+    private static final String HTML_TEMPLATE = """
+            <body style="margin: 0; padding: 5px; width: 100vw">
+                <div style="white-space: pre-wrap; word-wrap: break-word; width: 100vw">%s</div>
+            </body>
+            """;
 
     private static final MarkdownFormatter MARKDOWN_FORMATTER = new MarkdownFormatter();
 
