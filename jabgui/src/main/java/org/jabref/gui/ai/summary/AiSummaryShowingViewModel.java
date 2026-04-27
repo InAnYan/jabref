@@ -2,7 +2,6 @@ package org.jabref.gui.ai.summary;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 import javafx.beans.binding.Bindings;
@@ -25,6 +24,7 @@ import org.jabref.logic.ai.summarization.exporters.AiSummaryMarkdownExporter;
 import org.jabref.logic.bibtex.FieldPreferences;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.layout.format.MarkdownFormatter;
+import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.StandardFileType;
 import org.jabref.model.ai.AiMetadata;
 import org.jabref.model.ai.identifiers.FullBibEntry;
@@ -112,7 +112,7 @@ public class AiSummaryShowingViewModel extends AbstractViewModel {
         FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
                 .addExtensionFilter(StandardFileType.MARKDOWN)
                 .withDefaultExtension(StandardFileType.MARKDOWN)
-                .withInitialDirectory(Path.of(System.getProperty("user.home")))
+                .withInitialDirectory(Directories.getUserDirectory())
                 .build();
 
         dialogService.showFileSaveDialog(fileDialogConfiguration)
@@ -142,7 +142,7 @@ public class AiSummaryShowingViewModel extends AbstractViewModel {
         FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
                 .addExtensionFilter(StandardFileType.JSON)
                 .withDefaultExtension(StandardFileType.JSON)
-                .withInitialDirectory(Path.of(System.getProperty("user.home")))
+                .withInitialDirectory(Directories.getUserDirectory())
                 .build();
 
         dialogService.showFileSaveDialog(fileDialogConfiguration)

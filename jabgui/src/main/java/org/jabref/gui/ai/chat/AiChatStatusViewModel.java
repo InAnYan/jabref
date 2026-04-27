@@ -2,7 +2,6 @@ package org.jabref.gui.ai.chat;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.HashMap;
@@ -40,6 +39,7 @@ import org.jabref.logic.ai.rag.util.AnswerEngineFactory;
 import org.jabref.logic.ai.util.TrackedBackgroundTask;
 import org.jabref.logic.bibtex.FieldPreferences;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.ObservablesHelper;
 import org.jabref.logic.util.StandardFileType;
 import org.jabref.model.ai.AiMetadata;
@@ -60,25 +60,20 @@ public class AiChatStatusViewModel extends AbstractViewModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiChatStatusViewModel.class);
 
     public enum FileStatus {
-        PENDING,
-        PROCESSING,
-        ERROR_WHILE_PROCESSING,
-        INGESTED,
-        CANCELLED;
+        PENDING(Localization.lang("Pending")),
+        PROCESSING(Localization.lang("Processing")),
+        ERROR_WHILE_PROCESSING(Localization.lang("Error")),
+        INGESTED(Localization.lang("Ingested")),
+        CANCELLED(Localization.lang("Cancelled"));
+
+        private final String displayName;
+
+        FileStatus(String displayName) {
+            this.displayName = displayName;
+        }
 
         public String getDisplayName() {
-            return switch (this) {
-                case PENDING ->
-                        "Pending";
-                case PROCESSING ->
-                        "Processing";
-                case ERROR_WHILE_PROCESSING ->
-                        "Error";
-                case INGESTED ->
-                        "Ingested";
-                case CANCELLED ->
-                        "Cancelled";
-            };
+            return displayName;
         }
     }
 
@@ -233,7 +228,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
                 .addExtensionFilter(StandardFileType.MARKDOWN)
                 .withDefaultExtension(StandardFileType.MARKDOWN)
-                .withInitialDirectory(Path.of(System.getProperty("user.home")))
+                .withInitialDirectory(Directories.getUserDirectory())
                 .build();
 
         dialogService.showFileSaveDialog(fileDialogConfiguration)
@@ -261,7 +256,7 @@ public class AiChatStatusViewModel extends AbstractViewModel {
         FileDialogConfiguration fileDialogConfiguration = new FileDialogConfiguration.Builder()
                 .addExtensionFilter(StandardFileType.JSON)
                 .withDefaultExtension(StandardFileType.JSON)
-                .withInitialDirectory(Path.of(System.getProperty("user.home")))
+                .withInitialDirectory(Directories.getUserDirectory())
                 .build();
 
         dialogService.showFileSaveDialog(fileDialogConfiguration)
