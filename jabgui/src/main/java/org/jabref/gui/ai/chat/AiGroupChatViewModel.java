@@ -1,10 +1,11 @@
 package org.jabref.gui.ai.chat;
 
 import java.util.List;
-import java.util.Map;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -21,12 +22,7 @@ import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
 public class AiGroupChatViewModel extends AbstractViewModel {
-    public enum State {
-        AI_TURNED_OFF,
-        CHATTING
-    }
-
-    private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.AI_TURNED_OFF);
+    private final BooleanProperty enabled = new SimpleBooleanProperty();
 
     private final ObjectProperty<GroupNodeViewModel> groupNode = new SimpleObjectProperty<>();
     private final ObjectProperty<BibDatabaseContext> databaseContext = new SimpleObjectProperty<>();
@@ -41,19 +37,13 @@ public class AiGroupChatViewModel extends AbstractViewModel {
         this.aiPreferences = aiPreferences;
         this.chatHistoryCache = aiService.getChatHistoryCache();
 
-        BindingsHelper.bindEnum(
-                state,
-                State.CHATTING,
-
-                Map.entry(State.AI_TURNED_OFF,
-                        aiPreferences.enableAiProperty().not())
-        );
+        enabled.bind(aiPreferences.enableAiProperty());
 
         BindingsHelper.listen(this::loadGroupChat, groupNode, databaseContext);
     }
 
     private void loadGroupChat() {
-        if (groupNode.get() == null || databaseContext.get() == null || !aiPreferences.getEnableAi()) {
+        if (groupNode.get() == null || databaseContext.get() == null || !enabled.get()) {
             return;
         }
 
@@ -81,8 +71,8 @@ public class AiGroupChatViewModel extends AbstractViewModel {
         return databaseContext;
     }
 
-    public ObjectProperty<State> stateProperty() {
-        return state;
+    public BooleanProperty enabledProperty() {
+        return enabled;
     }
 
     public ListProperty<FullBibEntry> entriesProperty() {

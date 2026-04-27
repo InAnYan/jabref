@@ -43,8 +43,8 @@ public class AiEntryChatView extends StackPane {
         privacyNotice.managedProperty().bind(privacyNotice.visibleProperty());
         aiChatView.managedProperty().bind(aiChatView.visibleProperty());
 
-        privacyNotice.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiEntryChatViewModel.State.AI_TURNED_OFF));
-        aiChatView.visibleProperty().bind(viewModel.stateProperty().isEqualTo(AiEntryChatViewModel.State.CHATTING));
+        privacyNotice.visibleProperty().bind(viewModel.enabledProperty().not());
+        aiChatView.visibleProperty().bind(viewModel.enabledProperty());
 
         aiChatView.chatHistoryProperty().bind(viewModel.chatHistoryProperty());
         aiChatView.entriesProperty().bind(viewModel.entriesProperty());

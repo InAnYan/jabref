@@ -1,16 +1,14 @@
 package org.jabref.gui.ai.chat;
 
-import java.util.Map;
-
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 
 import org.jabref.gui.AbstractViewModel;
-import org.jabref.gui.util.BindingsHelper;
 import org.jabref.logic.ai.chatting.InMemoryChatHistoryCache;
 import org.jabref.logic.ai.preferences.AiPreferences;
 import org.jabref.model.ai.chatting.ChatMessage;
@@ -19,12 +17,7 @@ import org.jabref.model.ai.identifiers.FullBibEntry;
 import com.tobiasdiez.easybind.EasyBind;
 
 public class AiEntryChatViewModel extends AbstractViewModel {
-    public enum State {
-        AI_TURNED_OFF,
-        CHATTING
-    }
-
-    private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.AI_TURNED_OFF);
+    private final BooleanProperty enabled = new SimpleBooleanProperty();
     private final ObjectProperty<FullBibEntry> selectedEntry = new SimpleObjectProperty<>();
     private final ListProperty<FullBibEntry> entries = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ListProperty<ChatMessage> chatHistory = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -44,16 +37,7 @@ public class AiEntryChatViewModel extends AbstractViewModel {
     }
 
     private void setupBindings() {
-        ObservableValue<Boolean> isAiTurnedOff = aiPreferences.enableAiProperty().not();
-
-        BindingsHelper.bindEnum(
-                state,
-                State.CHATTING,
-
-                Map.entry(State.AI_TURNED_OFF,
-                        isAiTurnedOff.orElse(true)
-                )
-        );
+        enabled.bind(aiPreferences.enableAiProperty());
     }
 
     private void setupListeners() {
@@ -61,10 +45,10 @@ public class AiEntryChatViewModel extends AbstractViewModel {
     }
 
     private void load(FullBibEntry identifier) {
-        if (selectedEntry.get() == null || state.get() != State.CHATTING) {
+        if (selectedEntry.get() == null || !enabled.get()) {
             return;
         }
-        
+
         entries.set(FXCollections.observableArrayList(identifier));
 
         chatHistory.set(chatHistoryCache.getForEntry(
@@ -77,8 +61,8 @@ public class AiEntryChatViewModel extends AbstractViewModel {
         return selectedEntry;
     }
 
-    public ObjectProperty<State> stateProperty() {
-        return state;
+    public BooleanProperty enabledProperty() {
+        return enabled;
     }
 
     public ListProperty<FullBibEntry> entriesProperty() {
