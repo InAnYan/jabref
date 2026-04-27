@@ -61,11 +61,8 @@ open module org.jabref.jablib {
     exports org.jabref.model.metadata.event;
     exports org.jabref.logic.ai.chatting;
     exports org.jabref.logic.ai.util;
-    exports org.jabref.logic.ai.ingestion;
-    exports org.jabref.logic.ai.ingestion.model;
-    exports org.jabref.model.ai;
-    exports org.jabref.logic.ai.processingstatus;
     exports org.jabref.logic.ai.summarization;
+    exports org.jabref.logic.ai.summarization.repositories;
     exports org.jabref.logic.layout.format;
     exports org.jabref.logic.auxparser;
     exports org.jabref.logic.cleanup;
@@ -124,6 +121,45 @@ open module org.jabref.jablib {
     exports org.jabref.model.sciteTallies;
     exports org.jabref.logic.bibtex.comparator.plausibility;
 
+    // region: AI
+    exports org.jabref.logic.ai.ingestion;
+    exports org.jabref.logic.ai.ingestion.logic.documentsplitting;
+    exports org.jabref.logic.ai.ingestion.logic.ingestion;
+    exports org.jabref.logic.ai.ingestion.logic.parsing;
+    exports org.jabref.logic.ai.summarization.tasks;
+    exports org.jabref.logic.ai.summarization.logic;
+    exports org.jabref.logic.ai.summarization.logic.summarizationalgorithms;
+    exports org.jabref.logic.ai.ingestion.tasks;
+    exports org.jabref.logic.ai.ingestion.repositories;
+    exports org.jabref.logic.ai.ingestion.logic;
+    exports org.jabref.logic.ai.chatting.tasks;
+    exports org.jabref.logic.ai.chatting.repositories;
+    exports org.jabref.logic.ai.preferences;
+    exports org.jabref.model.ai.chatting;
+    exports org.jabref.model.ai.pipeline;
+    exports org.jabref.model.ai.embeddings;
+    exports org.jabref.model.ai.summarization;
+    exports org.jabref.model.ai.identifiers;
+    exports org.jabref.model.ai.tokenization;
+    exports org.jabref.model.ai.llm;
+    exports org.jabref.logic.ai.chatting.util;
+    exports org.jabref.logic.ai.embedding;
+    exports org.jabref.logic.ai.rag.logic;
+    exports org.jabref.logic.ai.ingestion.tasks.generateembeddingsforseveral;
+    exports org.jabref.logic.ai.ingestion.tasks.generateembeddings;
+    exports org.jabref.logic.ai.rag.util;
+    exports org.jabref.logic.ai.tokenization.logic;
+    exports org.jabref.logic.ai.ingestion.util;
+    exports org.jabref.logic.ai.followup.tasks;
+    exports org.jabref.model.ai;
+    exports org.jabref.logic.ai.chatting.exporters;
+    exports org.jabref.logic.ai.summarization.exporters;
+    exports org.jabref.logic.ai.chatting.migrations;
+    exports org.jabref.logic.ai.summarization.migration;
+    exports org.jabref.logic.ai.summarization.util;
+    exports org.jabref.logic.ai.tokenization.util;
+    // endregion
+
     requires java.base;
 
     requires transitive javafx.base;
@@ -167,6 +203,7 @@ open module org.jabref.jablib {
     requires tools.jackson.dataformat.yaml;
     requires tools.jackson.core;
     requires transitive com.fasterxml.jackson.annotation;
+    requires com.fasterxml.jackson.datatype.jsr310;
     // endregion
 
     // region HTTP clients

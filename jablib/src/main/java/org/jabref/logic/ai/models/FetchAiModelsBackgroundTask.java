@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.BackgroundTask;
-import org.jabref.model.ai.AiProvider;
+import org.jabref.model.ai.llm.AiProvider;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -30,7 +30,7 @@ public class FetchAiModelsBackgroundTask extends BackgroundTask<List<String>> {
 
     private void configure() {
         showToUser(false);
-        titleProperty().set(Localization.lang("Fetching models for %0", aiProvider.getLabel()));
+        titleProperty().set(Localization.lang("Fetching models for %0", aiProvider.getDisplayName()));
         willBeRecoveredAutomatically(true);
     }
 
