@@ -1,7 +1,5 @@
 package org.jabref.gui.ai.chat;
 
-import java.util.Optional;
-
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
@@ -21,6 +19,7 @@ import org.jabref.gui.clipboard.ClipBoardManager;
 import org.jabref.gui.util.BindingsHelper;
 import org.jabref.gui.util.LocaleUtil;
 import org.jabref.gui.util.component.MarkdownTextFlow;
+import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.ai.chatting.ChatMessage;
 
 import com.airhacks.afterburner.views.ViewLoader;
@@ -92,10 +91,11 @@ public class AiChatMessageView extends HBox {
     private void setupPseudoClasses() {
         ObservableValue<ChatMessage.Role> messageRole = chatMessageProperty().map(ChatMessage::role);
 
-        ObservableValue<Boolean> isUser = messageRole.map(v -> v == ChatMessage.Role.USER);
-        ObservableValue<Boolean> isAi = messageRole.map(v -> v == ChatMessage.Role.AI);
-        ObservableValue<Boolean> isError = messageRole.map(v -> v == ChatMessage.Role.ERROR);
+        ObservableValue<Boolean> isUser = messageRole.map(role -> role == ChatMessage.Role.USER);
+        ObservableValue<Boolean> isAi = messageRole.map(role -> role == ChatMessage.Role.AI);
+        ObservableValue<Boolean> isError = messageRole.map(role -> role == ChatMessage.Role.ERROR);
 
+        // If no chat message is present, no pseudo-class should be applied.
         BindingsHelper.includePseudoClassWhen(bubble, USER_PSEUDO_CLASS, isUser.orElse(false));
         BindingsHelper.includePseudoClassWhen(bubble, AI_PSEUDO_CLASS, isAi.orElse(false));
         BindingsHelper.includePseudoClassWhen(bubble, ERROR_PSEUDO_CLASS, isError.orElse(false));
@@ -125,7 +125,7 @@ public class AiChatMessageView extends HBox {
             return;
         }
 
-        markdownTextFlow.setMarkdown(Optional.ofNullable(chatMessage.content()).orElse(""));
+        markdownTextFlow.setMarkdown(StringUtil.makeSafe(chatMessage.content()));
     }
 
     private static Pos determineAlignment(ChatMessage chatMessage) {
