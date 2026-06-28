@@ -70,7 +70,7 @@ import org.jabref.logic.search.SearchBackend;
 import org.jabref.logic.search.SearchContext;
 import org.jabref.logic.search.inmemory.InMemorySearchBackend;
 import org.jabref.logic.search.sqlbased.IndexManager;
-import org.jabref.logic.search.sqlbased.PostgreServer;
+import org.jabref.logic.search.sqlbased.PostgresServer;
 import org.jabref.logic.search.sqlbased.SqlSearchBackend;
 import org.jabref.logic.shared.DatabaseLocation;
 import org.jabref.logic.util.BackgroundTask;
@@ -343,7 +343,7 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
 
     public void createSearchContext() {
         Supplier<SearchBackend> sqlFactory = () ->
-                new SqlSearchBackend(new IndexManager(bibDatabaseContext, taskExecutor, preferences, Injector.instantiateModelOrService(PostgreServer.class)));
+                new SqlSearchBackend(new IndexManager(bibDatabaseContext, taskExecutor, preferences, Injector.instantiateModelOrService(PostgresServer.class)));
         Supplier<SearchBackend> inMemoryFactory = () ->
                 new InMemorySearchBackend(bibDatabaseContext, preferences.getBibEntryPreferences());
         searchContext = new SearchContext(
@@ -579,13 +579,13 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
         return searchAutoCompleter;
     }
 
-    public void showAndEdit(BibEntry entry) {
+    public void showAndEdit(@NonNull BibEntry entry) {
         this.clearAndSelect(entry);
         stateManager.getEditorShowing().setValue(true);
     }
 
     /// This method selects the given entry, and scrolls it into view in the table. If an entryEditor is shown, it is given focus afterwards.
-    public void clearAndSelect(final BibEntry bibEntry) {
+    public void clearAndSelect(@NonNull BibEntry bibEntry) {
         mainTable.clearAndSelect(bibEntry);
     }
 
@@ -828,6 +828,14 @@ public class LibraryTab extends Tab implements CommandSelectionTab {
                 preferences,
                 undoManager,
                 stateManager));
+    }
+
+    public void suspendChangeMonitor() {
+        changeMonitor.ifPresent(DatabaseChangeMonitor::unregister);
+    }
+
+    public void resumeChangeMonitor() {
+        bibDatabaseContext.getDatabasePath().ifPresent(_ -> resetChangeMonitor());
     }
 
     public void insertEntry(final BibEntry bibEntry) {
