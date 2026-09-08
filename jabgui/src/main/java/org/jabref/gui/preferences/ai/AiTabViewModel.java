@@ -265,7 +265,7 @@ public class AiTabViewModel implements PreferenceTabViewModel {
         });
 
         this.currentChatModel.addListener((_, _, newValue) -> {
-            if (newValue == null) {
+            if (newValue == null || selectedAiProvider.get() == null) {
                 return;
             }
 

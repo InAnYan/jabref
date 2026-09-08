@@ -189,12 +189,14 @@ public class EmbeddingModelMetadataService {
             for (JsonElement element : filesArray) {
                 if (element.isJsonObject()) {
                     JsonObject fileObj = element.getAsJsonObject();
-                    String path = fileObj.has("path") && fileObj.get("path").isJsonPrimitive()
-                            ? fileObj.get("path").getAsString()
-                            : "";
-                    long size = fileObj.has("size") && fileObj.get("size").isJsonPrimitive() && fileObj.get("size").getAsJsonPrimitive().isNumber()
-                            ? fileObj.get("size").getAsLong()
-                            : 0;
+                    String path = "";
+                    if (fileObj.has("path") && fileObj.get("path").isJsonPrimitive()) {
+                        path = fileObj.get("path").getAsString();
+                    }
+                    long size = 0;
+                    if (fileObj.has("size") && fileObj.get("size").isJsonPrimitive() && fileObj.get("size").getAsJsonPrimitive().isNumber()) {
+                        size = fileObj.get("size").getAsLong();
+                    }
 
                     String lowerPath = path.toLowerCase(Locale.ROOT);
                     if (lowerPath.endsWith(".safetensors")) {
