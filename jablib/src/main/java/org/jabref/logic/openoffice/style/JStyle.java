@@ -24,6 +24,7 @@ import org.jabref.logic.layout.Layout;
 import org.jabref.logic.layout.LayoutFormatter;
 import org.jabref.logic.layout.LayoutFormatterPreferences;
 import org.jabref.logic.layout.LayoutHelper;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.field.FieldFactory;
 import org.jabref.model.entry.field.OrFields;
 import org.jabref.model.entry.field.StandardField;
@@ -67,7 +68,6 @@ public class JStyle implements Comparable<JStyle>, OOStyle {
 
     public static final String TITLE = "Title";
     public static final String UNDEFINED_CITATION_MARKER = "??";
-    private static final Pattern NUM_PATTERN = Pattern.compile("-?\\d+");
     private static final String LAYOUT_MRK = "LAYOUT";
     private static final String PROPERTIES_MARK = "PROPERTIES";
     private static final String CITATION_MARK = "CITATION";
@@ -439,7 +439,7 @@ public class JStyle implements Comparable<JStyle>, OOStyle {
                 value = value.trim().substring(1, value.trim().length() - 1);
             }
             Object toSet = value;
-            if (NUM_PATTERN.matcher(value.trim()).matches()) {
+            if (RegexPatterns.INTEGER.matcher(value.trim()).matches()) {
                 toSet = Integer.parseInt(value.trim());
             } else if ("true".equalsIgnoreCase(value.trim())) {
                 toSet = Boolean.TRUE;

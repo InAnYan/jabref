@@ -8,6 +8,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.logic.util.strings.StringUtil;
 
 import org.apache.hc.core5.net.URIBuilder;
@@ -18,10 +19,8 @@ import org.jspecify.annotations.NonNull;
 /// For GUI-oriented URL utilities see `org.jabref.gui.fieldeditors.URLUtil`
 public class URLUtil {
 
-    private static final String URL_REGEX = "(?i)\\b((?:https?|ftp)://[^\\s]+)";
-
     /// Pattern matches a string containing a URL with a protocol
-    public static final Pattern URL_PATTERN = Pattern.compile(URL_REGEX, Pattern.CASE_INSENSITIVE);
+    public static final Pattern URL_PATTERN = RegexPatterns.URL;
 
     private static final String URL_EXP = "^(https?|ftp)://.+";
     // Detect Google search URL

@@ -26,6 +26,7 @@ import org.jabref.logic.formatter.bibtexfields.RemoveEnclosingBracesFormatter;
 import org.jabref.logic.formatter.casechanger.Word;
 import org.jabref.logic.integrity.PagesChecker;
 import org.jabref.logic.layout.format.RemoveLatexCommandsFormatter;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.database.BibDatabase;
 import org.jabref.model.entry.Author;
@@ -61,7 +62,6 @@ public class BracketedPattern {
     /// 1} name abbreviations will be displayed, and a + sign will be appended at the end.
     private static final int MAX_ALPHA_AUTHORS = 4;
 
-    private static final Pattern DIGITS_PATTERN = Pattern.compile("\\d+");
     private static final Pattern PAGE_NUMBER_PATTERN = Pattern.compile(PagesChecker.PAGE_NUMBER);
 
     /// Matches everything that is not an uppercase ASCII letter. The intended use is to remove all lowercase letters
@@ -1066,7 +1066,7 @@ public class BracketedPattern {
 
     private static Comparator<String> pageTokenComparator() {
         return Comparator.comparing(token -> {
-            if (DIGITS_PATTERN.matcher(token).matches()) {
+            if (RegexPatterns.DIGITS.matcher(token).matches()) {
                 return new BigInteger(token);
             }
             return BigInteger.valueOf(romanToInteger(token));

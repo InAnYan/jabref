@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.entry.Author;
 import org.jabref.model.entry.AuthorList;
@@ -38,8 +39,6 @@ public class AuthorListParser {
             "aa", "ae", "l", "o", "oe", "i", "AA", "AE", "L", "O", "OE", "j");
 
     private static final Pattern STARTS_WITH_CAPITAL_LETTER_DOT_OR_DASH = Pattern.compile("^[A-Z](\\.[ -]| ?-)");
-
-    private static final Pattern MULTIPLE_SPACE_PATTERN = Pattern.compile("\\s{2,}");
 
     private static final Pattern NEW_LINE_PATTERN = Pattern.compile("\\s*\\n\\s*");
 
@@ -90,9 +89,9 @@ public class AuthorListParser {
 
     private static SimpleNormalFormResult getSimpleNormalForm(String listOfNames) {
         listOfNames = listOfNames.replace(" -", "-").trim();
-        if (!listOfNames.contains(",") && (MULTIPLE_SPACE_PATTERN.matcher(listOfNames).find() || listOfNames.contains("\n"))) {
+        if (!listOfNames.contains(",") && (RegexPatterns.MULTIPLE_WHITESPACES.matcher(listOfNames).find() || listOfNames.contains("\n"))) {
             listOfNames = NEW_LINE_PATTERN.matcher(listOfNames).replaceAll(" and ");
-            listOfNames = MULTIPLE_SPACE_PATTERN.matcher(listOfNames).replaceAll(" and ");
+            listOfNames = RegexPatterns.MULTIPLE_WHITESPACES.matcher(listOfNames).replaceAll(" and ");
         }
 
         // Handling of "and others"

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import org.jabref.architecture.AllowedToUseAwt;
 import org.jabref.gui.DialogService;
@@ -24,6 +23,7 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.os.OS;
 import org.jabref.logic.util.Directories;
 import org.jabref.logic.util.io.FileUtil;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.field.Field;
@@ -53,8 +53,6 @@ import static org.jabref.model.entry.field.StandardField.URL;
 public abstract class NativeDesktop {
     // No LOGGER may be initialized directly
     // Otherwise, org.jabref.Launcher.addLogToDisk will fail, because tinylog's properties are frozen
-
-    private static final Pattern REMOTE_LINK_PATTERN = Pattern.compile("[a-z]+://.*");
 
     /// Open a http/pdf/ps viewer for the given link string.
     ///
@@ -173,7 +171,7 @@ public abstract class NativeDesktop {
                                                     FilePreferences filePreferences,
                                                     String link,
                                                     final Optional<ExternalFileType> type) throws IOException {
-        if (REMOTE_LINK_PATTERN.matcher(link.toLowerCase(Locale.ROOT)).matches()) {
+        if (RegexPatterns.REMOTE_LINK.matcher(link.toLowerCase(Locale.ROOT)).matches()) {
             openBrowser(link, externalApplicationsPreferences);
             return true;
         }
@@ -259,7 +257,7 @@ public abstract class NativeDesktop {
 
     private static void executeCommand(String command, String absolutePath, DialogService dialogService) {
         // normalize white spaces
-        command = command.replaceAll("\\s+", " ");
+        command = RegexPatterns.WHITESPACE.matcher(command).replaceAll(" ");
 
         // replace the placeholder if used
         command = command.replace("%DIR", absolutePath);
