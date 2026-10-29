@@ -55,6 +55,21 @@ public final class RegexPatterns {
     /// Matches any character that is not a lowercase ASCII letter or digit (`[^a-z0-9]`).
     public static final Pattern NON_LOWERCASE_ALPHANUMERIC = Pattern.compile("[^a-z0-9]");
 
+    /// Matches zero or more digit characters (`\d*`).
+    public static final Pattern ZERO_OR_MORE_DIGITS = Pattern.compile("\\d*");
+
+    /// Matches one or more non-digit characters (`\D+`).
+    public static final Pattern NON_DIGITS = Pattern.compile("\\D+");
+
+    /// Matches page range separators such as hyphens, en-dashes, em-dashes, and whitespace (`[ \-\u2013\u2014]+`).
+    public static final Pattern PAGE_RANGE_SEPARATORS = Pattern.compile("[ \\-\\u2013\\u2014]+");
+
+    /// Matches an ampersand that is not preceded by a backslash (`(?<!\\)&`).
+    public static final Pattern UNESCAPED_AMPERSAND = Pattern.compile("(?<!\\\\)&");
+
+    /// Matches a string whose first character is not a lowercase ASCII letter (`^[^a-z]`).
+    public static final Pattern NOT_STARTING_WITH_LOWERCASE = Pattern.compile("^[^a-z]");
+
     private RegexPatterns() {
     }
 }

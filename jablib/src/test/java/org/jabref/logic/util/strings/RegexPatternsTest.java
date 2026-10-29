@@ -140,4 +140,51 @@ class RegexPatternsTest {
     void nonLowercaseAlphanumericReplacesUppercaseAndSpecialCharacters() {
         assertEquals("elloorld123", RegexPatterns.NON_LOWERCASE_ALPHANUMERIC.matcher("HelloWorld#123").replaceAll(""));
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "0", "123", "999999"})
+    void zeroOrMoreDigitsMatchesEmptyAndDigits(String input) {
+        assertTrue(RegexPatterns.ZERO_OR_MORE_DIGITS.matcher(input).matches());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"12a", "abc", " 123", "12 3"})
+    void zeroOrMoreDigitsRejectsNonDigits(String input) {
+        assertFalse(RegexPatterns.ZERO_OR_MORE_DIGITS.matcher(input).matches());
+    }
+
+    @Test
+    void nonDigitsRemovesNonDigits() {
+        assertEquals("123456", RegexPatterns.NON_DIGITS.matcher("ISBN 123-456").replaceAll(""));
+    }
+
+    @Test
+    void pageRangeSeparatorsSplitsCorrectly() {
+        String[] parts = RegexPatterns.PAGE_RANGE_SEPARATORS.split("123 - 145");
+        assertEquals(2, parts.length);
+        assertEquals("123", parts[0]);
+        assertEquals("145", parts[1]);
+
+        String[] partsEnDash = RegexPatterns.PAGE_RANGE_SEPARATORS.split("123\u2013145");
+        assertEquals(2, partsEnDash.length);
+        assertEquals("123", partsEnDash[0]);
+        assertEquals("145", partsEnDash[1]);
+    }
+
+    @Test
+    void unescapedAmpersandMatchesOnlyUnescapedAmpersand() {
+        assertEquals("A \\& B \\& C", RegexPatterns.UNESCAPED_AMPERSAND.matcher("A & B \\& C").replaceAll("\\\\&"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"Title", "123", "[Note]", "!Warning"})
+    void notStartingWithLowercaseMatchesUppercaseOrSymbol(String input) {
+        assertTrue(RegexPatterns.NOT_STARTING_WITH_LOWERCASE.asPredicate().test(input));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"title", "note", "howPublished"})
+    void notStartingWithLowercaseRejectsLowercase(String input) {
+        assertFalse(RegexPatterns.NOT_STARTING_WITH_LOWERCASE.asPredicate().test(input));
+    }
 }

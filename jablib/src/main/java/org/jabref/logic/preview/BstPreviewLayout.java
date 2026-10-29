@@ -14,6 +14,7 @@ import org.jabref.logic.layout.format.LatexToUnicodeFormatter;
 import org.jabref.logic.layout.format.RemoveLatexCommandsFormatter;
 import org.jabref.logic.layout.format.RemoveTilde;
 import org.jabref.logic.util.StandardFileType;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 
@@ -30,7 +31,6 @@ public final class BstPreviewLayout implements PreviewLayout {
     private static final Pattern COMMENT_PATTERN = Pattern.compile("%.*");
     private static final Pattern BIBITEM_PATTERN = Pattern.compile("\\\\bibitem[{].*[}]");
     private static final Pattern LATEX_COMMAND_PATTERN = Pattern.compile("(?m)^\\\\.*$");
-    private static final Pattern MULTIPLE_SPACES_PATTERN = Pattern.compile("  +");
 
     private final Path path;
     private String source;
@@ -97,7 +97,7 @@ public final class BstPreviewLayout implements PreviewLayout {
         result = new RemoveNewlinesFormatter().format(result);
         result = new RemoveLatexCommandsFormatter().format(result);
         result = new RemoveTilde().format(result);
-        result = MULTIPLE_SPACES_PATTERN.matcher(result.trim()).replaceAll(" ");
+        result = RegexPatterns.MULTIPLE_SPACES.matcher(result.trim()).replaceAll(" ");
         return result;
     }
 

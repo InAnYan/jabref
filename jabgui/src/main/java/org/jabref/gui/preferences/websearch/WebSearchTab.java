@@ -30,6 +30,7 @@ import org.jabref.gui.util.component.HelpButton;
 import org.jabref.logic.help.HelpFile;
 import org.jabref.logic.importer.plaincitation.PlainCitationParserChoice;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.logic.util.strings.StringUtil;
 
 import com.airhacks.afterburner.views.ViewLoader;
@@ -142,8 +143,8 @@ public class WebSearchTab extends AbstractPreferenceTabView<WebSearchTabViewMode
                     if (StringUtil.isBlank(newValue)) {
                         return;
                     }
-                    if (!newValue.matches("\\d*")) {
-                        citationsRelationStoreTTL.setText(newValue.replaceAll("\\D", ""));
+                    if (!RegexPatterns.ZERO_OR_MORE_DIGITS.matcher(newValue).matches()) {
+                        citationsRelationStoreTTL.setText(RegexPatterns.NON_DIGITS.matcher(newValue).replaceAll(""));
                         return;
                     }
                     viewModel.citationsRelationsStoreTTLProperty().set(Integer.parseInt(newValue));

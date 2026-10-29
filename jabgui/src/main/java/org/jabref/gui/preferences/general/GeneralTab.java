@@ -1,7 +1,5 @@
 package org.jabref.gui.preferences.general;
 
-import java.util.regex.Pattern;
-
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -29,6 +27,7 @@ import org.jabref.logic.help.HelpFile;
 import org.jabref.logic.l10n.Language;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.remote.server.RemoteListenerServerManager;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.database.BibDatabaseMode;
 
 import com.airhacks.afterburner.views.ViewLoader;
@@ -80,7 +79,7 @@ public class GeneralTab extends AbstractPreferenceTabView<GeneralTabViewModel> i
     // The fontSizeFormatter formats the input given to the fontSize spinner so that non valid values cannot be entered.
     private final TextFormatter<Integer> fontSizeFormatter = new TextFormatter<>(new IntegerStringConverter(), 9,
             c -> {
-                if (Pattern.matches("\\d*", c.getText())) {
+                if (RegexPatterns.ZERO_OR_MORE_DIGITS.matcher(c.getText()).matches()) {
                     return c;
                 }
                 c.setText("0");
