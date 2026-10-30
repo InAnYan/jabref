@@ -40,8 +40,6 @@ public class AuthorListParser {
 
     private static final Pattern STARTS_WITH_CAPITAL_LETTER_DOT_OR_DASH = Pattern.compile("^[A-Z](\\.[ -]| ?-)");
 
-    private static final Pattern NEW_LINE_PATTERN = Pattern.compile("\\s*\\n\\s*");
-
     /// the raw bibtex author/editor field
     private String original;
     /// index of the start in original, for example to point to 'abc' in 'abc xyz', tokenStart=2
@@ -90,7 +88,7 @@ public class AuthorListParser {
     private static SimpleNormalFormResult getSimpleNormalForm(String listOfNames) {
         listOfNames = listOfNames.replace(" -", "-").trim();
         if (!listOfNames.contains(",") && (RegexPatterns.MULTIPLE_WHITESPACES.matcher(listOfNames).find() || listOfNames.contains("\n"))) {
-            listOfNames = NEW_LINE_PATTERN.matcher(listOfNames).replaceAll(" and ");
+            listOfNames = RegexPatterns.NEWLINE_WITH_SPACES.matcher(listOfNames).replaceAll(" and ");
             listOfNames = RegexPatterns.MULTIPLE_WHITESPACES.matcher(listOfNames).replaceAll(" and ");
         }
 

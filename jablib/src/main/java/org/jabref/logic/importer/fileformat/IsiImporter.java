@@ -17,6 +17,7 @@ import org.jabref.logic.importer.Importer;
 import org.jabref.logic.importer.ParserResult;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.StandardFileType;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.Month;
 import org.jabref.model.entry.field.Field;
@@ -374,7 +375,7 @@ public class IsiImporter extends Importer {
 
         String first = s[1].trim();
 
-        String[] firstParts = first.split("\\s+");
+        String[] firstParts = RegexPatterns.WHITESPACE.split(first);
 
         for (int i = 0; i < firstParts.length; i++) {
             first = firstParts[i];

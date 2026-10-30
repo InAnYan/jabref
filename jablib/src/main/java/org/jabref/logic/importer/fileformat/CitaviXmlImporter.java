@@ -39,6 +39,7 @@ import org.jabref.logic.importer.fileformat.citavi.KnowledgeItem;
 import org.jabref.logic.importer.fileformat.citavi.Reference;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.StandardFileType;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.entry.Author;
 import org.jabref.model.entry.AuthorList;
@@ -689,8 +690,8 @@ public class CitaviXmlImporter extends Importer implements Parser {
 
     String cleanUpText(String text) {
         String result = removeSpacesBeforeLineBreak(text);
-        result = result.replaceAll("(?<!\\\\)\\{", "\\\\{");
-        result = result.replaceAll("(?<!\\\\)}", "\\\\}");
+        result = RegexPatterns.UNESCAPED_CURLY_BRACE_OPEN.matcher(result).replaceAll("\\\\{");
+        result = RegexPatterns.UNESCAPED_CURLY_BRACE_CLOSE.matcher(result).replaceAll("\\\\}");
         return result;
     }
 
@@ -828,9 +829,9 @@ public class CitaviXmlImporter extends Importer implements Parser {
     }
 
     private String clean(String input) {
-        String result = StringUtil.unifyLineBreaks(input, " ")
-                                  .trim()
-                                  .replaceAll(" +", " ");
+        String unified = StringUtil.unifyLineBreaks(input, " ")
+                                   .trim();
+        String result = RegexPatterns.MULTIPLE_SPACES.matcher(unified).replaceAll(" ");
         return htmlToLatexFormatter.format(result);
     }
 

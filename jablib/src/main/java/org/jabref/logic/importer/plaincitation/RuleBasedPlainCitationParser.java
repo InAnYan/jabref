@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.field.StandardField;
 import org.jabref.model.entry.identifier.DOI;
@@ -29,10 +30,6 @@ public class RuleBasedPlainCitationParser implements PlainCitationParser {
             "(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)" +
                     "(([\\w\\-]+\\.)+?([\\w\\-.~]+\\/?)*" +
                     "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
-            Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
-
-    private static final Pattern YEAR_PATTERN = Pattern.compile(
-            "\\d{4}",
             Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
 
     private static final Pattern AUTHOR_PATTERN = Pattern.compile(
@@ -133,7 +130,7 @@ public class RuleBasedPlainCitationParser implements PlainCitationParser {
     }
 
     private String findYear(String input) {
-        Matcher matcher = YEAR_PATTERN.matcher(input);
+        Matcher matcher = RegexPatterns.FOUR_DIGITS.matcher(input);
         while (matcher.find()) {
             String yearCandidate = input.substring(matcher.start(), matcher.end());
             int intYearCandidate = Integer.parseInt(yearCandidate);
@@ -171,9 +168,9 @@ public class RuleBasedPlainCitationParser implements PlainCitationParser {
     }
 
     private String fixSpaces(String input) {
-        return input.replaceAll("[,.!?;:]", "$0 ")
-                    .replaceAll("\\p{Lt}", " $0")
-                    .replaceAll("\\s+", " ").trim();
+        String spaced = input.replaceAll("[,.!?;:]", "$0 ")
+                             .replaceAll("\\p{Lt}", " $0");
+        return RegexPatterns.WHITESPACE.matcher(spaced).replaceAll(" ").trim();
     }
 
     private String findParts(String input) {

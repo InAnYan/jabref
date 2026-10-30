@@ -15,6 +15,7 @@ import org.jabref.logic.citationstyle.CitationStyleGenerator;
 import org.jabref.logic.citationstyle.CitationStyleOutputFormat;
 import org.jabref.logic.openoffice.OpenOfficePreferences;
 import org.jabref.logic.openoffice.style.OOStyle;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.database.BibDatabase;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
@@ -216,7 +217,7 @@ public class CSLCitationOOAdapter {
             preceedingSpaceExists = " ".equals(checkCursor.getString());
             // If not a space, check if it's a paragraph break
             if (!preceedingSpaceExists) {
-                preceedingSpaceExists = checkCursor.getString().matches("\\R");
+                preceedingSpaceExists = RegexPatterns.LINE_BREAK.matcher(checkCursor.getString()).matches();
             }
         }
         markManager.insertReferenceIntoOO(entries, document, cursor, ooText, !preceedingSpaceExists, openOfficePreferences.getAddSpaceAfter(), citationType);

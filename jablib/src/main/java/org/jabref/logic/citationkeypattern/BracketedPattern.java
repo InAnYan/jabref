@@ -472,7 +472,7 @@ public class BracketedPattern {
                 int i = 0;
                 for (Keyword keyword : separatedKeywords) {
                     // remove all spaces
-                    sb.append(keyword.toString().replaceAll("\\s+", ""));
+                    sb.append(RegexPatterns.WHITESPACE.matcher(keyword.toString()).replaceAll(""));
 
                     i++;
                     if (i >= num) {
@@ -802,8 +802,9 @@ public class BracketedPattern {
         }
 
         if (authorList.getNumberOfAuthors() == 1) {
-            String[] firstAuthor = authorList.getAuthor(0).getNamePrefixAndFamilyName()
-                                             .replaceAll("\\s+", " ").trim().split(" ");
+            String sanitized = RegexPatterns.WHITESPACE.matcher(authorList.getAuthor(0).getNamePrefixAndFamilyName())
+                                                       .replaceAll(" ").trim();
+            String[] firstAuthor = sanitized.split(" ");
             // take first letter of any "prefixes" (e.g. van der Aalst -> vd)
             for (int j = 0; j < (firstAuthor.length - 1); j++) {
                 alphaStyle.append(firstAuthor[j], 0, 1);
@@ -823,7 +824,7 @@ public class BracketedPattern {
             for (String vonAndLast : vonAndLastNames) {
                 // replace all whitespaces by " "
                 // split the lastname at " "
-                String[] nameParts = vonAndLast.replaceAll("\\s+", " ").trim().split(" ");
+                String[] nameParts = RegexPatterns.WHITESPACE.matcher(vonAndLast).replaceAll(" ").trim().split(" ");
                 for (String part : nameParts) {
                     // use first character of each part of lastname
                     alphaStyle.append(part, 0, 1);
@@ -874,7 +875,7 @@ public class BracketedPattern {
 
     private static String getOrganizationInitials(String orgName) {
         StringBuilder initials = new StringBuilder();
-        for (String part : orgName.split("\\s+")) {
+        for (String part : RegexPatterns.WHITESPACE.split(orgName)) {
             if (!part.isEmpty() && Character.isUpperCase(part.charAt(0))) {
                 initials.append(part.charAt(0));
             }
@@ -1099,8 +1100,8 @@ public class BracketedPattern {
     /// @return the non-digit prefix of pages (like "L" of L7) or "" if no non-digit prefix is found in the string
     /// @throws NullPointerException if pages is null.
     public static String pagePrefix(String pages) {
-        Matcher decimalMatcher = Pattern.compile(PagesChecker.DECIMAL_NUMBER).matcher(pages);
-        Matcher romanMatcher = Pattern.compile(PagesChecker.ROMAN_NUMBER).matcher(pages);
+        Matcher decimalMatcher = RegexPatterns.DIGITS.matcher(pages);
+        Matcher romanMatcher = RegexPatterns.ROMAN_NUMERALS.matcher(pages);
 
         boolean foundDecimal = decimalMatcher.find();
         int decimalStart = foundDecimal ? decimalMatcher.start() : -1; // -1 forces to choose the next roman if exists

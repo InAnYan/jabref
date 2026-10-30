@@ -187,4 +187,71 @@ class RegexPatternsTest {
     void notStartingWithLowercaseRejectsLowercase(String input) {
         assertFalse(RegexPatterns.NOT_STARTING_WITH_LOWERCASE.asPredicate().test(input));
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"Second", "First", "Third", "Edition"})
+    void startsWithUppercaseMatchesCapitalizedWord(String input) {
+        assertTrue(RegexPatterns.STARTS_WITH_UPPERCASE.asPredicate().test(input));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"second", "1st", " 2nd", "_test"})
+    void startsWithUppercaseRejectsNonUppercaseStart(String input) {
+        assertFalse(RegexPatterns.STARTS_WITH_UPPERCASE.asPredicate().test(input));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"2024", "1999", "0000"})
+    void fourDigitsMatchesFourConsecutiveDigits(String input) {
+        assertTrue(RegexPatterns.FOUR_DIGITS.matcher(input).matches());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"202", "20245", "abcd", "20 4"})
+    void fourDigitsRejectsOtherInputs(String input) {
+        assertFalse(RegexPatterns.FOUR_DIGITS.matcher(input).matches());
+    }
+
+    @Test
+    void newlineWithSpacesMatchesNewlineSurroundedByWhitespace() {
+        assertEquals("Line1\nLine2", RegexPatterns.NEWLINE_WITH_SPACES.matcher("Line1  \n   Line2").replaceAll("\n"));
+    }
+
+    @Test
+    void pageNumbersDashNormalizesRange() {
+        assertEquals("12--34", RegexPatterns.PAGE_NUMBERS_DASH.matcher("12 - 34").replaceAll("$1--$2"));
+        assertEquals("100--200", RegexPatterns.PAGE_NUMBERS_DASH.matcher("100-200").replaceAll("$1--$2"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"iv", "ix", "xx", "xiv", "IV", "MCMLXXXIV", "xvi"})
+    void romanNumeralsMatchesValidSequences(String input) {
+        assertTrue(RegexPatterns.ROMAN_NUMERALS.matcher(input).matches());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"123", "abc", "iv1", " "})
+    void romanNumeralsRejectsInvalidSequences(String input) {
+        assertFalse(RegexPatterns.ROMAN_NUMERALS.matcher(input).matches());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"&amp;", "&#38;", "&#x26;", "&eacute;", "&nbsp;"})
+    void htmlCharacterEntityMatchesEntities(String input) {
+        assertTrue(RegexPatterns.HTML_CHARACTER_ENTITY.matcher(input).matches());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"&", "&amp", "amp;", "hello"})
+    void htmlCharacterEntityRejectsNonEntities(String input) {
+        assertFalse(RegexPatterns.HTML_CHARACTER_ENTITY.matcher(input).matches());
+    }
+
+    @Test
+    void unescapedCurlyBracesMatchOnlyUnescapedBraces() {
+        String input = "Text with {braces} and \\{escaped\\}";
+        String escapedOpen = RegexPatterns.UNESCAPED_CURLY_BRACE_OPEN.matcher(input).replaceAll("\\\\{");
+        String fullyEscaped = RegexPatterns.UNESCAPED_CURLY_BRACE_CLOSE.matcher(escapedOpen).replaceAll("\\\\}");
+        assertEquals("Text with \\{braces\\} and \\{escaped\\}", fullyEscaped);
+    }
 }

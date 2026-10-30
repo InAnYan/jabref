@@ -70,6 +70,30 @@ public final class RegexPatterns {
     /// Matches a string whose first character is not a lowercase ASCII letter (`^[^a-z]`).
     public static final Pattern NOT_STARTING_WITH_LOWERCASE = Pattern.compile("^[^a-z]");
 
+    /// Matches a string whose first character is an uppercase ASCII letter (`^[A-Z]`).
+    public static final Pattern STARTS_WITH_UPPERCASE = Pattern.compile("^[A-Z]");
+
+    /// Matches exactly four consecutive digits (`\d{4}`), commonly used for years.
+    public static final Pattern FOUR_DIGITS = Pattern.compile("\\d{4}");
+
+    /// Matches a newline surrounded by optional whitespace (`\s*\n\s*`).
+    public static final Pattern NEWLINE_WITH_SPACES = Pattern.compile("\\s*\\n\\s*");
+
+    /// Matches two digits separated by a hyphen with optional whitespace (`([0-9]) *- *([0-9])`), used in page range normalization.
+    public static final Pattern PAGE_NUMBERS_DASH = Pattern.compile("([0-9]) *- *([0-9])");
+
+    /// Matches Roman numerals consisting of one or more Roman numeral characters (`[ivxlcdmIVXLCDM]+`).
+    public static final Pattern ROMAN_NUMERALS = Pattern.compile("[ivxlcdmIVXLCDM]+");
+
+    /// Matches named, decimal, or hexadecimal HTML character entities (`&[#\p{Alnum}]+;`).
+    public static final Pattern HTML_CHARACTER_ENTITY = Pattern.compile("&[#\\p{Alnum}]+;");
+
+    /// Matches an opening curly brace that is not preceded by a backslash (`(?<!\\)\{`).
+    public static final Pattern UNESCAPED_CURLY_BRACE_OPEN = Pattern.compile("(?<!\\\\)\\{");
+
+    /// Matches a closing curly brace that is not preceded by a backslash (`(?<!\\)}`).
+    public static final Pattern UNESCAPED_CURLY_BRACE_CLOSE = Pattern.compile("(?<!\\\\)}");
+
     private RegexPatterns() {
     }
 }

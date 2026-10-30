@@ -16,6 +16,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.input.DragEvent;
 
 import org.jabref.gui.icon.JabRefIcon;
+import org.jabref.logic.util.strings.RegexPatterns;
 
 public class ControlHelper {
 
@@ -63,7 +64,7 @@ public class ControlHelper {
         UnaryOperator<TextFormatter.Change> filter = change -> {
             String text = change.getText();
 
-            if (text.matches("[0-9]*")) {
+            if (RegexPatterns.ZERO_OR_MORE_DIGITS.matcher(text).matches()) {
                 return change;
             }
 
