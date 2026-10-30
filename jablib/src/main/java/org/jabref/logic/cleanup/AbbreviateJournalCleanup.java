@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.jabref.logic.journals.Abbreviation;
 import org.jabref.logic.journals.AbbreviationType;
 import org.jabref.logic.journals.JournalAbbreviationRepository;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.FieldChange;
 import org.jabref.model.database.BibDatabase;
 import org.jabref.model.entry.BibEntry;
@@ -66,14 +67,14 @@ public class AbbreviateJournalCleanup implements CleanupJob {
         }
 
         // TODO: Currently FieldWriter does not do escaping. We also don't want the UI for editing journal abbreviations to deal with escapings. Thus, we need to do it here.
-        String newText = newTextOptional.get().replaceAll("(?<!\\\\)&", "\\\\&");
+        String newText = RegexPatterns.UNESCAPED_AMPERSAND.matcher(newTextOptional.get()).replaceAll("\\\\&");
 
         List<FieldChange> changes = new ArrayList<>(2);
 
         foundAbbreviation.ifPresent(abbr -> {
             if (useFJournalField && (StandardField.JOURNAL == fieldName || StandardField.JOURNALTITLE == fieldName)) {
                 String oldFjournalValue = entry.getField(AMSField.FJOURNAL).orElse(null);
-                String newFjournalValue = abbr.getName().replaceAll("(?<!\\\\)&", "\\\\&");
+                String newFjournalValue = RegexPatterns.UNESCAPED_AMPERSAND.matcher(abbr.getName()).replaceAll("\\\\&");
                 entry.setField(AMSField.FJOURNAL, newFjournalValue);
                 changes.add(new FieldChange(entry, AMSField.FJOURNAL, oldFjournalValue, newFjournalValue));
             }

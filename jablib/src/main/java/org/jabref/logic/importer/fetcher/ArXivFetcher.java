@@ -33,6 +33,7 @@ import org.jabref.logic.importer.fetcher.transformers.ArXivQueryTransformer;
 import org.jabref.logic.integrity.BracesCorrector;
 import org.jabref.logic.util.URLUtil;
 import org.jabref.logic.util.io.XMLUtil;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.logic.util.strings.StringSimilarity;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.entry.BibEntry;
@@ -698,8 +699,8 @@ public class ArXivFetcher implements FulltextFetcher, PagedSearchBasedFetcher, I
 
             public static String correctLineBreaks(String s) {
                 String result = s.replaceAll("\\n(?!\\s*\\n)", " ");
-                result = result.replaceAll("\\s*\\n\\s*", "\n");
-                return result.replaceAll(" {2,}", " ").replaceAll("(^\\s*|\\s+$)", "");
+                result = RegexPatterns.NEWLINE_WITH_SPACES.matcher(result).replaceAll("\n");
+                return RegexPatterns.MULTIPLE_SPACES.matcher(result).replaceAll(" ").strip();
             }
 
             /// Returns the url of the linked pdf

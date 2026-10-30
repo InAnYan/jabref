@@ -1,10 +1,11 @@
 package org.jabref.gui.util;
 
 import java.util.function.UnaryOperator;
-import java.util.regex.Pattern;
 
 import javafx.scene.control.TextFormatter;
 import javafx.util.converter.IntegerStringConverter;
+
+import org.jabref.logic.util.strings.RegexPatterns;
 
 /// Formatter that only accepts integer.
 ///
@@ -20,11 +21,10 @@ public class OnlyIntegerFormatter extends TextFormatter<Integer> {
     }
 
     private static class IntegerFilter implements UnaryOperator<Change> {
-        private final static Pattern DIGIT_PATTERN = Pattern.compile("\\d*");
 
         @Override
         public Change apply(TextFormatter.Change aT) {
-            return DIGIT_PATTERN.matcher(aT.getText()).matches() ? aT : null;
+            return RegexPatterns.ZERO_OR_MORE_DIGITS.matcher(aT.getText()).matches() ? aT : null;
         }
     }
 }

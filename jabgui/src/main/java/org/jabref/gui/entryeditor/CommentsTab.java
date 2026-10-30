@@ -27,6 +27,7 @@ import org.jabref.gui.undo.RedoAction;
 import org.jabref.gui.undo.UndoAction;
 import org.jabref.logic.journals.JournalAbbreviationRepository;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.field.Field;
@@ -56,7 +57,9 @@ public class CommentsTab extends FieldsEditorTab {
                 journalAbbreviationRepository,
                 stateManager,
                 previewPanel);
-        this.defaultOwner = preferences.getOwnerPreferences().getDefaultOwner().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "-");
+        this.defaultOwner = RegexPatterns.NON_LOWERCASE_ALPHANUMERIC
+                .matcher(preferences.getOwnerPreferences().getDefaultOwner().toLowerCase(Locale.ROOT))
+                .replaceAll("-");
         setText(EntryEditorTabModel.BuiltIn.COMMENTS.displayName());
         setGraphic(IconTheme.JabRefIcons.COMMENT.getGraphicNode());
 

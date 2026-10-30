@@ -2,7 +2,6 @@ package org.jabref.gui.relatedwork;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 import javax.swing.undo.UndoManager;
 
@@ -17,10 +16,10 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.relatedwork.RelatedWorkInserter;
 import org.jabref.logic.relatedwork.RelatedWorkInsertionResult;
 import org.jabref.logic.relatedwork.RelatedWorkMatchResult;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.BibEntry;
 
 public class RelatedWorkResultDialogViewModel extends AbstractViewModel {
-    private static final Pattern NON_ALPHANUMERIC = Pattern.compile("[^a-z0-9]");
 
     private final DialogService dialogService;
     private final UndoManager undoManager;
@@ -36,7 +35,7 @@ public class RelatedWorkResultDialogViewModel extends AbstractViewModel {
                                             DialogService dialogService,
                                             UndoManager undoManager) {
         this.sourceEntry = sourceEntry;
-        this.userName = NON_ALPHANUMERIC.matcher(userName.toLowerCase(Locale.ROOT)).replaceAll("-");
+        this.userName = RegexPatterns.NON_LOWERCASE_ALPHANUMERIC.matcher(userName.toLowerCase(Locale.ROOT)).replaceAll("-");
         this.dialogService = dialogService;
         this.undoManager = undoManager;
         this.relatedWorkInserter = new RelatedWorkInserter();

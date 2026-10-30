@@ -3,9 +3,9 @@ package org.jabref.logic.layout.format;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 import org.jabref.logic.layout.AbstractParamLayoutFormatter;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.Author;
 import org.jabref.model.entry.AuthorList;
 
@@ -30,8 +30,6 @@ public class Authors extends AbstractParamLayoutFormatter {
     private static final List<String> AUTHOR_PUNC = new ArrayList<>();
     private static final List<String> SEPARATORS = new ArrayList<>();
     private static final List<String> LAST_SEPARATORS = new ArrayList<>();
-
-    private static final Pattern NUMBER_PATTERN = Pattern.compile("[0-9]+");
 
     static {
         Authors.AUTHOR_ORDER.add("firstfirst");
@@ -194,7 +192,7 @@ public class Authors extends AbstractParamLayoutFormatter {
             }
         } else if ("etal".equalsIgnoreCase(key.trim())) {
             etAlString = value;
-        } else if (Authors.NUMBER_PATTERN.matcher(key.trim()).matches()) {
+        } else if (RegexPatterns.DIGITS.matcher(key.trim()).matches()) {
             // Just a number:
             int num = Integer.parseInt(key.trim());
             if (setMaxAuthors) {

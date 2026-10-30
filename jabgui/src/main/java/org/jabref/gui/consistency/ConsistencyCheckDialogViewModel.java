@@ -30,6 +30,7 @@ import org.jabref.logic.quality.consistency.BibliographyConsistencyCheckResultCs
 import org.jabref.logic.quality.consistency.BibliographyConsistencyCheckResultTxtWriter;
 import org.jabref.logic.quality.consistency.ConsistencyMessage;
 import org.jabref.logic.util.StandardFileType;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.database.BibDatabaseMode;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.BibEntryType;
@@ -128,7 +129,7 @@ public class ConsistencyCheckDialogViewModel extends AbstractViewModel {
         List<String> theRecord = getFindingsAsList(bibEntry, entryType, requiredFields, optionalFields);
         List<String> message = new ArrayList<>();
         for (String s : theRecord) {
-            String modifiedString = s.replaceAll("\\s+", " ");
+            String modifiedString = RegexPatterns.WHITESPACE.matcher(s).replaceAll(" ");
             message.add(modifiedString);
         }
         tableData.add(new ConsistencyMessage(message, bibEntry));

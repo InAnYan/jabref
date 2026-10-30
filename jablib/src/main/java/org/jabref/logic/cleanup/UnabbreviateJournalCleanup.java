@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.jabref.logic.journals.Abbreviation;
 import org.jabref.logic.journals.JournalAbbreviationRepository;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.FieldChange;
 import org.jabref.model.database.BibDatabase;
 import org.jabref.model.entry.BibEntry;
@@ -58,7 +59,7 @@ public class UnabbreviateJournalCleanup implements CleanupJob {
         }
 
         Abbreviation abbreviation = journalAbbreviationRepository.get(text).orElseThrow();
-        String newText = abbreviation.getName().replaceAll("(?<!\\\\)&", "\\\\&");
+        String newText = RegexPatterns.UNESCAPED_AMPERSAND.matcher(abbreviation.getName()).replaceAll("\\\\&");
         entry.setField(field, newText);
         changes.add(new FieldChange(entry, field, origText, newText));
         return changes;

@@ -17,6 +17,7 @@ import org.jabref.logic.importer.ParserResult;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.FileType;
 import org.jabref.logic.util.StandardFileType;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.AuthorList;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.field.Field;
@@ -149,7 +150,7 @@ public class ReferImporter extends Importer {
                     case "O" ->
                             fieldMap.put(StandardField.NOTE, val);
                     case "P" ->
-                            fieldMap.put(StandardField.PAGES, val.replaceAll("([0-9]) *- *([0-9])", "$1--$2"));
+                            fieldMap.put(StandardField.PAGES, RegexPatterns.PAGE_NUMBERS_DASH.matcher(val).replaceAll("$1--$2"));
                     case "R" ->
                             addTag(fieldMap, type, val, "R");
                     case "S" ->

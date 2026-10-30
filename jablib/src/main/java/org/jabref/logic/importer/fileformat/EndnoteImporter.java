@@ -15,6 +15,7 @@ import org.jabref.logic.importer.Importer;
 import org.jabref.logic.importer.ParserResult;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.StandardFileType;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.AuthorList;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.field.Field;
@@ -207,7 +208,7 @@ public class EndnoteImporter extends Importer {
                     }
                     case "P" ->
                         // replace single dash page ranges (23-45) with double dashes (23--45):
-                            hm.put(StandardField.PAGES, val.replaceAll("([0-9]) *- *([0-9])", "$1--$2"));
+                            hm.put(StandardField.PAGES, RegexPatterns.PAGE_NUMBERS_DASH.matcher(val).replaceAll("$1--$2"));
                     case "V" ->
                             hm.put(StandardField.VOLUME, val);
                     case "N" ->

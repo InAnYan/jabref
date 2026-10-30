@@ -2,9 +2,9 @@ package org.jabref.logic.integrity;
 
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.database.BibDatabaseContext;
 
@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
 
 public class HowPublishedChecker implements ValueChecker {
 
-    private static final Predicate<String> FIRST_LETTER_CAPITALIZED = Pattern.compile("^[^a-z]").asPredicate();
+    private static final Predicate<String> FIRST_LETTER_CAPITALIZED = RegexPatterns.NOT_STARTING_WITH_LOWERCASE.asPredicate();
 
     private final BibDatabaseContext databaseContext;
 

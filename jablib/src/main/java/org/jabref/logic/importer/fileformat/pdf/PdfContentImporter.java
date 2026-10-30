@@ -11,12 +11,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.jabref.logic.importer.ParserResult;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.os.OS;
 import org.jabref.logic.util.PdfUtils;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.field.StandardField;
@@ -43,8 +43,6 @@ import static org.jabref.logic.util.strings.StringUtil.isNullOrEmpty;
 ///
 /// If several PDF importers should be tried, use {@link PdfMergeMetadataImporter}.
 public class PdfContentImporter extends PdfImporter {
-
-    private static final Pattern YEAR_EXTRACT_PATTERN = Pattern.compile("\\d{4}");
 
     private static final int ARXIV_PREFIX_LENGTH = "arxiv:".length();
 
@@ -603,7 +601,7 @@ public class PdfContentImporter extends PdfImporter {
             return;
         }
 
-        Matcher m = YEAR_EXTRACT_PATTERN.matcher(curString);
+        Matcher m = RegexPatterns.FOUR_DIGITS.matcher(curString);
         if (m.find()) {
             year = curString.substring(m.start(), m.end());
         }
