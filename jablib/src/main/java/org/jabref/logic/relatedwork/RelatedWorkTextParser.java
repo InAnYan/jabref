@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
+import org.jabref.logic.util.strings.RegexPatterns;
+
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -12,9 +14,7 @@ public class RelatedWorkTextParser {
     /// Support `[1]` / `[1-3]` / `[1, 2, 3]` / `[1-3, 7, 9]`
     private static final Pattern CITE_PATTERN = Pattern.compile("\\[(\\d{1,3}(?:\\s*(?:,|-|–)\\s*\\d{1,3})*)\\]");
     private static final Pattern SEGMENT_SPLIT_PATTERN = Pattern.compile("(?<=[.!?])\\s+|(?<=[.!?])(?=\\p{Lu})");
-    private static final Pattern HYPHENATED_LINE_BREAK_PATTERN = Pattern.compile("-\\R");
     private static final Pattern NEWLINE_WITHOUT_SENTENCE_END_PATTERN = Pattern.compile("(?<![.:])\\R");
-    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
     private static final Pattern SPACE_BEFORE_PUNCTUATION_PATTERN = Pattern.compile("\\s+([,.;:!?])");
     private static final Pattern TRAILING_CONJUNCTION_WITH_PUNCTUATION_PATTERN = Pattern.compile("\\s+(?:and|or)([.?!])$", Pattern.CASE_INSENSITIVE);
     private static final Pattern TRAILING_CONJUNCTION_PATTERN = Pattern.compile("\\s+(?:and|or)$", Pattern.CASE_INSENSITIVE);
@@ -76,7 +76,7 @@ public class RelatedWorkTextParser {
     /// Remove citationKeys
     private String extractContextText(String text) {
         text = CITE_PATTERN.matcher(text).replaceAll(" ");
-        text = WHITESPACE_PATTERN.matcher(text.trim()).replaceAll(" ");
+        text = RegexPatterns.WHITESPACE.matcher(text.trim()).replaceAll(" ");
         text = SPACE_BEFORE_PUNCTUATION_PATTERN.matcher(text).replaceAll("$1");
         text = TRAILING_CONJUNCTION_WITH_PUNCTUATION_PATTERN.matcher(text).replaceAll("$1");
         return TRAILING_CONJUNCTION_PATTERN.matcher(text).replaceAll("").trim();
@@ -84,8 +84,8 @@ public class RelatedWorkTextParser {
 
     /// Some long words may contain a hyphen and a newline symbol. This method transforms these words into normal ones.
     public String getNormalText(String text) {
-        text = HYPHENATED_LINE_BREAK_PATTERN.matcher(text).replaceAll("");
+        text = RegexPatterns.HYPHENATED_LINE_BREAK.matcher(text).replaceAll("");
         text = NEWLINE_WITHOUT_SENTENCE_END_PATTERN.matcher(text).replaceAll(" ");
-        return WHITESPACE_PATTERN.matcher(text.trim()).replaceAll(" ");
+        return RegexPatterns.WHITESPACE.matcher(text.trim()).replaceAll(" ");
     }
 }

@@ -3,15 +3,13 @@ package org.jabref.logic.bibtex.comparator.plausibility;
 import java.time.Year;
 import java.util.Optional;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.jabref.logic.bibtex.comparator.ComparisonResult;
 import org.jabref.logic.integrity.YearChecker;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.logic.util.strings.StringUtil;
 
 public class YearFieldValuePlausibilityComparator implements FieldValuePlausibilityComparator {
-
-    private static final Pattern YEAR_PATTERN = Pattern.compile("(\\d{4})");
 
     // Only the factor may instantiate this
     YearFieldValuePlausibilityComparator() {
@@ -77,9 +75,9 @@ public class YearFieldValuePlausibilityComparator implements FieldValuePlausibil
     /// @param value the input string possibly containing a year
     /// @return Optional containing the 4-digit year if found, otherwise Optional.empty()
     private Optional<Integer> extractYear(String value) {
-        Matcher matcher = YEAR_PATTERN.matcher(value);
+        Matcher matcher = RegexPatterns.FOUR_DIGITS.matcher(value);
         if (matcher.find()) {
-            return Optional.of(Integer.parseInt(matcher.group(1)));
+            return Optional.of(Integer.parseInt(matcher.group()));
         }
         return Optional.empty();
     }

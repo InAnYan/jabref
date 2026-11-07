@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jabref.logic.journals.ltwa.LtwaRepository;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.logic.util.strings.StringSimilarity;
 
 import org.h2.mvstore.MVMap;
@@ -40,15 +41,15 @@ public class JournalAbbreviationRepository {
         try (MVStore store = new MVStore.Builder().readOnly().fileName(journalList.toAbsolutePath().toString()).open()) {
             mvFullToAbbreviationObject = store.openMap("FullToAbbreviation");
             mvFullToAbbreviationObject.forEach((name, abbreviation) -> {
-                String abbrevationString = abbreviation.getAbbreviation();
+                String abbreviationString = abbreviation.getAbbreviation();
                 String shortestUniqueAbbreviation = abbreviation.getShortestUniqueAbbreviation();
                 Abbreviation newAbbreviation = new Abbreviation(
                         name,
-                        abbrevationString,
+                        abbreviationString,
                         shortestUniqueAbbreviation
                 );
                 fullToAbbreviationObject.put(name, newAbbreviation);
-                abbreviationToAbbreviationObject.put(abbrevationString, newAbbreviation);
+                abbreviationToAbbreviationObject.put(abbreviationString, newAbbreviation);
                 dotlessToAbbreviationObject.put(newAbbreviation.getDotlessAbbreviation(), newAbbreviation);
                 shortestUniqueToAbbreviationObject.put(shortestUniqueAbbreviation, newAbbreviation);
             });
@@ -159,7 +160,7 @@ public class JournalAbbreviationRepository {
     /// To prevent wrong matches, such as Nutrients converted to Nutrition we do fuzzy matching if the title is three words or more (or contains non-ASCII characters)
     private Optional<Abbreviation> findBestFuzzyMatched(Collection<Abbreviation> abbreviations, String input) {
         // Only one or two words - do not do fuzzy matching
-        if (input.trim().split("\\s+").length <= 1) {
+        if (RegexPatterns.WHITESPACE.split(input.trim()).length <= 1) {
             // Some Chinese titles do not contain spaces
             boolean isAscii = input.chars().allMatch(c -> c <= 0x7F);
             if (isAscii) {

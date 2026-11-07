@@ -24,6 +24,7 @@ import org.jabref.logic.layout.Layout;
 import org.jabref.logic.layout.LayoutFormatter;
 import org.jabref.logic.layout.LayoutFormatterPreferences;
 import org.jabref.logic.layout.LayoutHelper;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.field.FieldFactory;
 import org.jabref.model.entry.field.OrFields;
 import org.jabref.model.entry.field.StandardField;
@@ -35,6 +36,7 @@ import org.jabref.model.openoffice.style.CitationMarkerEntry;
 import org.jabref.model.openoffice.style.CitationMarkerNormEntry;
 import org.jabref.model.openoffice.style.CitationMarkerNumericBibEntry;
 import org.jabref.model.openoffice.style.CitationMarkerNumericEntry;
+import org.jabref.model.openoffice.style.CitationType;
 import org.jabref.model.openoffice.style.NonUniqueCitationMarker;
 
 import org.jspecify.annotations.NonNull;
@@ -67,7 +69,6 @@ public class JStyle implements Comparable<JStyle>, OOStyle {
 
     public static final String TITLE = "Title";
     public static final String UNDEFINED_CITATION_MARKER = "??";
-    private static final Pattern NUM_PATTERN = Pattern.compile("-?\\d+");
     private static final String LAYOUT_MRK = "LAYOUT";
     private static final String PROPERTIES_MARK = "PROPERTIES";
     private static final String CITATION_MARK = "CITATION";
@@ -314,7 +315,7 @@ public class JStyle implements Comparable<JStyle>, OOStyle {
         } else {
             try {
                 return Files.getLastModifiedTime(styleFile).toMillis() == this.styleFileModificationTime;
-            } catch (IOException e) {
+            } catch (IOException _) {
                 return false;
             }
         }
@@ -439,7 +440,7 @@ public class JStyle implements Comparable<JStyle>, OOStyle {
                 value = value.trim().substring(1, value.trim().length() - 1);
             }
             Object toSet = value;
-            if (NUM_PATTERN.matcher(value.trim()).matches()) {
+            if (RegexPatterns.INTEGER.matcher(value.trim()).matches()) {
                 toSet = Integer.parseInt(value.trim());
             } else if ("true".equalsIgnoreCase(value.trim())) {
                 toSet = Boolean.TRUE;
@@ -676,7 +677,7 @@ public class JStyle implements Comparable<JStyle>, OOStyle {
     /// @return The text for the citation.
     public OOText getNumCitationMarker2(List<CitationMarkerNumericEntry> entries) {
         final int minGroupingCount = this.getMinimumGroupingCount();
-        return JStyleGetNumCitationMarker.getNumCitationMarker2(this,
+        return JStyleGetNumericCitationMarker.getNumCitationMarker2(this,
                 entries,
                 minGroupingCount);
     }
@@ -684,14 +685,14 @@ public class JStyle implements Comparable<JStyle>, OOStyle {
     /// For some tests we need to override minGroupingCount.
     public OOText getNumCitationMarker2(List<CitationMarkerNumericEntry> entries,
                                         int minGroupingCount) {
-        return JStyleGetNumCitationMarker.getNumCitationMarker2(this,
+        return JStyleGetNumericCitationMarker.getNumCitationMarker2(this,
                 entries,
                 minGroupingCount);
     }
 
     /// Format a number-based bibliography label for the given number.
     public OOText getNumCitationMarkerForBibliography(CitationMarkerNumericBibEntry entry) {
-        return JStyleGetNumCitationMarker.getNumCitationMarkerForBibliography(this, entry);
+        return JStyleGetNumericCitationMarker.getNumCitationMarkerForBibliography(this, entry);
     }
 
     public OOText getNormalizedCitationMarker(CitationMarkerNormEntry entry) {
@@ -722,6 +723,18 @@ public class JStyle implements Comparable<JStyle>, OOStyle {
         return JStyleGetCitationMarker.createCitationMarker(this,
                 citationMarkerEntries,
                 inParenthesis,
+                nonUniqueCitationMarkerHandling);
+    }
+
+    /// As [#createCitationMarker(List, boolean, NonUniqueCitationMarker)], but takes the
+    /// presentation from the citation type of the group, so that the partial and bracket-less
+    /// citation types of <https://github.com/JabRef/jabref/issues/7861> are handled as well.
+    public OOText createCitationMarker(List<CitationMarkerEntry> citationMarkerEntries,
+                                       CitationType citationType,
+                                       NonUniqueCitationMarker nonUniqueCitationMarkerHandling) {
+        return JStyleGetCitationMarker.createCitationMarker(this,
+                citationMarkerEntries,
+                citationType,
                 nonUniqueCitationMarkerHandling);
     }
 

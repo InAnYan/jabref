@@ -3,6 +3,7 @@ package org.jabref.logic.importer.fetcher.citation.opencitations;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.field.Field;
 import org.jabref.model.entry.field.FieldFactory;
 import org.jabref.model.entry.field.StandardField;
@@ -33,7 +34,7 @@ class CitationItem {
             return List.of();
         }
 
-        String[] pids = pidString.split("\\s+");
+        String[] pids = RegexPatterns.WHITESPACE.split(pidString);
         List<IdentifierWithField> identifiers = new ArrayList<>();
         for (String pid : pids) {
             int colonIndex = pid.indexOf(':');

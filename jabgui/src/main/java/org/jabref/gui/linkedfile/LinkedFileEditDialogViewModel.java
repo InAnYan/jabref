@@ -5,7 +5,6 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -14,6 +13,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.stage.Window;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
@@ -27,6 +27,7 @@ import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.util.URLUtil;
 import org.jabref.logic.util.io.FileNameCleaner;
 import org.jabref.logic.util.io.FileUtil;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.LinkedFile;
 
@@ -40,7 +41,6 @@ public class LinkedFileEditDialogViewModel extends AbstractViewModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LinkedFileEditDialogViewModel.class);
 
-    private static final Pattern REMOTE_LINK_PATTERN = Pattern.compile("[a-z]+://.*");
     private final StringProperty link = new SimpleStringProperty("");
     private final StringProperty description = new SimpleStringProperty("");
     private final StringProperty sourceUrl = new SimpleStringProperty("");
@@ -70,7 +70,7 @@ public class LinkedFileEditDialogViewModel extends AbstractViewModel {
     private void setExternalFileTypeByExtension(String link) {
         if (!link.isEmpty()) {
             // Check if this looks like a remote link:
-            if (REMOTE_LINK_PATTERN.matcher(link).matches()) {
+            if (RegexPatterns.REMOTE_LINK.matcher(link).matches()) {
                 ExternalFileTypes.getExternalFileTypeByExt("html", externalApplicationsPreferences)
                                  .ifPresent(selectedExternalFileType::setValue);
             }
@@ -82,7 +82,7 @@ public class LinkedFileEditDialogViewModel extends AbstractViewModel {
         }
     }
 
-    public void openBrowseDialog() {
+    public void openBrowseDialog(Window owner) {
         String fileText = link.get();
 
         Optional<Path> file = FileUtil.find(database, fileText, filePreferences);
@@ -95,7 +95,7 @@ public class LinkedFileEditDialogViewModel extends AbstractViewModel {
                 .withInitialFileName(fileName)
                 .build();
 
-        dialogService.showFileOpenDialog(fileDialogConfiguration).ifPresent(this::checkForBadFileNameAndAdd);
+        dialogService.showFileOpenDialog(fileDialogConfiguration, owner).ifPresent(this::checkForBadFileNameAndAdd);
     }
 
     @VisibleForTesting
@@ -171,7 +171,7 @@ public class LinkedFileEditDialogViewModel extends AbstractViewModel {
         if (LinkedFile.isOnlineLink(link.getValue())) {
             try {
                 return new LinkedFile(description.getValue(), URLUtil.create(link.getValue()), fileType, sourceUrl.getValue());
-            } catch (MalformedURLException e) {
+            } catch (MalformedURLException _) {
                 return new LinkedFile(description.getValue(), link.getValue(), fileType, sourceUrl.getValue());
             }
         }

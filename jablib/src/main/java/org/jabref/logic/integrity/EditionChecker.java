@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.database.BibDatabaseContext;
 
@@ -13,10 +14,10 @@ import org.jspecify.annotations.Nullable;
 
 public class EditionChecker implements ValueChecker {
 
-    private static final Predicate<String> FIRST_LETTER_CAPITALIZED = Pattern.compile("^[A-Z]").asPredicate();
+    private static final Predicate<String> FIRST_LETTER_CAPITALIZED = RegexPatterns.STARTS_WITH_UPPERCASE.asPredicate();
     private static final Predicate<String> ONLY_NUMERALS_OR_LITERALS = Pattern.compile("^([0-9]+|[^0-9].+)$")
                                                                               .asPredicate();
-    private static final Predicate<String> ONLY_NUMERALS = Pattern.compile("[0-9]+").asPredicate();
+    private static final Predicate<String> ONLY_NUMERALS = RegexPatterns.DIGITS.asPredicate();
     private static final String FIRST_EDITION = "1";
 
     private final BibDatabaseContext bibDatabaseContextEdition;

@@ -1,21 +1,17 @@
 package org.jabref.logic.formatter.bibtexfields;
 
-import java.util.regex.Pattern;
-
 import org.jabref.logic.bibtex.FieldPreferences;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.field.Field;
 import org.jabref.model.entry.field.FieldFactory;
 
 import org.jspecify.annotations.NonNull;
 
-/// Replaces two subsequent whitespaces (and tabs) to one space in case of single-line fields. In case of multine fields,
+/// Replaces two subsequent whitespaces (and tabs) to one space in case of single-line fields. In case of multiline fields,
 /// the field content is kept as is.
 ///
-/// Due to the distinction between single line and multiline fields, this formatter does not implement the interface {@link org.jabref.logic.formatter.Formatter}.
+/// Due to the distinction between single line and multiline fields, this formatter does not implement the interface [org.jabref.logic.formatter.Formatter].
 public class NormalizeWhitespaceFormatter {
-
-    // 's' matches a space, tab, new line, carriage return.
-    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
     private final FieldPreferences preferences;
 
@@ -40,7 +36,7 @@ public class NormalizeWhitespaceFormatter {
         }
 
         // Replace multiple whitespaces by one. We need to keep the leading and trailing whitespace to enable constructs such as "#kopp# and #breit#"
-        return WHITESPACE.matcher(fieldContent).replaceAll(" ");
+        return RegexPatterns.WHITESPACE.matcher(fieldContent).replaceAll(" ");
     }
 
     /// Performs the reformatting of a field content. Note that "field content" is understood as

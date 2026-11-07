@@ -16,6 +16,7 @@ import org.jabref.logic.importer.Parser;
 import org.jabref.logic.importer.SearchBasedParserFetcher;
 import org.jabref.logic.importer.fetcher.transformers.GVKQueryTransformer;
 import org.jabref.logic.importer.fileformat.PicaXmlParser;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.field.StandardField;
 import org.jabref.model.search.query.BaseQueryNode;
@@ -84,7 +85,7 @@ public class GvkFetcher extends AbstractIsbnFetcher implements SearchBasedParser
 
         // Fetcher returns page numbers as "30 Seiten" -> remove every non-digit character in the PAGETOTAL field
         entry.getField(StandardField.PAGETOTAL).ifPresent(pages ->
-                entry.setField(StandardField.PAGETOTAL, pages.replaceAll("[\\D]", "")));
+                entry.setField(StandardField.PAGETOTAL, RegexPatterns.NON_DIGITS.matcher(pages).replaceAll("")));
         new FieldFormatterCleanup(StandardField.PAGETOTAL, new NormalizePagesFormatter()).cleanup(entry);
         new FieldFormatterCleanup(StandardField.AUTHOR, new NormalizeNamesFormatter()).cleanup(entry);
     }

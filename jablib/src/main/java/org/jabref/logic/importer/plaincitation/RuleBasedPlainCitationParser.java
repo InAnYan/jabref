@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.field.StandardField;
 import org.jabref.model.entry.identifier.DOI;
@@ -16,7 +17,7 @@ import org.jabref.model.entry.types.StandardEntryType;
 
 /// Parse a plain citation using regex rules.
 ///
-/// TODO: This class is similar to {@link org.jabref.logic.importer.fileformat.pdf.RuleBasedBibliographyPdfImporter}, we need to unify them.
+/// TODO: This class is similar to [org.jabref.logic.importer.fileformat.pdf.RuleBasedBibliographyPdfImporter], we need to unify them.
 public class RuleBasedPlainCitationParser implements PlainCitationParser {
     private static final String AUTHOR_TAG = "[author_tag]";
     private static final String URL_TAG = "[url_tag]";
@@ -29,10 +30,6 @@ public class RuleBasedPlainCitationParser implements PlainCitationParser {
             "(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)" +
                     "(([\\w\\-]+\\.)+?([\\w\\-.~]+\\/?)*" +
                     "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
-            Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
-
-    private static final Pattern YEAR_PATTERN = Pattern.compile(
-            "\\d{4}",
             Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
 
     private static final Pattern AUTHOR_PATTERN = Pattern.compile(
@@ -108,17 +105,17 @@ public class RuleBasedPlainCitationParser implements PlainCitationParser {
         return fixSpaces(matcher.replaceAll(URL_TAG));
     }
 
-    /// Extracts the first DOI found in {@code input}, stores its canonical form in {@link #doi},
-    /// and returns {@code input} with the matched DOI (including any leading {@code doi:} or
-    /// {@code https://doi.org/} prefix) removed so the remaining rules do not re-parse it as a
+    /// Extracts the first DOI found in `input`, stores its canonical form in [#doi],
+    /// and returns `input` with the matched DOI (including any leading `doi:` or
+    /// `https://doi.org/` prefix) removed so the remaining rules do not re-parse it as a
     /// URL or title.
     ///
-    /// The DOI is replaced with an empty string rather than a placeholder token: {@link #findParts}
+    /// The DOI is replaced with an empty string rather than a placeholder token: [#findParts]
     /// later infers the title and journal/publisher from the count of non-numeric segments, and a
     /// placeholder would skew that count because DOIs typically contain digits while a token like
-    /// {@code [doi_tag]} would not.
+    /// `[doi_tag]` would not.
     ///
-    /// Called before {@link #findUrls} so a {@code doi.org} link is recorded as a DOI rather
+    /// Called before [#findUrls] so a `doi.org` link is recorded as a DOI rather
     /// than being swallowed by the generic URL rule.
     ///
     /// @param input raw citation text
@@ -133,7 +130,7 @@ public class RuleBasedPlainCitationParser implements PlainCitationParser {
     }
 
     private String findYear(String input) {
-        Matcher matcher = YEAR_PATTERN.matcher(input);
+        Matcher matcher = RegexPatterns.FOUR_DIGITS.matcher(input);
         while (matcher.find()) {
             String yearCandidate = input.substring(matcher.start(), matcher.end());
             int intYearCandidate = Integer.parseInt(yearCandidate);
@@ -171,9 +168,9 @@ public class RuleBasedPlainCitationParser implements PlainCitationParser {
     }
 
     private String fixSpaces(String input) {
-        return input.replaceAll("[,.!?;:]", "$0 ")
-                    .replaceAll("\\p{Lt}", " $0")
-                    .replaceAll("\\s+", " ").trim();
+        String spaced = input.replaceAll("[,.!?;:]", "$0 ")
+                             .replaceAll("\\p{Lt}", " $0");
+        return RegexPatterns.WHITESPACE.matcher(spaced).replaceAll(" ").trim();
     }
 
     private String findParts(String input) {
@@ -212,8 +209,8 @@ public class RuleBasedPlainCitationParser implements PlainCitationParser {
         return fixSpaces(input);
     }
 
-    /// Checks whether {@code input} contains at least one digit. Used instead of a
-    /// {@code ".*\\d.*"} regex on user-provided text: a direct scan is linear time and
+    /// Checks whether `input` contains at least one digit. Used instead of a
+    /// `".*\\d.*"` regex on user-provided text: a direct scan is linear time and
     /// not susceptible to regex backtracking on adversarial input.
     private static boolean containsDigit(String input) {
         return input.codePoints().anyMatch(Character::isDigit);

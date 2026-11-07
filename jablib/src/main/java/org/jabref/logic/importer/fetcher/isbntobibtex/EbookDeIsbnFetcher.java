@@ -9,6 +9,7 @@ import org.jabref.logic.formatter.bibtexfields.NormalizeNamesFormatter;
 import org.jabref.logic.formatter.bibtexfields.NormalizePagesFormatter;
 import org.jabref.logic.importer.ImportFormatPreferences;
 import org.jabref.logic.importer.fetcher.AbstractIsbnFetcher;
+import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.field.StandardField;
 
@@ -44,7 +45,7 @@ public class EbookDeIsbnFetcher extends AbstractIsbnFetcher {
 
         // Fetcher returns page numbers as "30 Seiten" -> remove every non-digit character in the PAGETOTAL field
         entry.getField(StandardField.PAGETOTAL).ifPresent(pages ->
-                entry.setField(StandardField.PAGETOTAL, pages.replaceAll("[\\D]", "")));
+                entry.setField(StandardField.PAGETOTAL, RegexPatterns.NON_DIGITS.matcher(pages).replaceAll("")));
         new FieldFormatterCleanup(StandardField.PAGETOTAL, new NormalizePagesFormatter()).cleanup(entry);
         new FieldFormatterCleanup(StandardField.AUTHOR, new NormalizeNamesFormatter()).cleanup(entry);
     }

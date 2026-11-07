@@ -1,6 +1,7 @@
 package org.jabref.logic.layout.format;
 
 import org.jabref.logic.layout.LayoutFormatter;
+import org.jabref.logic.util.strings.RegexPatterns;
 
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
@@ -25,6 +26,6 @@ public class MarkdownFormatter implements LayoutFormatter {
         String html = renderer.render(document);
 
         // workaround HTMLChars transforming "\n" into <br> by returning a one liner
-        return html.replaceAll("\\r\\n|\\r|\\n", " ").trim();
+        return RegexPatterns.LINE_BREAKS.matcher(html).replaceAll(" ").trim();
     }
 }

@@ -1,12 +1,11 @@
 package org.jabref.gui.libraryproperties.constants;
 
-import java.util.regex.Pattern;
-
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import org.jabref.logic.l10n.Localization;
+import org.jabref.logic.util.strings.RegexPatterns;
 
 import de.saxsys.mvvmfx.utils.validation.CompositeValidator;
 import de.saxsys.mvvmfx.utils.validation.FunctionBasedValidator;
@@ -15,8 +14,6 @@ import de.saxsys.mvvmfx.utils.validation.ValidationStatus;
 import de.saxsys.mvvmfx.utils.validation.Validator;
 
 public class ConstantsItemModel {
-
-    private final static Pattern IS_NUMBER = Pattern.compile("-?\\d+(\\.\\d+)?");
 
     private final StringProperty labelProperty = new SimpleStringProperty();
     private final StringProperty contentProperty = new SimpleStringProperty();
@@ -67,7 +64,7 @@ public class ConstantsItemModel {
             return ValidationMessage.error("May not be null");
         } else if (input.isBlank()) {
             return ValidationMessage.error(Localization.lang("Please enter the string's label"));
-        } else if (IS_NUMBER.matcher(input).matches()) {
+        } else if (RegexPatterns.NUMBER.matcher(input).matches()) {
             return ValidationMessage.error(Localization.lang("The label of the string cannot be a number."));
         } else if (input.contains("#")) {
             return ValidationMessage.error(Localization.lang("The label of the string cannot contain the '#' character."));

@@ -1,6 +1,7 @@
 package org.jabref.logic.layout.format;
 
 import org.jabref.logic.layout.LayoutFormatter;
+import org.jabref.logic.util.strings.RegexPatterns;
 
 /// Formatter that returns the first page from the "pages" field, if set.
 ///
@@ -13,7 +14,7 @@ public class FirstPage implements LayoutFormatter {
         if (s == null) {
             return "";
         }
-        String[] pageParts = s.split("[ \\-\u2013\u2014]+");
+        String[] pageParts = RegexPatterns.PAGE_RANGE_SEPARATORS.split(s);
         if (pageParts.length == 2) {
             return pageParts[0];
         } else {
