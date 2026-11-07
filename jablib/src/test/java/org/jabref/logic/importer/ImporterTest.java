@@ -45,6 +45,7 @@ public class ImporterTest {
         assertTrue(risImporter.supportsFileExtension("RIS"));
         assertTrue(risImporter.supportsFileExtension("Ris"));
     }
+
     @ParameterizedTest
     @MethodSource("instancesToTest")
     void getFormatterNameDoesNotReturnNull(Importer format) {

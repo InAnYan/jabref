@@ -1,9 +1,9 @@
 package org.jabref.logic.openoffice.oocsltext;
 
+import org.jabref.logic.util.strings.RegexPatterns;
+
 import com.sun.star.text.XTextCursor;
 import org.jspecify.annotations.NullMarked;
-
-import org.jabref.logic.util.strings.RegexPatterns;
 
 @NullMarked
 class CitationOOAdapterUtils {
