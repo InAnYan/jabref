@@ -631,7 +631,7 @@ public class CitaviXmlImporter extends Importer implements Parser {
                                                   .map(Integer::parseInt)
                                                   .filter(range -> range != -1);
                 pages.ifPresent(p -> comment.add("page range: " + p));
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException _) {
                 // If the string is not a number, we replicate behaviour by leaving the optional empty
             }
 
@@ -643,7 +643,7 @@ public class CitaviXmlImporter extends Importer implements Parser {
                                                                                              .map(QuotationTypeMapping::getName)
                                                                                              .findFirst());
                 quotationTypeDesc.ifPresent(qt -> comment.add("quotation type: %s".formatted(qt)));
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException _) {
                 // If the string is not a number, we replicate behaviour by leaving the optional empty
             }
 
@@ -651,7 +651,7 @@ public class CitaviXmlImporter extends Importer implements Parser {
                 Optional<Short> quotationIndex = Optional.ofNullable(knowledgeItem.quotationIndex())
                                                          .map(Short::parseShort);
                 quotationIndex.ifPresent(index -> comment.add("quotation index: %d".formatted(index)));
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException _) {
                 // If the string is not a number, we replicate behaviour by leaving the optional empty
             }
         }

@@ -13,6 +13,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.stage.Window;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
@@ -81,7 +82,7 @@ public class LinkedFileEditDialogViewModel extends AbstractViewModel {
         }
     }
 
-    public void openBrowseDialog() {
+    public void openBrowseDialog(Window owner) {
         String fileText = link.get();
 
         Optional<Path> file = FileUtil.find(database, fileText, filePreferences);
@@ -94,7 +95,7 @@ public class LinkedFileEditDialogViewModel extends AbstractViewModel {
                 .withInitialFileName(fileName)
                 .build();
 
-        dialogService.showFileOpenDialog(fileDialogConfiguration).ifPresent(this::checkForBadFileNameAndAdd);
+        dialogService.showFileOpenDialog(fileDialogConfiguration, owner).ifPresent(this::checkForBadFileNameAndAdd);
     }
 
     @VisibleForTesting
@@ -170,7 +171,7 @@ public class LinkedFileEditDialogViewModel extends AbstractViewModel {
         if (LinkedFile.isOnlineLink(link.getValue())) {
             try {
                 return new LinkedFile(description.getValue(), URLUtil.create(link.getValue()), fileType, sourceUrl.getValue());
-            } catch (MalformedURLException e) {
+            } catch (MalformedURLException _) {
                 return new LinkedFile(description.getValue(), link.getValue(), fileType, sourceUrl.getValue());
             }
         }

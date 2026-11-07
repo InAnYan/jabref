@@ -2,20 +2,18 @@ package org.jabref.gui.relatedwork;
 
 import java.util.List;
 import java.util.Locale;
-
-import javax.swing.undo.UndoManager;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import org.jabref.gui.AbstractViewModel;
 import org.jabref.gui.DialogService;
-import org.jabref.gui.undo.NamedCompoundEdit;
-import org.jabref.gui.undo.UndoableFieldChange;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.relatedwork.RelatedWorkInserter;
 import org.jabref.logic.relatedwork.RelatedWorkInsertionResult;
 import org.jabref.logic.relatedwork.RelatedWorkMatchResult;
+import org.jabref.logic.undo.UndoManager;
 import org.jabref.logic.util.strings.RegexPatterns;
 import org.jabref.model.entry.BibEntry;
 
@@ -54,29 +52,26 @@ public class RelatedWorkResultDialogViewModel extends AbstractViewModel {
                 userName
         );
 
-        int insertedCount = 0;
-        int unchangedCount = 0;
-        NamedCompoundEdit compoundEdit = new NamedCompoundEdit(Localization.lang("Insert related work comments"));
+        AtomicInteger insertedCount = new AtomicInteger();
+        AtomicInteger unchangedCount = new AtomicInteger();
 
-        for (RelatedWorkInsertionResult insertionResult : insertionResults) {
-            switch (insertionResult) {
-                case RelatedWorkInsertionResult.Inserted inserted -> {
-                    insertedCount++;
-                    compoundEdit.addEdit(new UndoableFieldChange(inserted.fieldChange()));
+        undoManager.addEdit(Localization.lang("Insert related work comments"), edit -> {
+            for (RelatedWorkInsertionResult insertionResult : insertionResults) {
+                switch (insertionResult) {
+                    case RelatedWorkInsertionResult.Inserted inserted -> {
+                        insertedCount.incrementAndGet();
+                        edit.addEdit(inserted.fieldChange());
+                    }
+                    case RelatedWorkInsertionResult.Unchanged unchanged ->
+                            unchangedCount.incrementAndGet();
                 }
-                case RelatedWorkInsertionResult.Unchanged unchanged ->
-                        unchangedCount++;
             }
-        }
-
-        if (compoundEdit.hasEdits()) {
-            undoManager.addEdit(compoundEdit);
-        }
+        });
 
         dialogService.notify(Localization.lang(
                 "Processed related work comments. Inserted: %0, unchanged: %1.",
-                String.valueOf(insertedCount),
-                String.valueOf(unchangedCount)
+                String.valueOf(insertedCount.get()),
+                String.valueOf(unchangedCount.get())
         ));
         return true;
     }
