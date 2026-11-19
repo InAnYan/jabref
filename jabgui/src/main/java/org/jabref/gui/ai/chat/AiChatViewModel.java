@@ -330,9 +330,9 @@ public class AiChatViewModel extends AbstractViewModel {
             }
         });
 
-        task.executeWith(taskExecutor);
         generateRagResponseTask.set(task);
         tasksMap.put(taskEntries, task);
+        task.executeWith(taskExecutor);
     }
 
     private void scheduleFollowUpQuestionsGeneration(String userMessage, String aiResponse) {
